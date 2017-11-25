@@ -1,0 +1,52 @@
+
+
+cache: packages
+
+sudo: false
+
+matrix:
+  include:
+    - os: linux
+      dist: trusty
+      language: r
+      r: release
+
+    - os: linux
+      dist: trusty
+      language: r
+      r: devel
+      
+    - os: osx
+      osx_image: xcode8
+      language: r
+      r: release
+
+#    - os: linux
+#      dist: trusty
+#      language: python
+#      python: 3.5
+#      script:
+#        - python3 setup.py install
+#        - python3 setup.py test
+
+#    - os: osx
+#      osx_image: xcode8
+#      language: generic
+#      before_install:
+#        - brew update
+#        - brew install python3
+#        - pip3 install numpy distutils_pytest pytest
+#      script:
+#        - python3 setup.py install
+#        - python3 setup.py test
+
+#  allow_failures:
+#    - r: devel
+
+warnings_are_errors: false
+
+notifications:
+  email:
+    on_success: change
+    on_failure: change
+
