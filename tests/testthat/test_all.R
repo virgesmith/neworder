@@ -3,6 +3,12 @@
 
 context("neworder")
 
+test_that("urand01 test", {
+  u01 = urand01_vector(10000);
+  expect_gte(min(u01), 0.0)
+  expect_lte(max(u01), 1.0)
+})
+
 test_that("age test", {
   
   df = data.frame(Age=sample(1:85, 1000, replace=T), Gender=sample(1:2, 1000, replace=T))

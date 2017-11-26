@@ -4,6 +4,9 @@ cache: packages
 
 sudo: false
 
+r_github_packages:
+  - r-lib/covr
+
 matrix:
   include:
     - os: linux
@@ -42,6 +45,9 @@ matrix:
 
 #  allow_failures:
 #    - r: devel
+
+after_success:
+  - Rscript -e 'covr::codecov()'
 
 warnings_are_errors: false
 
