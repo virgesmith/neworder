@@ -5,19 +5,47 @@
 
 using namespace Rcpp;
 
-// rcpp_hello_world
-List rcpp_hello_world();
-RcppExport SEXP _neworder_rcpp_hello_world() {
+// urand01_vector
+NumericVector urand01_vector(size_t length);
+RcppExport SEXP _neworder_urand01_vector(SEXP lengthSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    rcpp_result_gen = Rcpp::wrap(rcpp_hello_world());
+    Rcpp::traits::input_parameter< size_t >::type length(lengthSEXP);
+    rcpp_result_gen = Rcpp::wrap(urand01_vector(length));
+    return rcpp_result_gen;
+END_RCPP
+}
+// select_at_random
+IntegerVector select_at_random(DataFrame input, std::string& drivingColumn, NumericVector probs);
+RcppExport SEXP _neworder_select_at_random(SEXP inputSEXP, SEXP drivingColumnSEXP, SEXP probsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< DataFrame >::type input(inputSEXP);
+    Rcpp::traits::input_parameter< std::string& >::type drivingColumn(drivingColumnSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type probs(probsSEXP);
+    rcpp_result_gen = Rcpp::wrap(select_at_random(input, drivingColumn, probs));
+    return rcpp_result_gen;
+END_RCPP
+}
+// age_column
+bool age_column(DataFrame input, const std::string& colName);
+RcppExport SEXP _neworder_age_column(SEXP inputSEXP, SEXP colNameSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< DataFrame >::type input(inputSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type colName(colNameSEXP);
+    rcpp_result_gen = Rcpp::wrap(age_column(input, colName));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_neworder_rcpp_hello_world", (DL_FUNC) &_neworder_rcpp_hello_world, 0},
+    {"_neworder_urand01_vector", (DL_FUNC) &_neworder_urand01_vector, 1},
+    {"_neworder_select_at_random", (DL_FUNC) &_neworder_select_at_random, 3},
+    {"_neworder_age_column", (DL_FUNC) &_neworder_age_column, 2},
     {NULL, NULL, 0}
 };
 
