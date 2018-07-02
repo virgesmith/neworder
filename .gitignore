@@ -37,3 +37,4 @@ src/*.o
 src/*.so
 
 build/
+node_modules/

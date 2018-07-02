@@ -9,20 +9,23 @@ r_github_packages:
 
 matrix:
   include:
-    - os: linux
-      dist: xenial
-      language: r
-      r: release
+    - language: node_js
 
-    - os: linux
-      dist: xenial
-      language: r
-      r: devel
+  # include:
+  #   - os: linux
+  #     dist: xenial
+  #     language: r
+  #     r: release
+
+  #   - os: linux
+  #     dist: xenial
+  #     language: r
+  #     r: devel
       
-    - os: osx
-      osx_image: xcode8.3
-      language: r
-      r: release
+  #   - os: osx
+  #     osx_image: xcode8.3
+  #     language: r
+  #     r: release
 
 #    - os: linux
 #      dist: trusty
