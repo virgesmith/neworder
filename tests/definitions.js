@@ -1,4 +1,10 @@
 'use strict'
+
+module.exports = {
+  "Entity": Entity,
+  "Person": Person
+}
+
 // entity definitions
 
 function Entity(id) {
