@@ -13,12 +13,24 @@ console.log(result);
 var result = neworder_api.eval("3 + 'world'");
 console.log(result);
 
-var result = neworder_api.eval("function x(y) { return y+1; } x(41)");
+var result = neworder_api.eval("function f(x) { return x+1; } f(41);");
 console.log(result);
 
-// var defs = fs.readFileSync("./tests/initialise.js", "utf8") 
-// var result = neworder_api.eval(defs);
-// console.log("defs eval:" + result);
+// FATAL ERROR: v8::ToLocalChecked Empty MaybeLocal.
+//var result = neworder_api.eval("f(141);");
+//console.log(result);
+
+// Compile error: FATAL ERROR: v8::ToLocalChecked Empty MaybeLocal.
+//var result = neworder_api.eval("function x(y) {{ return y+1; } x(41)");
+//console.log(result);
+
+// // Runtime error: FATAL ERROR: v8::ToLocalChecked Empty MaybeLocal.
+// var result = neworder_api.eval("function x(y) { return y+1; } z(41)");
+// console.log(result);
+
+var defs = fs.readFileSync("./tests/definitions.js", "utf8") 
+var result = neworder_api.eval(defs);
+console.log("defs eval:" + JSON.stringify(result));
 // FATAL ERROR: v8::ToLocalChecked Empty MaybeLocal.
 //var result = neworder_api.eval('require("./definitions.js")');
 

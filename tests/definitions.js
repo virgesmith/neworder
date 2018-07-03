@@ -1,9 +1,10 @@
 'use strict'
 
-module.exports = {
-  "Entity": Entity,
-  "Person": Person
-}
+// Causes FATAL ERROR: v8::ToLocalChecked Empty MaybeLocal.
+// module.exports = {
+//   "Entity": Entity,
+//   "Person": Person
+// }
 
 // entity definitions
 
@@ -25,5 +26,5 @@ function Person(id, location, age, gender, ethnicity) {
   this.ethnicity = ethnicity;
 }
 
-Person.prototype = Object.create(new Entity())
+Person.prototype = Object.create(new Entity());
 //Person.prototype.inc_age = function(dt) { this.age = this.age + dt; }
