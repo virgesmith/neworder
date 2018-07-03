@@ -5,5 +5,7 @@
 [![codecov](https://codecov.io/gh/virgesmith/neworder/branch/master/graph/badge.svg)](https://codecov.io/gh/virgesmith/neworder)
 [![License](https://img.shields.io/github/license/mashape/apistatus.svg)](https://opensource.org/licenses/MIT)
 
-A C++ microsimulation package inspired by [openm++](https://ompp.sourceforge.io/) and MODGEN. Models are defined in javascript code and evaluated in C++ using the V8 javascript virtual machine. Example to follow...
+A prototype C++ microsimulation package inspired by [openm++](https://ompp.sourceforge.io/) and MODGEN. Models are defined in high-level code and executed in an embedded simulation framework written in C++. Currently evaluating two possible options: 
+- the V8 javascript virtual machine. 
+- embedded python
 
