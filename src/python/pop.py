@@ -11,11 +11,9 @@ class Population:
   def size(self):
     return len(self.data)
 
-
 population = Population()
 
 print("[python]", population.data[0])
-
 
 # TODO directly call methods...
 def get_size():

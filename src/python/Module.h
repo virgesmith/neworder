@@ -12,8 +12,13 @@ namespace pycpp {
 class Module : public Object
 {
 public:
-  Module(String& filename) : Object(PyImport_Import(filename.release()))
+  // defer construction of Object(base) in order to trap a missing module
+  static Module init(String& filename)
   {
+  //Module(String& filename) : Object(PyImport_Import(filename.release()))
+    PyObject* p = PyImport_Import(filename.release());
+    Environment::check();
+    return Module(p);
   }
 
   bool hasAttr(const std::string& name)
@@ -26,16 +31,19 @@ public:
     PyObject* p = PyObject_GetAttrString(release(), name.c_str());
     if (!p)
     {
-      // TODO see PyErr_Fetch: https://docs.python.org/3/c-api/exceptions.html
-      // function that sticks python error into an exception and throws
-      if (PyErr_Occurred())
-        PyErr_Print();
+      Environment::check();
+      // // TODO see PyErr_Fetch: https://docs.python.org/3/c-api/exceptions.html
+      // // function that sticks python error into an exception and throws
+      // if (PyErr_Occurred())
+      //   PyErr_Print();
       throw std::runtime_error("Cannot find attribute " + name);
     }   
-    return p;     
+    return p;
   }
 
 private:
+  //Module(String& filename) : Object(PyImport_Import(filename.release()))
+  Module(PyObject* p) : Object(p) { }
 };
 
 }

@@ -1,8 +1,8 @@
 
 #include "Object.h"
 #include <Python.h>
-#include <stdexcept>
 
+#include <stdexcept>
 
 #include <iostream>
 
@@ -54,9 +54,12 @@ pycpp::Object& pycpp::Object::operator=(const pycpp::Object& obj)
 
 pycpp::Object::Object(PyObject* obj) : m_obj(obj) 
 { 
-  if (m_obj == nullptr)
+  if (m_obj == nullptr) 
+  {
     throw std::runtime_error("PyObject init failure");
+  }
 }
+
 
 pycpp::Object::~Object() 
 { 
@@ -140,9 +143,19 @@ pycpp::String::String(PyObject* p) : pycpp::Object(p)
     throw std::runtime_error("object is not a string");
 }
 
+pycpp::String pycpp::String::force(PyObject* p)
+{
+  return pycpp::String(PyObject_Str(p));
+}
+
 pycpp::String::operator const char*() const 
 {
   return PyUnicode_AsUTF8(m_obj);
+}
+
+pycpp::String::operator std::string() const 
+{
+  return std::string(PyUnicode_AsUTF8(m_obj));
 }
 
 pycpp::List::List(size_t length) : pycpp::Object(PyList_New(length)) { }

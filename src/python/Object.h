@@ -110,6 +110,9 @@ namespace pycpp {
     explicit String(const std::string& s);
     explicit String(PyObject* p);
 
+    // Uses PyObject_Str to force object into a string...
+    static String force(PyObject* p);
+
     operator const char*() const; 
     operator std::string() const; 
   };
@@ -150,11 +153,12 @@ namespace pycpp {
     template<typename T/*, typename P = typename Type<T>::PyType*/>
     std::vector<T> toVector() const
     {
+      using PyType = typename PyType<T>::Type; 
       const size_t n = size();
       std::vector<T> v(n);
       for (size_t i = 0; i < n; ++i)
       {
-        v[i] = typename PyType<T>::Type(this->operator[](i));
+        v[i] = PyType(this->operator[](i)).operator T();
       }
       return v;
     }

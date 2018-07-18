@@ -9,6 +9,14 @@
 
 // C++-ified version of the example here: https://docs.python.org/3/extending/embedding.html
 
+// perhaps pycpp::String?
+std::vector<std::string> dir(PyObject* obj)
+{
+  auto attrs = pycpp::List(PyObject_Dir(obj)).toVector<std::string>();
+  return attrs;
+}
+
+
 int main(int argc, char *argv[])
 {
   if (argc < 3)
@@ -28,28 +36,27 @@ int main(int argc, char *argv[])
 
     pycpp::String filename(PyUnicode_DecodeFSDefault(argv[1]));
 
-    pycpp::Module module(filename);
+    pycpp::Module module = pycpp::Module::init(filename);
 
-    pycpp::Function function(module.getAttr(argv[2])); 
-    pycpp::Function function2(module.getAttr("die")); 
+    pycpp::Function function(module.getAttr(argv[2]));
+
+    for (const auto& attr: dir(module.release())) 
+    {
+      std::cout << "[C++] ::" << attr << std::endl;
+    }
 
     bool has_person = module.hasAttr("Person");
-
     std::cout << "[C++] Person? " << has_person << std::endl;
 
-    if (has_person) {
-      // PyObject_Repr: <class 'test1.Person'>
-      //pycpp::String person(PyObject_Repr(PyObject_Dir(module.getAttr("Person"))));
-      pycpp::List person(PyObject_Dir(module.getAttr("Person")));
-      for (int i = 0; i < person.size(); ++i)
+    if (has_person)
+    {
+      for (const auto& attr: dir(module.getAttr("Person"))) 
       {
-        std::string attr((const char*)pycpp::String(person[i]));
-        if (attr[0] != '_')
-          std::cout << "[C++] Person::" << attr << std::endl;      
+        std::cout << "[C++] Person::" << attr << std::endl;
       }
     }
 
-    pycpp::Tuple args(argc-3);
+    pycpp::Tuple args(argc - 3);
     for (int i = 0; i < argc - 3; ++i)
     {
       args.set(i, pycpp::Int(std::stoi(argv[i + 3])));
@@ -57,14 +64,8 @@ int main(int argc, char *argv[])
     pycpp::Int result(function.call(args));
     std::cout << "[C++] Result: " << (int)result << std::endl;
 
-    pycpp::Tuple noargs(0);
-    function2.call(noargs);
-
-    pycpp::Int result2(function.call(args));
-    std::cout << "[C++] Result: " << (int)result2 << std::endl;
-
   }
-  catch(std::exception& e)
+  catch (std::exception &e)
   {
     std::cerr << "ERROR:" << e.what() << std::endl;
     return 1;
