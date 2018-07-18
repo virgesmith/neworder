@@ -169,7 +169,7 @@ namespace pycpp {
   {
   public:
     // uninitialised list with given length
-    explicit Tuple(size_t length);
+    explicit Tuple(int length);
     
     explicit Tuple(PyObject* tuple);
 

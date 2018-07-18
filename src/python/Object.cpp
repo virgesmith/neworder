@@ -176,7 +176,7 @@ void pycpp::List::push_back(Object&& obj)
   /*int*/PyList_Append(m_obj, &obj);
 }
 
-pycpp::Tuple::Tuple(size_t length) : pycpp::Object(PyTuple_New(length)) { }
+pycpp::Tuple::Tuple(int length) : pycpp::Object(PyTuple_New(length)) { }
 
 pycpp::Tuple::Tuple(PyObject* tuple) : pycpp::Object((PyObject*)tuple) { }
 

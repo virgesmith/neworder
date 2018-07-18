@@ -9,25 +9,19 @@ namespace pycpp {
 // see https://docs.python.org/3/c-api/import.html
 
 // not clear why inheriting from Object prevents the ModuleNotFoundError
-class Module //: public Object
+class Module : public Object
 {
 public:
-  Module(String& filename) //: Object(PyImport_Import(filename.release()))
+  Module(String& filename) : Object(PyImport_Import(filename.release()))
   {
-    m_obj = PyImport_Import(filename.release());
-    if(!m_obj)
-    {
-      PyErr_Print();
-      throw std::runtime_error(std::string("Failed to load ") + (const char*)filename);
-    }
   }
 
-  ~Module()
-  { 
-    Py_DECREF(m_obj);
+  bool hasAttr(const std::string& name)
+  {
+    return PyObject_HasAttrString(release(), name.c_str());
   }
 
-  PyObject* attr(const std::string& name) 
+  PyObject* getAttr(const std::string& name) 
   {
     PyObject* p = PyObject_GetAttrString(release(), name.c_str());
     if (!p)
@@ -41,15 +35,7 @@ public:
     return p;     
   }
 
-  PyObject* release() 
-  {
-    Py_INCREF(m_obj);
-    return m_obj;
-  }
-
 private:
-
-  PyObject* m_obj;
 };
 
 }

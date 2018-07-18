@@ -9,16 +9,15 @@ Person = collections.namedtuple('Person', ['id', 'location', 'age', 'gender', 'e
 
 def run():
 
-  print('Type of Person:', type(Person))
+  print('[python] Type of Person:', type(Person))
 
   bob = Person(id=0, age=30, gender='male', location="E09000001", ethnicity=1)
-  print('\nRepresentation:', bob)
+  print('\n[python] Representation:', bob)
 
   jane = Person(id=1, age=29, gender='female', location="", ethnicity="BLA")
-  print('\nField by name:', jane.location)
-
-  print('\nFields by index:')
+  print('\n[python] Field by name:', jane.location)
+  print('\n[python] Fields by index:', bob[1])
   for p in [ bob, jane ]:
-      print(p)
-  return 5
+      print("[python]", p)
+  return bob
   

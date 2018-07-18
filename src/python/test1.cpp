@@ -30,7 +30,24 @@ int main(int argc, char *argv[])
 
     pycpp::Module module(filename);
 
-    pycpp::Function function(module.attr(argv[2])); 
+    pycpp::Function function(module.getAttr(argv[2])); 
+    pycpp::Function function2(module.getAttr("die")); 
+
+    bool has_person = module.hasAttr("Person");
+
+    std::cout << "[C++] Person? " << has_person << std::endl;
+
+    if (has_person) {
+      // PyObject_Repr: <class 'test1.Person'>
+      //pycpp::String person(PyObject_Repr(PyObject_Dir(module.getAttr("Person"))));
+      pycpp::List person(PyObject_Dir(module.getAttr("Person")));
+      for (int i = 0; i < person.size(); ++i)
+      {
+        std::string attr((const char*)pycpp::String(person[i]));
+        if (attr[0] != '_')
+          std::cout << "[C++] Person::" << attr << std::endl;      
+      }
+    }
 
     pycpp::Tuple args(argc-3);
     for (int i = 0; i < argc - 3; ++i)
@@ -38,7 +55,14 @@ int main(int argc, char *argv[])
       args.set(i, pycpp::Int(std::stoi(argv[i + 3])));
     }
     pycpp::Int result(function.call(args));
-    std::cout << "[C++] Result: " << int(result) << std::endl;
+    std::cout << "[C++] Result: " << (int)result << std::endl;
+
+    pycpp::Tuple noargs(0);
+    function2.call(noargs);
+
+    pycpp::Int result2(function.call(args));
+    std::cout << "[C++] Result: " << (int)result2 << std::endl;
+
   }
   catch(std::exception& e)
   {
