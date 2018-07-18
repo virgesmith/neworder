@@ -1,3 +1,8 @@
+#include "Object.h"
+#include "Environment.h"
+#include "Function.h"
+#include "Module.h"
+
 #include <Python.h>
 
 #include <iostream>
@@ -12,79 +17,28 @@ int main(int argc, char *argv[])
     return 1;
   }
 
+  std::cout << "[C++] " << argv[1] << ":" << argv[2];
+  for (int i = 3; i < argc; ++i)
+    std::cout << " " << argv[i];
+  std::cout << std::endl;
+
   try
   {
-    std::cout << argv[1] << ":" << argv[2];
-    for (int i = 3; i < argc; ++i)
-      std::cout << " " << argv[i];
-    std::cout << std::endl;
+    pycpp::Environment env;
 
-    Py_Initialize();
-    PyObject *filename = PyUnicode_DecodeFSDefault(argv[1]);
-    /* Error checking of filename left out */
+    pycpp::String filename(PyUnicode_DecodeFSDefault(argv[1]));
 
-    PyObject *module = PyImport_Import(filename);
-    Py_DECREF(filename);
+    pycpp::Module module(filename);
 
-    if(!module)
-    {
-      PyErr_Print();
-      throw std::runtime_error(std::string("Failed to load ") + argv[1]);
-    }
+    pycpp::Function function(module.attr(argv[2])); 
 
-    PyObject* function = PyObject_GetAttrString(module, argv[2]);
-    /* function is a new reference */
-    // PyObject* str = PyUnicode_AsEncodedString(function, "utf-8", "~E~");
-    // //const char *bytes = PyBytes_AS_STRING(str);
-
-    // printf("Result of call: %s\n", PyBytes_AS_STRING(str));
-
-    if (!function || !PyCallable_Check(function))
-    {
-      // TODO see PyErr_Fetch: https://docs.python.org/3/c-api/exceptions.html
-      // function that sticks python error into an exception and throws
-      if (PyErr_Occurred())
-        PyErr_Print();
-      throw std::runtime_error(std::string("Cannot find function ") + argv[2]);
-    }    
-    PyObject* args = PyTuple_New(argc - 3);
+    pycpp::Tuple args(argc-3);
     for (int i = 0; i < argc - 3; ++i)
     {
-      PyObject* pValue = PyLong_FromLong(std::stoi(argv[i + 3]));
-      if (!pValue)
-      {
-        Py_DECREF(args);
-        Py_DECREF(module);
-        std::cerr << "Cannot convert argument to long" << std::endl;
-        return 1;
-      }
-      /* pValue reference stolen here: */
-      PyTuple_SetItem(args, i, pValue);
+      args.set(i, pycpp::Int(std::stoi(argv[i + 3])));
     }
-    PyObject* result = PyObject_CallObject(function, args);
-    Py_DECREF(args);
-    if (result)
-    {
-      std::cout << "Result of call: " << PyLong_AsLong(result) << std::endl;
-      Py_DECREF(result);
-    }
-    else
-    {
-      Py_DECREF(function);
-      Py_DECREF(module);
-      PyErr_Print();
-      std::cout << "Call failed" << std::endl;
-      return 1;
-    }
-
-    Py_XDECREF(function);
-    Py_DECREF(module);
-
-    if (Py_FinalizeEx() < 0)
-    {
-      return 120;
-    }
-
+    pycpp::Int result(function.call(args));
+    std::cout << "[C++] Result: " << int(result) << std::endl;
   }
   catch(std::exception& e)
   {
