@@ -1,73 +1,95 @@
 #include <Python.h>
 
+#include <iostream>
+
+// C++-ified version of the example here: https://docs.python.org/3/extending/embedding.html
+
 int main(int argc, char *argv[])
 {
-    PyObject *pName, *pModule, *pFunc;
-    PyObject *pArgs, *pValue;
-    int i;
+  if (argc < 3)
+  {
+    std::cerr << "Usage: " << argv[0] << "pythonfile funcname [args...]" << std::endl;
+    return 1;
+  }
 
-    if (argc < 3) {
-        fprintf(stderr,"Usage: call pythonfile funcname [args]\n");
-        return 1;
-    }
+  try
+  {
+    std::cout << argv[1] << ":" << argv[2];
+    for (int i = 3; i < argc; ++i)
+      std::cout << " " << argv[i];
+    std::cout << std::endl;
 
     Py_Initialize();
-    pName = PyUnicode_DecodeFSDefault(argv[1]);
-    /* Error checking of pName left out */
+    PyObject *filename = PyUnicode_DecodeFSDefault(argv[1]);
+    /* Error checking of filename left out */
 
-    pModule = PyImport_Import(pName);
-    Py_DECREF(pName);
+    PyObject *module = PyImport_Import(filename);
+    Py_DECREF(filename);
 
-    if (pModule != NULL) {
-        pFunc = PyObject_GetAttrString(pModule, argv[2]);
-        /* pFunc is a new reference */
-        // PyObject* str = PyUnicode_AsEncodedString(pFunc, "utf-8", "~E~");
-        // //const char *bytes = PyBytes_AS_STRING(str);
-
-        // printf("Result of call: %s\n", PyBytes_AS_STRING(str));
-
-        if (pFunc && PyCallable_Check(pFunc)) {
-            pArgs = PyTuple_New(argc - 3);
-            for (i = 0; i < argc - 3; ++i) {
-                pValue = PyLong_FromLong(atoi(argv[i + 3]));
-                if (!pValue) {
-                    Py_DECREF(pArgs);
-                    Py_DECREF(pModule);
-                    fprintf(stderr, "Cannot convert argument\n");
-                    return 1;
-                }
-                /* pValue reference stolen here: */
-                PyTuple_SetItem(pArgs, i, pValue);
-            }
-            pValue = PyObject_CallObject(pFunc, pArgs);
-            Py_DECREF(pArgs);
-            if (pValue != NULL) {
-                printf("Result of call: %ld\n", PyLong_AsLong(pValue));
-                Py_DECREF(pValue);
-            }
-            else {
-                Py_DECREF(pFunc);
-                Py_DECREF(pModule);
-                PyErr_Print();
-                fprintf(stderr,"Call failed\n");
-                return 1;
-            }
-        }
-        else {
-            if (PyErr_Occurred())
-                PyErr_Print();
-            fprintf(stderr, "Cannot find function \"%s\"\n", argv[2]);
-        }
-        Py_XDECREF(pFunc);
-        Py_DECREF(pModule);
+    if(!module)
+    {
+      PyErr_Print();
+      throw std::runtime_error(std::string("Failed to load ") + argv[1]);
     }
-    else {
+
+    PyObject* function = PyObject_GetAttrString(module, argv[2]);
+    /* function is a new reference */
+    // PyObject* str = PyUnicode_AsEncodedString(function, "utf-8", "~E~");
+    // //const char *bytes = PyBytes_AS_STRING(str);
+
+    // printf("Result of call: %s\n", PyBytes_AS_STRING(str));
+
+    if (!function || !PyCallable_Check(function))
+    {
+      // TODO see PyErr_Fetch: https://docs.python.org/3/c-api/exceptions.html
+      // function that sticks python error into an exception and throws
+      if (PyErr_Occurred())
         PyErr_Print();
-        fprintf(stderr, "Failed to load \"%s\"\n", argv[1]);
+      throw std::runtime_error(std::string("Cannot find function ") + argv[2]);
+    }    
+    PyObject* args = PyTuple_New(argc - 3);
+    for (int i = 0; i < argc - 3; ++i)
+    {
+      PyObject* pValue = PyLong_FromLong(std::stoi(argv[i + 3]));
+      if (!pValue)
+      {
+        Py_DECREF(args);
+        Py_DECREF(module);
+        std::cerr << "Cannot convert argument to long" << std::endl;
         return 1;
+      }
+      /* pValue reference stolen here: */
+      PyTuple_SetItem(args, i, pValue);
     }
-    if (Py_FinalizeEx() < 0) {
-        return 120;
+    PyObject* result = PyObject_CallObject(function, args);
+    Py_DECREF(args);
+    if (result)
+    {
+      std::cout << "Result of call: " << PyLong_AsLong(result) << std::endl;
+      Py_DECREF(result);
     }
-    return 0;
+    else
+    {
+      Py_DECREF(function);
+      Py_DECREF(module);
+      PyErr_Print();
+      std::cout << "Call failed" << std::endl;
+      return 1;
+    }
+
+    Py_XDECREF(function);
+    Py_DECREF(module);
+
+    if (Py_FinalizeEx() < 0)
+    {
+      return 120;
+    }
+
+  }
+  catch(std::exception& e)
+  {
+    std::cerr << "ERROR:" << e.what() << std::endl;
+    return 1;
+  }
+  return 0;
 }

@@ -33,8 +33,9 @@ vignettes/*.pdf
 *.knit.md
 .Rproj.user
 
-src/*.o
-src/*.so
+src/**/*.o
+src/**/*.d
+src/**/*.so
 
 build/
 node_modules/
