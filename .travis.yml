@@ -4,50 +4,15 @@ cache: packages
 
 sudo: false
 
-#r_github_packages:
-#  - r-lib/covr
+# matrix:
+#   include:
+#     - language: node_js
+#       node_js:
+#       - "8"
 
-matrix:
-  include:
-    - language: node_js
-      node_js:
-      - "8"
+language: C++
+script: cd src/python && make && make test
 
-
-  # include:
-  #   - os: linux
-  #     dist: xenial
-  #     language: r
-  #     r: release
-
-  #   - os: linux
-  #     dist: xenial
-  #     language: r
-  #     r: devel
-      
-  #   - os: osx
-  #     osx_image: xcode8.3
-  #     language: r
-  #     r: release
-
-#    - os: linux
-#      dist: trusty
-#      language: python
-#      python: 3.5
-#      script:
-#        - python3 setup.py install
-#        - python3 setup.py test
-
-#    - os: osx
-#      osx_image: xcode8
-#      language: generic
-#      before_install:
-#        - brew update
-#        - brew install python3
-#        - pip3 install numpy distutils_pytest pytest
-#      script:
-#        - python3 setup.py install
-#        - python3 setup.py test
 
 #  allow_failures:
 #    - r: devel

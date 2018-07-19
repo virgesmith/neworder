@@ -21,6 +21,9 @@ test1: $(obj)
 
 -include $(dep)
 
+test: test1
+	PYTHONPATH=. ./test1
+
 clean:
 	rm -rf $(dep) $(obj) test1	
 
