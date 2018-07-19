@@ -6,15 +6,16 @@
 
 #include <Python.h>
 
+#include <vector>
 #include <string>
 #include <iostream>
 
 // C++-ified version of the example here: https://docs.python.org/3/extending/embedding.html
 
 
-int test2(const std::string& modulename, const std::string& objectname, const std::string& methodname)
+int test2(const std::string& modulename, const std::string& objectname, const std::vector<std::string>& methodnames)
 {
-  std::cout << "[C++] " << modulename << ":" << objectname << "." << methodname << std::endl;
+  std::cout << "[C++] " << modulename << ":" << objectname << std::endl;
   // for (int i = 3; i < argc; ++i)
   //   std::cout << " " << argv[i];
   // std::cout << std::endl;
@@ -30,13 +31,16 @@ int test2(const std::string& modulename, const std::string& objectname, const st
     //pycpp::Function function(module.getAttr(argv[2]));
 
     PyObject* o = module.getAttr(objectname);
-    pycpp::Function method(PyObject_GetAttrString(o, methodname.c_str()));
 
-    pycpp::Tuple noargs(0);
+    for (const auto& methodname: methodnames)
+    {
+      pycpp::Function method(PyObject_GetAttrString(o, methodname.c_str()));
 
-    pycpp::Int res(method.call(noargs));
-    std::cout << "[C++] population.size(): " << (int)res << std::endl;
+      pycpp::Tuple noargs(0);
 
+      pycpp::Int res(method.call(noargs));
+      std::cout << "[C++] " << objectname << "." << methodname << "(): " << (int)res << std::endl;
+    }
 
     // for (const auto& attr: pycpp::dir(module.release())) 
     // {

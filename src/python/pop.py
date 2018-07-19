@@ -12,16 +12,16 @@ class Population:
   def size(self):
     return len(self.data)
 
+  def birth(self):
+    self.data.push(Person(id=3, age=0, gender="female", location="hosp", ethnicity="BLA"))
+    return len(self.data)
+
+  def die(self):
+    self.data.pop()
+    return len(self.data)
+
+
 population = Population()
 
-print("[python]", population.data[0])
+print("[python]", population.data)
 
-# TODO directly call methods...
-def get_size():
-  return population.size()
-
-def die():
-  population.data.pop()
-
-def birth():
-  population.data.push(Person(id=3, age=0, gender="female", location="hosp", ethnicity="BLA"))

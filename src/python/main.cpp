@@ -1,9 +1,10 @@
 
+#include <vector>
 #include <string>
 
 
 int test1(int, const char*[]);
-int test2(const std::string& modulename, const std::string& objectname, const std::string& methodname);
+int test2(const std::string& modulename, const std::string& objectname, const std::vector<std::string>& methodname);
 
 int main() 
 {
@@ -12,6 +13,6 @@ int main()
 
   test1(sizeof(args)/sizeof(args[0]), args);
 
-  test2("pop", "population", "size");
+  test2("pop", "population", {"size", "die", "size"});
 
 }
