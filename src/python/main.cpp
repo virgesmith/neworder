@@ -14,8 +14,10 @@ int main()
 
   // argv[0] would be name of binary
   const char* args[] = { "test1", "op", "mul", "2", "3" };
-
   test1(sizeof(args)/sizeof(args[0]), args);
+
+  const char* args1[] = { "test1", "pop", "func"};
+  test1(sizeof(args1)/sizeof(args1[0]), args1);
 
   test2("pop", "population", {"size", "die", "size", "birth", "birth", "size"});
 

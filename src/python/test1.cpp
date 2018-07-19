@@ -32,10 +32,10 @@ int test1(int argc, const char *argv[])
 
     for (const auto& attr: pycpp::dir(module.release())) 
     {
-      std::cout << "[C++] ::" << attr << std::endl;
-      for (const auto& sattr: pycpp::dir(module.getAttr(attr))) 
+      std::cout << "[C++] ::" << attr.first << " [" << attr.second << "]" << std::endl;
+      for (const auto& sattr: pycpp::dir(module.getAttr(attr.first))) 
       {
-        std::cout << "[C++] " << attr << "::" << sattr << std::endl;
+        std::cout << "[C++] " << attr.first << "::" << sattr.first << " [" << sattr.second << "]" << std::endl;
       }
     }
 

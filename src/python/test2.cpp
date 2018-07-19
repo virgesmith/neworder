@@ -61,7 +61,7 @@ int test2(const std::string& modulename, const std::string& objectname, const st
     {
       for (const auto& attr: pycpp::dir(module.getAttr("Person"))) 
       {
-        std::cout << "[C++] Person::" << attr << std::endl;
+        std::cout << "[C++] Person::" << attr.first << " [" << attr.second << "]" << std::endl;
       }
     }
   }

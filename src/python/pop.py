@@ -33,3 +33,5 @@ population = Population()
 
 print("[python]", population.data)
 
+def func():
+  return population.data
