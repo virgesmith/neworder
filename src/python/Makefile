@@ -1,8 +1,8 @@
 
 # Query python env for compile and link settings
-CXXFLAGS = $(shell python3.6-config --cflags)
+CXXFLAGS = $(shell python3-config --cflags)
 CXXFLAGS += -fPIC -std=c++11
-LDFLAGS := $(shell python3.6-config --ldflags)
+LDFLAGS := $(shell python3-config --ldflags)
 
 src=$(wildcard *.cpp)
 obj=$(src:.cpp=.o)
