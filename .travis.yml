@@ -11,6 +11,9 @@ sudo: false
 #       - "8"
 
 language: C++
+before_install: 
+ - sudo apt-get update
+ - sudo apt-get -y install python3
 script: cd src/python && make && make test
 
 
