@@ -35,6 +35,9 @@ namespace pycpp {
 
     // Return the ref count (useful for memory debugging)
     int refcount() const;
+
+    // The type (as a string)
+    const char* type() const;
     
   protected:
   

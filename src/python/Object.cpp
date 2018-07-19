@@ -30,6 +30,10 @@ int pycpp::Object::refcount() const
   return Py_REFCNT(m_obj);
 }
 
+const char* pycpp::Object::type() const 
+{
+  return Py_TYPE(m_obj)->tp_name;
+}
 
 pycpp::Object::Object(const pycpp::Object& obj) : m_obj(obj.m_obj)
 {

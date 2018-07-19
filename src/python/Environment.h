@@ -43,7 +43,8 @@ public:
       auto message = pycpp::String::force(type).operator std::string() + ":" + pycpp::String::force(value).operator std::string();
       PyErr_Restore(type, value, traceback);
       // TODO dump traceback (when not null)
-      //std::cerr << pycpp::String::force(traceback).operator std::string() << std::endl;
+      // if (traceback)
+      //   std::cerr << "Python stack:\n" << pycpp::String::force(traceback).operator std::string() << std::endl;
       throw Exception(message);
     }
   }

@@ -21,6 +21,10 @@ public:
   PyObject* call(pycpp::Tuple& args)
   {
     PyObject* p = PyObject_CallObject(m_obj, args.release());
+    if (!p)
+    {
+      Environment::check();      
+    }
     return p;
   }
 
