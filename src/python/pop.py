@@ -1,5 +1,6 @@
 
 import collections
+#import pandas as pd
 
 Person = collections.namedtuple('Person', ['id', 'location', 'age', 'gender', 'ethnicity'])
 

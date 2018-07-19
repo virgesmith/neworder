@@ -11,8 +11,8 @@
       "program": "${workspaceFolder}/src/python/test1",
       "args": ["op", "sub", "3", "3"],
       "stopAtEntry": false,
-      "cwd": "${workspaceFolder}",
-      "environment": [],
+      "cwd": "${workspaceFolder}/src/python",
+      "environment": [{"Name": "PYTHONPATH", "Value": "."}],
       "externalConsole": true,
       "MIMode": "gdb",
       "setupCommands": [

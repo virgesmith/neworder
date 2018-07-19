@@ -10,8 +10,7 @@
 
 // C++-ified version of the example here: https://docs.python.org/3/extending/embedding.html
 
-
-int main(int argc, char *argv[])
+int test1(int argc, const char *argv[])
 {
   if (argc < 3)
   {
@@ -37,16 +36,9 @@ int main(int argc, char *argv[])
     for (const auto& attr: pycpp::dir(module.release())) 
     {
       std::cout << "[C++] ::" << attr << std::endl;
-    }
-
-    bool has_person = module.hasAttr("Person");
-    std::cout << "[C++] Person? " << has_person << std::endl;
-
-    if (has_person)
-    {
-      for (const auto& attr: pycpp::dir(module.getAttr("Person"))) 
+      for (const auto& sattr: pycpp::dir(module.getAttr(attr))) 
       {
-        std::cout << "[C++] Person::" << attr << std::endl;
+        std::cout << "[C++] " << attr << "::" << sattr << std::endl;
       }
     }
 
@@ -61,12 +53,12 @@ int main(int argc, char *argv[])
   }
   catch (pycpp::Exception& e)
   {
-    std::cerr << "Python error:" << e.what() << std::endl;
+    std::cerr << "ERROR: [python] " << e.what() << std::endl;
     return 1;
   }
   catch (std::exception& e)
   {
-    std::cerr << "ERROR:" << e.what() << std::endl;
+    std::cerr << "ERROR: [C++] " << e.what() << std::endl;
     return 1;
   }
   return 0;
