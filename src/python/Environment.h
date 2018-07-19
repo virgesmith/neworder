@@ -25,10 +25,12 @@ public:
 
   ~Environment() 
   {
-    if (Py_FinalizeEx() < 0)
-    {
-      // report an error...
-    }
+    // Python >=3.6
+    // if (Py_FinalizeEx() < 0)
+    // {
+    //   // report an error...somehow
+    // }
+    Py_Finalize();
   }
 
   // check for errors in the python env: if it returns, there is no error
