@@ -21,3 +21,6 @@ def get_size():
 
 def die():
   population.data.pop()
+
+def birth():
+  population.data.push(Person(id=3, age=0, gender="female", location="hosp", ethnicity="BLA"))

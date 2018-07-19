@@ -32,10 +32,6 @@ public:
     if (!p)
     {
       Environment::check();
-      // // TODO see PyErr_Fetch: https://docs.python.org/3/c-api/exceptions.html
-      // // function that sticks python error into an exception and throws
-      // if (PyErr_Occurred())
-      //   PyErr_Print();
       throw std::runtime_error("Cannot find attribute " + name);
     }   
     return p;

@@ -12,7 +12,8 @@ public:
     if (!PyCallable_Check(p)) 
     {
       Environment::check();
-    }
+      throw std::runtime_error("Object is not callable");
+    }  
   }
 
   ~Function() { }
@@ -20,7 +21,6 @@ public:
   PyObject* call(pycpp::Tuple& args)
   {
     PyObject* p = PyObject_CallObject(m_obj, args.release());
-    Environment::check();
     return p;
   }
 
