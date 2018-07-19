@@ -15,14 +15,14 @@ matrix:
       - sudo apt-get update
       - sudo apt-get -y install python3
       script: 
-      - python3 -m pip install numpy pandas
+      - python3 -m pip install numpy pandas --upgrade --ignore-installed
       - cd src/python && make && make test
 
     - language: python
       python: 3.6
 #      before_install: 
       script:
-      - python3 -m pip install numpy pandas
+      - python3 -m pip install numpy pandas --upgrade --ignore-installed
       - cd src/python && make && make test
 
 #  allow_failures:
