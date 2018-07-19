@@ -22,8 +22,6 @@ int test2(const std::string& modulename, const std::string& objectname, const st
 
   try
   {
-    pycpp::Environment env;
-
     pycpp::String filename(PyUnicode_DecodeFSDefault(modulename.c_str()));
 
     pycpp::Module module = pycpp::Module::init(filename);

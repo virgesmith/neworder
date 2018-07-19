@@ -1,7 +1,7 @@
 
 # Query python env for compile and link settings
-CXXFLAGS = $(shell python3-config --cflags)
-CXXFLAGS += -fPIC -std=c++11
+CXXFLAGS = $(shell python3-config --cflags) -I$(shell python3 -c "import numpy;print(numpy.get_include())")
+CXXFLAGS += -fPIC -std=c++11 -DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION
 LDFLAGS := $(shell python3-config --ldflags)
 
 src=$(wildcard *.cpp)

@@ -1,5 +1,4 @@
 #include "Object.h"
-#include "Environment.h"
 #include "Function.h"
 #include "Module.h"
 #include "Inspect.h"
@@ -25,8 +24,6 @@ int test1(int argc, const char *argv[])
 
   try
   {
-    pycpp::Environment env;
-
     pycpp::String filename(PyUnicode_DecodeFSDefault(argv[1]));
 
     pycpp::Module module = pycpp::Module::init(filename);

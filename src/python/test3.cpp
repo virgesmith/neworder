@@ -1,5 +1,4 @@
 #include "Object.h"
-#include "Environment.h"
 #include "Function.h"
 #include "Module.h"
 #include "Inspect.h"
@@ -10,10 +9,8 @@
 #include <string>
 #include <iostream>
 
-// C++-ified version of the example here: https://docs.python.org/3/extending/embedding.html
 
-
-int test3(const std::string& modulename, const std::string& objectname, const std::vector<std::string>& membernames)
+int test3(const std::string& modulename, const std::string& objectname, const std::string& membername, const std::string& methodname)
 {
   std::cout << "[C++] " << modulename << ":" << objectname << std::endl;
   // for (int i = 3; i < argc; ++i)
@@ -22,27 +19,37 @@ int test3(const std::string& modulename, const std::string& objectname, const st
 
   try
   {
-    pycpp::Environment env;
 
     pycpp::String filename(PyUnicode_DecodeFSDefault(modulename.c_str()));
 
     pycpp::Module module = pycpp::Module::init(filename);
 
     PyObject* o = module.getAttr(objectname);
-    std::cout << "[C++]" << pycpp::type(o) << std::endl;
+    std::cout << "[C++] " << pycpp::type(o) << std::endl;
 
-    for (const auto& membername: membernames)
-    {
-      pycpp::List member(PyObject_GetAttrString(o, membername.c_str()));
+    pycpp::Array<int64_t> array(PyObject_GetAttrString(o, membername.c_str()));
+    std::cout << "[C++] got " << array.type() << " " << array.dim() << " " << array.shape()[0] << ": ";
 
-      std::cout << pycpp::type(member[0]) << std::endl;
-      // This is hopelessly inefficient
-      std::cout << "[C++] " << PyLong_AsLong(member[0]) << " -> ";
-      int i = PyLong_AsLong(member[0]);
-      ++i;
-      member.set(0, pycpp::Int(i));
-      std::cout << PyLong_AsLong(member[0]) << std::endl;
-    }
+    for (int64_t* p = array.rawData(); p < array.rawData() + array.shape()[0]; ++p)
+      std::cout << *p << " ";
+    std::cout << ", adding 1..." << std::endl;
+
+    // modify the data
+    for (int64_t* p = array.rawData(); p < array.rawData() + array.shape()[0]; ++p)
+      ++(*p);
+
+    PyObject* f = PyObject_GetAttrString(o, methodname.c_str());
+    pycpp::Function method(f);
+    pycpp::Tuple noargs(0);
+
+    PyObject* r = method.call(noargs);
+    std::cout << "[C++] " << methodname << " return type is " << pycpp::type(r) << std::endl;
+
+    std::cout << "[C++] " << array.type() << " " << array.dim() << " " << array.shape()[0] << ": ";
+    for (int64_t* p = array.rawData(); p < array.rawData() + array.shape()[0]; ++p)
+      std::cout << *p << " ";
+    std::cout << std::endl;
+
   }
   catch (pycpp::Exception& e)
   {

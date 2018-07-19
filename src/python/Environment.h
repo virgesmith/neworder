@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Array.h"
+
 #include <Python.h>
 
 #include <stdexcept>
@@ -21,6 +23,7 @@ public:
   Environment() 
   {
     Py_Initialize();
+    numpy_init(); // things go bad if this gets called more than once
   } 
 
   ~Environment() 

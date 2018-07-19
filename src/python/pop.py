@@ -1,6 +1,7 @@
 
 import collections
-#import pandas as pd
+import numpy as np
+import pandas as pd
 
 Person = collections.namedtuple('Person', ['id', 'location', 'age', 'gender', 'ethnicity'])
 
@@ -9,7 +10,7 @@ class Population:
     self.data = [ Person(id=0, age=30, gender='male', location="E09000001", ethnicity=1), \
                   Person(id=1, age=29, gender='female', location="", ethnicity="BLA")]
 
-    self.array = [1,2,3,4,5,6]
+    self.array = np.array([1,2,3,4,5,6])
 
   def size(self):
     return len(self.data)
@@ -21,6 +22,11 @@ class Population:
   def die(self):
     self.data.pop()
     return len(self.data)
+
+  def print(self):
+    print("[python] got", self.array, ", adding 10...")
+    for i in range(0, len(self.array)):
+      self.array[i] = self.array[i] + 10
 
 
 population = Population()
