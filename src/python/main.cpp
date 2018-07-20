@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 
+#include <iostream>
 
 void test1(const std::string& modulename, const std::string& functionname, const std::vector<std::string>& args);
 void test2(const std::string& modulename, const std::string& objectname, const std::vector<std::string>& methodnames);

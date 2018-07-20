@@ -1,4 +1,5 @@
 #include "Object.h"
+#include "Array.h"
 #include "Function.h"
 #include "Module.h"
 #include "Inspect.h"
