@@ -1,14 +1,15 @@
 
 #pragma once
 
-// TODO merge this back into humanleague at some point
+// TODO merge this back into humanleague at some point?
+
+#include "PythonFwd.h"
 
 #include <string>
 #include <vector>
 #include <map>
 #include <cstddef>
 
-typedef struct _object PyObject;
 
 // To understand the memory management, read:
 // https://docs.python.org/3/extending/extending.html#ownership-rules
