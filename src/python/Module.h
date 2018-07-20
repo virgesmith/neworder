@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Object.h"
+#include "Environment.h"
 
 #include <Python.h>
 
