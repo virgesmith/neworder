@@ -23,14 +23,14 @@ void test1(const std::string& modulename, const std::string& functionname, const
 
   pycpp::Function function(module.getAttr(functionname));
 
-  for (const auto& attr: pycpp::dir(module.release())) 
-  {
-    std::cout << "[C++] ::" << attr.first << " [" << attr.second << "]" << std::endl;
-    for (const auto& sattr: pycpp::dir(module.getAttr(attr.first))) 
-    {
-      std::cout << "[C++] " << attr.first << "::" << sattr.first << " [" << sattr.second << "]" << std::endl;
-    }
-  }
+  // for (const auto& attr: pycpp::dir(module.release())) 
+  // {
+  //   std::cout << "[C++] ::" << attr.first << " [" << attr.second << "]" << std::endl;
+  //   for (const auto& sattr: pycpp::dir(module.getAttr(attr.first))) 
+  //   {
+  //     std::cout << "[C++] " << attr.first << "::" << sattr.first << " [" << sattr.second << "]" << std::endl;
+  //   }
+  // }
 
   pycpp::Tuple args(argstrings.size());
   for (size_t i = 0; i < argstrings.size(); ++i)

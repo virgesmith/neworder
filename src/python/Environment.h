@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Callback.h"
 #include "Array.h"
 
 #include <Python.h>
@@ -22,8 +23,12 @@ class Environment
 public:
   Environment() 
   {
+    callback::register_all();
+
+    // Init python env
     Py_Initialize();
     numpy_init(); // things go bad if this gets called more than once
+
   } 
 
   ~Environment() 

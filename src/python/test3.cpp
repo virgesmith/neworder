@@ -40,7 +40,13 @@ void test3(const std::string& modulename, const std::string& objectname, const s
   pycpp::Tuple noargs(0);
 
   PyObject* r = method.call(noargs);
-  std::cout << "[C++] " << methodname << " return type is " << pycpp::type(r) << std::endl;
+  std::cout << "[C++] " << methodname << " return type is " << pycpp::type(r) << ":" <<  PyArray_TYPE((PyArrayObject*)r) << std::endl;
+
+  //pycpp::Array<const char*> cols(r);
+  //npy_intp idx[1] = {0};
+  // SIGSEGV:
+  ///*PyObject* p =*/ (PyObject*)PyArray_GetPtr((PyArrayObject*)r, idx);
+  //std::cout << PyArray_TYPE(r) << std::endl;
 
   std::cout << "[C++] " << array.type() << " " << array.dim() << " " << array.shape()[0] << ": ";
   for (int64_t* p = array.rawData(); p < array.rawData() + array.shape()[0]; ++p)

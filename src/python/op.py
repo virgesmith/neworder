@@ -17,3 +17,6 @@ def div(a,b):
 
 
 notafunc = 3
+
+import neworder
+print("[python] callback:", neworder.name())

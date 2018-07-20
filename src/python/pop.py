@@ -12,15 +12,26 @@ class Population:
 
     self.array = np.array([1,2,3,4,5,6])
 
+    # TODO pass filename as ctor arg
+    self.data = pd.read_csv("./ssm_E09000001_MSOA11_ppp_2011.csv")
+
+  def columns(self):
+    # columns as np array
+    return self.data.columns.values
+
+  def values(self):
+    # data as np array 
+    return self.data.values
+
   def size(self):
     return len(self.data)
 
   def birth(self):
-    self.data.append(Person(id=3, age=0, gender="female", location="hosp", ethnicity="BLA"))
+    #self.data.append(Person(id=3, age=0, gender="female", location="hosp", ethnicity="BLA"))
     return len(self.data)
 
   def die(self):
-    self.data.pop()
+    #self.data.pop()
     return len(self.data)
 
   def print(self):

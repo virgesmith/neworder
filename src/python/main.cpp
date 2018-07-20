@@ -22,7 +22,8 @@ int main()
     test2("pop", "population", {"size", "die", "size", "birth", "birth", "size"});
 
     // load module, object, modify member, call method
-    test3("pop", "population", "array", "print");
+    test3("pop", "population", "array", "columns");
+    test3("pop", "population", "array", "values");
   }
   catch (pycpp::Exception& e)
   {
