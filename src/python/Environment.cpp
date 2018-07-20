@@ -17,7 +17,6 @@ pycpp::Environment::Environment()
   // Init python env
   Py_Initialize();
   numpy_init(); // things go bad if this gets called more than once
-
 } 
 
 pycpp::Environment::~Environment() 

@@ -4,7 +4,6 @@
 
 #include <iostream>
 
-
 namespace
 {
 const char* module_name = "neworder";
