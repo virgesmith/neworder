@@ -20,11 +20,11 @@ matrix:
 #       - cd src/python && make && make test
 
     - language: python
-      python: 3.6
+      python: 3.4
 #      before_install: 
       script:
       - python3 -m pip install numpy pandas #--upgrade --ignore-installed
-      - cd src/python && make PYVER=3.6 && make test
+      - cd src/python && make PYVER=3.4 && make test
 
 #  allow_failures:
 #    - r: devel
