@@ -4,22 +4,40 @@
 #include <string>
 
 
-int test1(int, const char*[]);
-int test2(const std::string& modulename, const std::string& objectname, const std::vector<std::string>& methodnames);
-int test3(const std::string& modulename, const std::string& objectname, const std::string& membername, const std::string& methodname);
+void test1(const std::string& modulename, const std::string& functionname, const std::vector<std::string>& args);
+void test2(const std::string& modulename, const std::string& objectname, const std::vector<std::string>& methodnames);
+void test3(const std::string& modulename, const std::string& objectname, const std::string& membername, const std::string& methodname);
 
 int main() 
 {
-  pycpp::Environment env;
+  try
+  {
+    pycpp::Environment env;
 
-  // argv[0] would be name of binary
-  const char* args[] = { "test1", "op", "mul", "2", "3" };
-  test1(sizeof(args)/sizeof(args[0]), args);
+    // load module, call func with args
+    test1("op", "mul", {"2", "3"});
+    test1("pop", "func", {});
 
-  const char* args1[] = { "test1", "pop", "func"};
-  test1(sizeof(args1)/sizeof(args1[0]), args1);
+    // load module, object, call methods
+    test2("pop", "population", {"size", "die", "size", "birth", "birth", "size"});
 
-  test2("pop", "population", {"size", "die", "size", "birth", "birth", "size"});
-
-  test3("pop", "population", "array", "print");
+    // load module, object, modify member, call method
+    test3("pop", "population", "array", "print");
+  }
+  catch (pycpp::Exception& e)
+  {
+    std::cerr << "ERROR: [python] " << e.what() << std::endl;
+    return 1;
+  }
+  catch (std::exception& e)
+  {
+    std::cerr << "ERROR: [C++] " << e.what() << std::endl;
+    return 1;
+  }
+  catch(...)
+  {
+    std::cerr << "ERROR: [C++] unknown expection" << std::endl;
+    return 1;
+  }
+  return 0;
 }

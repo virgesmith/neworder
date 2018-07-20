@@ -9,54 +9,35 @@
 
 // C++-ified version of the example here: https://docs.python.org/3/extending/embedding.html
 
-int test1(int argc, const char *argv[])
+void test1(const std::string& modulename, const std::string& functionname, const std::vector<std::string>& argstrings)
 {
-  if (argc < 3)
-  {
-    std::cerr << "Usage: " << argv[0] << "pythonfile funcname [args...]" << std::endl;
-    return 1;
-  }
 
-  std::cout << "[C++] " << argv[1] << ":" << argv[2];
-  for (int i = 3; i < argc; ++i)
-    std::cout << " " << argv[i];
+  std::cout << "[C++] " << modulename << ":" << functionname;
+  for (const auto& arg: argstrings)
+    std::cout << " " << arg;
   std::cout << std::endl;
 
-  try
+  pycpp::String filename(PyUnicode_DecodeFSDefault(modulename.c_str()));
+
+  pycpp::Module module = pycpp::Module::init(filename);
+
+  pycpp::Function function(module.getAttr(functionname));
+
+  for (const auto& attr: pycpp::dir(module.release())) 
   {
-    pycpp::String filename(PyUnicode_DecodeFSDefault(argv[1]));
-
-    pycpp::Module module = pycpp::Module::init(filename);
-
-    pycpp::Function function(module.getAttr(argv[2]));
-
-    for (const auto& attr: pycpp::dir(module.release())) 
+    std::cout << "[C++] ::" << attr.first << " [" << attr.second << "]" << std::endl;
+    for (const auto& sattr: pycpp::dir(module.getAttr(attr.first))) 
     {
-      std::cout << "[C++] ::" << attr.first << " [" << attr.second << "]" << std::endl;
-      for (const auto& sattr: pycpp::dir(module.getAttr(attr.first))) 
-      {
-        std::cout << "[C++] " << attr.first << "::" << sattr.first << " [" << sattr.second << "]" << std::endl;
-      }
+      std::cout << "[C++] " << attr.first << "::" << sattr.first << " [" << sattr.second << "]" << std::endl;
     }
+  }
 
-    pycpp::Tuple args(argc - 3);
-    for (int i = 0; i < argc - 3; ++i)
-    {
-      args.set(i, pycpp::Int(std::stoi(argv[i + 3])));
-    }
-    pycpp::Int result(function.call(args));
-    std::cout << "[C++] Result: " << (int)result << std::endl;
+  pycpp::Tuple args(argstrings.size());
+  for (size_t i = 0; i < argstrings.size(); ++i)
+  {
+    args.set(i, pycpp::Int(std::stoi(argstrings[i])));
+  }
+  PyObject* result = function.call(args) ;
+  std::cout << "[C++] Result type: " << pycpp::type(result) << std::endl;
 
-  }
-  catch (pycpp::Exception& e)
-  {
-    std::cerr << "ERROR: [python] " << e.what() << std::endl;
-    return 1;
-  }
-  catch (std::exception& e)
-  {
-    std::cerr << "ERROR: [C++] " << e.what() << std::endl;
-    return 1;
-  }
-  return 0;
 }
