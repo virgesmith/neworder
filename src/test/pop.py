@@ -39,7 +39,6 @@ class Population:
     for i in range(0, len(self.array)):
       self.array[i] = self.array[i] + 10
 
-
 population = Population()
 
 print("[python]", population.data)
