@@ -32,7 +32,7 @@ namespace pycpp {
     bool operator!() const;
     
     // Inc ref count and return pointer - use to safely return object to python (only)
-    PyObject* release();
+    PyObject* release() const;
 
     // Return the ref count (useful for memory debugging)
     int refcount() const;

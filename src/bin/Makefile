@@ -5,12 +5,12 @@ src=$(wildcard *.cpp)
 obj=$(src:.cpp=.o)
 dep=$(src:.cpp=.d)
 
-$(info $(CXXFLAGS))
-$(info $(LDFLAGS))
+#$(info $(CXXFLAGS))
+#$(info $(LDFLAGS))
 
-all: testharness
+all: neworder
 
-testharness: $(obj)
+neworder: $(obj)
 	$(CXX) -o $@ $^ $(LDFLAGS) -L ../lib -lneworder
 
 %.d: %.cpp
@@ -18,10 +18,7 @@ testharness: $(obj)
 
 -include $(dep)
 
-test: testharness
-	PYTHONPATH=. LD_LIBRARY_PATH=../lib ./testharness
-
 clean:
 	rm -rf $(dep) $(obj) test
 
-.PHONY: clean test
+.PHONY: clean 

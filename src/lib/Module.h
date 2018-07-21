@@ -5,6 +5,8 @@
 
 #include <Python.h>
 
+// TODO move impl to cpp
+
 namespace pycpp {
 
 // see https://docs.python.org/3/c-api/import.html
@@ -13,8 +15,11 @@ namespace pycpp {
 class Module : public Object
 {
 public:
+
+  // TODO static Module init(const std::string& filename)
+
   // defer construction of Object(base) in order to trap a missing module
-  static Module init(String& filename)
+  static Module init(const String& filename)
   {
   //Module(String& filename) : Object(PyImport_Import(filename.release()))
     PyObject* p = PyImport_Import(filename.release());

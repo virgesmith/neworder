@@ -37,5 +37,7 @@ src/**/*.o
 src/**/*.d
 src/**/*.so
 
+**/__pycache__
+
 build/
 node_modules/

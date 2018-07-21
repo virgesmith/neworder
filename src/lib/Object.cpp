@@ -18,7 +18,7 @@ bool pycpp::Object::operator!() const
 }
 
 // This will ensure refcount is at least 1 when returned to python
-PyObject* pycpp::Object::release()
+PyObject* pycpp::Object::release() const
 {
   Py_INCREF(m_obj);
   return m_obj;
