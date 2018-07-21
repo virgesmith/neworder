@@ -16,32 +16,22 @@ class Module : public Object
 {
 public:
 
+  ~Module() = default;
+
+  // TODO init to use std::move
+  // Module(const Module&) = delete;
+  // Module& operator=(const Module&) = delete;
+  
   // TODO static Module init(const std::string& filename)
 
   // defer construction of Object(base) in order to trap a missing module
-  static Module init(const String& filename)
-  {
-  //Module(String& filename) : Object(PyImport_Import(filename.release()))
-    PyObject* p = PyImport_Import(filename.release());
-    Environment::check();
-    return Module(p);
-  }
+  static Module init(const String& filename);
 
-  bool hasAttr(const std::string& name)
-  {
-    return PyObject_HasAttrString(release(), name.c_str());
-  }
+  bool hasAttr(const std::string& name);
 
-  PyObject* getAttr(const std::string& name) 
-  {
-    PyObject* p = PyObject_GetAttrString(release(), name.c_str());
-    if (!p)
-    {
-      Environment::check();
-      throw std::runtime_error("Cannot find attribute " + name);
-    }   
-    return p;
-  }
+  PyObject* getAttr(const std::string& name);
+
+  PyObject* getAttr(PyObject* obj);
 
 private:
   //Module(String& filename) : Object(PyImport_Import(filename.release()))

@@ -13,6 +13,16 @@ pycpp::Function::Function(PyObject* p) : Object(p)
   }  
 }
 
+PyObject* pycpp::Function::call()
+{
+  PyObject* p = PyObject_CallObject(m_obj, nullptr);
+  if (!p)
+  {
+    Environment::check();      
+  }
+  return p;
+}
+
 PyObject* pycpp::Function::call(pycpp::Tuple& args)
 {
   PyObject* p = PyObject_CallObject(m_obj, args.release());

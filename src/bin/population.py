@@ -1,4 +1,0 @@
-# population.py
-
-class Population:
-  

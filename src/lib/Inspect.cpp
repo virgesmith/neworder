@@ -7,6 +7,8 @@
 
 const char* pycpp::type(PyObject* p)
 {
+  if (!p)
+    throw std::runtime_error("null object");
   return Py_TYPE(p)->tp_name;
 }
 

@@ -41,7 +41,13 @@ void test3(const std::string& modulename, const std::string& objectname, const s
   pycpp::Tuple noargs(0);
 
   PyObject* r = method.call(noargs);
-  std::cout << "[C++] " << methodname << " return type is " << pycpp::type(r) << ":" <<  PyArray_TYPE((PyArrayObject*)r) << std::endl;
+  int dim = PyArray_NDIM((PyArrayObject*)r);
+  std::cout << "[C++] " << methodname << " return type is " << pycpp::type(r) << ":" <<  PyArray_TYPE((PyArrayObject*)r)
+            << " dim " << dim;
+  npy_intp* dims = PyArray_DIMS((PyArrayObject*)r);
+  for (int i = 0; i < dim; ++i)
+    std::cout << " " << dims[i];
+  std::cout << std::endl;
 
   //pycpp::Array<const char*> cols(r);
   //npy_intp idx[1] = {0};

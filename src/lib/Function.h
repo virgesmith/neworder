@@ -11,7 +11,11 @@ class Function : public Object
 public:
   Function(PyObject* p);
 
-  ~Function() { }
+  ~Function() = default;
+
+  // TODO disable copy/assign
+
+  PyObject* call();
 
   PyObject* call(pycpp::Tuple& args);
 
