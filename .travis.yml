@@ -16,13 +16,13 @@ matrix:
       script: 
 #      - python3 -m pip install numpy pandas --upgrade --ignore-installed
       - python3 -m pip install numpy pandas
-      - cd src/python && make && make test
+      - make && make test
 
     - language: python
       python: 3.4
       script:
       - python3 -m pip install numpy pandas 
-      - cd src/python && make PYVER=3.4 && make test
+      - make PYVER=3.4 && make PYVER=3.4 test
 
   allow_failures:
     - name: native_cpp

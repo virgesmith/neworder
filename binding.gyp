@@ -7,7 +7,7 @@
       'sources': [ 'src/node.js/nodejs_api.cpp',
                    'src/node.js/Simulation.cpp',
                    'src/node.js/Module.cpp'],
-      'include_dirs': ['src'],
+      'include_dirs': ['src/include'],
     },
   ],
 }
