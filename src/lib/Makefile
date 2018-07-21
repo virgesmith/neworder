@@ -13,10 +13,10 @@ dep=$(src:.cpp=.d)
 #$(info $(CXXFLAGS))
 #$(info $(LDFLAGS))
 
-all: test1
+all: libneworder.so
 
-test1: $(obj)
-	$(CXX) -o $@ $^ $(LDFLAGS)
+libneworder.so: $(obj)
+	$(CXX) -shared -o $@ $^ $(LDFLAGS)
 
 %.d: %.cpp
 	$(CXX) $(CXXFLAGS) $< -MM -MT $(@:.d=.o) >$@
