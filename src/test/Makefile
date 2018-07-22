@@ -8,7 +8,7 @@ dep=$(src:.cpp=.d)
 $(info $(CXXFLAGS))
 $(info $(LDFLAGS))
 
-all: testharness
+all: test
 
 testharness: $(obj)
 	$(CXX) -o $@ $^ $(LDFLAGS) -L ../lib -lneworder

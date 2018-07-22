@@ -54,7 +54,7 @@ namespace pycpp {
     typedef const T& const_reference;
   
     // uninitialised array with given dimension and sizes
-    explicit Array(size_t dim, npy_intp* sizes) 
+    Array(size_t dim, npy_intp* sizes) 
       : Object(PyArray_SimpleNew(dim, sizes, NpyType<T>::Type)) 
     { 
       PyArray_FILLWBYTE((PyArrayObject*)m_obj, 0);

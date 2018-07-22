@@ -45,8 +45,10 @@ int main(int, const char*[])
 
     // std::cout << PyObject_IsInstance(obj, ctor.release()) << std::endl;
 
+    pycpp::Function size(PyObject_GetAttrString(obj, "size"));
     pycpp::Function mean_age(PyObject_GetAttrString(obj, "mean_age"));
     pycpp::Function age(PyObject_GetAttrString(obj, "age"));
+    pycpp::Function deaths(PyObject_GetAttrString(obj, "deaths"));
 
     pycpp::Double res(mean_age.call());
     std::cout << "[C++] " << timespan[0] << ": mean_age=" << res << std::endl;
@@ -54,12 +56,18 @@ int main(int, const char*[])
     pycpp::Tuple age_arg(1);
     age_arg.set(0, pycpp::Int(config.getAttr("timestep")));
 
+    pycpp::Tuple death_arg(1);
+    death_arg.set(0, pycpp::Double(config.getAttr("mortality_hazard")));
+
     for (double t = timespan[0] + timestep; t <= timespan[1]; t += timestep)
     {
       std::cout << "[C++] " << t << ": "; 
+      deaths.call(death_arg);
       age.call(age_arg);
+      pycpp::Int n(size.call()); 
+      std::cout << "size=" << (int)n;
       pycpp::Double res(mean_age.call());
-      std::cout << "mean_age=" << res << std::endl;
+      std::cout << " mean_age=" << res << std::endl;
     }
     //PyGILState_Release(gstate);
   }
