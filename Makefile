@@ -18,7 +18,7 @@ lib:
 bin:
 	cd src/bin && make
 
-test:
+test: lib 
 	cd src/test && make
 
 clean:
