@@ -21,7 +21,7 @@ matrix:
     - language: python
       python: 3.4
       script:
-      - sudo apt install libboost-python libboost-numpy
+      - sudo apt install libboost-python-dev libboost-numpy-dev
       - python3 -m pip install numpy pandas 
       - make PYVER=3.4 && make PYVER=3.4 test
 
