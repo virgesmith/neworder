@@ -27,7 +27,7 @@ matrix:
       - make PYVER=3.5 BOOST_PYTHON_LIB=boost_python-py35 && make PYVER=3.5 BOOST_PYTHON_LIB=boost_python-py35 test
 
   allow_failures:
-    - name: native_cpp
+    - python: 3.5
 
 #after_success:
 #  - Rscript -e 'covr::codecov()'
