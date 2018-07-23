@@ -1,6 +1,8 @@
 
 CXXFLAGS += -I../lib
 
+LDFLAGS += -lboost_python3 -lboost_numpy3-py36
+
 src=$(wildcard *.cpp)
 obj=$(src:.cpp=.o)
 dep=$(src:.cpp=.d)

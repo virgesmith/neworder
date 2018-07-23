@@ -8,6 +8,7 @@
 void test1(const std::string& modulename, const std::string& functionname, const std::vector<std::string>& args);
 void test2(const std::string& modulename, const std::string& objectname, const std::vector<std::string>& methodnames);
 void test3(const std::string& modulename, const std::string& objectname, const std::string& membername, const std::string& methodname);
+void test4();
 
 int main() 
 {
@@ -25,6 +26,9 @@ int main()
     // load module, object, modify member, call method
     test3("pop", "population", "array", "columns");
     test3("pop", "population", "array", "values");
+
+    // boost.Python.numpy
+    test4();
   }
   catch (pycpp::Exception& e)
   {
