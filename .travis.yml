@@ -17,14 +17,14 @@ matrix:
       script: 
 #      - python3 -m pip install numpy pandas --upgrade --ignore-installed
       - python3 -m pip install numpy pandas
-      - make && make test
+      - make PYVER=3.5 BOOST_PYTHON_LIB=boost_python-py35 && make PYVER=3.5 BOOST_PYTHON_LIB=boost_python-py35 test
 
     - language: python
       python: 3.5
       script:
-      - sudo apt install libboost-python-dev libboost-numpy-dev
+      - sudo apt install libboost-python-dev
       - python3 -m pip install numpy pandas 
-      - make PYVER=3.5 && make PYVER=3.5 test
+      - make PYVER=3.5 BOOST_PYTHON_LIB=boost_python-py35 && make PYVER=3.5 BOOST_PYTHON_LIB=boost_python-py35 test
 
   allow_failures:
     - name: native_cpp
