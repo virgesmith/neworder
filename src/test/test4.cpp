@@ -20,7 +20,7 @@ namespace np = boost::python::numpy;
 void test4()
 {
   np::initialize();
-  
+
   std::cout << "[C++] boost.Python.numpy test" << std::endl;
   //pycpp::String filename(PyUnicode_DecodeFSDefault("pop"));
 
@@ -31,7 +31,7 @@ void test4()
   // PyObject* o = module.getAttr("Population");
   // std::cout << "[C++] " << pycpp::type(o) << std::endl;
 
-  np::ndarray array = np::from_object(o.attr("array"));
+  //np::ndarray array = np::from_object(o.attr("array"));
 
   // pycpp::Array<int64_t> array();
   // std::cout << "[C++] got " << array.type() << " " << array.dim() << " " << array.shape()[0] << ": ";
