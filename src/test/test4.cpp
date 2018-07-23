@@ -8,10 +8,11 @@
 
 #include <Python.h>
 
-#include <boost/python/numpy.hpp>
+#include <boost/python.hpp>
+//#include <boost/python/numpy.hpp>
 
 namespace py = boost::python;
-namespace np = boost::python::numpy;
+//namespace np = boost::python::numpy;
 
 #include <vector>
 #include <string>
@@ -23,10 +24,10 @@ std::ostream& operator<<(std::ostream& os, const py::object& o)
   return os << py::extract<std::string>(py::str(o))();
 }
 
-std::ostream& operator<<(std::ostream& os, const np::ndarray& a)
-{
-  return os << py::extract<std::string>(py::str(a))();
-}
+// std::ostream& operator<<(std::ostream& os, const np::ndarray& a)
+// {
+//   return os << py::extract<std::string>(py::str(a))();
+// }
 
 template<typename T, typename R=T>
 struct Uinc
@@ -38,7 +39,7 @@ struct Uinc
 
 void test4()
 {
-  np::initialize();
+  //np::initialize();
 
   std::cout << "[C++] boost.Python.numpy test" << std::endl;
   //pycpp::String filename(PyUnicode_DecodeFSDefault("pop"));
