@@ -1,5 +1,5 @@
 #include "Object.h"
-#include "Array.h"
+//#include "Array.h"
 #include "Function.h"
 #include "Module.h"
 #include "Inspect.h"
@@ -25,28 +25,35 @@ void test3(const std::string& modulename, const std::string& objectname, const s
   PyObject* o = module.getAttr(objectname);
   std::cout << "[C++] " << pycpp::type(o) << std::endl;
 
-  pycpp::Array<int64_t> array(PyObject_GetAttrString(o, membername.c_str()));
-  std::cout << "[C++] got " << array.type() << " " << array.dim() << " " << array.shape()[0] << ": ";
+  // pycpp::Array<int64_t> array(PyObject_GetAttrString(o, membername.c_str()));
+  // std::cout << "[C++] got " << array.type() << " " << array.dim() << " " << array.shape()[0] << ": ";
 
-  for (int64_t* p = array.rawData(); p < array.rawData() + array.shape()[0]; ++p)
-    std::cout << *p << " ";
-  std::cout << ", adding 1..." << std::endl;
+  // for (int64_t* p = array.rawData(); p < array.rawData() + array.shape()[0]; ++p)
+  //   std::cout << *p << " ";
+  // std::cout << ", adding 1..." << std::endl;
 
-  // modify the data
-  for (int64_t* p = array.rawData(); p < array.rawData() + array.shape()[0]; ++p)
-    ++(*p);
+  // // modify the data
+  // for (int64_t* p = array.rawData(); p < array.rawData() + array.shape()[0]; ++p)
+  //   ++(*p);
 
   PyObject* f = PyObject_GetAttrString(o, methodname.c_str());
   pycpp::Function method(f);
-  pycpp::Tuple noargs(0);
 
-  PyObject* r = method.call(noargs);
-  int dim = PyArray_NDIM((PyArrayObject*)r);
-  std::cout << "[C++] " << methodname << " return type is " << pycpp::type(r) << ":" <<  PyArray_TYPE((PyArrayObject*)r)
-            << " dim " << dim;
-  npy_intp* dims = PyArray_DIMS((PyArrayObject*)r);
-  for (int i = 0; i < dim; ++i)
-    std::cout << " " << dims[i];
+  PyObject* r = method.call();
+  pycpp::List array(r);
+  std::cout << "[C++] " << methodname << " return type is " << pycpp::type(r) << ":" <<  pycpp::type(array[0]);
+  //           << " dim " << dim;
+  // npy_intp* dims = PyArray_DIMS((PyArrayObject*)r);
+  // for (int i = 0; i < dim; ++i)
+  //   std::cout << " " << dims[i];
+
+
+  // PyObject* r = method.call(noargs);
+  // std::cout << "[C++] " << methodname << " return type is " << pycpp::type(r) << ":" <<  PyArray_TYPE((PyArrayObject*)r)
+  //           << " dim " << dim;
+  // npy_intp* dims = PyArray_DIMS((PyArrayObject*)r);
+  // for (int i = 0; i < dim; ++i)
+  //   std::cout << " " << dims[i];
   std::cout << std::endl;
 
   //pycpp::Array<const char*> cols(r);
@@ -55,8 +62,8 @@ void test3(const std::string& modulename, const std::string& objectname, const s
   ///*PyObject* p =*/ (PyObject*)PyArray_GetPtr((PyArrayObject*)r, idx);
   //std::cout << PyArray_TYPE(r) << std::endl;
 
-  std::cout << "[C++] " << array.type() << " " << array.dim() << " " << array.shape()[0] << ": ";
-  for (int64_t* p = array.rawData(); p < array.rawData() + array.shape()[0]; ++p)
-    std::cout << *p << " ";
-  std::cout << std::endl;
+  // std::cout << "[C++] " << array.type() << " " << array.dim() << " " << array.shape()[0] << ": ";
+  // for (int64_t* p = array.rawData(); p < array.rawData() + array.shape()[0]; ++p)
+  //   std::cout << *p << " ";
+  // std::cout << std::endl;
 }

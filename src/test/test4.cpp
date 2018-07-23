@@ -15,7 +15,26 @@ namespace np = boost::python::numpy;
 
 #include <vector>
 #include <string>
+#include <memory>
 #include <iostream>
+
+std::ostream& operator<<(std::ostream& os, const py::object& o)
+{
+  return os << py::extract<std::string>(py::str(o))();
+}
+
+std::ostream& operator<<(std::ostream& os, const np::ndarray& a)
+{
+  return os << py::extract<std::string>(py::str(a))();
+}
+
+template<typename T, typename R=T>
+struct Uinc
+{
+  typedef T argument_type;
+  typedef R result_type;
+  R operator()(T x) { return x + 1; }
+};
 
 void test4()
 {
@@ -27,21 +46,25 @@ void test4()
   py::object module = py::import("pop");
   //pycpp::Module module = pycpp::Module::init(filename);
 
-  py::object o = module.attr("Population");
+  py::object o = module.attr("population");
+  std::cout << "[C++] " << o << std::endl;
   // PyObject* o = module.getAttr("Population");
   // std::cout << "[C++] " << pycpp::type(o) << std::endl;
 
-  //np::ndarray array = np::from_object(o.attr("array"));
+  // See here but note compile error ‘class boost::python::api::object’ has no member named ‘def’
+  // https://boostorg.github.io/python/doc/html/numpy/tutorial/index.html
+  // np::ndarray array = np::from_object(o.attr("array"));
+  // //py::object array = o.attr("array");
+  // std::cout << "[C++] " << array;
 
-  // pycpp::Array<int64_t> array();
-  // std::cout << "[C++] got " << array.type() << " " << array.dim() << " " << array.shape()[0] << ": ";
-
-  // for (int64_t* p = array.rawData(); p < array.rawData() + array.shape()[0]; ++p)
-  //   std::cout << *p << " ";
   // std::cout << ", adding 1..." << std::endl;
 
-  // // modify the data
-  // for (int64_t* p = array.rawData(); p < array.rawData() + array.shape()[0]; ++p)
-  //   ++(*p);
+  // py::object uinc = py::class_<Uinc<int, int>, boost::shared_ptr<Uinc<int, int>>>("Uinc");
+  // uinc.def("__call__", np::unary_ufunc<Uinc<int, int>>::make());
+  // py::object ud_inst = uinc();
+
+  // py::object result = ud_inst.attr("__call__")(array);
+  // std::cout << result << std::endl;
+
 
 }
