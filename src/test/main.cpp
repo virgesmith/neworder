@@ -34,7 +34,8 @@ int main()
     // boost.Python.numpy
     //test4();
 
-    test_errors();
+    // doesnt extract the python error type/msg 
+    //test_errors();
   }
   catch (py::error_already_set&)
   {
