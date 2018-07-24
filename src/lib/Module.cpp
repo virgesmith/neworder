@@ -10,7 +10,7 @@ pycpp::Module pycpp::Module::init(const String& filename)
 {
 //Module(String& filename) : Object(PyImport_Import(filename.release()))
   PyObject* p = PyImport_Import(filename.release());
-  Environment::check();
+  //Environment::check();
   return Module(p);
 }
 
@@ -24,7 +24,7 @@ PyObject* pycpp::Module::getAttr(const std::string& name)
   PyObject* p = PyObject_GetAttrString(release(), name.c_str());
   if (!p)
   {
-    pycpp::Environment::check();
+    //pycpp::Environment::check();
     throw std::runtime_error("Cannot find attribute " + name);
   }   
   return p;
@@ -37,7 +37,7 @@ PyObject* pycpp::Module::getAttr(PyObject* obj)
   PyObject* p = PyObject_GetAttr(release(), obj);
   if (!p)
   {
-    pycpp::Environment::check();
+    //pycpp::Environment::check();
     throw std::runtime_error("Cannot find attribute");
   }   
   return p;

@@ -19,11 +19,6 @@ void test1(const std::string& modulename, const std::string& functionname, const
     std::cout << " " << arg;
   std::cout << std::endl;
 
-  // pycpp::String filename(PyUnicode_DecodeFSDefault(modulename.c_str()));
-
-  // pycpp::Module module = pycpp::Module::init(filename);
-
-  // pycpp::Function function(module.getAttr(functionname));
   py::object module = py::import(modulename.c_str());
   py::object function(module.attr(functionname.c_str()));
 
@@ -35,10 +30,6 @@ void test1(const std::string& modulename, const std::string& functionname, const
       std::cout << "[C++] " << attr.first << "::" << sattr.first << " [" << sattr.second << "]" << std::endl;
     }
   }
-
-  //std::cout << "callable: " << PyCallable_Check(function.ptr()) << std::endl;
-
-  //std::cout << "type: " << pycpp::type(function) << std::endl;
 
   std::vector<int> args(argstrings.size());
   for (size_t i = 0; i < argstrings.size(); ++i)

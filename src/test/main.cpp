@@ -1,5 +1,7 @@
 #include "Environment.h"
 
+#include "python.h"
+
 #include <vector>
 #include <string>
 
@@ -9,6 +11,7 @@ void test1(const std::string& modulename, const std::string& functionname, const
 void test2(const std::string& modulename, const std::string& objectname, const std::vector<std::string>& methodnames);
 void test3(const std::string& modulename, const std::string& objectname, const std::string& membername, const std::string& methodname);
 void test4();
+void test_errors();
 
 int main() 
 {
@@ -30,10 +33,12 @@ int main()
 
     // boost.Python.numpy
     //test4();
+
+    test_errors();
   }
-  catch (pycpp::Exception& e)
+  catch (py::error_already_set&)
   {
-    std::cerr << "ERROR: [python] " << e.what() << std::endl;
+    std::cerr << "ERROR: [python] " << pycpp::Environment::check() << std::endl;
     return 1;
   }
   catch (std::exception& e)
@@ -43,7 +48,7 @@ int main()
   }
   catch(...)
   {
-    std::cerr << "ERROR: [C++] unknown expection" << std::endl;
+    std::cerr << "ERROR: [C++] unknown exception" << std::endl;
     return 1;
   }
   return 0;

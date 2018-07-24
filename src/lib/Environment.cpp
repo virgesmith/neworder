@@ -6,10 +6,6 @@
 
 #include "python.h"
 
-#include <stdexcept>
-
-#include <iostream>
-
 
 pycpp::Environment::Environment() 
 {
@@ -32,20 +28,26 @@ pycpp::Environment::~Environment()
 }
 
 // check for errors in the python env: if it returns, there is no error
-void pycpp::Environment::check()
+std::string pycpp::Environment::check()
 {
   // see PyErr_Fetch: https://docs.python.org/3/c-api/exceptions.html
-  // function that sticks python error into an exception and throws
-  // if (PyErr_Occurred())
-  // {
-  //   PyObject *type, *value, *traceback;
-  //   PyErr_Fetch(&type, &value, &traceback);
-  //   auto message = pycpp::String::force(type).operator std::string() + ":" + pycpp::String::force(value).operator std::string();
-  //   PyErr_Restore(type, value, traceback);
-  //   // TODO dump traceback (when not null)
-  //   // if (traceback)
-  //   //   std::cerr << "Python stack:\n" << pycpp::String::force(traceback).operator std::string() << std::endl;
-  //   throw Exception(message);
-  // }
+  if (PyErr_Occurred())
+  {
+    PyObject *type, *value, *traceback;
+    PyErr_Fetch(&type, &value, &traceback);
+
+    if (type && value)
+    {
+      auto message = py::extract<std::string>(type)() + ":" + py::extract<std::string>(value)();
+      PyErr_Restore(type, value, traceback);
+      // TODO dump traceback (when not null)
+      // if (traceback)
+      //   std::cerr << "Python stack:\n" << pycpp::String::force(traceback).operator std::string() << std::endl;
+      return message;
+    }
+  }
+
+  return "unable to determine error";
 }
+
 

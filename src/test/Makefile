@@ -4,12 +4,12 @@ CXXFLAGS += -I../lib
 LDFLAGS +=  -l$(BOOST_PYTHON_LIB) 
 #-lboost_numpy3-py36
 
+#$(info $(CXXFLAGS))
+#$(info $(LDFLAGS))
+
 src=$(wildcard *.cpp)
 obj=$(src:.cpp=.o)
 dep=$(src:.cpp=.d)
-
-$(info $(CXXFLAGS))
-$(info $(LDFLAGS))
 
 all: test
 
