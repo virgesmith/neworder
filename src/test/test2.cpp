@@ -14,26 +14,16 @@
 void test2(const std::string& modulename, const std::string& objectname, const std::vector<std::string>& methodnames)
 {
   std::cout << "[C++] " << modulename << ":" << objectname << std::endl;
-  // for (int i = 3; i < argc; ++i)
-  //   std::cout << " " << argv[i];
-  // std::cout << std::endl;
+  py::object module = py::import(modulename.c_str());
 
-  pycpp::String filename(PyUnicode_DecodeFSDefault(modulename.c_str()));
-
-  pycpp::Module module = pycpp::Module::init(filename);
-
-  //pycpp::Function function(module.getAttr(argv[2]));
-
-  PyObject* o = module.getAttr(objectname);
+  py::object o = module.attr(objectname.c_str());
 
   for (const auto& methodname: methodnames)
   {
-    pycpp::Function method(PyObject_GetAttrString(o, methodname.c_str()));
+    py::object method = o.attr(methodname.c_str());
 
-    pycpp::Tuple noargs(0);
-
-    pycpp::Int res(method.call(noargs));
-    std::cout << "[C++] " << objectname << "." << methodname << "(): " << (int)res << std::endl;
+    py::object res = method();
+    std::cout << "[C++] " << objectname << "." << methodname << "(): " << res << std::endl;
   }
 
   // for (const auto& attr: pycpp::dir(module.release())) 
@@ -50,12 +40,12 @@ void test2(const std::string& modulename, const std::string& objectname, const s
   //   std::cout << "[C++] function::" << attr << std::endl;
   // }
 
-  bool has_person = module.hasAttr("Person");
+  bool has_person = pycpp::has_attr(module, "Person");
   std::cout << "[C++] Person? " << has_person << std::endl;
 
   if (has_person)
   {
-    for (const auto& attr: pycpp::dir(module.getAttr("Person"))) 
+    for (const auto& attr: pycpp::dir(module.attr("Person"))) 
     {
       std::cout << "[C++] Person::" << attr.first << " [" << attr.second << "]" << std::endl;
     }

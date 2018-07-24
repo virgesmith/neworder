@@ -22,6 +22,11 @@ bool callable(const py::object& o)
   return PyCallable_Check(o.ptr());
 }
 
+bool has_attr(const py::object& o, const char* attr_name)
+{
+  return PyObject_HasAttrString(o.ptr(), attr_name);
+}
+
 std::vector<std::pair<std::string, const char*>> pycpp::dir(PyObject* obj, bool public_only)
 {
   std::vector<std::string> attrs = pycpp::List(PyObject_Dir(obj)).toVector<std::string>();

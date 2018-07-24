@@ -1,15 +1,10 @@
-#include "Object.h"
-#include "Function.h"
-#include "Module.h"
 #include "Inspect.h"
 #include "Callback.h"
 #include "python.h"
 
 #include <iostream>
 
-// C++-ified version of the example here: https://docs.python.org/3/extending/embedding.html
-// also now boostified?
-
+// C++-ified and boost.pythonated version of the example here: https://docs.python.org/3/extending/embedding.html
 
 void test1(const std::string& modulename, const std::string& functionname, const std::vector<std::string>& argstrings)
 {
