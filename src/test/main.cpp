@@ -21,12 +21,12 @@ int main()
     test1("op", "void", {"2", "3"});
     test1("pop", "func", {});
 
-    // // load module, object, call methods
-    // test2("pop", "population", {"size", "die", "size", "birth", "birth", "size"});
+    // load module, object, call methods
+    test2("pop", "population", {"size", "die", "size", "birth", "birth", "size"});
 
-    // // load module, object, modify member, call method
-    // test3("pop", "population", "array", "columns");
-    // test3("pop", "population", "array", "values");
+    // load module, object, modify member, call method
+    test3("pop", "population", "array", "columns");
+    test3("pop", "population", "array", "values");
 
     // boost.Python.numpy
     //test4();
