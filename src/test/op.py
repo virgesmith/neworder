@@ -23,6 +23,8 @@ def div(a,b):
     print("[python]: ", a, "/", b)
     return a / b
 
+def void(a,b):
+    pass
 
 notafunc = 3
 

@@ -20,7 +20,7 @@ class Population:
   def deaths(self, rate):
     # neworder callback
     h = neworder.hazard(rate, len(self.data)) 
-    self.data["DEAD"] = h
+    self.data["DEAD"] = h.tolist()
     # remove deceased
     self.data = self.data[self.data.DEAD == 0]
     # remove temp column
