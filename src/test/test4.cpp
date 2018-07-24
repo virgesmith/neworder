@@ -1,33 +1,18 @@
 
 // test4 - boost.Python
 
-#include "Object.h"
-#include "Function.h"
-#include "Module.h"
-#include "Inspect.h"
+// #include "Object.h"
+// #include "Function.h"
+// #include "Module.h"
+// #include "Inspect.h"
 
-#include <Python.h>
-
-#include <boost/python.hpp>
-//#include <boost/python/numpy.hpp>
-
-namespace py = boost::python;
-//namespace np = boost::python::numpy;
+#include "python.h"
 
 #include <vector>
 #include <string>
 #include <memory>
 #include <iostream>
 
-std::ostream& operator<<(std::ostream& os, const py::object& o)
-{
-  return os << py::extract<std::string>(py::str(o))();
-}
-
-// std::ostream& operator<<(std::ostream& os, const np::ndarray& a)
-// {
-//   return os << py::extract<std::string>(py::str(a))();
-// }
 
 template<typename T, typename R=T>
 struct Uinc

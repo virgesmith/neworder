@@ -1,9 +1,11 @@
 #pragma once
 
-#include <Python.h>
+//#include <Python.h>
 
-namespace callback
-{
+
+const char* module_name();
+
+namespace callback {
+
   void register_all();
 }
-

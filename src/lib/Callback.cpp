@@ -4,54 +4,69 @@
 #include "Array.h"
 #include "Rand.h"
 
+#include "python.h"
+
 #include <iostream>
 
-namespace
-{
-const char* module_name = "neworder";
 
-extern "C" PyObject* neworder_name(PyObject *self, PyObject *args)
+const char* module_name()
 {
-  if (!PyArg_ParseTuple(args, ":name"))
-    return nullptr;
-  return pycpp::String(module_name).release();
+  return "neworder";
 }
 
-extern "C" PyObject* neworder_hazard(PyObject* self, PyObject* args)
+template<typename T>
+T vector_get(const std::vector<T>& v, int i)
 {
-  double cutoff;
-  int n;
-  if (!PyArg_ParseTuple(args, "di:hazard", &cutoff, &n))
-    return nullptr;
-
-  return pycpp::Array<int64_t>(hazard(cutoff, n)).release();
+  return v[i];
 }
 
-PyObject* PyInit_neworder()
+template<typename T>
+void vector_set(std::vector<T>& v, int i, T val)
 {
-  static PyMethodDef functions[] = {
-    {"name", neworder_name, METH_VARARGS, "Return the name of the C++ runtime module."},
-    {"hazard", neworder_hazard, METH_VARARGS, "Return a random int vector of length n, with value 1 where sample below cutoff."}, 
-    {nullptr, nullptr, 0, nullptr}
-  };
-
-  static PyModuleDef module = { 
-    PyModuleDef_HEAD_INIT, module_name, nullptr, -1, functions, nullptr, nullptr, nullptr, nullptr 
-  };
-
-  // pycpp::numpy_init(); for some reason does nothing
-  import_array();
-  if (!PyArray_API)
-    throw std::runtime_error("no pyarray api");
-
-  return PyModule_Create(&module);
+  v[i] = val; 
 }
 
-} // namespace
+BOOST_PYTHON_MODULE(neworder)
+{
+  py::def("name", module_name);
+
+  py::def("hazard", hazard);
+
+  py::def("stopping", stopping);
+
+  py::class_<std::vector<double>>("dvector", py::init<int>())
+    .def("__len__", &std::vector<double>::size)
+    .def("clear", &std::vector<double>::clear)
+    // .def("append", &DVector::push_back,
+    //       with_custodian_and_ward<1,2>()) // to let container keep value
+    .def("__getitem__", &vector_get<double>/*, py::return_value_policy<py::copy_non_const_reference>()*/)
+    .def("__setitem__", &vector_set<double>, py::with_custodian_and_ward<1,2>()) // to let container keep value
+    //.def("__delitem__", &std_item<Geometry>::del)
+    ;  
+  py::class_<std::vector<int>>("ivector", py::init<int>())
+    .def("__len__", &std::vector<int>::size)
+    .def("clear", &std::vector<int>::clear)
+    // .def("append", &DVector::push_back,
+    //       with_custodian_and_ward<1,2>()) // to let container keep value
+    .def("__getitem__", &vector_get<int>/*, py::return_value_policy<py::copy_non_const_reference>()*/)
+    .def("__setitem__", &vector_set<int>, py::with_custodian_and_ward<1,2>()) // to let container keep value
+    //.def("__delitem__", &std_item<Geometry>::del)
+    ;  
+  py::class_<std::vector<std::string>>("svector", py::init<int>())
+    .def("__len__", &std::vector<std::string>::size)
+    .def("clear", &std::vector<std::string>::clear)
+    // .def("append", &DVector::push_back,
+    //       with_custodian_and_ward<1,2>()) // to let container keep value
+    .def("__getitem__", &vector_get<std::string>/*, py::return_value_policy<py::copy_non_const_reference>()*/)
+    .def("__setitem__", &vector_set<std::string>, py::with_custodian_and_ward<1,2>()) // to let container keep value
+    //.def("__delitem__", &std_item<Geometry>::del)
+    ;  
+}
 
 void callback::register_all()
 {
   // First register callback module
-  PyImport_AppendInittab(module_name, &PyInit_neworder);
+  PyImport_AppendInittab(module_name(), &PyInit_neworder);
 }
+
 

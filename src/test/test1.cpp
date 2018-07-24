@@ -2,12 +2,14 @@
 #include "Function.h"
 #include "Module.h"
 #include "Inspect.h"
-
-#include <Python.h>
+#include "Callback.h"
+#include "python.h"
 
 #include <iostream>
 
 // C++-ified version of the example here: https://docs.python.org/3/extending/embedding.html
+// also now boostified?
+
 
 void test1(const std::string& modulename, const std::string& functionname, const std::vector<std::string>& argstrings)
 {
@@ -37,7 +39,7 @@ void test1(const std::string& modulename, const std::string& functionname, const
   {
     args.set(i, pycpp::Int(std::stoi(argstrings[i])));
   }
-  PyObject* result = function.call(args) ;
+  PyObject* result = function.call(args);
   std::cout << "[C++] Result type: " << pycpp::type(result) << std::endl;
 
 }

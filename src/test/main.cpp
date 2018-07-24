@@ -27,8 +27,8 @@ int main()
     test3("pop", "population", "array", "columns");
     test3("pop", "population", "array", "values");
 
-    // // boost.Python.numpy
-    // test4();
+    // boost.Python.numpy
+    //test4();
   }
   catch (pycpp::Exception& e)
   {

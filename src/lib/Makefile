@@ -9,7 +9,7 @@ libneworder.so: $(obj)
 	$(CXX) -shared -o $@ $^ $(LDFLAGS)
 
 %.d: %.cpp
-	$(CXX) $(CXXFLAGS) $< -MM -MT $(@:.d=.o) >$@
+	@$(CXX) $(CXXFLAGS) $< -MM -MT $(@:.d=.o) >$@
 
 -include $(dep)
 
