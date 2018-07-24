@@ -1,10 +1,6 @@
 
 // test4 - boost.Python
-
-// #include "Object.h"
-// #include "Function.h"
-// #include "Module.h"
-// #include "Inspect.h"
+#include "Inspect.h"
 
 #include "python.h"
 

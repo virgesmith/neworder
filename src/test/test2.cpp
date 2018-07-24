@@ -1,10 +1,6 @@
-#include "Object.h"
 #include "Environment.h"
-#include "Function.h"
-#include "Module.h"
 #include "Inspect.h"
 
-#include <Python.h>
 
 #include <vector>
 #include <string>
@@ -25,20 +21,6 @@ void test2(const std::string& modulename, const std::string& objectname, const s
     py::object res = method();
     std::cout << "[C++] " << objectname << "." << methodname << "(): " << res << std::endl;
   }
-
-  // for (const auto& attr: pycpp::dir(module.release())) 
-  // {
-  //   std::cout << "[C++] ::" << attr << std::endl;
-  //   for (const auto& sattr: pycpp::dir(module.getAttr(attr))) 
-  //   {
-  //     std::cout << "[C++] " << attr << "::" << sattr << std::endl;
-  //   }
-  // }
-
-  // for (const auto& attr: pycpp::dir(function.release(), false)) 
-  // {
-  //   std::cout << "[C++] function::" << attr << std::endl;
-  // }
 
   bool has_person = pycpp::has_attr(module, "Person");
   std::cout << "[C++] Person? " << has_person << std::endl;

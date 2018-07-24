@@ -21,3 +21,7 @@ std::vector<std::pair<std::string, const char*>> dir(PyObject* obj, bool public_
 std::vector<std::pair<std::string, const char*>> dir(const py::object& obj, bool public_only=true);
 
 }
+
+std::ostream& operator<<(std::ostream& os, const py::object& o);
+
+// std::ostream& operator<<(std::ostream& os, const np::ndarray& a);

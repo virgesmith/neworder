@@ -1,9 +1,11 @@
 
 #include "Inspect.h"
 #include "Object.h"
-#include <algorithm>
 
-#include <Python.h>
+#include "python.h"
+
+#include <algorithm>
+#include <iostream>
 
 const char* pycpp::type(PyObject* p)
 {
@@ -17,12 +19,12 @@ const char* pycpp::type(const py::object& o)
   return pycpp::type(o.ptr());
 }
 
-bool callable(const py::object& o) 
+bool pycpp::callable(const py::object& o) 
 {
   return PyCallable_Check(o.ptr());
 }
 
-bool has_attr(const py::object& o, const char* attr_name)
+bool pycpp::has_attr(const py::object& o, const char* attr_name)
 {
   return PyObject_HasAttrString(o.ptr(), attr_name);
 }
@@ -48,3 +50,13 @@ std::vector<std::pair<std::string, const char*>> pycpp::dir(const py::object& ob
 {
   return pycpp::dir(obj.ptr(), public_only);
 }
+
+std::ostream& operator<<(std::ostream& os, const py::object& o)
+{
+  return os << py::extract<std::string>(py::str(o))();
+}
+
+// std::ostream& operator<<(std::ostream& os, const np::ndarray& a)
+// {
+//   return os << py::extract<std::string>(py::str(a))();
+// }

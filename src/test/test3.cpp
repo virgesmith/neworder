@@ -1,10 +1,7 @@
-#include "Object.h"
 //#include "Array.h"
-#include "Function.h"
-#include "Module.h"
 #include "Inspect.h"
 
-#include <Python.h>
+#include "python.h"
 
 #include <vector>
 #include <string>
@@ -14,15 +11,10 @@
 void test3(const std::string& modulename, const std::string& objectname, const std::string& membername, const std::string& methodname)
 {
   std::cout << "[C++] " << modulename << ":" << objectname << std::endl;
-  // for (int i = 3; i < argc; ++i)
-  //   std::cout << " " << argv[i];
-  // std::cout << std::endl;
 
-  pycpp::String filename(PyUnicode_DecodeFSDefault(modulename.c_str()));
+  py::object module = py::import(modulename.c_str());
 
-  pycpp::Module module = pycpp::Module::init(filename);
-
-  PyObject* o = module.getAttr(objectname);
+  py::object o = module.attr(objectname.c_str());
   std::cout << "[C++] " << pycpp::type(o) << std::endl;
 
   // pycpp::Array<int64_t> array(PyObject_GetAttrString(o, membername.c_str()));
@@ -36,12 +28,14 @@ void test3(const std::string& modulename, const std::string& objectname, const s
   // for (int64_t* p = array.rawData(); p < array.rawData() + array.shape()[0]; ++p)
   //   ++(*p);
 
-  PyObject* f = PyObject_GetAttrString(o, methodname.c_str());
-  pycpp::Function method(f);
+  py::object method(o.attr(methodname.c_str()));
 
-  PyObject* r = method.call();
-  pycpp::List array(r);
-  std::cout << "[C++] " << methodname << " return type is " << pycpp::type(r) << ":" <<  pycpp::type(array[0]);
+  py::object r = method();
+  py::list array(r);
+  //pycpp::List array(r);
+  std::cout << "[C++] " << methodname << " return type is " << pycpp::type(r) << ":" <<  pycpp::type(array[0])
+  //          << r 
+            << std::endl;
   //           << " dim " << dim;
   // npy_intp* dims = PyArray_DIMS((PyArrayObject*)r);
   // for (int i = 0; i < dim; ++i)
@@ -54,7 +48,6 @@ void test3(const std::string& modulename, const std::string& objectname, const s
   // npy_intp* dims = PyArray_DIMS((PyArrayObject*)r);
   // for (int i = 0; i < dim; ++i)
   //   std::cout << " " << dims[i];
-  std::cout << std::endl;
 
   //pycpp::Array<const char*> cols(r);
   //npy_intp idx[1] = {0};
