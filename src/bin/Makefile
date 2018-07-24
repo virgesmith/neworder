@@ -8,6 +8,8 @@ dep=$(src:.cpp=.d)
 #$(info $(CXXFLAGS))
 #$(info $(LDFLAGS))
 
+LDFLAGS += -l$(BOOST_PYTHON_LIB)
+
 all: neworder
 
 neworder: $(obj)
