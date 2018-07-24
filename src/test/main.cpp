@@ -18,7 +18,7 @@ int main()
 
     // load module, call func with args
     test1("op", "mul", {"2", "3"});
-    test1("pop", "func", {});
+    //test1("pop", "func", {});
 
     // load module, object, call methods
     test2("pop", "population", {"size", "die", "size", "birth", "birth", "size"});

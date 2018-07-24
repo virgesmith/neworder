@@ -19,27 +19,32 @@ void test1(const std::string& modulename, const std::string& functionname, const
     std::cout << " " << arg;
   std::cout << std::endl;
 
-  pycpp::String filename(PyUnicode_DecodeFSDefault(modulename.c_str()));
+  // pycpp::String filename(PyUnicode_DecodeFSDefault(modulename.c_str()));
 
-  pycpp::Module module = pycpp::Module::init(filename);
+  // pycpp::Module module = pycpp::Module::init(filename);
 
-  pycpp::Function function(module.getAttr(functionname));
+  // pycpp::Function function(module.getAttr(functionname));
+  py::object module = py::import(modulename.c_str());
+  py::object function(module.attr(functionname.c_str()));
 
-  // for (const auto& attr: pycpp::dir(module.release())) 
-  // {
-  //   std::cout << "[C++] ::" << attr.first << " [" << attr.second << "]" << std::endl;
-  //   for (const auto& sattr: pycpp::dir(module.getAttr(attr.first))) 
-  //   {
-  //     std::cout << "[C++] " << attr.first << "::" << sattr.first << " [" << sattr.second << "]" << std::endl;
-  //   }
-  // }
+  for (const auto& attr: pycpp::dir(module)) 
+  {
+    std::cout << "[C++] ::" << attr.first << " [" << attr.second << "]" << std::endl;
+    for (const auto& sattr: pycpp::dir(module.attr(attr.first.c_str()))) 
+    {
+      std::cout << "[C++] " << attr.first << "::" << sattr.first << " [" << sattr.second << "]" << std::endl;
+    }
+  }
 
-  pycpp::Tuple args(argstrings.size());
+  //std::cout << "callable: " << PyCallable_Check(function.ptr()) << std::endl;
+
+  //std::cout << "type: " << pycpp::type(function) << std::endl;
+
+  std::vector<int> args(argstrings.size());
   for (size_t i = 0; i < argstrings.size(); ++i)
   {
-    args.set(i, pycpp::Int(std::stoi(argstrings[i])));
+    args[i] = std::stoi(argstrings[i]);
   }
-  PyObject* result = function.call(args);
-  std::cout << "[C++] Result type: " << pycpp::type(result) << std::endl;
-
+  py::object result = function(args[0], args[1]);
+  std::cout << "[C++] Result: " << result << std::endl;
 }

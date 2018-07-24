@@ -12,6 +12,16 @@ const char* pycpp::type(PyObject* p)
   return Py_TYPE(p)->tp_name;
 }
 
+const char* pycpp::type(const py::object& o)
+{
+  return pycpp::type(o.ptr());
+}
+
+bool callable(const py::object& o) 
+{
+  return PyCallable_Check(o.ptr());
+}
+
 std::vector<std::pair<std::string, const char*>> pycpp::dir(PyObject* obj, bool public_only)
 {
   std::vector<std::string> attrs = pycpp::List(PyObject_Dir(obj)).toVector<std::string>();
@@ -29,3 +39,7 @@ std::vector<std::pair<std::string, const char*>> pycpp::dir(PyObject* obj, bool 
   return typed_attrs;
 }
 
+std::vector<std::pair<std::string, const char*>> pycpp::dir(const py::object& obj, bool public_only)
+{
+  return pycpp::dir(obj.ptr(), public_only);
+}
