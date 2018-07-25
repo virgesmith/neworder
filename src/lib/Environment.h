@@ -4,7 +4,7 @@
 
 namespace pycpp {
 
-class Environment
+struct Environment
 {
 public:
   Environment();
@@ -18,9 +18,7 @@ public:
   Environment& operator=(const Environment&&) = delete;
 
   // check for errors in the python env: if it returns, there is no error
-  static std::string check();
-
-private:
+  static std::string check() noexcept;
 
 };
 

@@ -3,7 +3,7 @@
 """
 
 import pandas as pd
-
+import numpy as np
 import neworder
 
 class Population:
@@ -11,15 +11,30 @@ class Population:
     self.data = pd.read_csv(inputdata)
 
   def age(self, deltat):
-    #print("[py] age(", deltat,")")
+    # TODO neworder log
+    #print("[py] age", deltat)
     self.data.DC1117EW_C_AGE = self.data.DC1117EW_C_AGE + deltat
 
-  #def births(self):
+  def births(self, deltat, rate):
+    #print("[py] births", deltat, rate)
     # neworder callback 
+    # First filter females
+    females = self.data[self.data.DC1117EW_C_SEX == 2].copy()
+    h = neworder.hazard(rate * deltat, len(females)) 
+    # TODO do we actually need to append this column???
+    females["BORN"] = h.tolist()
+    # clone mothers, reset age and randomise gender
+    newborns = females[females.BORN == 1]
+    newborns.DC1117EW_C_AGE = 1
+    newborns.DC1117EW_C_SEX = np.random.choice([1,2])
+    # remove temp column
+    newborns.drop(["BORN"], axis=1, inplace=True)
+    self.data = self.data.append(newborns)
 
-  def deaths(self, rate):
+  def deaths(self, deltat, rate):
+    #print("[py] deaths", deltat, rate)
     # neworder callback
-    h = neworder.hazard(rate, len(self.data)) 
+    h = neworder.hazard(rate * deltat, len(self.data)) 
     self.data["DEAD"] = h.tolist()
     # remove deceased
     self.data = self.data[self.data.DEAD == 0]
