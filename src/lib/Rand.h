@@ -11,7 +11,7 @@
 inline std::vector<int> hazard(double prob, size_t n)
 {
   // TODO thread/process-safe seeding
-  std::mt19937 prng;
+  std::mt19937 prng(77027465);
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
   std::vector<int> h(n);
@@ -24,7 +24,7 @@ inline std::vector<int> hazard(double prob, size_t n)
 inline std::vector<double> stopping(double prob, size_t n)
 {
   // TODO thread/process-safe seeding
-  std::mt19937 prng;
+  std::mt19937 prng(77027465);
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
   double rprob = 1.0 / prob;

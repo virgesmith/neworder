@@ -20,26 +20,21 @@ class Population:
     # neworder callback 
     # First filter females
     females = self.data[self.data.DC1117EW_C_SEX == 2].copy()
-    h = neworder.hazard(rate * deltat, len(females)) 
-    # TODO do we actually need to append this column???
-    females["BORN"] = h.tolist()
+    h = np.array(neworder.hazard(rate * deltat, len(females)).tolist()) 
     # clone mothers, reset age and randomise gender
-    newborns = females[females.BORN == 1].copy()
-    newborns.DC1117EW_C_AGE = 1
-    newborns.DC1117EW_C_SEX = np.random.choice([1,2])
-    # remove temp column
-    newborns = newborns.drop(["BORN"], axis=1)
+    newborns = females[h == 1].copy()
+    newborns.DC1117EW_C_AGE = 1 # this is 0-1 in census category
+    newborns.DC1117EW_C_SEX = pd.Series(neworder.hazard(0.5, len(newborns)).tolist()) + 1
+    #newborns.DC1117EW_C_SEX = np.random.choice([1,2]) # this is not deterministic
+    # append newborns to main population
     self.data = self.data.append(newborns)
 
   def deaths(self, deltat, rate):
     #print("[py] deaths", deltat, rate)
-    # neworder callback
-    h = neworder.hazard(rate * deltat, len(self.data)) 
-    self.data["DEAD"] = h.tolist()
+    # neworder callback (requires conversion to series/np.array)
+    h = np.array(neworder.hazard(rate * deltat, len(self.data)).tolist())
     # remove deceased
-    self.data = self.data[self.data.DEAD == 0]
-    # remove temp column
-    self.data.drop(["DEAD"], axis=1, inplace=True)
+    self.data = self.data[h!=1]
     
   def mean_age(self):
     return self.data.DC1117EW_C_AGE.mean() - 1.0

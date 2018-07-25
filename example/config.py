@@ -15,10 +15,12 @@ parameters = initial_population # TODO workaround string splitting
 timespan = [2011, 2020]
 timestep = 1
 transitions = { 
-  "fertility": { "method": "births", "parameters": (timestep, birth_rate) }, \
-  "mortality": { "method": "deaths", "parameters": (timestep, mortality_hazard) }, \
+  "fertility": { "method": "births", "parameters": [timestep, birth_rate] }, \
+  "mortality": { "method": "deaths", "parameters": [timestep, mortality_hazard] }, \
   "age": { "method": "age", "parameters": [timestep] } \
   }
 
 # finalisation
 # TODO
+# sanity checks 
+# output...
