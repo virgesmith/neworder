@@ -16,9 +16,9 @@ bool callable(const py::object& o);
 
 bool has_attr(const py::object& o, const char* attr_name);
 
-std::vector<std::pair<std::string, const char*>> dir(PyObject* obj, bool public_only=true);
+std::vector<std::pair<std::string, std::string>> dir(PyObject* obj, bool public_only=true);
 
-std::vector<std::pair<std::string, const char*>> dir(const py::object& obj, bool public_only=true);
+std::vector<std::pair<std::string, std::string>> dir(const py::object& obj, bool public_only=true);
 
 }
 
