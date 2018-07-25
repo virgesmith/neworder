@@ -40,14 +40,11 @@ std::vector<std::pair<std::string, std::string>> pycpp::dir(const py::object& ob
   std::vector<std::pair<std::string, std::string>> res;
   res.reserve(n);
 
-  //std::vector<std::string> v(py::stl_input_iterator<std::string>(d), py::stl_input_iterator<T>());
-
   for (py::ssize_t i = 0; i < n; ++i)  
   {
     // TODO this could throw?
     std::string name = py::extract<std::string>(d[i])();
     std::string type = pycpp::type(obj.attr(d[i]));
-    //std::cout << "[C++] dir: " << py::extract<std::string>(d[i])() << ":" << pycpp::type(obj.attr(d[i])) << std::endl;
     if (public_only && name[0] == '_')
       continue;
     res.push_back(std::make_pair(name,type));

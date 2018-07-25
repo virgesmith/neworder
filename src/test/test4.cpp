@@ -23,15 +23,11 @@ void test4()
   //np::initialize();
 
   std::cout << "[C++] boost.Python.numpy test" << std::endl;
-  //pycpp::String filename(PyUnicode_DecodeFSDefault("pop"));
 
   py::object module = py::import("pop");
-  //pycpp::Module module = pycpp::Module::init(filename);
 
   py::object o = module.attr("population");
   std::cout << "[C++] " << o << std::endl;
-  // PyObject* o = module.getAttr("Population");
-  // std::cout << "[C++] " << pycpp::type(o) << std::endl;
 
   // See here but note compile error ‘class boost::python::api::object’ has no member named ‘def’
   // https://boostorg.github.io/python/doc/html/numpy/tutorial/index.html

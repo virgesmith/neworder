@@ -1,12 +1,27 @@
 
-#include "Object.h"
-#include "Module.h"
-#include "Function.h"
 #include "Inspect.h"
+#include "Environment.h"
+
+#include "python.h"
 
 #include <iostream>
 
-// TODO Logger...
+// TODO Logger...?
+
+template<typename T>
+std::vector<T> list_to_vector(const py::list& obj)
+{
+  py::ssize_t n = py::len(obj);
+  std::vector<T> res;
+  res.reserve(n);
+
+  for (py::ssize_t i = 0; i < n; ++i)  
+  {
+    // TODO this could throw?
+    res.push_back(py::extract<T>(obj[i])());
+  }
+  return res;
+}
 
 int main(int, const char*[])
 {
@@ -14,62 +29,40 @@ int main(int, const char*[])
 
   try
   {
-    // ?
-    // PyGILState_STATE gstate;
-    // gstate = PyGILState_Ensure();
+    py::object config = py::import("config");
 
-    pycpp::Module config = pycpp::Module::init(pycpp::String("config"));
+    // TODO direct init in python of an ivector?
+    ;
+    std::vector<int> timespan = list_to_vector<int>(py::list(config.attr("timespan")));
+    int timestep = py::extract<int>(config.attr("timestep"))();
 
-    // TODO pycpp::Double from int
-    std::vector<int> timespan = pycpp::List(config.getAttr("timespan")).toVector<int>();
-    int timestep = pycpp::Int(config.getAttr("timestep"));
-
-    pycpp::Dict transitions(config.getAttr("transitions"));
+    py::object transitions(config.attr("transitions"));
     // TODO loop over keys
 
-    pycpp::String inputdata(config.getAttr("initial_population"));
+    py::object inputdata(config.attr("initial_population"));
     std::cout << inputdata << std::endl;
 
-    pycpp::Module population = pycpp::Module::init(pycpp::String("population"));
+    py::object population = py::import("population");
 
-    pycpp::Function ctor(population.getAttr("Population"));
-    pycpp::Tuple ctor_args(1);
-    ctor_args.set(0, std::move(inputdata));
+    py::object ctor(population.attr("Population"));
+    py::object obj = ctor(inputdata);
 
-    PyObject* obj = ctor.call(ctor_args);
-    // std::cout << "object:" << pycpp::type(obj) << std::endl;
-    // for (const auto& kv: pycpp::dir(obj))
-    // {
-    //   std::cout << kv.first << "(" << kv.second << ")" << std::endl; 
-    // }
+    py::object size(obj.attr("size"));
+    py::object mean_age(obj.attr("mean_age"));
+    py::object age(obj.attr("age"));
+    py::object deaths(obj.attr("deaths"));
 
-    // std::cout << PyObject_IsInstance(obj, ctor.release()) << std::endl;
-
-    pycpp::Function size(PyObject_GetAttrString(obj, "size"));
-    pycpp::Function mean_age(PyObject_GetAttrString(obj, "mean_age"));
-    pycpp::Function age(PyObject_GetAttrString(obj, "age"));
-    pycpp::Function deaths(PyObject_GetAttrString(obj, "deaths"));
-
-    pycpp::Double res(mean_age.call());
+    py::object res = mean_age();
     std::cout << "[C++] " << timespan[0] << ": mean_age=" << res << std::endl;
     
-    pycpp::Tuple age_arg(1);
-    age_arg.set(0, pycpp::Int(config.getAttr("timestep")));
-
-    pycpp::Tuple death_arg(1);
-    death_arg.set(0, pycpp::Double(config.getAttr("mortality_hazard")));
+    double mortality_hazard = py::extract<double>(config.attr("mortality_hazard"));
 
     for (double t = timespan[0] + timestep; t <= timespan[1]; t += timestep)
     {
-      std::cout << "[C++] " << t << ": "; 
-      deaths.call(death_arg);
-      age.call(age_arg);
-      pycpp::Int n(size.call()); 
-      std::cout << "size=" << (int)n;
-      pycpp::Double res(mean_age.call());
-      std::cout << " mean_age=" << res << std::endl;
+      deaths(mortality_hazard);
+      age(timestep);
+      std::cout << "[C++] " << t << ": " << "size=" << size() << " mean_age=" << mean_age() << std::endl;
     }
-    //PyGILState_Release(gstate);
   }
   catch (py::error_already_set&)
   {

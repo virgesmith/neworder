@@ -1,8 +1,6 @@
 
 #include "Environment.h"
-
 #include "Callback.h"
-#include "Array.h"
 
 #include "python.h"
 
@@ -14,7 +12,7 @@ pycpp::Environment::Environment()
   // Init python env
   Py_Initialize();
 
-  numpy_init(); // things go bad if this gets called more than once
+  numpy_init(); // things go bad if this gets called more than once?
 } 
 
 pycpp::Environment::~Environment() 
