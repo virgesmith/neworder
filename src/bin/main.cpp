@@ -49,7 +49,6 @@ int main(int, const char*[])
   pycpp::Environment env;
   try
   {
-
     py::object config = py::import("config");
 
     std::string modulename = py::extract<std::string>(config.attr("module"))();
@@ -80,18 +79,24 @@ int main(int, const char*[])
     int timestep = py::extract<int>(config.attr("timestep"))();
 
     // py::object res = mean_age();
-    std::cout << "[C++] " << timespan[0] << ": size=" << object.attr("size")() <<  " mean_age=" << object.attr("mean_age")() << std::endl;
+    std::cout << "[C++] " << timespan[0] << ": size=" << object.attr("size")() 
+                                         << " mean_age=" << object.attr("mean_age")()
+                                         << " gender_split=" << object.attr("gender_split")() << std::endl;
     
     //double mortality_hazard = py::extract<double>(config.attr("mortality_hazard"));
 
     for (double t = timespan[0] + timestep; t <= timespan[1]; t += timestep)
     {
+      std::cout << "[C++]   ";
       for (auto it = functionTable.begin(); it != functionTable.end(); ++it)
       {
-        std::cout << "[C++]   " << it->first << std::endl;   
+        std::cout << it->first << " ";   
         (it->second)();  
       }
-      std::cout << "[C++] " << t << ": " << "size=" << object.attr("size")() << " mean_age=" << object.attr("mean_age")() << std::endl;
+      std::cout << std::endl;
+      std::cout << "[C++] " << t << ": size=" << object.attr("size")() 
+                                 << " mean_age=" << object.attr("mean_age")()
+                                 << " gender_split=" << object.attr("gender_split")() << std::endl;
     }
   }
   catch (py::error_already_set&)

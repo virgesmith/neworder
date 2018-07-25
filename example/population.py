@@ -24,11 +24,11 @@ class Population:
     # TODO do we actually need to append this column???
     females["BORN"] = h.tolist()
     # clone mothers, reset age and randomise gender
-    newborns = females[females.BORN == 1]
+    newborns = females[females.BORN == 1].copy()
     newborns.DC1117EW_C_AGE = 1
     newborns.DC1117EW_C_SEX = np.random.choice([1,2])
     # remove temp column
-    newborns.drop(["BORN"], axis=1, inplace=True)
+    newborns = newborns.drop(["BORN"], axis=1)
     self.data = self.data.append(newborns)
 
   def deaths(self, deltat, rate):
@@ -43,6 +43,10 @@ class Population:
     
   def mean_age(self):
     return self.data.DC1117EW_C_AGE.mean() - 1.0
+
+  def gender_split(self):
+    # this is % female
+    return self.data.DC1117EW_C_SEX.mean() - 1.0
 
   def size(self):
     return len(self.data)

@@ -41,3 +41,6 @@ src/**/*.so
 
 build/
 node_modules/
+
+neworder
+testharness
