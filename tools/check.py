@@ -15,7 +15,8 @@ spec = importlib.util.spec_from_file_location(modulename, modulename)
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 
-required_symbols = [ "module", "class_", "parameters", "transitions", "output"]
+
+required_symbols = ["loglevel", "do_checks", "checks", "module", "class_", "parameters", "transitions", "finalisations"]
 symbols = dir(module)
 
 print("checking", modulename + "...")

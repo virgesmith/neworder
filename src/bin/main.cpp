@@ -58,10 +58,18 @@ int main(int, const char*[])
     //std::vector<std::string> parameters = list_to_vector<std::string>(py::list(py::object("parameters")));
     std::string parameters = py::extract<std::string>(config.attr("parameters"))();
 
+    bool do_checks = py::extract<bool>(config.attr("do_checks"))();
+
+    // TODO direct init in python of an ivector?
+    std::vector<int> timespan = list_to_vector<int>(py::list(config.attr("timespan")));
+    int timestep = py::extract<int>(config.attr("timestep"))();
+
     // py::object object = initialise_object(modulename, class_name, parameters);
     py::object module = py::import(modulename.c_str());
     py::object class_ = module.attr(class_name.c_str());
     py::object object = class_(parameters);
+
+    std::cout << "[C++] " << timespan[0] << " initialised" << std::endl;
 
     // See https://stackoverflow.com/questions/6116345/boostpython-possible-to-automatically-convert-from-dict-stdmap
     pycpp::FunctionTable transitionTable;
@@ -76,6 +84,21 @@ int main(int, const char*[])
       //std::cout << py::object(transitions[i][0]) << std::endl;
     }
 
+    // Load check functors only if checks enabled
+    pycpp::FunctionTable checkTable;
+    if (do_checks)
+    {
+      py::list checks = py::dict(config.attr("checks")).items();
+      for (int i = 0; i < py::len(checks); ++i)
+      {
+        py::dict spec = py::dict(checks[i][1]);
+        checkTable.insert(std::make_pair(
+          py::extract<std::string>(checks[i][0])(), 
+          pycpp::Functor(object.attr(spec["method"]), py::list(spec["parameters"]))
+        ));
+      }
+    }
+
     pycpp::FunctionTable finalisationTable;
     py::list finalisations = py::dict(config.attr("finalisations")).items();
     for (int i = 0; i < py::len(finalisations); ++i)
@@ -86,34 +109,29 @@ int main(int, const char*[])
         pycpp::Functor(object.attr(spec["method"]), py::list(spec["parameters"]))
       ));
     }
-
-    // TODO direct init in python of an ivector?
-    std::vector<int> timespan = list_to_vector<int>(py::list(config.attr("timespan")));
-    int timestep = py::extract<int>(config.attr("timestep"))();
-
-    // py::object res = mean_age();
-    std::cout << "[C++] " << timespan[0] << ": size=" << object.attr("size")() 
-                                         << " mean_age=" << object.attr("mean_age")()
-                                         << " gender_split=" << object.attr("gender_split")() << std::endl;
     
     //double mortality_hazard = py::extract<double>(config.attr("mortality_hazard"));
 
     for (double t = timespan[0] + timestep; t <= timespan[1]; t += timestep)
     {
-      std::cout << "[C++]   ";
+      std::cout << "[C++] " << t << " exec transitions:";
       for (auto it = transitionTable.begin(); it != transitionTable.end(); ++it)
       {
         std::cout << it->first << " ";   
         (it->second)();  
       }
       std::cout << std::endl;
-      // TODO checks...
-      std::cout << "[C++] " << t << ": size=" << object.attr("size")() 
-                                 << " mean_age=" << object.attr("mean_age")()
-                                 << " gender_split=" << object.attr("gender_split")() << std::endl;
+      for (auto it = checkTable.begin(); it != checkTable.end(); ++it)
+      {
+        bool ok = py::extract<bool>((it->second)())();
+        if (!ok) 
+        {
+          throw std::runtime_error("check failed");
+        }  
+      }
     }
 
-    std::cout << "[C++] Finalisation...";
+    std::cout << "[C++] exec finalisations: ";
     // Finalisation
     for (auto it = finalisationTable.begin(); it != finalisationTable.end(); ++it)
     {

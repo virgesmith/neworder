@@ -9,14 +9,20 @@ birth_rate = 0.02
 # debug options
 loglevel = 1
 do_checks = True
-checks = [ "size", "mean_age", "gender_split"]
+# assumed to be methods of class_ returning True if checks pass
+# TODO link to module when multiple
+checks = {
+  "check": { "method": "check", "parameters" : [] }
+  }
  
 # initialisation
+# TODO multiple modules...
 module = "population"
 class_ = "Population"
 parameters = initial_population # TODO workaround string splitting
 
 # define the evolution
+# TODO link to module when multiple
 timespan = [2011, 2020]
 timestep = 1
 transitions = { 
@@ -27,6 +33,7 @@ transitions = {
 
 # Finalisation
 final_population = initial_population.replace(str(timespan[0]), str(timespan[1]))
+# TODO link to module when multiple
 finalisations = {
   "finish" : { "method": "finish", "parameters": [final_population] }
 }

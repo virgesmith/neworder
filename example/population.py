@@ -55,5 +55,9 @@ class Population:
   def size(self):
     return len(self.data)
 
+  def check(self):
+    print("[py] check OK: size={} mean_age={:.2f}, pct_female={:.2f}".format(self.size(), self.mean_age(), 100.0 * self.gender_split()))
+    return True
+
   def finish(self, filename):
     self.data.to_csv(filename)
