@@ -4,11 +4,16 @@
 
 import pandas as pd
 import numpy as np
+# TODO stub module
 import neworder
 
 class Population:
   def __init__(self, inputdata):
     self.data = pd.read_csv(inputdata)
+    # TODO might need to drop Sex column before unstack
+    fertility = pd.read_csv("./example/TowerHamletsFertility.csv", sep=";", index_col=["Ethnicity", "Sex", "Age"]) #.unstack()
+    mortality = pd.read_csv("./example/TowerHamletsMortality.csv", sep=";", index_col=["Ethnicity", "Sex", "Age"]) #.unstack()
+    #print(mortality.shape)
 
   def age(self, deltat):
     # TODO neworder log
@@ -24,10 +29,14 @@ class Population:
     # clone mothers, reset age and randomise gender
     newborns = females[h == 1].copy()
     newborns.DC1117EW_C_AGE = 1 # this is 0-1 in census category
-    newborns.DC1117EW_C_SEX = pd.Series(neworder.hazard(0.5, len(newborns)).tolist()) + 1
+    # NOTE: do not convert to pd.Series here as this has its own index which conflicts with the main table
+    newborns.DC1117EW_C_SEX = np.array(neworder.hazard(0.5, len(newborns)).tolist()) + 1
+    # this is non-deterministic...
     #newborns.DC1117EW_C_SEX = np.random.choice([1,2]) # this is not deterministic
     # append newborns to main population
     self.data = self.data.append(newborns)
+  
+#  def migrations(self, deltat, rate)
 
   def deaths(self, deltat, rate):
     #print("[py] deaths", deltat, rate)

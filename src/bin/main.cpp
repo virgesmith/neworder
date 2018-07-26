@@ -46,6 +46,8 @@ py::tuple get(py::object& module, const std::vector<std::string>& parameters)
 
 int main(int, const char*[])
 {
+  // TODO config.py as a command line arg
+
   pycpp::Environment env;
   try
   {
@@ -62,16 +64,27 @@ int main(int, const char*[])
     py::object object = class_(parameters);
 
     // See https://stackoverflow.com/questions/6116345/boostpython-possible-to-automatically-convert-from-dict-stdmap
-    pycpp::FunctionTable functionTable;
+    pycpp::FunctionTable transitionTable;
     py::list transitions = py::dict(config.attr("transitions")).items();
     for (int i = 0; i < py::len(transitions); ++i)
     {
       py::dict spec = py::dict(transitions[i][1]);
-      functionTable.insert(std::make_pair(
+      transitionTable.insert(std::make_pair(
         py::extract<std::string>(transitions[i][0])(), 
         pycpp::Functor(object.attr(spec["method"]), py::list(spec["parameters"]))
       ));
       //std::cout << py::object(transitions[i][0]) << std::endl;
+    }
+
+    pycpp::FunctionTable finalisationTable;
+    py::list finalisations = py::dict(config.attr("finalisations")).items();
+    for (int i = 0; i < py::len(finalisations); ++i)
+    {
+      py::dict spec = py::dict(finalisations[i][1]);
+      finalisationTable.insert(std::make_pair(
+        py::extract<std::string>(finalisations[i][0])(), 
+        pycpp::Functor(object.attr(spec["method"]), py::list(spec["parameters"]))
+      ));
     }
 
     // TODO direct init in python of an ivector?
@@ -88,16 +101,27 @@ int main(int, const char*[])
     for (double t = timespan[0] + timestep; t <= timespan[1]; t += timestep)
     {
       std::cout << "[C++]   ";
-      for (auto it = functionTable.begin(); it != functionTable.end(); ++it)
+      for (auto it = transitionTable.begin(); it != transitionTable.end(); ++it)
       {
         std::cout << it->first << " ";   
         (it->second)();  
       }
       std::cout << std::endl;
+      // TODO checks...
       std::cout << "[C++] " << t << ": size=" << object.attr("size")() 
                                  << " mean_age=" << object.attr("mean_age")()
                                  << " gender_split=" << object.attr("gender_split")() << std::endl;
     }
+
+    std::cout << "[C++] Finalisation...";
+    // Finalisation
+    for (auto it = finalisationTable.begin(); it != finalisationTable.end(); ++it)
+    {
+      std::cout << it->first << " ";   
+      (it->second)();  
+    }
+    std::cout << "DONE" << std::endl;
+
   }
   catch (py::error_already_set&)
   {
