@@ -4,6 +4,7 @@
 //#include "Global.h"
 
 #include <vector>
+#include <cstdint>
 
 // TODO need threadsafe RNG independence/seeding
 
