@@ -1,6 +1,5 @@
 #pragma once
 
-#include "PythonFwd.h"
 #include "python.h"
 
 #include <vector>
