@@ -48,8 +48,8 @@ class Population:
     self.data = _map_eth(self.data)
 
     # TODO might need to drop Sex column before unstack
-    self.fertility = pd.read_csv("./example/TowerHamletsFertility.csv", index_col=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"]) #.unstack()
-    self.mortality = pd.read_csv("./example/TowerHamletsMortality.csv", index_col=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"]) #.unstack()
+    self.fertility = pd.read_csv("./example/TowerHamletsFertility.csv", index_col=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"]) 
+    self.mortality = pd.read_csv("./example/TowerHamletsMortality.csv", index_col=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])
 
     #print(fertility.head())
     #print(mortality.head())
@@ -62,27 +62,28 @@ class Population:
     # reconstruct census age group
     self.data.DC1117EW_C_AGE = np.clip(np.ceil(self.data.Age), 1, 86)
 
-  def births(self, deltat, rate):
-    #print("[py] births", deltat, rate)
-    # neworder callback 
+  def births(self, deltat):
+    #print("[py] births", deltat)
     # First filter females
     females = self.data[self.data.DC1117EW_C_SEX == 2].copy()
-    h = np.array(neworder.hazard(rate * deltat, len(females)).tolist()) 
+    # might be a more efficient way of generating this array
+    rates = females.join(self.fertility, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].tolist()
+    # neworder callback 
+    h = np.array(neworder.hazard_v(neworder.dvector.fromlist(rates * deltat)).tolist())
     # clone mothers, reset age and randomise gender
     newborns = females[h == 1].copy()
-    newborns.Age = np.random.uniform(size=len(newborns))
+    newborns.Age = np.random.uniform(size=len(newborns)) # born within the last 12 months
     newborns.DC1117EW_C_AGE = 1 # this is 0-1 in census category
     # NOTE: do not convert to pd.Series here as this has its own index which conflicts with the main table
     newborns.DC1117EW_C_SEX = np.array(neworder.hazard(0.5, len(newborns)).tolist()) + 1
-    # this is non-deterministic...
-    #newborns.DC1117EW_C_SEX = np.random.choice([1,2]) # this is not deterministic
     # append newborns to main population
     self.data = self.data.append(newborns)
   
-#  def migrations(self, deltat, rate)
+  def migrations(self, deltat):
+    pass
 
-  def deaths(self, deltat, rate):
-    #print("[py] deaths", deltat, rate)
+  def deaths(self, deltat):
+    #print("[py] deaths", deltat)
 
     # might be a more efficient way of generating this array
     rates = self.data.join(self.mortality, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].tolist()

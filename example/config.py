@@ -3,8 +3,9 @@
 
 # define some global variables
 initial_population = "example/ssm_E09000001_MSOA11_ppp_2011.csv"
-mortality_hazard = 0.01
-birth_rate = 0.02
+#initial_population = "example/ssm_E08000021_MSOA11_2011.csv"
+asfr = "examples/TowerHamletsFertility.csv"
+asmr = "examples/TowerHamletsMortality.csv"
 
 # debug options
 loglevel = 1
@@ -19,6 +20,7 @@ checks = {
 # TODO multiple modules...
 module = "population"
 class_ = "Population"
+# TODO add asfr/asmr as ctor args...
 parameters = initial_population # TODO workaround string splitting
 
 # define the evolution
@@ -26,8 +28,8 @@ parameters = initial_population # TODO workaround string splitting
 timespan = [2011, 2020]
 timestep = 1
 transitions = { 
-  "fertility": { "method": "births", "parameters": [timestep, birth_rate] }, \
-  "mortality": { "method": "deaths", "parameters": [timestep, mortality_hazard] }, \
+  "fertility": { "method": "births", "parameters": [timestep] }, \
+  "mortality": { "method": "deaths", "parameters": [timestep] }, \
   "age": { "method": "age", "parameters": [timestep] } \
   }
 
