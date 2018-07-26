@@ -48,12 +48,12 @@ class Population:
     self.data = _map_eth(self.data)
 
     # TODO might need to drop Sex column before unstack
-    fertility = pd.read_csv("./example/TowerHamletsFertility.csv", index_col=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"]) #.unstack()
-    mortality = pd.read_csv("./example/TowerHamletsMortality.csv", index_col=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"]) #.unstack()
+    self.fertility = pd.read_csv("./example/TowerHamletsFertility.csv", index_col=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"]) #.unstack()
+    self.mortality = pd.read_csv("./example/TowerHamletsMortality.csv", index_col=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"]) #.unstack()
 
-    print(fertility.head())
-    print(mortality.head())
-    print(self.data.head())
+    #print(fertility.head())
+    #print(mortality.head())
+    #print(self.data.head())
 
   def age(self, deltat):
     # TODO neworder log
@@ -83,8 +83,12 @@ class Population:
 
   def deaths(self, deltat, rate):
     #print("[py] deaths", deltat, rate)
-    # neworder callback (requires conversion to series/np.array)
-    h = np.array(neworder.hazard(rate * deltat, len(self.data)).tolist())
+
+    # might be a more efficient way of generating this array
+    rates = self.data.join(self.mortality, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].tolist()
+    #print(rates)
+    # neworder callback (requires inefficient conversions: Series/np.array -> list -> dvector -> list -> np.array)
+    h = np.array(neworder.hazard_v(neworder.dvector.fromlist(rates * deltat)).tolist())
     # remove deceased
     self.data = self.data[h!=1]
     

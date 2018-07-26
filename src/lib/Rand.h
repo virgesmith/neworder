@@ -4,44 +4,17 @@
 //#include "Global.h"
 
 #include <vector>
-#include <random>
 
+// TODO need threadsafe RNG independence/seeding
 
-// simple hazard 
-inline std::vector<int> hazard(double prob, size_t n)
-{
-  // TODO thread/process-safe seeding
-  std::mt19937 prng(77027465);
-  std::uniform_real_distribution<> dist(0.0, 1.0);
+// single-prob hazard 
+std::vector<int> hazard(double prob, size_t n);
 
-  std::vector<int> h(n);
-  for (auto& it: h)
-    it = (dist(prng) < prob) ? 1 : 0;
-  return h;
-}
+// vector hazard 
+std::vector<int> hazard_v(const std::vector<double>& prob);
 
-// computes stopping times 
-inline std::vector<double> stopping(double prob, size_t n)
-{
-  // TODO thread/process-safe seeding
-  std::mt19937 prng(77027465);
-  std::uniform_real_distribution<> dist(0.0, 1.0);
+// compute stopping times 
+std::vector<double> stopping(double prob, size_t n);
 
-  double rprob = 1.0 / prob;
-
-  std::vector<double> h(n);
-  for (auto& it: h)
-  {
-    it = -log(dist(prng)) * rprob;
-  }
-
-  // if (cutoff > 0)
-  // {
-  //   for (auto& it: h)
-  //   {
-  //     it = (it < cutoff) ? it : -1.0;
-  //   }
-  // }
-  return h;
-}
-
+// vector stopping 
+std::vector<double> stopping_v(const std::vector<double>& prob);
