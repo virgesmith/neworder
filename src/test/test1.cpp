@@ -4,7 +4,7 @@
 
 #include <iostream>
 
-// C++-ified and boost.pythonated version of the example here: https://docs.python.org/3/extending/embedding.html
+// C++-ified and boost.pythonated version of the example here to stay: https://docs.python.org/3/extending/embedding.html
 
 void test1(const std::string& modulename, const std::string& functionname, const std::vector<std::string>& argstrings)
 {

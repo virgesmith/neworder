@@ -4,13 +4,13 @@ var fs = require("fs");
 
 var neworder_api = require("../build/Release/neworder.node");
 
-var result = neworder_api.eval("'hello' + 'world'");
+var result = neworder_api.eval("'hello' + 'world in motion'");
 console.log(result);
 
 var result = neworder_api.eval("1 + 2");
 console.log(result);
 
-var result = neworder_api.eval("3 + 'world'");
+var result = neworder_api.eval("3 + 'world in motion'");
 console.log(result);
 
 var result = neworder_api.eval("function f(x) { return x+1; } f(41);");

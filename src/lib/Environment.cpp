@@ -8,7 +8,8 @@
 
 pycpp::Environment::Environment() 
 {
-  callback::register_all();
+  // make the neworder module available in embedded python env
+  neworder::import_module();
 
   // Init python env
   Py_Initialize();

@@ -2,6 +2,7 @@
 #include "Inspect.h"
 #include "Environment.h"
 #include "Functor.h"
+#include "Callback.h"
 
 #include "python.h"
 
@@ -9,41 +10,7 @@
 #include <iostream>
 
 // TODO Logger...?
-
-// TODO needs a string specialisation otherwise gets split by char
-template<typename T>
-std::vector<T> list_to_vector(const py::list& obj)
-{
-  py::ssize_t n = py::len(obj);
-  std::vector<T> res;
-  res.reserve(n);
-
-  for (py::ssize_t i = 0; i < n; ++i)  
-  {
-    // TODO this could throw?
-    res.push_back(py::extract<T>(obj[i])());
-  }
-  return res;
-}
-
-// pycpp::FunctionTable makeFuncTable(const py::object& module)
-// {
-
-
-// }
-py::tuple get(py::object& module, const std::vector<std::string>& parameters)
-{
-  py::tuple tuple(parameters.size());
-  for (size_t i = 0; i < parameters.size(); ++i)
-  {
-    tuple[i] = py::object(module.attr(parameters[i].c_str()));
-    //std::cout << module.attr(parameters[i].c_str()) << std::endl;
-  }
-  return tuple;
-}
-
-
-//py::object initialise_object(const std::string& modulename, const std::string& class_name, const std::vector<std::string>& parameters)
+namespace no = neworder;
 
 int main(int, const char*[])
 {
@@ -54,6 +21,14 @@ int main(int, const char*[])
   {
     // TODO specify Path(?) on cmd line?
     py::object config = py::import("config");
+
+    bool do_checks = py::extract<bool>(config.attr("do_checks"))();
+
+    // TODO direct init in python of an ivector?
+    std::vector<int> timespan = no::py_list_to_vector<int>(py::list(config.attr("timespan")));
+    int timestep = py::extract<int>(config.attr("timestep"))();
+
+    std::cout << "[C++] " << timespan[0] << " init: ";
 
     // list of module-class-constructor args -> list of objects
     py::list initialisations = py::dict(config.attr("initialisations")).items();
@@ -68,19 +43,15 @@ int main(int, const char*[])
 
       py::object module = py::import(modulename.c_str());
       py::object class_ = module.attr(class_name.c_str());
-      std::cout << pycpp::as_string(args) << std::endl;
+      //std::cout << pycpp::as_string(args) << std::endl;
       py::object object = pycpp::Functor(class_, args)();
 
-      objects.insert(std::make_pair(py::extract<std::string>(initialisations[i][0])(), object));
+      // taking a const ref here to stay results in an empty string, which is bizarre love triangle
+      const std::string name = py::extract<std::string>(initialisations[i][0])();
+      objects.insert(std::make_pair(name, object));
+      std::cout << name << " ";
     }
-
-    bool do_checks = py::extract<bool>(config.attr("do_checks"))();
-
-    // TODO direct init in python of an ivector?
-    std::vector<int> timespan = list_to_vector<int>(py::list(config.attr("timespan")));
-    int timestep = py::extract<int>(config.attr("timestep"))();
-
-    std::cout << "[C++] " << timespan[0] << " initialised" << std::endl;
+    std::cout << std::endl;
 
     // See https://stackoverflow.com/questions/6116345/boostpython-possible-to-automatically-convert-from-dict-stdmap
     pycpp::FunctionTable transitionTable;
@@ -123,11 +94,9 @@ int main(int, const char*[])
       ));
     }
     
-    //double mortality_hazard = py::extract<double>(config.attr("mortality_hazard"));
-
     for (double t = timespan[0] + timestep; t <= timespan[1]; t += timestep)
     {
-      std::cout << "[C++] " << t << " exec transitions:";
+      std::cout << "[C++] " << t << " exec: ";
       for (auto it = transitionTable.begin(); it != transitionTable.end(); ++it)
       {
         std::cout << it->first << " ";   
@@ -144,14 +113,14 @@ int main(int, const char*[])
       }
     }
 
-    std::cout << "[C++] exec finalisations: ";
+    std::cout << "[C++] finally: ";
     // Finalisation
     for (auto it = finalisationTable.begin(); it != finalisationTable.end(); ++it)
     {
       std::cout << it->first << " ";   
       (it->second)();  
     }
-    std::cout << "DONE" << std::endl;
+    std::cout << std::endl << "SUCCESS" << std::endl;
 
   }
   catch (py::error_already_set&)

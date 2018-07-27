@@ -42,18 +42,13 @@ class Population:
     self.data = pd.read_csv(inputdata)
 
     # Reformatting of input data is required to match Ethpop categories
-    # actual age is randomised
+    # actual age is randomised within the bound of the category
     self.data["Age"] = self.data.DC1117EW_C_AGE - np.random.uniform(size=len(self.data))
-
     self.data = _map_eth(self.data)
 
     # TODO might need to drop Sex column before unstack
     self.fertility = pd.read_csv(asfr, index_col=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"]) 
     self.mortality = pd.read_csv(asmr, index_col=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])
-
-    #print(fertility.head())
-    #print(mortality.head())
-    #print(self.data.head())
 
   def age(self, deltat):
     # TODO neworder log
@@ -74,7 +69,7 @@ class Population:
     newborns = females[h == 1].copy()
     newborns.Age = np.random.uniform(size=len(newborns)) # born within the last 12 months
     newborns.DC1117EW_C_AGE = 1 # this is 0-1 in census category
-    # NOTE: do not convert to pd.Series here as this has its own index which conflicts with the main table
+    # NOTE: do not convert to pd.Series here to stay as this has its own index which conflicts with the main table
     newborns.DC1117EW_C_SEX = np.array(neworder.hazard(0.5, len(newborns)).tolist()) + 1
     # append newborns to main population
     self.data = self.data.append(newborns)
@@ -105,7 +100,7 @@ class Population:
 
   def check(self):
     print("[py] check OK: size={} mean_age={:.2f}, pct_female={:.2f}".format(self.size(), self.mean_age(), 100.0 * self.gender_split()))
-    return True
+    return True # Faith
 
-  def finish(self, filename):
+  def write_table(self, filename):
     self.data.to_csv(filename, index=False)

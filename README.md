@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/virgesmith/neworder.png?branch=master)](https://travis-ci.org/virgesmith/neworder) 
 [![License](https://img.shields.io/github/license/mashape/apistatus.svg)](https://opensource.org/licenses/MIT)
 
-Neworder is a prototype C++ microsimulation package inspired by [openm++](https://ompp.sourceforge.io/) and MODGEN. Models are defined in high-level code (python) and executed in an embedded simulation framework (C++) which exposes a subset of itself back to the python runtime environment. (In order words the C++ framework can call python _and vice versa_) 
+Neworder is a prototype C++ microsimulation package inspired by [openm++](https://ompp.sourceforge.io/) and MODGEN. Models are defined in high-level code (python) and executed in an embedded simulation framework (C++) which exposes a subset of itself as a python module. (In order words the C++ framework can call python _and vice versa_) 
 
 ## Key requirements:
 - low barriers to entry: users need only write standard python code, little or no new coding skills required.
@@ -42,10 +42,11 @@ $ make PYVER=3.5 BOOST_PYTHON_LIB=boost_python-py35 && make PYVER=3.5 BOOST_PYTH
 __NB the following is a work-in-progress and will change frequently...__
 
 The microsimulation framework expects a python module called [config.py](example/config.py) that, minimally:
-- describes how to initialise a model object (in this case it's defined in [population.py](example/population.py))
+- describes how to initialise model object(s) (in this case it's just one, defined in [population.py](example/population.py))
 - defines a timeline and a timestep.
-- defines the _transitions_ that the population are subject to during the timeline
-- [TODO] describes what to do with the simulated population data when the simulation is done.   
+- describes what (if any) checks to run after each timestep.
+- defines the _transitions_ that the population are subject to during the timeline.
+- describes what to do with the simulated population data when the simulation is done.   
 
 In the example, the transitions are (currently) ageing, births, and deaths. Ageing simply increments individual's ages according to the timestep. Births and deaths are randomly sampled and parameterised by fertility and mortality rates respectively. 
 
@@ -53,22 +54,25 @@ See [population.py](example/population.py)) for details, but in short newborns i
 
 ```bash
 $ ./run.sh
-[C++] 2011: size=7397 mean_age=41.49155062863323 gender_split=0.4418007300256861
-[C++]   age fertility mortality
-[C++] 2012: size=7399 mean_age=42.04703338288958 gender_split=0.4481686714420867
-[C++]   age fertility mortality
-[C++] 2013: size=7402 mean_age=42.58889489327209 gender_split=0.4544717643880032
-[C++]   age fertility mortality
-[C++] 2014: size=7405 mean_age=43.122214719783926 gender_split=0.45037137069547595
-[C++]   age fertility mortality
-[C++] 2015: size=7408 mean_age=43.64767818574514 gender_split=0.4566684665226781
-[C++]   age fertility mortality
-[C++] 2016: size=7412 mean_age=44.15920129519698 gender_split=0.45264436049649226
-[C++]   age fertility mortality
-[C++] 2017: size=7415 mean_age=44.68172623061362 gender_split=0.4589345920431558
-[C++]   age fertility mortality
-[C++] 2018: size=7419 mean_age=45.20380105135463 gender_split=0.45491306105944207
-[C++]   age fertility mortality
-[C++] 2019: size=7422 mean_age=45.72635408245756 gender_split=0.4509566154675291
-[C++]   age fertility mortality
-[C++] 2020: size=7425 mean_age=46.25427609427609 gender_split=0.45737373737373743```
+[C++] 2011 init: people
+[C++] 2012 exec: age fertility mortality
+[py] check OK: size=7417 mean_age=42.15, pct_female=44.17
+[C++] 2013 exec: age fertility mortality
+[py] check OK: size=7425 mean_age=42.29, pct_female=44.19
+[C++] 2014 exec: age fertility mortality
+[py] check OK: size=7432 mean_age=42.50, pct_female=44.24
+[C++] 2015 exec: age fertility mortality
+[py] check OK: size=7429 mean_age=42.69, pct_female=44.29
+[C++] 2016 exec: age fertility mortality
+[py] check OK: size=7422 mean_age=42.90, pct_female=44.29
+[C++] 2017 exec: age fertility mortality
+[py] check OK: size=7409 mean_age=43.07, pct_female=44.32
+[C++] 2018 exec: age fertility mortality
+[py] check OK: size=7399 mean_age=43.24, pct_female=44.41
+[C++] 2019 exec: age fertility mortality
+[py] check OK: size=7387 mean_age=43.47, pct_female=44.46
+[C++] 2020 exec: age fertility mortality
+[py] check OK: size=7369 mean_age=43.73, pct_female=44.55
+[C++] finally: write_table
+SUCCESS
+```

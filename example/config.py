@@ -9,7 +9,7 @@ asmr = "example/TowerHamletsMortality.csv"
 
 # debug options
 loglevel = 1
-do_checks = True
+do_checks = True # Faith
 # assumed to be methods of class_ returning True if checks pass
 # TODO link to module when multiple
 checks = {
@@ -35,5 +35,5 @@ final_population = initial_population.replace(str(timespan[0]), str(timespan[1])
 # TODO link to module when multiple
 finalisations = {
   # "object": "people" # TODO link to module when multiple
-  "finish" : { "object": "people", "method": "finish", "parameters": [final_population] }
+  "write_table" : { "object": "people", "method": "write_table", "parameters": [final_population] }
 }
