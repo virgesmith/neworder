@@ -38,7 +38,7 @@ def _map_eth(data):
   return data.drop("DC2101EW_C_ETHPUK11", axis=1)
  
 class Population:
-  def __init__(self, inputdata):
+  def __init__(self, inputdata, asfr, asmr):
     self.data = pd.read_csv(inputdata)
 
     # Reformatting of input data is required to match Ethpop categories
@@ -48,8 +48,8 @@ class Population:
     self.data = _map_eth(self.data)
 
     # TODO might need to drop Sex column before unstack
-    self.fertility = pd.read_csv("./example/TowerHamletsFertility.csv", index_col=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"]) 
-    self.mortality = pd.read_csv("./example/TowerHamletsMortality.csv", index_col=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])
+    self.fertility = pd.read_csv(asfr, index_col=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"]) 
+    self.mortality = pd.read_csv(asmr, index_col=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])
 
     #print(fertility.head())
     #print(mortality.head())

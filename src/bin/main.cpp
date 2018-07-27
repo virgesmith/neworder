@@ -5,6 +5,7 @@
 
 #include "python.h"
 
+#include <map>
 #include <iostream>
 
 // TODO Logger...?
@@ -51,12 +52,27 @@ int main(int, const char*[])
   pycpp::Environment env;
   try
   {
+    // TODO specify Path(?) on cmd line?
     py::object config = py::import("config");
 
-    std::string modulename = py::extract<std::string>(config.attr("module"))();
-    std::string class_name = py::extract<std::string>(config.attr("class_"))();
-    //std::vector<std::string> parameters = list_to_vector<std::string>(py::list(py::object("parameters")));
-    std::string parameters = py::extract<std::string>(config.attr("parameters"))();
+    // list of module-class-constructor args -> list of objects
+    py::list initialisations = py::dict(config.attr("initialisations")).items();
+    std::map<std::string, py::object> objects;
+    for (int i = 0; i < py::len(initialisations); ++i)
+    {
+      py::dict spec = py::dict(initialisations[i][1]);
+      //std::cout << pycpp::as_string(spec) << std::endl;
+      std::string modulename = py::extract<std::string>(spec["module"])();
+      std::string class_name = py::extract<std::string>(spec["class_"])();
+      py::list args = py::list(spec["parameters"]);
+
+      py::object module = py::import(modulename.c_str());
+      py::object class_ = module.attr(class_name.c_str());
+      std::cout << pycpp::as_string(args) << std::endl;
+      py::object object = pycpp::Functor(class_, args)();
+
+      objects.insert(std::make_pair(py::extract<std::string>(initialisations[i][0])(), object));
+    }
 
     bool do_checks = py::extract<bool>(config.attr("do_checks"))();
 
@@ -64,22 +80,19 @@ int main(int, const char*[])
     std::vector<int> timespan = list_to_vector<int>(py::list(config.attr("timespan")));
     int timestep = py::extract<int>(config.attr("timestep"))();
 
-    // py::object object = initialise_object(modulename, class_name, parameters);
-    py::object module = py::import(modulename.c_str());
-    py::object class_ = module.attr(class_name.c_str());
-    py::object object = class_(parameters);
-
     std::cout << "[C++] " << timespan[0] << " initialised" << std::endl;
 
     // See https://stackoverflow.com/questions/6116345/boostpython-possible-to-automatically-convert-from-dict-stdmap
     pycpp::FunctionTable transitionTable;
     py::list transitions = py::dict(config.attr("transitions")).items();
+
     for (int i = 0; i < py::len(transitions); ++i)
     {
       py::dict spec = py::dict(transitions[i][1]);
+      ;
       transitionTable.insert(std::make_pair(
         py::extract<std::string>(transitions[i][0])(), 
-        pycpp::Functor(object.attr(spec["method"]), py::list(spec["parameters"]))
+        pycpp::Functor(objects[py::extract<std::string>(spec["object"])()].attr(spec["method"]), py::list(spec["parameters"]))
       ));
       //std::cout << py::object(transitions[i][0]) << std::endl;
     }
@@ -94,7 +107,7 @@ int main(int, const char*[])
         py::dict spec = py::dict(checks[i][1]);
         checkTable.insert(std::make_pair(
           py::extract<std::string>(checks[i][0])(), 
-          pycpp::Functor(object.attr(spec["method"]), py::list(spec["parameters"]))
+          pycpp::Functor(objects.begin()->second.attr(spec["method"]), py::list(spec["parameters"]))
         ));
       }
     }
@@ -106,7 +119,7 @@ int main(int, const char*[])
       py::dict spec = py::dict(finalisations[i][1]);
       finalisationTable.insert(std::make_pair(
         py::extract<std::string>(finalisations[i][0])(), 
-        pycpp::Functor(object.attr(spec["method"]), py::list(spec["parameters"]))
+        pycpp::Functor(objects.begin()->second.attr(spec["method"]), py::list(spec["parameters"]))
       ));
     }
     
