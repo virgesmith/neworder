@@ -13,7 +13,7 @@ void test3(const std::string& modulename, const std::string& objectname, const s
 void test4();
 void test_errors();
 
-int main() 
+int main(int argc, const char* argv[]) 
 {
   try
   {
@@ -21,21 +21,32 @@ int main()
 
     // load module, call func with args
     test1("op", "mul", {"2", "3"});
-    test1("op", "void", {"2", "3"});
-    test1("pop", "func", {});
+    // test1("op", "void", {"2", "3"});
+    // test1("pop", "func", {});
 
-    // load module, object, call methods
-    test2("pop", "population", {"size", "die", "size", "birth", "birth", "size"});
+    // // load module, object, call methods
+    // test2("pop", "population", {"size", "die", "size", "birth", "birth", "size"});
 
-    // load module, object, modify member, call method
-    test3("pop", "population", "array", "columns");
-    test3("pop", "population", "array", "values");
+    // // load module, object, modify member, call method
+    // test3("pop", "population", "array", "columns");
+    // test3("pop", "population", "array", "values");
 
-    // boost.Python.numpy
-    //test4();
+    // // boost.Python.numpy
+    // //test4();
 
-    // doesnt extract the python error type/msg 
-    //test_errors();
+    // // doesnt extract the python error type/msg 
+    // test_errors();
+
+    // TODO how to determine tests pass/fail?
+    std::cout << "[C++] running python modules:" << std::endl;
+    for (int i = 1; i < argc; ++i)
+    {
+      std::cout << "[C++] " << argv[i] << ": ";
+      py::object module = py::import(argv[i]);
+      py::object testfunc = module.attr("test");
+      bool success = py::extract<bool>(testfunc())();
+      std::cout << (success ? "PASS" : "FAIL") << std::endl;
+    }
   }
   catch (py::error_already_set&)
   {

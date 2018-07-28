@@ -16,9 +16,10 @@ void test_errors()
   }
   catch (py::error_already_set&)
   {
-    std::cout << "Expected error: [python] " << pycpp::Environment::check() << std::endl;
+    std::cout << "[C++] caught expected: " << pycpp::Environment::check() << std::endl;
     caught = true;
   }
+  // Nobody expects this code to be executed
   if (!caught)
     throw std::runtime_error("spanish inquisition");
 }

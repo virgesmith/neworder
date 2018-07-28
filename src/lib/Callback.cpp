@@ -31,13 +31,13 @@ BOOST_PYTHON_MODULE(neworder)
 {
   py::def("name", no::module_name);
 
-  py::def("hazard", hazard);
+  py::def("hazard", no::hazard);
 
-  py::def("stopping", stopping);
+  py::def("stopping", no::stopping);
 
-  py::def("hazard_v", hazard_v);
+  py::def("hazard_v", no::hazard_v);
 
-  py::def("stopping_v", stopping_v);
+  py::def("stopping_v", no::stopping_v);
 
   py::class_<std::vector<double>>("dvector", py::init<int>())
     .def("__len__", &std::vector<double>::size)
@@ -62,6 +62,10 @@ BOOST_PYTHON_MODULE(neworder)
     .def("__setitem__", &vector_set<std::string>, py::with_custodian_and_ward<1,2>()) // to let container keep value
     .def("tolist", &neworder::vector_to_py_list<std::string>)
     .def("fromlist", &neworder::py_list_to_vector<std::string>)
+    ;
+
+  py::class_<no::UStream>("ustream", py::init<int64_t>())
+    .def("get", &no::UStream::get)
     ;  
 }
 

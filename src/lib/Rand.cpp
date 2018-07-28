@@ -5,8 +5,23 @@
 #include <random>
 
 
+neworder::UStream::UStream(int64_t seed) : m_seed(seed), m_prng(seed), m_dist(0.0, 1.0)
+{
+}
+
+std::vector<double> neworder::UStream::get(int n)
+{
+  std::vector<double> ret(n);
+  for (int i = 0; i < n; ++i)
+  {
+    ret[i] = m_dist(m_prng);
+  }
+  return ret;
+}
+
+
 // simple hazard 
-std::vector<int> hazard(double prob, size_t n)
+std::vector<int> neworder::hazard(double prob, size_t n)
 {
   // TODO thread/process-safe seeding
   std::mt19937 prng(77027465);
@@ -19,7 +34,7 @@ std::vector<int> hazard(double prob, size_t n)
 }
 
 // simple hazard 
-std::vector<int> hazard_v(const std::vector<double>& prob)
+std::vector<int> neworder::hazard_v(const std::vector<double>& prob)
 {
   // TODO thread/process-safe seeding
   std::mt19937 prng(77027465);
@@ -35,7 +50,7 @@ std::vector<int> hazard_v(const std::vector<double>& prob)
 }
 
 // computes stopping times 
-std::vector<double> stopping(double prob, size_t n)
+std::vector<double> neworder::stopping(double prob, size_t n)
 {
   // TODO thread/process-safe seeding
   std::mt19937 prng(77027465);
@@ -53,7 +68,7 @@ std::vector<double> stopping(double prob, size_t n)
 }
 
 // computes stopping times 
-std::vector<double> stopping_v(const std::vector<double>& prob)
+std::vector<double> neworder::stopping_v(const std::vector<double>& prob)
 {
   // TODO thread/process-safe seeding
   std::mt19937 prng(77027465);
