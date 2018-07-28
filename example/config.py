@@ -1,5 +1,7 @@
 
-# config.py
+""" config.py
+Microsimulation config
+"""
 
 # define some global variables
 initial_population = "example/ssm_E09000001_MSOA11_ppp_2011.csv"
@@ -23,7 +25,7 @@ initialisations = {
 
 # define the evolution
 timespan = [2011, 2020]
-timestep = 1
+timestep = 1 # TODO breaks when not 1 
 transitions = { 
   "fertility": { "object": "people", "method": "births", "parameters": [timestep] }, \
   "mortality": { "object": "people", "method": "deaths", "parameters": [timestep] }, \

@@ -4,6 +4,7 @@
 
 import pandas as pd
 import numpy as np
+from hashlib import blake2b
 # TODO stub module
 import neworder
 
@@ -40,21 +41,22 @@ def _map_eth(data):
 class Population:
   def __init__(self, inputdata, asfr, asmr):
     self.data = pd.read_csv(inputdata)
-
-    # Reformatting of input data is required to match Ethpop categories
-    # actual age is randomised within the bound of the category
-    self.data["Age"] = self.data.DC1117EW_C_AGE - np.random.uniform(size=len(self.data))
-    self.data = _map_eth(self.data)
-
-    # TODO might need to drop Sex column before unstack
     self.fertility = pd.read_csv(asfr, index_col=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"]) 
     self.mortality = pd.read_csv(asmr, index_col=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])
 
-    # use this to identify people (only unique within this table)
+    # seed RNG: for now, rows in data * sum(DC1117EW_C_AGE)
+    seed = int(len(self.data) * self.data.DC1117EW_C_AGE.sum())
+    print("[py] seed:", seed) 
+    self.rstream = neworder.UStream(seed)
+
+    # use this to identify people (uniquely only within this table)
     self.counter = len(self.data)
 
-    # hash filenames for now (better to hash file?)
-    print("hash", hash(inputdata) ^ hash(asfr) ^ hash(asmr))
+    # Reformatting of input data is required to match Ethpop categories
+    # actual age is randomised within the bound of the category
+    # TODO segfault can occur if mix ops with DVector and array/list...
+    self.data["Age"] = self.data.DC1117EW_C_AGE - self.rstream.get(len(self.data)).tolist()
+    self.data = _map_eth(self.data)
 
   def age(self, deltat):
     # Increment age by timestep and update census age categorty (used for ASFR/ASMR lookup)
@@ -72,12 +74,12 @@ class Population:
     rates = females.join(self.fertility, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].tolist()
 
     # Then randomly determine if a birth occurred (neworder callback)
-    h = np.array(neworder.hazard_v(neworder.dvector.fromlist(rates * deltat)).tolist())
+    h = np.array(neworder.hazard_v(neworder.DVector.fromlist(rates * deltat)).tolist())
 
     # The babies are a clone of the new mothers, with with changed PID, reset age and randomised gender (keeping location and ethnicity)
     newborns = females[h == 1].copy()
     newborns.PID = range(self.counter, self.counter + len(newborns))
-    newborns.Age = np.random.uniform(size=len(newborns)) # born within the last 12 months
+    newborns.Age = self.rstream.get(len(newborns)).tolist() # born within the last 12 months
     newborns.DC1117EW_C_AGE = 1 # this is 0-1 in census category
     # NOTE: do not convert to pd.Series here to stay as this has its own index which conflicts with the main table
     newborns.DC1117EW_C_SEX = np.array(neworder.hazard(0.5, len(newborns)).tolist()) + 1
@@ -97,8 +99,8 @@ class Population:
     rates = self.data.join(self.mortality, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].tolist()
 
     # Then randomly determine if a birth occurred
-    # neworder callback (requires inefficient conversions: Series/np.array -> list -> dvector -> list -> np.array)
-    h = np.array(neworder.hazard_v(neworder.dvector.fromlist(rates * deltat)).tolist())
+    # neworder callback (requires inefficient conversions: Series/np.array -> list -> DVector -> list -> np.array)
+    h = np.array(neworder.hazard_v(neworder.DVector.fromlist(rates * deltat)).tolist())
 
     # Finally remove deceased from table
     self.data = self.data[h!=1]

@@ -31,7 +31,7 @@ notafunc = 3
 import neworder
 print("[python] callback:", neworder.name())
 
-v = neworder.dvector(20)
+v = neworder.DVector(20)
 
 #print(v.size())
 v[0] = 3.4
@@ -41,7 +41,7 @@ printvec(v)
 v.clear()
 printvec(v)
 
-v2 = neworder.svector(10)
+v2 = neworder.SVector(10)
 for i in range(0,10):
   v2[i] = str(i) + " potato"
 
@@ -49,7 +49,7 @@ printvec(v2)
 
 h = neworder.hazard(0.2, 10)
 printvec(h)
-hv = neworder.hazard_v(neworder.dvector.fromlist([0.1, 0.2, 0.3, 0.4, 0.5]))
+hv = neworder.hazard_v(neworder.DVector.fromlist([0.1, 0.2, 0.3, 0.4, 0.5]))
 printvec(hv)
 s = neworder.stopping(0.1, 10)
 printvec(s)

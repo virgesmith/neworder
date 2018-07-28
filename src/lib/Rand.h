@@ -27,6 +27,8 @@ public:
 
   std::vector<double> get(int n);
 
+  int64_t seed() const { return m_seed; }
+
 private:
   int64_t m_seed;
   std::mt19937 m_prng;

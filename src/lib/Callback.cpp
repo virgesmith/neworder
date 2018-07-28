@@ -39,7 +39,7 @@ BOOST_PYTHON_MODULE(neworder)
 
   py::def("stopping_v", no::stopping_v);
 
-  py::class_<std::vector<double>>("dvector", py::init<int>())
+  py::class_<std::vector<double>>("DVector", py::init<int>())
     .def("__len__", &std::vector<double>::size)
     .def("clear", &std::vector<double>::clear)
     .def("__getitem__", &vector_get<double>/*, py::return_value_policy<py::copy_non_const_reference>()*/)
@@ -47,7 +47,7 @@ BOOST_PYTHON_MODULE(neworder)
     .def("tolist", &neworder::vector_to_py_list<double>)
     .def("fromlist", &neworder::py_list_to_vector<double>)
     ;  
-  py::class_<std::vector<int>>("ivector", py::init<int>())
+  py::class_<std::vector<int>>("IVector", py::init<int>())
     .def("__len__", &std::vector<int>::size)
     .def("clear", &std::vector<int>::clear)
     .def("__getitem__", &vector_get<int>/*, py::return_value_policy<py::copy_non_const_reference>()*/)
@@ -55,7 +55,7 @@ BOOST_PYTHON_MODULE(neworder)
     .def("tolist", &neworder::vector_to_py_list<int>)
     .def("fromlist", &neworder::py_list_to_vector<int>)
     ;  
-  py::class_<std::vector<std::string>>("svector", py::init<int>())
+  py::class_<std::vector<std::string>>("SVector", py::init<int>())
     .def("__len__", &std::vector<std::string>::size)
     .def("clear", &std::vector<std::string>::clear)
     .def("__getitem__", &vector_get<std::string>/*, py::return_value_policy<py::copy_non_const_reference>()*/)
@@ -64,7 +64,8 @@ BOOST_PYTHON_MODULE(neworder)
     .def("fromlist", &neworder::py_list_to_vector<std::string>)
     ;
 
-  py::class_<no::UStream>("ustream", py::init<int64_t>())
+  py::class_<no::UStream>("UStream", py::init<int64_t>())
+    .def("seed", &no::UStream::seed)
     .def("get", &no::UStream::get)
     ;  
 }
