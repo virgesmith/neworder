@@ -25,9 +25,9 @@ def test():
 
   print("[py]", np.array(no.hazard_v(rng1.get(1000)).tolist()).mean())
 
-  f = no.LazyEval("2 + 2")
+  f = no.Callback("2 + 2")
 
-  
+
   print(f())
 
   return True
