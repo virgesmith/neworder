@@ -6,6 +6,7 @@ import glob
 
 # define some global variables
 initial_population = glob.glob("example/ssm_*_MSOA11_ppp_2011.csv")
+print(initial_population)
 #initial_population = "example/ssm_E08000021_MSOA11_2011.csv"
 asfr = "example/TowerHamletsFertility.csv"
 asmr = "example/TowerHamletsMortality.csv"
@@ -21,7 +22,6 @@ def partition(arr, count):
 loglevel = 1
 do_checks = True # Faith
 # assumed to be methods of class_ returning True if checks pass
-# TODO link to module when multiple
 checks = {
   "check": { "object": "people", "method": "check", "parameters" : [] }
   }

@@ -46,6 +46,16 @@ BOOST_PYTHON_MODULE(neworder)
     .def("__setitem__", &vector_set<double>, py::with_custodian_and_ward<1,2>()) // to let container keep value
     .def("tolist", &neworder::vector_to_py_list<double>)
     .def("fromlist", &neworder::py_list_to_vector<double>)
+    // operators
+    .def(py::self + double())
+    .def(double() + py::self)
+    // .def(self + self)
+    // .def(self - double)
+    // .def(double - self)
+    // .def(self - self)
+    .def(py::self * double())
+    .def(double() * py::self)
+    // .def(self / double)
     ;  
   py::class_<std::vector<int>>("IVector", py::init<int>())
     .def("__len__", &std::vector<int>::size)
@@ -68,6 +78,10 @@ BOOST_PYTHON_MODULE(neworder)
     .def("seed", &no::UStream::seed)
     .def("get", &no::UStream::get)
     ;  
+
+  py::class_<no::Callback>("Callback", py::init<std::string>())
+    .def("__call__", &no::Callback::operator())
+    ;
 }
 
 const char* neworder::module_name()
