@@ -14,13 +14,13 @@ namespace {
 template<typename T>
 T vector_get(const std::vector<T>& v, int i)
 {
-  return i >= 0 ? v[i] : v[v.size() - i];
+  return i >= 0 ? v[i] : v[v.size() + i];
 }
 
 template<typename T>
 void vector_set(std::vector<T>& v, int i, T val)
 {
-  v[i >= 0 ? i : v.size() - i] = val; 
+  v[i >= 0 ? i : v.size() + i] = val; 
 }
 
 }

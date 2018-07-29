@@ -3,9 +3,10 @@
 Microsimulation config
 """
 import glob
+import neworder
 
 # define some global variables
-initial_population = glob.glob("example/ssm_*_MSOA11_ppp_2011.csv")
+initial_population = glob.glob("example/ssm_E0*_MSOA11_ppp_2011.csv")
 print(initial_population)
 #initial_population = "example/ssm_E08000021_MSOA11_2011.csv"
 asfr = "example/TowerHamletsFertility.csv"
@@ -35,18 +36,22 @@ initialisations = {
 # e.g. for checkpoint data filename using current year
 
 # define the evolution
-timespan = [2011, 2020]
-timestep = 1 # TODO breaks when not 1 
+neworder.timespan = neworder.DVector.fromlist([2011.25, 2020.25])
+neworder.timestep = 0.25 # TODO beware rounding errors 
+neworder.time = neworder.timespan[0]
+
+
+# TODO timestep 
 transitions = { 
-  "fertility": { "object": "people", "method": "births", "parameters": [timestep] }, \
-  "mortality": { "object": "people", "method": "deaths", "parameters": [timestep] }, \
-  "age": { "object": "people", "method": "age", "parameters": [timestep] } \
+  "fertility": { "object": "people", "method": "births", "parameters": [neworder.timestep] }, \
+  "mortality": { "object": "people", "method": "deaths", "parameters": [neworder.timestep] }, \
+  "age": { "object": "people", "method": "age", "parameters": [neworder.timestep] } \
   }
 
-# Finalisation
-final_population = "example/dm_" + str(timespan[-1]) + ".csv"
+# Finalisation - YYYY gets replace with simulation time
+output_file_pattern = "example/dm_YYYY.csv"
 # TODO link to module when multiple
 finalisations = {
   # "object": "people" # TODO link to module when multiple
-  "write_table" : { "object": "people", "method": "write_table", "parameters": [final_population] }
+  "write_table" : { "object": "people", "method": "write_table", "parameters": [output_file_pattern] }
 }

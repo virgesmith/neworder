@@ -72,9 +72,9 @@ class Population:
     # Now map the appropriate fertility rate to each female
     # might be a more efficient way of generating this array
     rates = females.join(self.fertility, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].tolist()
-
     # Then randomly determine if a birth occurred (neworder callback)
-    h = np.array(neworder.hazard_v(neworder.DVector.fromlist(rates * deltat)).tolist())
+    # python disallows scalar float mult of float list, but neworder.DVector does support this
+    h = np.array(neworder.hazard_v(neworder.DVector.fromlist(rates) * deltat).tolist())
 
     # The babies are a clone of the new mothers, with with changed PID, reset age and randomised gender (keeping location and ethnicity)
     newborns = females[h == 1].copy()
@@ -100,7 +100,8 @@ class Population:
 
     # Then randomly determine if a birth occurred
     # neworder callback (requires inefficient conversions: Series/np.array -> list -> DVector -> list -> np.array)
-    h = np.array(neworder.hazard_v(neworder.DVector.fromlist(rates * deltat)).tolist())
+    # python disallows scalar float mult of float list, but neworder.DVector does support this
+    h = np.array(neworder.hazard_v(neworder.DVector.fromlist(rates) * deltat).tolist())
 
     # Finally remove deceased from table
     self.data = self.data[h!=1]
@@ -116,8 +117,11 @@ class Population:
     return len(self.data)
 
   def check(self):
-    print("[py] check OK: size={} mean_age={:.2f}, pct_female={:.2f}".format(self.size(), self.mean_age(), 100.0 * self.gender_split()))
+    """ State of the nation """
+    print("[py] check OK: time={:.3f} size={} mean_age={:.2f}, pct_female={:.2f}".format(neworder.time, self.size(), self.mean_age(), 100.0 * self.gender_split()))
     return True # Faith
 
-  def write_table(self, filename):
-    self.data.to_csv(filename, index=False)
+  def write_table(self, output_file_pattern):
+    filename = output_file_pattern.replace("YYYY", "{:.3f}".format(neworder.time))
+    print("[py] time={:.2f} writing {}".format(neworder.time, filename))
+    return self.data.to_csv(filename, index=False)

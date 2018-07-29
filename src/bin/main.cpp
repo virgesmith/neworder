@@ -21,12 +21,15 @@ int main(int, const char*[])
   {
     // TODO specify Path(?) on cmd line?
     py::object config = py::import("config");
+    py::object self = py::import("neworder");
 
     bool do_checks = py::extract<bool>(config.attr("do_checks"))();
 
     // TODO direct init in python of an ivector?
-    std::vector<int> timespan = no::py_list_to_vector<int>(py::list(config.attr("timespan")));
-    int timestep = py::extract<int>(config.attr("timestep"))();
+    //std::vector<int> timespan = no::py_list_to_vector<int>(py::list(self.attr("timespan")));
+    const std::vector<double>& timespan = py::extract<std::vector<double>>(self.attr("timespan"))();
+//    py::object t = self.attr("time");
+    double timestep = py::extract<double>(self.attr("timestep"))();
 
     std::cout << "[C++] " << timespan[0] << " init: ";
 
@@ -93,10 +96,14 @@ int main(int, const char*[])
         pycpp::Functor(objects.begin()->second.attr(spec["method"]), py::list(spec["parameters"]))
       ));
     }
-    
+
     for (double t = timespan[0] + timestep; t <= timespan[1]; t += timestep)
     {
       std::cout << "[C++] " << t << " exec: ";
+      // TODO is there a way to do this in-place? does it really matter?
+      self.attr("time") = py::object(t);
+      //*time = t;
+
       for (auto it = transitionTable.begin(); it != transitionTable.end(); ++it)
       {
         std::cout << it->first << " ";   

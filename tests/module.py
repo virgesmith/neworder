@@ -27,6 +27,8 @@ def test():
 
   f = no.Callback("2 + 2")
 
+  no.testVec = no.DVector.fromlist([1,2,3,4])
+  print(no.testVec[3])
 
   print(f())
 
