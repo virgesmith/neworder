@@ -4,10 +4,7 @@
 
 import pandas as pd
 import numpy as np
-from hashlib import blake2b
-# TODO stub module
 import neworder
-
 
 def _map_eth(data):
   """ Maps census categories (DC2101EW_C_ETHPUK11) to NewEthpop. Note this is a one-way mapping """
@@ -40,7 +37,10 @@ def _map_eth(data):
  
 class Population:
   def __init__(self, inputdata, asfr, asmr):
-    self.data = pd.read_csv(inputdata)
+    self.data = pd.DataFrame()
+    for file in inputdata: 
+      self.data = self.data.append(pd.read_csv(file))
+
     self.fertility = pd.read_csv(asfr, index_col=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"]) 
     self.mortality = pd.read_csv(asmr, index_col=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])
 
