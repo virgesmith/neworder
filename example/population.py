@@ -44,8 +44,8 @@ class Population:
     self.fertility = pd.read_csv(asfr, index_col=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"]) 
     self.mortality = pd.read_csv(asmr, index_col=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])
 
-    # seed RNG: for now, rows in data * sum(DC1117EW_C_AGE)
-    seed = int(len(self.data) * self.data.DC1117EW_C_AGE.sum())
+    # seed RNG: for now, rows in data * sum(DC1117EW_C_AGE) - TODO add MPI rank/size?
+    seed = int(len(self.data) * self.data.DC1117EW_C_AGE.sum()) 
     print("[py] seed:", seed) 
     self.rstream = neworder.UStream(seed)
 

@@ -15,8 +15,11 @@ all: lib bin
 lib: 
 	cd src/lib && make
 
-bin:
+bin: lib
 	cd src/bin && make
+
+mpi: lib
+	cd src/bin && make neworder_mpi
 
 test: lib 
 	cd src/test && make

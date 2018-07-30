@@ -6,7 +6,7 @@ import glob
 import neworder
 
 # define some global variables
-initial_population = glob.glob("example/ssm_E09*_MSOA11_ppp_2011.csv")
+initial_populations = glob.glob("example/ssm_*_MSOA11_ppp_2011.csv")
 #initial_population = "example/ssm_E08000021_MSOA11_2011.csv"
 asfr = "example/TowerHamletsFertility.csv"
 asmr = "example/TowerHamletsMortality.csv"
@@ -14,10 +14,11 @@ asmr = "example/TowerHamletsMortality.csv"
 # running/debug options
 
 # MPI prep - split initial population files over threads
-threads = 3
+threads = 2# TODO 
 def partition(arr, count):
   return [arr[i::count] for i in range(count)]
-#print(split(initial_population, threads))
+
+#initial_population_array = split(initial_population, neworder.processes, threads))
 
 loglevel = 1
 do_checks = True # Faith
@@ -28,7 +29,8 @@ checks = {
  
 # initialisation
 initialisations = {
-  "people": { "module": "population", "class_": "Population", "parameters": [initial_population, asfr, asmr] }
+  # TODO initial_populations[neworder.rank]
+  "people": { "module": "population", "class_": "Population", "parameters": [initial_populations, asfr, asmr] }
 }
 
 # mechanisms to have deferred/shared evaluation of parameters:
@@ -48,7 +50,7 @@ transitions = {
   }
 
 # generates filename according to current time TODO and thread (MPI_COMM_RANK)
-output_file_callback = neworder.Callback( '"example/dm_YYYY.csv".replace("YYYY", "{:.3f}".format(neworder.time))' )
+output_file_callback = neworder.Callback( '"example/dm_YYYY.csv".replace("YYYY", "{:.3f}_{}_{}".format(neworder.time, neworder.rank, neworder.size))' )
 
 # Finalisation 
 # TODO rename to e.g. checkpoints

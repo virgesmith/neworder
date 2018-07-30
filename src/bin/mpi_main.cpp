@@ -1,21 +1,11 @@
+// MPI entry point
 
 #include "run.h"
+#include "MPIResource.h"
 
-#include "Inspect.h"
-#include "Environment.h"
-#include "Functor.h"
-#include "Callback.h"
-
-#include "python.h"
-
-#include <map>
 #include <iostream>
-#include <cstdlib>
 
-// TODO Logger...?
-namespace no = neworder;
-
-int main(int argc, const char* argv[])
+int main(int argc, char** argv)
 {
   // Directory containing model (config.py, etc) is specified on the command line
   // It's added to PYTHONPATH
@@ -28,7 +18,7 @@ int main(int argc, const char* argv[])
   std::cout << "[C++] setting PYTHONPATH=" << argv[1] << std::endl;
   setenv("PYTHONPATH", argv[1], 1);
 
-  // single-process
-  return run(0, 1);
-}
+  MPIResource mpi(&argc, &argv);
 
+  run(mpi.rank(), mpi.size());
+}
