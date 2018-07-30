@@ -37,7 +37,25 @@ For Ubuntu 16.04 / python 3.5 you may need to set the make env like so:
 $ make PYVER=3.5 BOOST_PYTHON_LIB=boost_python-py35 && make PYVER=3.5 BOOST_PYTHON_LIB=boost_python-py35 test
 ```
 
-## Run Example
+## HPC installation (ARC3)
+
+Switch to gnu toolchain and add boost libraries
+```bash
+$ module switch intel gnu
+$ module load boost
+$ module list
+Currently Loaded Modulefiles:
+  1) licenses        3) gnu/6.3.0       5) user
+  2) sge             4) openmpi/2.0.2   6) boost/1.67.0
+```
+Optionally use different g++ or boost versions:
+```
+$ module switch gnu gnu/7.2.0
+$ module switch boost boost/1.65.1
+```
+Currently experiencing linker errors as `libboost_python3.so` is missing on the system 
+
+# Run Example
 
 __NB the following is a work-in-progress and will change frequently...__
 
