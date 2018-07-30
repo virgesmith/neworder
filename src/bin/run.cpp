@@ -21,12 +21,13 @@ int run(int rank, int size)
   pycpp::Environment env;
   try
   {
-    // TODO specify Path(?) on cmd line?
-    py::object config = py::import("config");
     py::object self = py::import("neworder");
 
-    self.attr("rank") = rank;
-    self.attr("size") = size;
+    self.attr("procid") = rank;
+    self.attr("nprocs") = size;
+
+    // TODO specify Path(?) on cmd line?
+    py::object config = py::import("config");
 
     bool do_checks = py::extract<bool>(config.attr("do_checks"))();
 
