@@ -4,10 +4,10 @@ Stub module for neworder
 
 neworder is a module that exists only within the embedded python environment
 This is a python stub for the module to enable neworder python code to load 
-in a standard python environment.
-This can be useful for example to do basic syntax checking on model code.
+(but not run) in a standard python environment.
+This can be useful for example to do basic sanity/syntax checking on model code.
 
-Ensure the path to this file is in your PYTHONPATH, e.g.
+You may need to ensure the path to this file is in your PYTHONPATH, e.g.
 $ PYTHONPATH=tools python3 example/population.py
 """
 
@@ -16,3 +16,7 @@ class DVector:
   def fromlist(x):
     return list(x)
 
+# Stub callback
+class Callback:
+  def __init__(self, string):
+    pass

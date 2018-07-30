@@ -121,7 +121,7 @@ class Population:
     print("[py] check OK: time={:.3f} size={} mean_age={:.2f}, pct_female={:.2f}".format(neworder.time, self.size(), self.mean_age(), 100.0 * self.gender_split()))
     return True # Faith
 
-  def write_table(self, output_file_pattern):
-    filename = output_file_pattern.replace("YYYY", "{:.3f}".format(neworder.time))
+  def write_table(self, output_file_callback):
+    filename = output_file_callback()
     print("[py] writing " + filename)
     return self.data.to_csv(filename, index=False)

@@ -36,9 +36,7 @@ int main(int argc, const char* argv[])
     bool do_checks = py::extract<bool>(config.attr("do_checks"))();
 
     // TODO direct init in python of an ivector?
-    //std::vector<int> timespan = no::py_list_to_vector<int>(py::list(self.attr("timespan")));
     const std::vector<double>& timespan = py::extract<std::vector<double>>(self.attr("timespan"))();
-//    py::object t = self.attr("time");
     double timestep = py::extract<double>(self.attr("timestep"))();
 
     std::cout << "[C++] " << timespan[0] << " init: ";
@@ -107,38 +105,40 @@ int main(int argc, const char* argv[])
       ));
     }
 
-    for (double t = timespan[0] + timestep; t <= timespan[1]; t += timestep)
+    // Loop with checkpoints
+    double t = timespan[0] + timestep;
+    for (size_t i = 1; i < timespan.size(); ++i)
     {
-      std::cout << "[C++] " << t << " exec: ";
-      // TODO is there a way to do this in-place? does it really matter?
-      self.attr("time") = py::object(t);
-      //*time = t;
+      for (; t <= timespan[i]; t += timestep)
+      {
+        std::cout << "[C++] " << t << " exec: ";
+        // TODO is there a way to do this in-place? does it really matter?
+        self.attr("time") = py::object(t);
 
-      for (auto it = transitionTable.begin(); it != transitionTable.end(); ++it)
+        for (auto it = transitionTable.begin(); it != transitionTable.end(); ++it)
+        {
+          std::cout << it->first << " ";   
+          (it->second)();  
+        }
+        std::cout << std::endl;
+        for (auto it = checkTable.begin(); it != checkTable.end(); ++it)
+        {
+          bool ok = py::extract<bool>((it->second)())();
+          if (!ok) 
+          {
+            throw std::runtime_error("check failed");
+          }  
+        }
+      }
+      std::cout << "[C++] checkpoint ";
+      // Finalisation
+      for (auto it = finalisationTable.begin(); it != finalisationTable.end(); ++it)
       {
         std::cout << it->first << " ";   
         (it->second)();  
       }
-      std::cout << std::endl;
-      for (auto it = checkTable.begin(); it != checkTable.end(); ++it)
-      {
-        bool ok = py::extract<bool>((it->second)())();
-        if (!ok) 
-        {
-          throw std::runtime_error("check failed");
-        }  
-      }
-    }
-
-    std::cout << "[C++] finally: ";
-    // Finalisation
-    for (auto it = finalisationTable.begin(); it != finalisationTable.end(); ++it)
-    {
-      std::cout << it->first << " ";   
-      (it->second)();  
     }
     std::cout << std::endl << "SUCCESS" << std::endl;
-
   }
   catch (py::error_already_set&)
   {

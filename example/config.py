@@ -6,7 +6,7 @@ import glob
 import neworder
 
 # define some global variables
-initial_population = glob.glob("example/ssm_E0*_MSOA11_ppp_2011.csv")
+initial_population = glob.glob("example/ssm_E09*_MSOA11_ppp_2011.csv")
 #initial_population = "example/ssm_E08000021_MSOA11_2011.csv"
 asfr = "example/TowerHamletsFertility.csv"
 asmr = "example/TowerHamletsMortality.csv"
@@ -31,13 +31,13 @@ initialisations = {
   "people": { "module": "population", "class_": "Population", "parameters": [initial_population, asfr, asmr] }
 }
 
-# TODO need a mechanism to have deferred evaluation of parameters 
-# e.g. for checkpoint data filename using current year
+# mechanisms to have deferred/shared evaluation of parameters:
+# 1) store a value in neworder 
+# 2) construct a Callback to be evaluated as needed  
 
 # define the evolution
-neworder.timespan = neworder.DVector.fromlist([2011.25, 2020.25])
-neworder.timestep = 0.5 # TODO beware rounding errors 
-neworder.time = neworder.timespan[0]
+neworder.timespan = neworder.DVector.fromlist([2011.25, 2015.25, 2020.25])
+neworder.timestep = 1.0 # TODO beware rounding errors 
 
 
 # TODO timestep 
@@ -47,10 +47,12 @@ transitions = {
   "age": { "object": "people", "method": "age", "parameters": [neworder.timestep] } \
   }
 
-# Finalisation - YYYY gets replace with simulation time
-output_file_pattern = "example/dm_YYYY.csv"
-# TODO link to module when multiple
+# generates filename according to current time TODO and thread (MPI_COMM_RANK)
+output_file_callback = neworder.Callback( '"example/dm_YYYY.csv".replace("YYYY", "{:.3f}".format(neworder.time))' )
+
+# Finalisation 
+# TODO rename to e.g. checkpoints
 finalisations = {
   # "object": "people" # TODO link to module when multiple
-  "write_table" : { "object": "people", "method": "write_table", "parameters": [output_file_pattern] }
+  "write_table" : { "object": "people", "method": "write_table", "parameters": [output_file_callback] }
 }
