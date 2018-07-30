@@ -123,5 +123,5 @@ class Population:
 
   def write_table(self, output_file_pattern):
     filename = output_file_pattern.replace("YYYY", "{:.3f}".format(neworder.time))
-    print("[py] time={:.2f} writing {}".format(neworder.time, filename))
+    print("[py] writing " + filename)
     return self.data.to_csv(filename, index=False)

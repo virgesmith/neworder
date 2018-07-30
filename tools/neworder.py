@@ -11,4 +11,8 @@ Ensure the path to this file is in your PYTHONPATH, e.g.
 $ PYTHONPATH=tools python3 example/population.py
 """
 
-pass
+# Stub DVector
+class DVector:
+  def fromlist(x):
+    return list(x)
+

@@ -7,7 +7,6 @@ import neworder
 
 # define some global variables
 initial_population = glob.glob("example/ssm_E0*_MSOA11_ppp_2011.csv")
-print(initial_population)
 #initial_population = "example/ssm_E08000021_MSOA11_2011.csv"
 asfr = "example/TowerHamletsFertility.csv"
 asmr = "example/TowerHamletsMortality.csv"
@@ -37,7 +36,7 @@ initialisations = {
 
 # define the evolution
 neworder.timespan = neworder.DVector.fromlist([2011.25, 2020.25])
-neworder.timestep = 0.25 # TODO beware rounding errors 
+neworder.timestep = 0.5 # TODO beware rounding errors 
 neworder.time = neworder.timespan[0]
 
 
