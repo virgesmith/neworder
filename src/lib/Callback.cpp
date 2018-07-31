@@ -1,6 +1,7 @@
 
 #include "Callback.h"
 //#include "Array.h"
+#include "Inspect.h"
 #include "Rand.h"
 
 #include "python.h"
@@ -30,6 +31,8 @@ namespace no = neworder;
 BOOST_PYTHON_MODULE(neworder)
 {
   py::def("name", no::module_name);
+
+  py::def("log", no::log);
 
   py::def("hazard", no::hazard);
 
@@ -87,6 +90,11 @@ BOOST_PYTHON_MODULE(neworder)
 const char* neworder::module_name()
 {
   return "neworder";
+}
+
+void neworder::log(const py::object& msg)
+{
+  std::cout << "[py] " << pycpp::as_string(msg.ptr()) << std::endl;
 }
 
 void neworder::import_module()

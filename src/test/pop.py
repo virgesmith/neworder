@@ -2,6 +2,8 @@
 import collections
 #import numpy as np
 import pandas as pd
+import neworder as no
+
 
 Person = collections.namedtuple('Person', ['id', 'location', 'age', 'gender', 'ethnicity'])
 
@@ -20,7 +22,6 @@ class Population:
 
   def columns(self):
     # columns as np array
-    #print(type(self.data.columns.values), type(self.data.columns.values[0]))
     return self.data.columns.values.tolist()
 
   def values(self):
@@ -28,24 +29,14 @@ class Population:
     return self.data.values.tolist()
 
   def size(self):
-    return len(self.data)
-
-  def birth(self):
-    #self.data.append(Person(id=3, age=0, gender="female", location="hosp", ethnicity="BLA"))
-    return len(self.data)
-
-  def die(self):
-    #self.data.pop()
-    return len(self.data)
+    return len(self.array)
 
   def print(self):
-    print("[python] got", self.array, ", adding 10...")
+    no.log("got {}, adding 10...".format(self.array)) 
     for i in range(0, len(self.array)):
       self.array[i] = self.array[i] + 10
 
 population = Population()
-
-print("[python]", population.data)
 
 def func():
   return population.data

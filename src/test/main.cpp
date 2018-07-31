@@ -25,7 +25,7 @@ int main(int argc, const char* argv[])
     test1("pop", "func", {});
 
     // load module, object, call methods
-    test2("pop", "population", {"size", "die", "size", "birth", "birth", "size"});
+    test2("pop", "population", {"size", "print", "size"});
 
     // load module, object, modify member, call method
     test3("pop", "population", "array", "columns");
@@ -41,11 +41,10 @@ int main(int argc, const char* argv[])
     std::cout << "[C++] running python modules:" << std::endl;
     for (int i = 1; i < argc; ++i)
     {
-      std::cout << "[C++] " << argv[i] << ": ";
       py::object module = py::import(argv[i]);
       py::object testfunc = module.attr("test");
       bool success = py::extract<bool>(testfunc())();
-      std::cout << (success ? "PASS" : "FAIL") << std::endl;
+      std::cout << "[C++] " << argv[i] << ":" << (success ? "PASS" : "FAIL") << std::endl;
     }
   }
   catch (py::error_already_set&)

@@ -27,6 +27,9 @@ private:
 
 const char* module_name();
 
+// msg is forcibly coerced to a string
+void log(const py::object& msg);
+
 void import_module();
 
 // TODO perhaps better to copy to np.array?

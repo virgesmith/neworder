@@ -46,7 +46,7 @@ class Population:
 
     # seed RNG: for now, rows in data * sum(DC1117EW_C_AGE) - TODO add MPI rank/size?
     seed = int(len(self.data) * self.data.DC1117EW_C_AGE.sum()) 
-    print("[py] seed:", seed) 
+    neworder.log("seed: {}".format(seed)) 
     self.rstream = neworder.UStream(seed)
 
     # use this to identify people (uniquely only within this table)
@@ -92,7 +92,7 @@ class Population:
     pass
 
   def deaths(self, deltat):
-    #print("[py] deaths", deltat)
+    # neworder.log("deaths({:.3f})".format(deltat))
 
     # Map the appropriate mortality rate to each female
     # might be a more efficient way of generating this array
@@ -118,10 +118,10 @@ class Population:
 
   def check(self):
     """ State of the nation """
-    print("[py] check OK: time={:.3f} size={} mean_age={:.2f}, pct_female={:.2f}".format(neworder.time, self.size(), self.mean_age(), 100.0 * self.gender_split()))
+    neworder.log("check OK: time={:.3f} size={} mean_age={:.2f}, pct_female={:.2f}".format(neworder.time, self.size(), self.mean_age(), 100.0 * self.gender_split()))
     return True # Faith
 
   def write_table(self, output_file_callback):
     filename = output_file_callback()
-    print("[py] writing " + filename)
+    neworder.log("writing %s" % filename)
     return self.data.to_csv(filename, index=False)

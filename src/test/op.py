@@ -1,39 +1,31 @@
 # https://docs.python.org/3/extending/embedding.html
 
-def printvec(v):
-  print("[python]", type(v), end=":")
-  for i in range(0,len(v)):
-    print(v[i], end=" ")
-  print()
+import neworder
 
+def printvec(x):
+  neworder.log(x)
 
 def add(a,b):
-    print("[python]: ", a, "+", b)
-    return a + b
+  return a + b
 
 def sub(a,b):
-    print("[python]: ", a, "-", b)
-    return a - b
+  return a - b
 
 def mul(a,b):
-    print("[python]: ", a, "*", b)
-    return a * b
+  return a * b
 
 def div(a,b):
-    print("[python]: ", a, "/", b)
-    return a / b
+  return a / b
 
 def void(a,b):
-    pass
+  pass
 
 notafunc = 3
 
-import neworder
-print("[python] callback:", neworder.name())
+neworder.log("callback: %s" % neworder.name())
 
 v = neworder.DVector(20)
 
-#print(v.size())
 v[0] = 3.4
 printvec(v)
 v[1] = v[0]

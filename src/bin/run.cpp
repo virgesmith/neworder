@@ -126,14 +126,14 @@ int run(int rank, int size)
           }  
         }
       }
-      std::cout << "[C++] checkpoint ";
+      std::cout << "[C++] checkpoint: ";
       // Finalisation
       for (auto it = finalisationTable.begin(); it != finalisationTable.end(); ++it)
       {
         std::cout << it->first << " ";   
         (it->second)();  
       }
-      std::cout << std::endl; 
+      std::cout << std::endl;
     }
     std::cout << "[C++] SUCCESS" << std::endl;
   }

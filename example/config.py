@@ -19,7 +19,7 @@ def partition(arr, count):
 
 initial_populations = partition(initial_populations, neworder.nprocs)
 
-print("[py] {}/{}:".format(neworder.procid, neworder.nprocs), initial_populations[neworder.procid])
+neworder.log("{}/{}: {}".format(neworder.procid, neworder.nprocs, initial_populations[neworder.procid]))
 
 #initial_population_array = split(initial_population, neworder.procid, neworder.nprocs))
 
