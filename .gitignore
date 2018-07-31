@@ -43,4 +43,6 @@ build/
 node_modules/
 
 neworder
+neworder_mpi
 testharness
+dm*.csv
