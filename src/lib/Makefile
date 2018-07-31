@@ -3,6 +3,8 @@ src=$(wildcard *.cpp)
 obj=$(src:.cpp=.o)
 dep=$(src:.cpp=.d)
 
+CXXFLAGS += -I../include
+
 LDFLAGS += -l$(BOOST_PYTHON_LIB)
 
 all: libneworder.so
