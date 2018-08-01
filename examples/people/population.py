@@ -6,6 +6,12 @@ import pandas as pd
 import numpy as np
 import neworder
 
+def _col(age, sex):
+  col = "M" if sex == 1 else "F" if sex == 2 else "?"
+  col = col + str(age-1) + "." + str(age)
+  return col
+
+
 def _map_eth(data):
   """ Maps census categories (DC2101EW_C_ETHPUK11) to NewEthpop. Note this is a one-way mapping """
   eth_map = { 0: "INV",
@@ -43,6 +49,7 @@ class Population:
 
     self.fertility = pd.read_csv(asfr, index_col=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"]) 
     self.mortality = pd.read_csv(asmr, index_col=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])
+    self.migration = pd.read_csv("examples/people/NewETHPOP_inmig.csv")
 
     # seed RNG: for now, rows in data * sum(DC1117EW_C_AGE) - TODO add MPI rank/size?
     seed = int(len(self.data) * self.data.DC1117EW_C_AGE.sum()) 
@@ -90,6 +97,24 @@ class Population:
   
   def migrations(self, deltat):
     pass
+
+  def fdkfjdh(self, deltat):
+    locations=np.array(self.migration[self.migration["ETH.group"] == eth]["LAD.code"])
+    locations = np.append(locations, "(stay)")
+    #print(len(locations))
+
+    # TODO loop over age/sex/eth...
+    age = 50
+    sex = 1
+    eth = "WHO"
+    #print(_col(age, sex))
+
+    p=self.migration[self.migration["ETH.group"] == eth][_col(age, sex)].cumsum()
+
+    # TODO neworder
+    rands = np.random.uniform(size=100)
+    idx = np.searchsorted(p,rands)
+    print(l[idx])
 
   def deaths(self, deltat):
     # neworder.log("deaths({:.3f})".format(deltat))

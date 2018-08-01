@@ -6,7 +6,7 @@ import glob
 import neworder
 
 # define some global variables
-initial_populations = glob.glob("examples/people/ssm_*_MSOA11_ppp_2011.csv")
+initial_populations = glob.glob("examples/people/ssm_E09*_MSOA11_ppp_2011.csv")
 asfr = "examples/people/TowerHamletsFertility.csv"
 asmr = "examples/people/TowerHamletsMortality.csv"
 asxr = "examples/people/NewETHPOP_inmig.csv"
