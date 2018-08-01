@@ -39,22 +39,42 @@ $ make PYVER=3.5 BOOST_PYTHON_LIB=boost_python-py35 && make PYVER=3.5 BOOST_PYTH
 
 ## HPC installation (ARC3)
 
-Switch to gnu toolchain and add boost libraries
+Switch to gnu toolchain and add python and boost libraries:
 ```bash
 $ module switch intel gnu
-$ module load boost
+$ module load python/3.6.5
+$ module load boost python-libs
 $ module list
 Currently Loaded Modulefiles:
-  1) licenses        3) gnu/6.3.0       5) user
-  2) sge             4) openmpi/2.0.2   6) boost/1.67.0
+  1) licenses            4) openmpi/2.0.2       7) python-libs/3.1.0
+  2) sge                 5) user                8) boost/1.67.0
+  3) gnu/6.3.0           6) python/3.6.5
 ```
 Optionally use different g++ or boost versions:
 ```
 $ module switch gnu gnu/7.2.0
 $ module switch boost boost/1.65.1
+$ module switch python python/3.6.5
 ```
-Currently experiencing linker errors as `libboost_python3.so` is missing on the system 
+Currently experiencing issues running tests:
+```
+ImportError: numpy.core.multiarray failed to import
+...
+ERROR: [python] unable to determine error
+make[1]: *** [test] Error 1
+make[1]: Leaving directory `/nobackup/geoaps/dev/neworder/src/test'
+make: *** [test] Error 2
+```
+which looks the same as the travis python build issue, and running examples/people fails with:
 
+```bash
+$ ./run.sh 
+[C++] setting PYTHONPATH=example
+[C++] process 0 of 1
+ImportError: numpy.core.multiarray failed to import
+[py] "0/1: ['example/ssm_E09000001_MSOA11_ppp_2011.csv']"
+[C++] 2011.25 init: ERROR: [py] <class 'ModuleNotFoundError'>:ModuleNotFoundError("No module named 'pandas'",)
+```
 # Run Example
 
 __NB the following is a work-in-progress and will change frequently...__
