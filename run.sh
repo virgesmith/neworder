@@ -1,3 +1,3 @@
 #!/bin/bash
 
-LD_LIBRARY_PATH=src/lib src/bin/neworder example
+LD_LIBRARY_PATH=src/lib:$LD_LIBRARY_PATH src/bin/neworder example
