@@ -11,7 +11,6 @@ def _col(age, sex):
   col = col + str(age-1) + "." + str(age)
   return col
 
-
 def _map_eth(data):
   """ Maps census categories (DC2101EW_C_ETHPUK11) to NewEthpop. Note this is a one-way mapping """
   eth_map = { 0: "INV",
@@ -42,14 +41,19 @@ def _map_eth(data):
   return data.drop("DC2101EW_C_ETHPUK11", axis=1)
  
 class Population:
-  def __init__(self, inputdata, asfr, asmr):
+  def __init__(self, inputdata, asfr, asmr, asxr):
+
+    # guard for no input data (if more MPI processes than input files)
+    if not len(inputdata):
+      raise ValueError("proc {}/{}: no input data".format(neworder.procid, neworder.nprocs))
+
     self.data = pd.DataFrame()
     for file in inputdata: 
       self.data = self.data.append(pd.read_csv(file))
 
     self.fertility = pd.read_csv(asfr, index_col=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"]) 
     self.mortality = pd.read_csv(asmr, index_col=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])
-    self.migration = pd.read_csv("examples/people/NewETHPOP_inmig.csv")
+    self.migration = pd.read_csv(asxr)
 
     # seed RNG: for now, rows in data * sum(DC1117EW_C_AGE) - TODO add MPI rank/size?
     seed = int(len(self.data) * self.data.DC1117EW_C_AGE.sum()) 

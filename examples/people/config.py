@@ -18,7 +18,7 @@ def partition(arr, count):
 
 initial_populations = partition(initial_populations, neworder.nprocs)
 
-neworder.log("{}/{}: {}".format(neworder.procid, neworder.nprocs, initial_populations[neworder.procid]))
+#neworder.log("{}/{}: {}".format(neworder.procid, neworder.nprocs, initial_populations[neworder.procid]))
 
 # running/debug options
 loglevel = 1
@@ -30,8 +30,7 @@ checks = {
  
 # initialisation
 initialisations = {
-  # TODO initial_populations[neworder.procid]
-  "people": { "module": "population", "class_": "Population", "parameters": [initial_populations[neworder.procid], asfr, asmr] }
+  "people": { "module": "population", "class_": "Population", "parameters": [initial_populations[neworder.procid], asfr, asmr, asxr] }
 }
 
 # mechanisms to have deferred/shared evaluation of parameters:
@@ -49,7 +48,7 @@ transitions = {
   "age": { "object": "people", "method": "age", "parameters": [neworder.timestep] } \
 }
 
-# generates filename according to current time TODO and thread (MPI_COMM_RANK)
+# generates filename according to current time and thread/threads (MPI_COMM_RANK)
 output_file_callback = neworder.Callback( '"examples/people/dm_T_N_M.csv".replace("T_N_M", "{:.3f}_{}_{}".format(neworder.time, neworder.procid, neworder.nprocs))' )
 
 # Finalisation 
