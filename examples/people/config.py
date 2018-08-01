@@ -9,8 +9,8 @@ import neworder
 initial_populations = glob.glob("examples/people/ssm_*_MSOA11_ppp_2011.csv")
 asfr = "examples/people/TowerHamletsFertility.csv"
 asmr = "examples/people/TowerHamletsMortality.csv"
+asxr = "examples/people/NewETHPOP_inmig.csv"
 
-# running/debug options
 
 # MP split initial population files over threads
 def partition(arr, count):
@@ -20,8 +20,7 @@ initial_populations = partition(initial_populations, neworder.nprocs)
 
 neworder.log("{}/{}: {}".format(neworder.procid, neworder.nprocs, initial_populations[neworder.procid]))
 
-#initial_population_array = split(initial_population, neworder.procid, neworder.nprocs))
-
+# running/debug options
 loglevel = 1
 do_checks = True # Faith
 # assumed to be methods of class_ returning True if checks pass
@@ -46,6 +45,7 @@ neworder.timestep = 1.0 # TODO beware rounding errors
 transitions = { 
   "fertility": { "object": "people", "method": "births", "parameters": [neworder.timestep] }, \
   "mortality": { "object": "people", "method": "deaths", "parameters": [neworder.timestep] }, \
+  "migration": { "object": "people", "method": "migrations", "parameters": [neworder.timestep] }, \
   "age": { "object": "people", "method": "age", "parameters": [neworder.timestep] } \
 }
 

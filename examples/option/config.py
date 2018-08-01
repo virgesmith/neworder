@@ -1,4 +1,24 @@
-# Option example - pricing an Option 
+""" Example - pricing a simple option
+  
+Monte-Carlo simulation is a common technique in quantitative finance. 
+For more info see e.g. https://en.wikipedia.org/wiki/Monte_Carlo_methods_in_finance
+
+A European call option is a derivative contract that grants the holder the right (but not the obilgation) 
+to buy an underlying stock S at a fixed "strike" price K at some given future time T (the expiry). Similarly,
+a put option grants the right (but not obligation) to sell, rather than buy, at a fixed price.
+See https://en.wikipedia.org/wiki/Call_option
+
+Framing derivative pricing in terms of a microsimulation model:
+- start with an intiial (t=0) population of N (identical) underlying prices
+- evolve each price using Monte-Carlo simulation of the stochastic differential equation (SDE)
+     dS/S = (r-q)dt + vdW
+  where S is price, r is risk-free rate, q is continuous dividend yield, v is volatility and dW a Wiener process
+- at expiry (t=T) compute the option prices for each underlying and take the mean
+- discount the option price back to valuation date (t=0)
+
+The main point of this example is to illustrate how different objects can interact within the model. In this case the objects
+are the option itself, and the underlying stock (essentially the market) that governs its price.
+"""
 
 import neworder
 
