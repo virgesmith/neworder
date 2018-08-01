@@ -16,7 +16,7 @@ class Population:
     # not using numpy for now
     self.array = [1.0,2,3,4,5,6]
 
-    self.data = pd.read_csv("../../example/ssm_E09000001_MSOA11_ppp_2011.csv")
+    self.data = pd.read_csv("../../examples/people/ssm_E09000001_MSOA11_ppp_2011.csv")
 
     self.double = 1.0
 

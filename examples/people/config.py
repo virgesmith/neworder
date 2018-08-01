@@ -6,10 +6,9 @@ import glob
 import neworder
 
 # define some global variables
-initial_populations = glob.glob("example/ssm_*_MSOA11_ppp_2011.csv")
-#initial_population = "example/ssm_E08000021_MSOA11_2011.csv"
-asfr = "example/TowerHamletsFertility.csv"
-asmr = "example/TowerHamletsMortality.csv"
+initial_populations = glob.glob("examples/people/ssm_*_MSOA11_ppp_2011.csv")
+asfr = "examples/people/TowerHamletsFertility.csv"
+asmr = "examples/people/TowerHamletsMortality.csv"
 
 # running/debug options
 
@@ -44,7 +43,6 @@ initialisations = {
 neworder.timespan = neworder.DVector.fromlist([2011.25, 2015.25, 2020.25])
 neworder.timestep = 1.0 # TODO beware rounding errors 
 
-# TODO timestep 
 transitions = { 
   "fertility": { "object": "people", "method": "births", "parameters": [neworder.timestep] }, \
   "mortality": { "object": "people", "method": "deaths", "parameters": [neworder.timestep] }, \
@@ -52,7 +50,7 @@ transitions = {
 }
 
 # generates filename according to current time TODO and thread (MPI_COMM_RANK)
-output_file_callback = neworder.Callback( '"example/dm_T_N_M.csv".replace("T_N_M", "{:.3f}_{}_{}".format(neworder.time, neworder.procid, neworder.nprocs))' )
+output_file_callback = neworder.Callback( '"examples/people/dm_T_N_M.csv".replace("T_N_M", "{:.3f}_{}_{}".format(neworder.time, neworder.procid, neworder.nprocs))' )
 
 # Finalisation 
 # TODO rename to e.g. checkpoints
