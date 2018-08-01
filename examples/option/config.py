@@ -41,19 +41,24 @@ nsims = 100000 # number of prices to simulate
 loglevel = 1
 do_checks = True
 checks = { 
-  "rel_error": { "module": "option", "method": "check", "parameters": [] }
+  "rel_error": { "object": "option", "method": "check", "parameters": [] }
 }
- 
+
+# delayed evaluation
+get_stock = neworder.Callback("neworder.stock")
+
 # initialisation
 initialisations = {
-  "option": { "module": "option", "class_": "Option", "parameters": [spot, rate, divy, vol, callput, strike, expiry] }
+  "stock": { "module": "option", "class_": "Stock", "parameters": [spot, rate, divy, vol] },
+  "option": { "module": "option", "class_": "Option", "parameters": [get_stock, callput, strike, expiry] }
 }
 
 transitions = { 
+  #"touch_stock": { "object": "2option", "method": "mc", "parameters": [] },
   "compute_mc_price": { "object": "option", "method": "mc", "parameters": [nsims, expiry] }
 }
 
 finalisations = {
   # "object": "people" # TODO link to module when multiple
-  "compare_mc_price" : { "object": "option", "method": "price", "parameters": [] }
+  "compare_mc_price" : { "object": "2option", "method": "price", "parameters": [] }
 }

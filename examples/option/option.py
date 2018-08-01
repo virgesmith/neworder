@@ -10,14 +10,20 @@ import neworder
 def _norm_cdf(x):
   return (1.0 + erf(x / sqrt(2.0))) / 2.0
 
-class Option():
-  def __init__(self, spot, rate, divy, vol, callput, strike, expiry):
-    # TODO separate option and underlying/market
+class Stock():
+  def __init__(self, spot, rate, divy, vol):
     self.spot = spot
     self.rate = rate
     self.divy = divy
     self.vol = vol
 
+    # persist by inserting into neworder
+    neworder.stock = self
+
+class Option():
+  def __init__(self, stock, callput, strike, expiry):
+
+    self.stock = stock()
     self.callput = callput
     self.strike = strike
     self.expiry = expiry
@@ -27,7 +33,7 @@ class Option():
 
   def mc(self, nsims, dt):
     # compute underlying prices at dt
-    underlyings = self.spot * np.exp((self.rate - self.divy - 0.5 * self.vol * self.vol) * dt + np.random.normal(size=nsims) * self.vol * sqrt(dt))
+    underlyings = self.stock.spot * np.exp((self.stock.rate - self.stock.divy - 0.5 * self.stock.vol * self.stock.vol) * dt + np.random.normal(size=nsims) * self.stock.vol * sqrt(dt))
     # compute option prices at dt
     if self.callput == "CALL":
       option = (underlyings - self.strike).clip(min=0.0).mean()
@@ -35,22 +41,22 @@ class Option():
       option = (self.strike - underlyings).clip(min=0.0).mean()
 
     # discount back to val date
-    self.pv = option * exp(-self.rate * dt)
+    self.pv = option * exp(-self.stock.rate * dt)
     self.nsims = nsims
 
   # implement analytic Black-Scholes pricing as a check... 
   def bs(self):
-    srt = self.vol * sqrt(self.expiry)
-    rqs2t = (self.rate - self.divy + 0.5 * self.vol * self.vol) * self.expiry
-    d1 = (log(self.spot/self.strike) + rqs2t) / srt
+    srt = self.stock.vol * sqrt(self.expiry)
+    rqs2t = (self.stock.rate - self.stock.divy + 0.5 * self.stock.vol * self.stock.vol) * self.expiry
+    d1 = (log(self.stock.spot/self.strike) + rqs2t) / srt
     d2 = d1 - srt
-    df = exp(-self.rate * self.expiry)
-    qf = exp(-self.divy * self.expiry)
+    df = exp(-self.stock.rate * self.expiry)
+    qf = exp(-self.stock.divy * self.expiry)
 
     if self.callput == "CALL":
-      return self.spot * qf * _norm_cdf(d1) - self.strike * df * _norm_cdf(d2)
+      return self.stock.spot * qf * _norm_cdf(d1) - self.strike * df * _norm_cdf(d2)
     else:
-      return -self.spot * df * _norm_cdf(-d1) + self.strike * df * _norm_cdf(-d2)
+      return -self.stock.spot * df * _norm_cdf(-d1) + self.strike * df * _norm_cdf(-d2)
   
   def price(self):
     return self.pv
