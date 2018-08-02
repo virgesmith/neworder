@@ -13,20 +13,20 @@ export
 all: lib bin
 
 lib: 
-	cd src/lib && make
+	+cd src/lib && $(MAKE)
 
 bin: lib
-	cd src/bin && make
+	+cd src/bin && $(MAKE)
 
 mpi: lib
-	cd src/bin && make neworder_mpi
+	+cd src/bin && $(MAKE) neworder_mpi
 
 test: lib 
-	cd src/test && make
+	+cd src/test && $(MAKE)
 
 clean:
-	cd src/lib && make clean
-	cd src/bin && make clean
-	cd src/test && make clean
+	cd src/lib && $(MAKE) clean
+	cd src/bin && $(MAKE) clean
+	cd src/test && $(MAKE) clean
 
 .PHONY: clean

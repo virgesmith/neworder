@@ -27,6 +27,6 @@ neworder_mpi: $(mpi_src)
 -include $(dep)
 
 clean:
-	rm -rf $(dep) $(obj) test
+	rm -rf $(dep) $(obj) neworder neworder_mpi
 
 .PHONY: clean
