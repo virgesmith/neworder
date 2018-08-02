@@ -32,7 +32,7 @@ class Population:
     self.fertility = pd.read_csv(asfr, index_col=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"]) 
     self.mortality = pd.read_csv(asmr, index_col=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])
     self.in_migration = create_migration_table(pd.read_csv(asir), lad)
-    #self.out_migration = pd.read_csv(asor)
+    self.out_migration = create_migration_table(pd.read_csv(asor), lad)
 
     # seed RNG: for now, rows in data * sum(DC1117EW_C_AGE) - TODO add MPI rank/size?
     seed = int(len(self.data) * self.data.DC1117EW_C_AGE.sum()) 
@@ -98,20 +98,31 @@ class Population:
     
   def migrations(self, deltat):
 
-    # in-migations: 
+    # in-migrations: 
     # - assign the rates to the incumbent popultion appropriately by age,sex,ethnicity
     # - randomly sample this population, clone and append
-    rates = self.data.join(self.in_migration, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].tolist()
+    in_rates = self.data.join(self.in_migration, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].tolist()
 
-    h = np.array(neworder.hazard_v(neworder.DVector.fromlist(rates) * deltat).tolist())
+    h_in = np.array(neworder.hazard_v(neworder.DVector.fromlist(in_rates) * deltat).tolist())
     
-    incoming = self.data[h == 1].copy()
-    # Assign a new id
-    incoming.PID = range(self.counter, self.counter + len(incoming))
+    incoming = self.data[h_in == 1].copy()
+
+    out_rates = self.data.join(self.out_migration, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].tolist()
+
+    h_out = np.array(neworder.hazard_v(neworder.DVector.fromlist(out_rates) * deltat).tolist())
+
+    # remove outgoing migrants
+    self.data = self.data[h_out!=1]
 
     # Finally append incomers to main population and adjust counter
+    # Assign a new id
+    incoming.PID = range(self.counter, self.counter + len(incoming))
     self.data = self.data.append(incoming)
     self.counter = self.counter + len(incoming)
+
+    # record net migration
+    self.net_migration = h_in.sum() - h_out.sum()
+
 
   # def fdkfjdh(self, deltat):
 

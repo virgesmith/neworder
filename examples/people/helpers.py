@@ -48,8 +48,8 @@ def create_migration_table(raw_data, lad):
   data = raw_data.drop(remove, axis=1)
 
   # Filter by our location and remove other unwanted columns
-  # TODO partial match so works with census-merged LADs 
-  data = data[data["LAD.code"] == lad].drop(['Unnamed: 0', 'LAD.name', 'LAD.code'], axis=1)
+  # partial match so works with census-merged LADs 
+  data = data[data["LAD.code"].str.contains(lad)].drop(['Unnamed: 0', 'LAD.name', 'LAD.code'], axis=1)
 
   # "Melt" the table (collapsing all the age-sex columns into a single column containing)
   data = data.melt(id_vars=['ETH.group'])
