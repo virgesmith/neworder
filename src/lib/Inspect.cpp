@@ -31,7 +31,7 @@ bool pycpp::has_attr(const py::object& o, const char* attr_name)
 // string repr
 std::string pycpp::as_string(PyObject* obj)
 {
-  PyObject* repr = PyObject_Repr(obj);
+  PyObject* repr = PyObject_Str(obj);
   PyObject* str = PyUnicode_AsEncodedString(repr, "utf-8", "~E~");
   const char *bytes = PyBytes_AS_STRING(str);
 

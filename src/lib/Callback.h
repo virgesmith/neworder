@@ -21,6 +21,11 @@ public:
     return py::eval(m_code.c_str()/*, globals, locals*/);
   }
 
+  const std::string& code() const 
+  {
+    return m_code;
+  }
+
 private:
   std::string m_code;
 };
@@ -56,7 +61,40 @@ std::vector<T> py_list_to_vector(const py::list& l)
   return v;
 }
 
+template<typename T>
+std::string vector_to_string(const std::vector<T>& v)
+{
+  if (v.empty()) 
+    return "[]";
+
+  std::ostringstream str;
+  str << "[" << v[0];
+  for (size_t i = 1; i < v.size(); ++i)
+  {
+    str << ", " << v[i];
+  }
+  str << "]";
+  return str.str();
 }
+
+// Specialisation for strings - explicitly quotes each element
+template<>
+inline std::string vector_to_string(const std::vector<std::string>& v)
+{
+  if (v.empty()) 
+    return "[]";
+
+  std::ostringstream str;
+  str << "['" << v[0];
+  for (size_t i = 1; i < v.size(); ++i)
+  {
+    str << "', '" << v[i];
+  }
+  str << "']";
+  return str.str();
+}
+
+} // namespace neworder
 
 template<typename T>
 std::vector<T> operator+(const std::vector<T>& v, T y)
