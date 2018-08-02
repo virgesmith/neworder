@@ -6,46 +6,24 @@ import pandas as pd
 import numpy as np
 import neworder
 
+from helpers import *
+
 def _col(age, sex):
   col = "M" if sex == 1 else "F" if sex == 2 else "?"
   col = col + str(age-1) + "." + str(age)
   return col
 
-def _map_eth(data):
-  """ Maps census categories (DC2101EW_C_ETHPUK11) to NewEthpop. Note this is a one-way mapping """
-  eth_map = { 0: "INV",
-              1: "INV", 
-              2: "WBI",
-              3: "WHO", 
-              4: "WHO",
-              5: "WHO", 
-              6: "MIX",
-              7: "MIX",
-              8: "MIX",
-              9: "MIX",
-              10: "MIX",
-              11: "INV",
-              12: "IND",
-              13: "PAK",
-              14: "BAN",
-              15: "CHI",
-              16: "OAS",
-              17: "INV",
-              18: "BLA",
-              19: "BLC",
-              20: "OBL",
-              21: "OTH",
-              22: "OTH", 
-              23: "OTH" } 
-  data["NewEthpop_ETH"] = data.DC2101EW_C_ETHPUK11.map(eth_map) #, na_action=None)
-  return data.drop("DC2101EW_C_ETHPUK11", axis=1)
  
+# TODO only support single LAD...? (LAD-specific dynamics)
 class Population:
-  def __init__(self, inputdata, asfr, asmr, asxr):
+  def __init__(self, inputdata, asfr, asmr, asir, asor):
 
     # guard for no input data (if more MPI processes than input files)
     if not len(inputdata):
       raise ValueError("proc {}/{}: no input data".format(neworder.procid, neworder.nprocs))
+
+    lad = inputdata[0].split("_")[1]
+    neworder.log(lad)
 
     self.data = pd.DataFrame()
     for file in inputdata: 
@@ -53,7 +31,8 @@ class Population:
 
     self.fertility = pd.read_csv(asfr, index_col=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"]) 
     self.mortality = pd.read_csv(asmr, index_col=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])
-    self.migration = pd.read_csv(asxr)
+    self.in_migration = create_migration_table(pd.read_csv(asir), lad)
+    #self.out_migration = pd.read_csv(asor)
 
     # seed RNG: for now, rows in data * sum(DC1117EW_C_AGE) - TODO add MPI rank/size?
     seed = int(len(self.data) * self.data.DC1117EW_C_AGE.sum()) 
@@ -67,7 +46,10 @@ class Population:
     # actual age is randomised within the bound of the category
     # TODO segfault can occur if mix ops with DVector and array/list...
     self.data["Age"] = self.data.DC1117EW_C_AGE - self.rstream.get(len(self.data)).tolist()
-    self.data = _map_eth(self.data)
+    self.data = census_eth_to_newethpop_eth(self.data)
+
+    # add a location column for the current location 
+    #self.data["Location"] = 
 
   def age(self, deltat):
     # Increment age by timestep and update census age categorty (used for ASFR/ASMR lookup)
@@ -99,27 +81,6 @@ class Population:
     self.data = self.data.append(newborns)
     self.counter = self.counter + len(newborns)
   
-  def migrations(self, deltat):
-    pass
-
-  def fdkfjdh(self, deltat):
-    locations=np.array(self.migration[self.migration["ETH.group"] == eth]["LAD.code"])
-    locations = np.append(locations, "(stay)")
-    #print(len(locations))
-
-    # TODO loop over age/sex/eth...
-    age = 50
-    sex = 1
-    eth = "WHO"
-    #print(_col(age, sex))
-
-    p=self.migration[self.migration["ETH.group"] == eth][_col(age, sex)].cumsum()
-
-    # TODO neworder
-    rands = np.random.uniform(size=100)
-    idx = np.searchsorted(p,rands)
-    print(l[idx])
-
   def deaths(self, deltat):
     # neworder.log("deaths({:.3f})".format(deltat))
 
@@ -135,6 +96,32 @@ class Population:
     # Finally remove deceased from table
     self.data = self.data[h!=1]
     
+  def migrations(self, deltat):
+
+    # in-migations: 
+    # - assign the rates to the incumbent popultion appropriately by age,sex,ethnicity
+    # - randomly sample this population, clone and append
+    rates = self.data.join(self.in_migration, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].tolist()
+
+    h = np.array(neworder.hazard_v(neworder.DVector.fromlist(rates) * deltat).tolist())
+    
+    incoming = self.data[h == 1].copy()
+    # Assign a new id
+    incoming.PID = range(self.counter, self.counter + len(incoming))
+
+    # Finally append incomers to main population and adjust counter
+    self.data = self.data.append(incoming)
+    self.counter = self.counter + len(incoming)
+
+  # def fdkfjdh(self, deltat):
+
+  #   p=self.migration[self.migration["ETH.group"] == eth][_col(age, sex)].cumsum()
+
+  #   # TODO neworder
+  #   rands = np.random.uniform(size=100)
+  #   idx = np.searchsorted(p,rands)
+  #   print(l[idx])
+
   def mean_age(self):
     return self.data.Age.mean()
 

@@ -6,10 +6,11 @@ import glob
 import neworder
 
 # define some global variables
-initial_populations = glob.glob("examples/people/ssm_E09*_MSOA11_ppp_2011.csv")
+initial_populations = glob.glob("examples/people/ssm_E07*_MSOA11_ppp_2011.csv")
 asfr = "examples/people/TowerHamletsFertility.csv"
 asmr = "examples/people/TowerHamletsMortality.csv"
-asxr = "examples/people/NewETHPOP_inmig.csv"
+asir = "examples/people/NewETHPOP_inmig.csv"
+asor = "examples/people/NewETHPOP_outmig.csv"
 
 
 # MP split initial population files over threads
@@ -30,7 +31,7 @@ checks = {
  
 # initialisation
 initialisations = {
-  "people": { "module": "population", "class_": "Population", "parameters": [initial_populations[neworder.procid], asfr, asmr, asxr] }
+  "people": { "module": "population", "class_": "Population", "parameters": [initial_populations[neworder.procid], asfr, asmr, asir, asor] }
 }
 
 # mechanisms to have deferred/shared evaluation of parameters:
