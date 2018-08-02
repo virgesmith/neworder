@@ -22,8 +22,7 @@ class Population:
     if not len(inputdata):
       raise ValueError("proc {}/{}: no input data".format(neworder.procid, neworder.nprocs))
 
-    lad = inputdata[0].split("_")[1]
-    neworder.log(lad)
+    self.lad = inputdata[0].split("_")[1]
 
     self.data = pd.DataFrame()
     for file in inputdata: 
@@ -31,12 +30,12 @@ class Population:
 
     self.fertility = pd.read_csv(asfr, index_col=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"]) 
     self.mortality = pd.read_csv(asmr, index_col=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])
-    self.in_migration = create_migration_table(pd.read_csv(asir), lad)
-    self.out_migration = create_migration_table(pd.read_csv(asor), lad)
+    self.in_migration = create_migration_table(pd.read_csv(asir), self.lad)
+    self.out_migration = create_migration_table(pd.read_csv(asor), self.lad)
 
     # seed RNG: for now, rows in data * sum(DC1117EW_C_AGE) - TODO add MPI rank/size?
     seed = int(len(self.data) * self.data.DC1117EW_C_AGE.sum()) 
-    neworder.log("seed: {}".format(seed)) 
+    neworder.log("{} seed: {}".format(self.lad, seed)) 
     self.rstream = neworder.UStream(seed)
 
     # use this to identify people (uniquely only within this table)
@@ -109,7 +108,9 @@ class Population:
 
     out_rates = self.data.join(self.out_migration, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].tolist()
 
-    h_out = np.array(neworder.hazard_v(neworder.DVector.fromlist(out_rates) * deltat).tolist())
+    # TODO confirm this data - in and out are orders of magnitude different
+    # assuming for no that out migration rates are percentages
+    h_out = np.array(neworder.hazard_v(neworder.DVector.fromlist(out_rates) * deltat * 0.01).tolist())
 
     # remove outgoing migrants
     self.data = self.data[h_out!=1]
@@ -117,21 +118,12 @@ class Population:
     # Finally append incomers to main population and adjust counter
     # Assign a new id
     incoming.PID = range(self.counter, self.counter + len(incoming))
+    incoming.Area = self.lad
     self.data = self.data.append(incoming)
     self.counter = self.counter + len(incoming)
 
     # record net migration
-    self.net_migration = h_in.sum() - h_out.sum()
-
-
-  # def fdkfjdh(self, deltat):
-
-  #   p=self.migration[self.migration["ETH.group"] == eth][_col(age, sex)].cumsum()
-
-  #   # TODO neworder
-  #   rands = np.random.uniform(size=100)
-  #   idx = np.searchsorted(p,rands)
-  #   print(l[idx])
+    self.in_out = (h_in.sum(), h_out.sum())
 
   def mean_age(self):
     return self.data.Age.mean()
@@ -140,12 +132,16 @@ class Population:
     # this is % female
     return self.data.DC1117EW_C_SEX.mean() - 1.0
 
+  def net_migration():
+    return self.inout[0] - self.in_out[1]
+
   def size(self):
     return len(self.data)
 
   def check(self):
     """ State of the nation """
-    neworder.log("check OK: time={:.3f} size={} mean_age={:.2f}, pct_female={:.2f}".format(neworder.time, self.size(), self.mean_age(), 100.0 * self.gender_split()))
+    neworder.log("check OK: time={:.3f} size={} mean_age={:.2f}, pct_female={:.2f} net_migration={}-{}" \
+      .format(neworder.time, self.size(), self.mean_age(), 100.0 * self.gender_split(), self.in_out[0], self.in_out[1]))
     return True # Faith
 
   def write_table(self, output_file_callback):

@@ -6,20 +6,17 @@ import glob
 import neworder
 
 # define some global variables
-initial_populations = glob.glob("examples/people/ssm_E09*_MSOA11_ppp_2011.csv")
+initial_populations = glob.glob("examples/people/ssm_E08*_MSOA11_ppp_2011.csv")
 asfr = "examples/people/TowerHamletsFertility.csv"
 asmr = "examples/people/TowerHamletsMortality.csv"
 asir = "examples/people/NewETHPOP_inmig.csv"
 asor = "examples/people/NewETHPOP_outmig.csv"
-
 
 # MP split initial population files over threads
 def partition(arr, count):
   return [arr[i::count] for i in range(count)]
 
 initial_populations = partition(initial_populations, neworder.nprocs)
-
-#neworder.log("{}/{}: {}".format(neworder.procid, neworder.nprocs, initial_populations[neworder.procid]))
 
 # running/debug options
 loglevel = 1
