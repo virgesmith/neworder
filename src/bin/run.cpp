@@ -35,11 +35,16 @@ int run(int rank, int size)
     const std::vector<double>& timespan = py::extract<std::vector<double>>(self.attr("timespan"))();
     double timestep = py::extract<double>(self.attr("timestep"))();
 
-    std::cout << "[C++] " << timespan[0] << " init: ";
+    // Do not allow a zero timestep as this will result in an infinite loop
+    if (timestep == 0.0)
+    {
+      throw std::runtime_error("Timestep cannot be zero!");
+    }
+
+    std::cout << "[C++] t=" << timespan[0] << " init: ";
 
     // list of module-class-constructor args -> list of objects
     py::list initialisations = py::dict(config.attr("initialisations")).items();
-    std::map<std::string, py::object> objects;
     for (int i = 0; i < py::len(initialisations); ++i)
     {
       py::dict spec = py::dict(initialisations[i][1]);
@@ -55,7 +60,7 @@ int run(int rank, int size)
 
       // taking a const ref here to stay results in an empty string, which is bizarre love triangle
       const std::string name = py::extract<std::string>(initialisations[i][0])();
-      objects.insert(std::make_pair(name, object));
+      self.attr(name.c_str()) = object;
       std::cout << name << " ";
     }
     std::cout << std::endl;
@@ -67,10 +72,9 @@ int run(int rank, int size)
     for (int i = 0; i < py::len(transitions); ++i)
     {
       py::dict spec = py::dict(transitions[i][1]);
-      ;
       transitionTable.insert(std::make_pair(
         py::extract<std::string>(transitions[i][0])(), 
-        pycpp::Functor(objects[py::extract<std::string>(spec["object"])()].attr(spec["method"]), py::list(spec["parameters"]))
+        pycpp::Functor(self.attr(spec["object"]).attr(spec["method"]), py::list(spec["parameters"]))
       ));
       //std::cout << py::object(transitions[i][0]) << std::endl;
     }
@@ -85,7 +89,7 @@ int run(int rank, int size)
         py::dict spec = py::dict(checks[i][1]);
         checkTable.insert(std::make_pair(
           py::extract<std::string>(checks[i][0])(), 
-          pycpp::Functor(objects.begin()->second.attr(spec["method"]), py::list(spec["parameters"]))
+          pycpp::Functor(self.attr(spec["object"]).attr(spec["method"]), py::list(spec["parameters"]))
         ));
       }
     }
@@ -97,7 +101,7 @@ int run(int rank, int size)
       py::dict spec = py::dict(finalisations[i][1]);
       finalisationTable.insert(std::make_pair(
         py::extract<std::string>(finalisations[i][0])(), 
-        pycpp::Functor(objects.begin()->second.attr(spec["method"]), py::list(spec["parameters"]))
+        pycpp::Functor(self.attr(spec["object"]).attr(spec["method"]), py::list(spec["parameters"]))
       ));
     }
 
