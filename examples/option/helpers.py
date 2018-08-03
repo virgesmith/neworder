@@ -5,8 +5,8 @@ def norm_cdf(x):
   """ Compute the inverse normal cumulatve density funtion """
   return (1.0 + erf(x / sqrt(2.0))) / 2.0
 
-# implement analytic Black-Scholes pricing as a check... 
 def bs_euro_option(S, K, r, q, T, vol, callput):
+  """ Compute Black-Schole European option price """
   srt = vol * sqrt(T)
   rqs2t = (r - q + 0.5 * vol * vol) * T
   d1 = (log(S/K) + rqs2t) / srt

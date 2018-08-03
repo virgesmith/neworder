@@ -99,7 +99,10 @@ class Population:
     # - randomly sample this population, clone and append
     in_rates = self.data.join(self.in_migration, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].tolist()
 
-    h_in = np.array(neworder.hazard_v(neworder.DVector.fromlist(in_rates) * deltat).tolist())
+    # in-migration should be sampling from the whole population ex-LAD, instead do an approximation by scaling up the LAD population
+    # NOTE this is wrong for a number of reasons esp. as it cannot sample category combinations that don't already exist in the LAD
+    scale = 50000000.0 / len(self.data)
+    h_in = np.array(neworder.hazard_v(neworder.DVector.fromlist(in_rates) * scale * deltat).tolist())
     
     incoming = self.data[h_in == 1].copy()
 
@@ -107,7 +110,7 @@ class Population:
 
     # TODO confirm this data - in and out are orders of magnitude different
     # assuming for no that out migration rates are percentages
-    h_out = np.array(neworder.hazard_v(neworder.DVector.fromlist(out_rates) * deltat * 0.01).tolist())
+    h_out = np.array(neworder.hazard_v(neworder.DVector.fromlist(out_rates) * deltat).tolist())
 
     # remove outgoing migrants
     self.data = self.data[h_out!=1]

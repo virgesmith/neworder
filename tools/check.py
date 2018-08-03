@@ -11,7 +11,7 @@ def check(symbols, symbol_list):
   got_required = True
   for symbol in symbol_list:
     got_required = got_required and symbol in symbols
-    print(symbol + "?", symbol in symbols)
+    print("  " + symbol + "?", symbol in symbols)
   return got_required
 
   #return symbol in symbols
@@ -31,13 +31,13 @@ required_symbols = ["loglevel", "do_checks", "initialisations", "transitions", "
 symbols = dir(module)
 
 print("checking", modulename + "...")
-check(symbols, required_symbols)
+have_required = have_required and check(symbols, required_symbols)
 
 # symbols that are defined by the user, not by the embedded env
 required_symbols = ["timespan", "timestep"]
 symbols = dir(neworder)
 print("checking neworder user definitions...")
 
-check(symbols, required_symbols)
+have_required = have_required and check(symbols, required_symbols)
 
-#print(symbols)
+print("CHECK OK" if have_required else "MISSING DEFINITION(s)")

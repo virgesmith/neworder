@@ -19,7 +19,9 @@ class Option():
     self.pv = 0.0
     self.nsims = 0
 
-  def mc(self, nsims, dt):
+  def mc(self, nsims):
+    # get the time from the environment
+    dt = neworder.time
     # compute underlying prices at dt
     underlyings = self.stock.spot * np.exp((self.stock.rate - self.stock.divy - 0.5 * self.stock.vol * self.stock.vol) * dt + np.random.normal(size=nsims) * self.stock.vol * sqrt(dt))
     # compute option prices at dt
@@ -39,5 +41,5 @@ class Option():
     ref = bs_euro_option(self.stock.spot, self.strike, self.stock.rate, self.stock.divy, self.expiry, self.stock.vol, self.callput)
     err = self.pv / ref - 1.0
     neworder.log("mc: {:.6f} / ref: {:.6f} err={:.2%}".format(self.pv, ref, err))
-    # relative error should be within ~1/(sqrt(sims)) of analytic solution
+    # relative error should be within O(1/(sqrt(sims))) of analytic solution
     return True if abs(err) <= 2.0/sqrt(self.nsims) else False

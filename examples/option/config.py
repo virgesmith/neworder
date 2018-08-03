@@ -23,27 +23,25 @@ neworder.timestep = expiry
 nsims = 100000 # number of prices to simulate
 
 loglevel = 1
-do_checks = True
-checks = { 
-  "rel_error": { "object": "option", "method": "check", "parameters": [] }
-}
+do_checks = False
+# no per-timestep checks implemented since there is only one timestep
+checks = { }
 
-# delayed evaluation
+# delayed evaluation for initialisations
 get_stock = neworder.Callback("neworder.market")
 
 # initialisation
 initialisations = {
-  # TODO 
-  "xmarket": { "module": "market", "class_": "Market", "parameters": [spot, rate, divy, vol] },
+  # TODO check objects are being assigned correctly
+  "market": { "module": "market", "class_": "Market", "parameters": [spot, rate, divy, vol] },
   "option": { "module": "option", "class_": "Option", "parameters": [get_stock, callput, strike, expiry] }
 }
 
 transitions = { 
-  #"touch_stock": { "object": "2option", "method": "mc", "parameters": [] },
-  "compute_mc_price": { "object": "option", "method": "mc", "parameters": [nsims, expiry] }
+  # compute the option price
+  "compute_mc_price": { "object": "option", "method": "mc", "parameters": [nsims] }
 }
 
 finalisations = {
-  # "object": "people" # TODO link to module when multiple
-  "compare_mc_price" : { "object": "option", "method": "price", "parameters": [] }
+  "compare_mc_price" : { "object": "option", "method": "check", "parameters": [] }
 }

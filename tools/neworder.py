@@ -20,3 +20,7 @@ class DVector:
 class Callback:
   def __init__(self, string):
     pass
+
+# Default multiprocess settings
+nprocs = 1
+procid = 0

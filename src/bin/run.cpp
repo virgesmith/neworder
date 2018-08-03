@@ -111,7 +111,7 @@ int run(int rank, int size)
     {
       for (; t <= timespan[i]; t += timestep)
       {
-        std::cout << "[C++] " << t << " exec: ";
+        std::cout << "[C++] t=" << t << " exec: ";
         // TODO is there a way to do this in-place? does it really matter?
         self.attr("time") = py::object(t);
 

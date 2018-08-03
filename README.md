@@ -77,30 +77,38 @@ ImportError: numpy.core.multiarray failed to import
 ```
 # Examples
 
-__NB the following are works-in-progress and subject to change, the documentation may not refelect the current code__
+__NB the following are works-in-progress and subject to change, the documentation may not reflect the current code__
 
-The microsimulation framework expects a python module called [config.py](example/config.py) that, minimally:
-- describes how to initialise model object(s) (in this case it's just one, defined in [population.py](example/population.py))
+The microsimulation framework expects a directory containing some python modules. There must be a module called [config.py] that, minimally:
+- describes how to initialise model object(s), defined in the other module(s).
 - defines a timeline and a timestep. The timeline can be broken into multiple chunks, the end of each of which is considered a _checkpoint_.
 - describes what (if any) checks to run after each timestep.
 - defines the _transitions_ that the population are subject to during the timeline.
 - describes what to do with the simulated population data at each checkpoint.   
 
-All of these are entirely user-definable.
+All of these are entirely user-definable. The checks, transitions and checkpoints can be empty
 
-## The obligatory "Hello world"
+To run an example, type 
+```bash
+$ ./run_example.sh <name>
+```
+which will run the model defined in the directory `./examples/<name>`
 
-TODO
+## The obligatory "Hello world" example
+
+This example is an ultra-simple illustration of the structure required, all the files are extensively comments. 
+
+The model is configured here: [examples/hello_world/config.py](examples/hello_world/config.py). This file refers to a second file in which the "model" is defined, see [examples/hello_world/greet.py](examples/hello_world/greet.py)
 
 ## Microsimulation of People
 
-In this example, the transitions are ageing, births, deaths and migrations. 
+In this example, the input data is one or more csv files containing microsynthesised 2011 populations generated from UK census data, by age, gender and ethnicity. The transitions modelled are: ageing, births, deaths and migrations. 
 
 Ageing simply increments individual's ages according to the timestep. 
 
-Births, deaths and migrations are are modelled using Monte-Carlo sampling of distributions parameterised by age, sex and ethnicity-specific fertility, mortality and migration rates respectively. 
+Births, deaths and migrations are are modelled using Monte-Carlo sampling of distributions parameterised by age, sex and ethnicity-specific fertility, mortality and migration rates respectively, which are drawn from the [NewETHPOP](http://www.ethpop.org/) project
 
-For the fertility model newborns simply inherit their mother's location and ethnicity, are born aged zero, and have a randomly selected gender (equal probabillity). The migration model is an 'in-out' model, i.e. it is not a full origin-destination model. Flows are either inward from 'elsewhere' or outward to 'elsewhere'.
+For the fertility model newborns simply inherit their mother's location and ethnicity, are born aged zero, and have a randomly selected gender (equal probability). The migration model is an 'in-out' model, i.e. it is not a full origin-destination model. Flows are either inward from 'elsewhere' or outward to 'elsewhere'.
 
 People who have died are simply removed from the simulation.
 
@@ -113,9 +121,9 @@ During the simulation, at each timestep the model displays some summary data:
 - the percentage of the population that are female
 - the in and out migration numbers
 
-At each checkpoint, the population is simply written to a file.
+At each checkpoint, the current population is simply written to a file.
 
-See [population.py](example/population.py) for details of the model implementation. 
+See [config.py](examples/people/config.py) for the simulation setup and [population.py](examples/people/population.py) for details of the model implementation. 
 
 The file [helpers.py](examples/people/helpers.py) defines some helper functions, primarily to reformat input data into a format that can be used efficiently.
 
@@ -173,10 +181,10 @@ In order to calculate the fair value of a derivative contract one can simulate a
 each simulated path to get the value of the derivative _at expiry_. This then is discounted to get the current fair value.
 
 We can easily framing a derivative derivative pricing problem in terms of a microsimulation model:
-- start with an intiial (t=0) population of N (identical) underlying prices
+- start with an intial (t=0) population of N (identical) underlying prices
 - evolve each price using Monte-Carlo simulation of the stochastic differential equation (SDE):
 
-     dS/S = (r-q)dt + vdW
+  dS/S = (r-q)dt + vdW
 
   where S is price, r is risk-free rate, q is continuous dividend yield, v is volatility and dW a Wiener process
 - at expiry (t=T) compute the option prices for each underlying and take the mean
@@ -184,7 +192,26 @@ We can easily framing a derivative derivative pricing problem in terms of a micr
 
 For this simple option we can also compute an analytic fair value under the Black-Scholes model, and use this to determine the accuracy of the Monte-Carlo simulation.
 
-Thus our [config.py](examples/option/config.py)
+The [config.py](examples/option/config.py) file: 
+- sets the parameters for the market and the option
+- defines a simple timeline [0, T] corresponding to [valuation date, expiry date] and a single timestep.
+- describes how to initialise the [market](examples/option/market.py) and [option](examples/option/option.py) objects
+- defines the "transition" which in this case is running the Monte-Carlo simulation
+- finally, checks the Monte-Carlo result against the analytic formula and displays the results.
+
+The [helpers.py](examples/option/helpers.py) provides some mathematical formulae.  
+
+```bash
+$ ./run_example.sh option
+[C++] setting PYTHONPATH=examples/option
+[C++] process 0 of 1
+[C++] embedded python version: 3.6.5 (default, Apr  1 2018, 05:46:30)  [GCC 7.3.0]
+[C++] 0 init: xmarket option
+[C++] 0.75 exec: compute_mc_price
+[C++] checkpoint: compare_mc_price [py] mc: 7.188980 / ref: 7.201286 err=-0.17%
+
+[C++] SUCCESS
+```
 
 ## RiskPaths
 
