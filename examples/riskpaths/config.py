@@ -16,3 +16,39 @@ https://www.statcan.gc.ca/eng/microsimulation/modgen/new/chap4/chap4
   available at www.statcan.gc.ca/microsimulation/modgen/modgen-eng.htm'
 
 """
+
+import neworder
+
+# TODO parameterise
+neworder.mortality_rate = 0.01
+neworder.fertility_rate = 0.01
+
+population_size = 100
+
+# running/debug options
+loglevel = 1
+do_checks = True # Faith
+# assumed to be methods of class_ returning True if checks pass
+checks = {
+  #"check": { "object": "people", "method": "check", "parameters" : [] }
+}
+ 
+# initialisation
+initialisations = {
+  "people": { "module": "riskpaths", "class_": "RiskPaths", "parameters": [population_size] }
+}
+
+# This timeline represents persons age
+# range LIFE
+neworder.timespan = neworder.DVector.fromlist([0, 100])
+neworder.timestep = 1
+
+
+transitions = {
+  "status": { "object": "people", "method": "alive", "parameters": []} 
+}
+
+
+# Finalisation 
+finalisations = {
+}

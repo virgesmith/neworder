@@ -4,6 +4,10 @@
 #include <vector>
 #include <random>
 
+// TODO thread/process-safe seeding
+namespace {
+std::mt19937 prng;
+}
 
 neworder::UStream::UStream(int64_t seed) : m_seed(seed), m_prng(seed), m_dist(0.0, 1.0)
 {
@@ -53,7 +57,6 @@ std::vector<int> neworder::hazard_v(const std::vector<double>& prob)
 std::vector<double> neworder::stopping(double prob, size_t n)
 {
   // TODO thread/process-safe seeding
-  std::mt19937 prng(77027465);
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
   double rprob = 1.0 / prob;
@@ -71,7 +74,6 @@ std::vector<double> neworder::stopping(double prob, size_t n)
 std::vector<double> neworder::stopping_v(const std::vector<double>& prob)
 {
   // TODO thread/process-safe seeding
-  std::mt19937 prng(77027465);
   std::uniform_real_distribution<> dist(0.0, 1.0);  
 
   size_t n = prob.size();

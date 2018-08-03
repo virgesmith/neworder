@@ -1,5 +1,6 @@
 """ Hello World
 The simplest functional neworder configuration
+Serves as a skeleton for user projects
 """
 
 # Expose the enviroment to python

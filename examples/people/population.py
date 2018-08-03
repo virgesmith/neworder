@@ -108,8 +108,6 @@ class Population:
 
     out_rates = self.data.join(self.out_migration, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].tolist()
 
-    # TODO confirm this data - in and out are orders of magnitude different
-    # assuming for no that out migration rates are percentages
     h_out = np.array(neworder.hazard_v(neworder.DVector.fromlist(out_rates) * deltat).tolist())
 
     # remove outgoing migrants
@@ -123,6 +121,8 @@ class Population:
     incoming.Age = incoming.Age - self.rstream.get(len(incoming)).tolist()
     self.data = self.data.append(incoming)
     self.counter = self.counter + len(incoming)
+
+    # TODO incorporate international migration
 
     # record net migration
     self.in_out = (h_in.sum(), h_out.sum())
