@@ -1,21 +1,5 @@
 """ Example - pricing a simple option
   
-Monte-Carlo simulation is a common technique in quantitative finance. 
-For more info see e.g. https://en.wikipedia.org/wiki/Monte_Carlo_methods_in_finance
-
-A European call option is a derivative contract that grants the holder the right (but not the obilgation) 
-to buy an underlying stock S at a fixed "strike" price K at some given future time T (the expiry). Similarly,
-a put option grants the right (but not obligation) to sell, rather than buy, at a fixed price.
-See https://en.wikipedia.org/wiki/Call_option
-
-Framing derivative pricing in terms of a microsimulation model:
-- start with an intiial (t=0) population of N (identical) underlying prices
-- evolve each price using Monte-Carlo simulation of the stochastic differential equation (SDE)
-     dS/S = (r-q)dt + vdW
-  where S is price, r is risk-free rate, q is continuous dividend yield, v is volatility and dW a Wiener process
-- at expiry (t=T) compute the option prices for each underlying and take the mean
-- discount the option price back to valuation date (t=0)
-
 The main point of this example is to illustrate how different objects can interact within the model. In this case the objects
 are the option itself, and the underlying stock (essentially the market) that governs its price.
 """
@@ -45,11 +29,12 @@ checks = {
 }
 
 # delayed evaluation
-get_stock = neworder.Callback("neworder.stock")
+get_stock = neworder.Callback("neworder.market")
 
 # initialisation
 initialisations = {
-  "stock": { "module": "option", "class_": "Stock", "parameters": [spot, rate, divy, vol] },
+  # TODO 
+  "xmarket": { "module": "market", "class_": "Market", "parameters": [spot, rate, divy, vol] },
   "option": { "module": "option", "class_": "Option", "parameters": [get_stock, callput, strike, expiry] }
 }
 
@@ -60,5 +45,5 @@ transitions = {
 
 finalisations = {
   # "object": "people" # TODO link to module when multiple
-  "compare_mc_price" : { "object": "2option", "method": "price", "parameters": [] }
+  "compare_mc_price" : { "object": "option", "method": "price", "parameters": [] }
 }

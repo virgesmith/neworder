@@ -75,42 +75,119 @@ ImportError: numpy.core.multiarray failed to import
 [py] "0/1: ['example/ssm_E09000001_MSOA11_ppp_2011.csv']"
 [C++] 2011.25 init: ERROR: [py] <class 'ModuleNotFoundError'>:ModuleNotFoundError("No module named 'pandas'",)
 ```
-# Run Example
+# Examples
 
-__NB the following is a work-in-progress and will change frequently...__
+__NB the following are works-in-progress and subject to change, the documentation may not refelect the current code__
 
 The microsimulation framework expects a python module called [config.py](example/config.py) that, minimally:
 - describes how to initialise model object(s) (in this case it's just one, defined in [population.py](example/population.py))
-- defines a timeline and a timestep.
+- defines a timeline and a timestep. The timeline can be broken into multiple chunks, the end of each of which is considered a _checkpoint_.
 - describes what (if any) checks to run after each timestep.
 - defines the _transitions_ that the population are subject to during the timeline.
-- describes what to do with the simulated population data when the simulation is done.   
+- describes what to do with the simulated population data at each checkpoint.   
 
-In the example, the transitions are (currently) ageing, births, and deaths. Ageing simply increments individual's ages according to the timestep. Births and deaths are randomly sampled and parameterised by fertility and mortality rates respectively. 
+All of these are entirely user-definable.
 
-See [population.py](example/population.py)) for details, but in short newborns inherit their mother's location and ethnicity, are born aged zero, and have a randomly selected gender (equal probabillity). People who have died are simply removed from the simulation.
+## The obligatory "Hello world"
+
+TODO
+
+## Microsimulation of People
+
+In this example, the transitions are ageing, births, deaths and migrations. 
+
+Ageing simply increments individual's ages according to the timestep. 
+
+Births, deaths and migrations are are modelled using Monte-Carlo sampling of distributions parameterised by age, sex and ethnicity-specific fertility, mortality and migration rates respectively. 
+
+For the fertility model newborns simply inherit their mother's location and ethnicity, are born aged zero, and have a randomly selected gender (equal probabillity). The migration model is an 'in-out' model, i.e. it is not a full origin-destination model. Flows are either inward from 'elsewhere' or outward to 'elsewhere'.
+
+People who have died are simply removed from the simulation.
+
+NB dealing with competing transitions 
+
+During the simulation, at each timestep the model displays some summary data: 
+- the time
+- the size of the population
+- the mean age of the population
+- the percentage of the population that are female
+- the in and out migration numbers
+
+At each checkpoint, the population is simply written to a file.
+
+See [population.py](example/population.py) for details of the model implementation. 
+
+The file [helpers.py](examples/people/helpers.py) defines some helper functions, primarily to reformat input data into a format that can be used efficiently.
 
 ```bash
-$ ./run.sh
-[C++] 2011 init: people
-[C++] 2012 exec: age fertility mortality
-[py] check OK: size=7417 mean_age=42.15, pct_female=44.17
-[C++] 2013 exec: age fertility mortality
-[py] check OK: size=7425 mean_age=42.29, pct_female=44.19
-[C++] 2014 exec: age fertility mortality
-[py] check OK: size=7432 mean_age=42.50, pct_female=44.24
-[C++] 2015 exec: age fertility mortality
-[py] check OK: size=7429 mean_age=42.69, pct_female=44.29
-[C++] 2016 exec: age fertility mortality
-[py] check OK: size=7422 mean_age=42.90, pct_female=44.29
-[C++] 2017 exec: age fertility mortality
-[py] check OK: size=7409 mean_age=43.07, pct_female=44.32
-[C++] 2018 exec: age fertility mortality
-[py] check OK: size=7399 mean_age=43.24, pct_female=44.41
-[C++] 2019 exec: age fertility mortality
-[py] check OK: size=7387 mean_age=43.47, pct_female=44.46
-[C++] 2020 exec: age fertility mortality
-[py] check OK: size=7369 mean_age=43.73, pct_female=44.55
-[C++] finally: write_table
-SUCCESS
+$ ./run_example.sh people
+[C++] setting PYTHONPATH=examples/people
+[C++] process 0 of 1
+[C++] embedded python version: 3.6.5 (default, Apr  1 2018, 05:46:30)  [GCC 7.3.0]
+[C++] 2011.25 init: [py] E08000021 seed: 3006591687345
+people
+[C++] 2012.25 exec: age fertility migration mortality
+[py] check OK: time=2012.250 size=282396 mean_age=37.53, pct_female=49.89 net_migration=123-237
+[C++] 2013.25 exec: age fertility migration mortality
+[py] check OK: time=2013.250 size=283005 mean_age=37.70, pct_female=49.85 net_migration=106-234
+[C++] 2014.25 exec: age fertility migration mortality
+[py] check OK: time=2014.250 size=283791 mean_age=37.83, pct_female=49.86 net_migration=114-226
+[C++] 2015.25 exec: age fertility migration mortality
+[py] check OK: time=2015.250 size=284549 mean_age=37.98, pct_female=49.86 net_migration=93-227
+[C++] checkpoint: write_table [py] writing examples/people/dm_2015.250_0_1.csv
+
+[C++] 2016.25 exec: age fertility migration mortality
+[py] check OK: time=2016.250 size=285328 mean_age=38.14, pct_female=49.86 net_migration=98-218
+[C++] 2017.25 exec: age fertility migration mortality
+[py] check OK: time=2017.250 size=286026 mean_age=38.28, pct_female=49.88 net_migration=90-195
+[C++] 2018.25 exec: age fertility migration mortality
+[py] check OK: time=2018.250 size=286634 mean_age=38.44, pct_female=49.88 net_migration=97-186
+[C++] 2019.25 exec: age fertility migration mortality
+[py] check OK: time=2019.250 size=287333 mean_age=38.60, pct_female=49.90 net_migration=93-200
+[C++] 2020.25 exec: age fertility migration mortality
+[py] check OK: time=2020.250 size=287922 mean_age=38.76, pct_female=49.91 net_migration=89-183
+[C++] checkpoint: write_table [py] writing examples/people/dm_2020.250_0_1.csv
+
+[C++] SUCCESS
 ```
+### Parallel Execution
+
+The above model can be run in massively parallel mode using [MPI](https://en.wikipedia.org/wiki/Message_Passing_Interface). For example, to run the simulation for all 347 LADs in England & Wales, each with its own microsynthesised population file:
+
+```bash
+$ mpirun -n 80 src/bin/neworder_mpi examples/people
+```
+and the 347 input files will be divided roughly equally over the 80 processes. This particular example lends itself easily to parallel execution as no interprocess communication is required. Future development of this package will enable interprocess communication, for e.g. moving people from one region to another.
+
+## Derivative Pricing
+
+Monte-Carlo simulation is a [common technique in quantitative finance](https://en.wikipedia.org/wiki/Monte_Carlo_methods_in_finance). 
+
+A European call option is a derivative contract that grants the holder the right (but not the obligation) 
+to buy an underlying stock S at a fixed "strike" price K at some given future time T (the expiry). Similarly,
+a put option grants the right (but not obligation) to sell, rather than buy, at a fixed price.
+See https://en.wikipedia.org/wiki/Call_option.
+
+In order to calculate the fair value of a derivative contract one can simulate a (large) number of paths the underlying stock may take 
+(according to current market conditions and some model assumptions). We then take the mean of the derivative price for 
+each simulated path to get the value of the derivative _at expiry_. This then is discounted to get the current fair value.
+
+We can easily framing a derivative derivative pricing problem in terms of a microsimulation model:
+- start with an intiial (t=0) population of N (identical) underlying prices
+- evolve each price using Monte-Carlo simulation of the stochastic differential equation (SDE):
+
+     dS/S = (r-q)dt + vdW
+
+  where S is price, r is risk-free rate, q is continuous dividend yield, v is volatility and dW a Wiener process
+- at expiry (t=T) compute the option prices for each underlying and take the mean
+- discount the option price back to valuation date (t=0)
+
+For this simple option we can also compute an analytic fair value under the Black-Scholes model, and use this to determine the accuracy of the Monte-Carlo simulation.
+
+Thus our [config.py](examples/option/config.py)
+
+## RiskPaths
+
+RiskPaths is a well-known MODGEN model that is primarily used for teaching purposes.
+
+TODO neworder implementation...

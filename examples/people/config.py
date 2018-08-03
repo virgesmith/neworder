@@ -46,6 +46,7 @@ transitions = {
   "age": { "object": "people", "method": "age", "parameters": [neworder.timestep] } \
 }
 
+# TODO add LAD code (pass from population)
 # generates filename according to current time and thread/threads (MPI_COMM_RANK)
 output_file_callback = neworder.Callback( '"examples/people/dm_T_N_M.csv".replace("T_N_M", "{:.3f}_{}_{}".format(neworder.time, neworder.procid, neworder.nprocs))' )
 

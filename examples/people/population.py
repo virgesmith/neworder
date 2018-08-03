@@ -47,9 +47,6 @@ class Population:
     self.data["Age"] = self.data.DC1117EW_C_AGE - self.rstream.get(len(self.data)).tolist()
     self.data = census_eth_to_newethpop_eth(self.data)
 
-    # add a location column for the current location 
-    #self.data["Location"] = 
-
   def age(self, deltat):
     # Increment age by timestep and update census age categorty (used for ASFR/ASMR lookup)
     # NB census age category max value is 86 (=85 or over)
@@ -119,6 +116,8 @@ class Population:
     # Assign a new id
     incoming.PID = range(self.counter, self.counter + len(incoming))
     incoming.Area = self.lad
+    # assign a new random fractional age based on census age category
+    incoming.Age = incoming.Age - self.rstream.get(len(incoming)).tolist()
     self.data = self.data.append(incoming)
     self.counter = self.counter + len(incoming)
 
