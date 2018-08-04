@@ -105,6 +105,14 @@ int run(int rank, int size)
       ));
     }
 
+    std::map<std::string, no::Callback> checkpointTable; 
+    py::list checkpoints = py::dict(config.attr("checkpoints")).items();
+    for (int i = 0; i < py::len(checkpoints); ++i)
+    {
+      checkpointTable.insert(std::make_pair(py::extract<std::string>(checkpoints[i][0])(), 
+                                            no::Callback(py::extract<std::string>(checkpoints[i][1])())));
+    }
+
     // Loop with checkpoints
     double t = timespan[0] + timestep;
     for (size_t i = 1; i < timespan.size(); ++i)
@@ -137,6 +145,12 @@ int run(int rank, int size)
         std::cout << it->first << " ";   
         (it->second)();  
       }
+      for (auto it = checkpointTable.begin(); it != checkpointTable.end(); ++it)
+      {
+        std::cout << it->first << ": ";   
+        // Note: return value is ignored (exec not eval)
+        (it->second)();  
+      } 
       std::cout << std::endl;
     }
     std::cout << "[C++] SUCCESS" << std::endl;

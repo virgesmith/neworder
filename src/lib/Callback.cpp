@@ -9,6 +9,13 @@
 #include <iostream>
 
 
+py::object neworder::Callback::operator()() const 
+{
+  // see https://www.boost.org/doc/libs/1_66_0/libs/python/doc/html/reference/embedding.html#embedding.boost_python_exec_hpp
+  // evaluate the global/local namespaces at the last minute? or do they update dynamically?
+  return py::eval(m_code.c_str(), py::import("__main__").attr("__dict__"), py::import("neworder").attr("__dict__"));
+}
+
 namespace {
 // pythonic array access (no bounds check)
 // might be a bottleneck...

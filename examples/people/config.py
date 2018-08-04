@@ -48,11 +48,12 @@ transitions = {
 
 # TODO add LAD code (pass from population)
 # generates filename according to current time and thread/threads (MPI_COMM_RANK)
-output_file_callback = neworder.Callback( '"examples/people/dm_T_N_M.csv".replace("T_N_M", "{:.3f}_{}_{}".format(neworder.time, neworder.procid, neworder.nprocs))' )
+#output_file_callback = neworder.Callback( '"examples/people/dm_T_N_M.csv".replace("T_N_M", "{:.3f}_{}_{}".format(time, procid, nprocs))' )
 
 # Finalisation 
 # TODO rename to e.g. checkpoints
-finalisations = {
-  # "object": "people" # TODO link to module when multiple
-  "write_table" : { "object": "people", "method": "write_table", "parameters": [output_file_callback] }
+finalisations = { }
+
+checkpoints = {
+  "write_table" : "people.write_table()" 
 }

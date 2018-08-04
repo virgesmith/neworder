@@ -28,7 +28,7 @@ do_checks = False
 checks = { }
 
 # delayed evaluation for initialisations
-get_stock = neworder.Callback("neworder.market")
+get_stock = neworder.Callback("market")
 
 # initialisation
 initialisations = {
@@ -42,6 +42,9 @@ transitions = {
   "compute_mc_price": { "object": "option", "method": "mc", "parameters": [nsims] }
 }
 
-finalisations = {
-  "compare_mc_price" : { "object": "option", "method": "check", "parameters": [] }
+# TODO remove
+finalisations = { }
+
+checkpoints = {
+   "compare_mc_price": "option.check()"
 }

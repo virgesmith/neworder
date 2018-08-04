@@ -11,15 +11,11 @@ namespace neworder {
 class Callback
 {
 public:
-  Callback(const std::string& code) : m_code(code) { }
+  explicit Callback(const std::string& code) : m_code(code) { }
 
   ~Callback() = default;
 
-  py::object operator()() const 
-  {
-    // see https://www.boost.org/doc/libs/1_66_0/libs/python/doc/html/reference/embedding.html#embedding.boost_python_exec_hpp
-    return py::eval(m_code.c_str()/*, globals, locals*/);
-  }
+  py::object operator()() const;
 
   const std::string& code() const 
   {

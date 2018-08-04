@@ -32,12 +32,15 @@ initialisations = {
 # There are no transitions to model
 transitions = { }
 
+# TODO remove...
+finalisations = { }
+
 # Say hello when the empty simulation is done
 #
-# This tells the framework to call the greeter object. The "say_hello" label is purely an internal identifier
-# The pure python equivalent to the above is:
+# equivalent to 
+# import neworder
 # neworder.greeter()
-finalisations = {
-  # __call__ is python-speak for call the object itself (like it was a function)
-  "say_hello" : { "object": "greeter", "method": "__call__", "parameters": [] }
+checkpoints = {
+  "eval" : "2+2",
+  "say_hello" : "greeter()"
 }

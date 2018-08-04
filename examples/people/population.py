@@ -146,7 +146,7 @@ class Population:
       .format(neworder.time, self.size(), self.mean_age(), 100.0 * self.gender_split(), self.in_out[0], self.in_out[1]))
     return True # Faith
 
-  def write_table(self, output_file_callback):
-    filename = output_file_callback()
+  def write_table(self):
+    filename = "./examples/people/dm_{}_{:.3f}_{}-{}.csv".format(self.lad, neworder.time, neworder.procid, neworder.nprocs)
     neworder.log("writing %s" % filename)
     return self.data.to_csv(filename, index=False)
