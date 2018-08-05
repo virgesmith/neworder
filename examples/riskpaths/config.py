@@ -30,7 +30,7 @@ loglevel = 1
 do_checks = True # Faith
 # assumed to be methods of class_ returning True if checks pass
 checks = {
-  #"check": { "object": "people", "method": "check", "parameters" : [] }
+  #"check": "people.check()"
 }
  
 # initialisation
@@ -45,10 +45,10 @@ neworder.timestep = 1
 
 
 transitions = {
-  "status": { "object": "people", "method": "alive", "parameters": []} 
+  "status": "people.alive()"
 }
 
 
 # Finalisation 
-finalisations = {
+checkpoints = {
 }

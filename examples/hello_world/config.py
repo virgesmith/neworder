@@ -13,9 +13,12 @@ neworder.timestep = neworder.timespan[1]
 
 # No checks to run during the simulation
 loglevel = 1
-do_checks = False
+do_checks = True
 # no per-timestep checks implemented since there is only one timestep
-checks = { }
+checks = {
+  # a do nothing-check purely for illustration - checks must evaluate to boolean 
+  "dummy": "True"
+}
 
 # Initialisation - construct an instance of Greet
 #
@@ -29,11 +32,11 @@ initialisations = {
   "greeter": { "module": "greet", "class_": "Greet", "parameters": [] }
 }
 
-# There are no transitions to model
-transitions = { }
-
-# TODO remove...
-finalisations = { }
+# The "transition" in this case fetches the current username from the os
+# Note that the code is exec'd not eval'd: any return value is ignored
+transitions = { 
+  "who": "greeter.get_name()"
+}
 
 # Say hello when the empty simulation is done
 #
@@ -41,6 +44,5 @@ finalisations = { }
 # import neworder
 # neworder.greeter()
 checkpoints = {
-  "eval" : "2+2",
   "say_hello" : "greeter()"
 }

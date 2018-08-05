@@ -8,7 +8,6 @@
 
 #include "python.h"
 
-#include <map>
 #include <iostream>
 #include <cstdlib>
 
@@ -31,7 +30,7 @@ int run(int rank, int size)
 
     bool do_checks = py::extract<bool>(config.attr("do_checks"))();
 
-    // TODO direct init in python of an ivector?
+    // TODO direct init in python of a DVector?
     const std::vector<double>& timespan = py::extract<std::vector<double>>(self.attr("timespan"))();
     double timestep = py::extract<double>(self.attr("timestep"))();
 
@@ -65,47 +64,26 @@ int run(int rank, int size)
     }
     std::cout << std::endl;
 
-    // See https://stackoverflow.com/questions/6116345/boostpython-possible-to-automatically-convert-from-dict-stdmap
-    pycpp::FunctionTable transitionTable;
+    no::CallbackTable transitionTable; 
     py::list transitions = py::dict(config.attr("transitions")).items();
-
     for (int i = 0; i < py::len(transitions); ++i)
     {
-      py::dict spec = py::dict(transitions[i][1]);
-      transitionTable.insert(std::make_pair(
-        py::extract<std::string>(transitions[i][0])(), 
-        pycpp::Functor(self.attr(spec["object"]).attr(spec["method"]), py::list(spec["parameters"]))
-      ));
-      //std::cout << py::object(transitions[i][0]) << std::endl;
+      transitionTable.insert(std::make_pair(py::extract<std::string>(transitions[i][0])(), 
+                                            no::Callback(py::extract<std::string>(transitions[i][1])())));
     }
 
-    // Load check functors only if checks enabled
-    pycpp::FunctionTable checkTable;
+    no::CallbackTable checkTable; 
     if (do_checks)
     {
       py::list checks = py::dict(config.attr("checks")).items();
       for (int i = 0; i < py::len(checks); ++i)
       {
-        py::dict spec = py::dict(checks[i][1]);
-        checkTable.insert(std::make_pair(
-          py::extract<std::string>(checks[i][0])(), 
-          pycpp::Functor(self.attr(spec["object"]).attr(spec["method"]), py::list(spec["parameters"]))
-        ));
+        checkTable.insert(std::make_pair(py::extract<std::string>(checks[i][0])(), 
+                                        no::Callback(py::extract<std::string>(checks[i][1])())));
       }
     }
 
-    pycpp::FunctionTable finalisationTable;
-    py::list finalisations = py::dict(config.attr("finalisations")).items();
-    for (int i = 0; i < py::len(finalisations); ++i)
-    {
-      py::dict spec = py::dict(finalisations[i][1]);
-      finalisationTable.insert(std::make_pair(
-        py::extract<std::string>(finalisations[i][0])(), 
-        pycpp::Functor(self.attr(spec["object"]).attr(spec["method"]), py::list(spec["parameters"]))
-      ));
-    }
-
-    std::map<std::string, no::Callback> checkpointTable; 
+    no::CallbackTable checkpointTable; 
     py::list checkpoints = py::dict(config.attr("checkpoints")).items();
     for (int i = 0; i < py::len(checkpoints); ++i)
     {
@@ -139,12 +117,6 @@ int run(int rank, int size)
         }
       }
       std::cout << "[C++] checkpoint: ";
-      // Finalisation
-      for (auto it = finalisationTable.begin(); it != finalisationTable.end(); ++it)
-      {
-        std::cout << it->first << " ";   
-        (it->second)();  
-      }
       for (auto it = checkpointTable.begin(); it != checkpointTable.end(); ++it)
       {
         std::cout << it->first << ": ";   

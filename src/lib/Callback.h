@@ -3,6 +3,7 @@
 #include "python.h"
 
 #include <vector>
+#include <map>
 
 namespace neworder {
 
@@ -25,6 +26,8 @@ public:
 private:
   std::string m_code;
 };
+
+typedef std::map<std::string, Callback> CallbackTable;
 
 const char* module_name();
 

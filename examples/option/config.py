@@ -20,7 +20,7 @@ expiry = 0.75
 # Using exact MC calc of GBM requires only 1 timestep 
 neworder.timespan = neworder.DVector.fromlist([0, expiry])
 neworder.timestep = expiry
-nsims = 100000 # number of prices to simulate
+neworder.nsims = 100000 # number of prices to simulate
 
 loglevel = 1
 do_checks = False
@@ -32,18 +32,14 @@ get_stock = neworder.Callback("market")
 
 # initialisation
 initialisations = {
-  # TODO check objects are being assigned correctly
   "market": { "module": "market", "class_": "Market", "parameters": [spot, rate, divy, vol] },
   "option": { "module": "option", "class_": "Option", "parameters": [get_stock, callput, strike, expiry] }
 }
 
 transitions = { 
   # compute the option price
-  "compute_mc_price": { "object": "option", "method": "mc", "parameters": [nsims] }
+  "compute_mc_price": "option.mc(nsims)" 
 }
-
-# TODO remove
-finalisations = { }
 
 checkpoints = {
    "compare_mc_price": "option.check()"

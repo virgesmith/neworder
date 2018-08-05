@@ -20,40 +20,32 @@ initial_populations = partition(initial_populations, neworder.nprocs)
 
 # running/debug options
 loglevel = 1
-do_checks = True # Faith
-# assumed to be methods of class_ returning True if checks pass
-checks = {
-  "check": { "object": "people", "method": "check", "parameters" : [] }
-}
  
 # initialisation
 initialisations = {
   "people": { "module": "population", "class_": "Population", "parameters": [initial_populations[neworder.procid], asfr, asmr, asir, asor] }
 }
 
-# mechanisms to have deferred/shared evaluation of parameters:
-# 1) store a value in neworder 
-# 2) construct a Callback to be evaluated as needed  
-
 # define the evolution
 neworder.timespan = neworder.DVector.fromlist([2011.25, 2015.25, 2020.25])
 neworder.timestep = 1.0 # TODO beware rounding errors 
 
+# timestep must be defined in neworder
 transitions = { 
-  "fertility": { "object": "people", "method": "births", "parameters": [neworder.timestep] }, \
-  "mortality": { "object": "people", "method": "deaths", "parameters": [neworder.timestep] }, \
-  "migration": { "object": "people", "method": "migrations", "parameters": [neworder.timestep] }, \
-  "age": { "object": "people", "method": "age", "parameters": [neworder.timestep] } \
+  "fertility": "people.births(timestep)", 
+  "mortality": "people.deaths(timestep)", 
+  "migration": "people.migrations(timestep)", 
+  "age": "people.age(timestep)" 
 }
 
-# TODO add LAD code (pass from population)
-# generates filename according to current time and thread/threads (MPI_COMM_RANK)
-#output_file_callback = neworder.Callback( '"examples/people/dm_T_N_M.csv".replace("T_N_M", "{:.3f}_{}_{}".format(time, procid, nprocs))' )
+# checks to perform after each timestep. Assumed to return a boolean 
+do_checks = True # Faith
+# assumed to be methods of class_ returning True if checks pass
+checks = {
+  "check": "people.check()"
+}
 
-# Finalisation 
-# TODO rename to e.g. checkpoints
-finalisations = { }
-
+# Generate output at each checkpoint  
 checkpoints = {
   "write_table" : "people.write_table()" 
 }
