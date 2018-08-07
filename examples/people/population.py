@@ -36,8 +36,9 @@ class Population:
     self.emigration = create_from_ethpop_data(pd.read_csv(asxr), self.lad)
 
     # converts fractional category totals into individuals
-    self.immigrants = generate_intl_migrants(self.immigration)
-    self.emigrants = generate_intl_migrants(self.emigration)
+    self.immigrants = generate_intl_migrants(self.immigration, True)
+    # for emigrants don't need individuals
+    self.emigrants = generate_intl_migrants(self.emigration, False)
 
     # seed RNG: for now, rows in data * sum(DC1117EW_C_AGE) - TODO add MPI rank/size?
     seed = int(len(self.data) * self.data.DC1117EW_C_AGE.sum()) 
@@ -58,7 +59,7 @@ class Population:
     # NB census age category max value is 86 (=85 or over)
     self.data.Age = self.data.Age + deltat
     # reconstruct census age group
-    self.data.DC1117EW_C_AGE = np.clip(np.ceil(self.data.Age), 1, 86)
+    self.data.DC1117EW_C_AGE = np.clip(np.ceil(self.data.Age), 1, 86).astype(int)
 
   def births(self, deltat):
     # First consider only females
@@ -80,7 +81,7 @@ class Population:
     newborns.DC1117EW_C_SEX = np.array(neworder.hazard(0.5, len(newborns)).tolist()) + 1
 
     # Finally append newborns to main population and adjust counter
-    self.data = self.data.append(newborns)
+    self.data = self.data.append(newborns, sort=False)
     self.counter = self.counter + len(newborns)
   
   def deaths(self, deltat):
@@ -124,8 +125,8 @@ class Population:
     incoming.PID = range(self.counter, self.counter + len(incoming))
     incoming.Area = self.lad
     # assign a new random fractional age based on census age category
-    incoming.Age = incoming.Age - self.rstream.get(len(incoming)).tolist()
-    self.data = self.data.append(incoming)
+    incoming.Age = incoming.DC1117EW_C_AGE - self.rstream.get(len(incoming)).tolist()
+    self.data = self.data.append(incoming, sort=False)
     self.counter = self.counter + len(incoming)
     
     # international    
@@ -133,16 +134,26 @@ class Population:
     intl_incoming["PID"] = range(self.counter, self.counter + len(intl_incoming))
     intl_incoming["Area"] = self.lad
     # assign a new random fractional age based on census age category
-    intl_incoming["Age"] = intl_incoming.DC1117_C_AGE - self.rstream.get(len(intl_incoming)).tolist()
-    self.data = self.data.append(intl_incoming)
+    intl_incoming["Age"] = intl_incoming.DC1117EW_C_AGE - self.rstream.get(len(intl_incoming)).tolist()
+    self.data = self.data.append(intl_incoming, sort=False)
     self.counter = self.counter + len(intl_incoming)
 
-    self.data = self.data.append(intl_incoming)
-
-    # TODO emigration
+    # # TODO emigration
+    # intl_outgoing = self.emigrants.copy()
+    # #print(intl_outgoing.head())
+    # for i in range(len(intl_outgoing)):
+    #   ref = self.data[(self.data.NewEthpop_ETH == intl_outgoing.iloc[i].NewEthpop_ETH)
+    #     & (self.data.DC1117EW_C_SEX == intl_outgoing.iloc[i].DC1117EW_C_SEX)
+    #     & (self.data.DC1117EW_C_AGE == intl_outgoing.iloc[i].DC1117EW_C_AGE)]
+    #   count = intl_outgoing.iloc[i].Rate
+    #   print(count, len(ref))
+    #   print(str(ref.sample(min(count, len(ref)), replace=False)))
+      
+    #print(len(self.data), len(intl_outgoing))
+    #self.data
 
     # record net migration
-    self.in_out = (h_in.sum(), h_out.sum(), len(self.immigrants), 0 * len(self.emigrants))
+    self.in_out = (h_in.sum(), h_out.sum(), len(self.immigrants), len(self.emigrants))
 
   def mean_age(self):
     return self.data.Age.mean()
@@ -160,6 +171,7 @@ class Population:
 
   def check(self):
     """ State of the nation """
+    check(self.data)
     neworder.log("check OK: time={:.3f} size={} mean_age={:.2f}, pct_female={:.2f} net_migration={} ({}-{}+{}-{})" \
       .format(neworder.time, self.size(), self.mean_age(), 100.0 * self.gender_split(), 
       self.in_out[0] - self.in_out[1] + self.in_out[2] - self.in_out[3], 

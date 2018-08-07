@@ -53,5 +53,6 @@ checks = {
 
 # Generate output at each checkpoint  
 checkpoints = {
+  "check_data" : "people.check()",
   "write_table" : "people.write_table()" 
 }

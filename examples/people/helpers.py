@@ -3,6 +3,7 @@ Helper functions for the people example
 """
 
 import pandas as pd
+import numpy as np
 import humanleague as hl
 
 def census_eth_to_newethpop_eth(data):
@@ -56,16 +57,16 @@ def create_from_ethpop_data(raw_data, lad):
   data = data.melt(id_vars=['ETH.group'])
 
   # Create separate age and sex columns
-  data["DC1117_C_SEX"] = data.apply(lambda row: 1 if row.variable[0] == "M" else 2, axis=1)
-  data["DC1117_C_AGE"] = data.apply(lambda row: int(row.variable.split(".")[1]) + 1, axis=1)
+  data["DC1117EW_C_SEX"] = data.apply(lambda row: 1 if row.variable[0] == "M" else 2, axis=1)
+  data["DC1117EW_C_AGE"] = data.apply(lambda row: int(row.variable.split(".")[1]) + 1, axis=1)
   # Remove another unneeded column
   data.drop(["variable"], axis=1, inplace=True)
   # Rename for consistency and set multiindex
   data.rename({"ETH.group": "NewEthpop_ETH", "value": "Rate"}, axis="columns", inplace=True)
-  data.set_index(["NewEthpop_ETH", "DC1117_C_SEX", "DC1117_C_AGE"], inplace=True)
+  data.set_index(["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"], inplace=True)
   return data
 
-def generate_intl_migrants(migrant_data):
+def generate_intl_migrants(migrant_data, expand):
   # incorporate international migrations
   # NB these are absolute (fractional) numbers - not varying in time
   total = migrant_data.Rate.sum() 
@@ -74,12 +75,27 @@ def generate_intl_migrants(migrant_data):
   # then fit nearest integer (this respects total much better than simple rounding)
   migrant_data.Rate = hl.prob2IntFreq(migrant_data.Rate.values, int(total))["freq"]
 
-  # expand individuals into rows
   migrants = migrant_data[migrant_data.Rate>0]
-  migrants = migrants["Rate"].repeat(migrants["Rate"]).reset_index().drop("Rate", axis=1)
+  # expand individuals into rows
+  if expand:
+    migrants = migrants["Rate"].repeat(migrants["Rate"]).reset_index().drop("Rate", axis=1)
+  else:
+    migrants = migrants.reset_index()
 
   return migrants
 
+def check(data):
+  # check no duplicated PID
+  if len(data[data.duplicated(['PID'], keep=False)].head()):
+    raise ValueError("Duplicate PIDs found")
+  # Valid ETH, SEX, AGE
+  if not np.array_equal(sorted(data.DC1117EW_C_SEX.unique()), [1,2]):
+    raise ValueError("invalid gender value")
+  if not np.array_equal(sorted(data.DC1117EW_C_AGE.unique().astype(int)), range(1,87)):
+    raise ValueError("invalid catgorical age value")
+  # this can go below zero for cat 86+
+  if (data.DC1117EW_C_AGE - data.Age).max() >= 1.0:
+    raise ValueError("invalid fractional age value")
 
 # # for testing
 # if __name__ == "__main__":
