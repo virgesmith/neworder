@@ -3,6 +3,7 @@ Helper functions for the people example
 """
 
 import pandas as pd
+import humanleague as hl
 
 def census_eth_to_newethpop_eth(data):
   """ Maps census categories (DC2101EW_C_ETHPUK11) to NewEthpop. Note this is a one-way mapping """
@@ -34,7 +35,7 @@ def census_eth_to_newethpop_eth(data):
   return data.drop("DC2101EW_C_ETHPUK11", axis=1)
 
 
-def create_migration_table(raw_data, lad):
+def create_from_ethpop_data(raw_data, lad):
   """ Processes raw NewETHPOP in/out migration data into a LAD-specific table that can be used efficiently """
 
   # As it's nonsensical to aggregate rates, we simply use the 85+ rate for everybody over 84
@@ -64,10 +65,26 @@ def create_migration_table(raw_data, lad):
   data.set_index(["NewEthpop_ETH", "DC1117_C_SEX", "DC1117_C_AGE"], inplace=True)
   return data
 
+def generate_intl_migrants(migrant_data):
+  # incorporate international migrations
+  # NB these are absolute (fractional) numbers - not varying in time
+  total = migrant_data.Rate.sum() 
+  # Convert to whole numbers - first normalise
+  migrant_data.Rate = migrant_data.Rate.values / total
+  # then fit nearest integer (this respects total much better than simple rounding)
+  migrant_data.Rate = hl.prob2IntFreq(migrant_data.Rate.values, int(total))["freq"]
+
+  # expand individuals into rows
+  migrants = migrant_data[migrant_data.Rate>0]
+  migrants = migrants["Rate"].repeat(migrants["Rate"]).reset_index().drop("Rate", axis=1)
+
+  return migrants
+
+
 # # for testing
 # if __name__ == "__main__":
 #   raw_data = pd.read_csv("./NewETHPOP_inmig.csv")
 #   lad="E08000021"
-#   asir = create_migration_table(raw_data, lad)
+#   asir = create_from_ethpop(raw_data, lad)
 
 #   print(asir.head())

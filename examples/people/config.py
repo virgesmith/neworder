@@ -7,10 +7,16 @@ import neworder
 
 # define some global variables
 initial_populations = glob.glob("examples/people/ssm_E08*_MSOA11_ppp_2011.csv")
-asfr = "examples/people/TowerHamletsFertility.csv"
-asmr = "examples/people/TowerHamletsMortality.csv"
+asfr = "examples/people/NewETHPOP_fertility.csv"
+asmr = "examples/people/NewETHPOP_mortality.csv"
+# internal in-migration
 asir = "examples/people/NewETHPOP_inmig.csv"
+# internal out-migration
 asor = "examples/people/NewETHPOP_outmig.csv"
+# immigration
+ascr = "examples/people/NewETHPOP_immig.csv"
+# emigration
+asxr = "examples/people/NewETHPOP_emig.csv"
 
 # MP split initial population files over threads
 def partition(arr, count):
@@ -23,7 +29,7 @@ loglevel = 1
  
 # initialisation
 initialisations = {
-  "people": { "module": "population", "class_": "Population", "parameters": [initial_populations[neworder.procid], asfr, asmr, asir, asor] }
+  "people": { "module": "population", "class_": "Population", "parameters": [initial_populations[neworder.procid], asfr, asmr, asir, asor, ascr, asxr] }
 }
 
 # define the evolution
