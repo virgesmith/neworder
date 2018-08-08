@@ -18,11 +18,7 @@ pycpp::Environment::Environment()
   // Init python env
   Py_Initialize();
 
-  // Get and display python version
-  py::object sys = py::import("sys");
-  std::string version_string = py::extract<std::string>(sys.attr("version"))();
-  std::replace(version_string.begin(), version_string.end(), '\n', ' ');
-  std::cout << "[C++] embedded python version: " << version_string << std::endl;
+  std::cout << "[C++] embedded python version: " << version() << std::endl;
 
   // init numpy
   numpy_init(); // things go bad if this gets called more than once?
@@ -63,4 +59,16 @@ std::string pycpp::Environment::check() noexcept
   return "unable to determine error";
 }
 
+std::string pycpp::Environment::version()
+{
+  static std::string version_string;
+  // Get and display python version - only do once
+  if (version_string.empty())
+  {
+    py::object sys = py::import("sys");
+    version_string = py::extract<std::string>(sys.attr("version"))();
+    std::replace(version_string.begin(), version_string.end(), '\n', ' ');
+  }
+  return version_string;
+}
 

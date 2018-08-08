@@ -31,6 +31,10 @@ typedef std::map<std::string, Callback> CallbackTable;
 
 const char* module_name();
 
+const char* module_version();
+
+std::string python_version();
+
 // msg is forcibly coerced to a string
 void log(const py::object& msg);
 

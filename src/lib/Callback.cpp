@@ -1,6 +1,8 @@
 
 #include "Callback.h"
+#include "Version.h"
 //#include "Array.h"
+#include "Environment.h"
 #include "Inspect.h"
 #include "Rand.h"
 
@@ -38,6 +40,10 @@ BOOST_PYTHON_MODULE(neworder)
   namespace no = neworder;
 
   py::def("name", no::module_name);
+
+  py::def("version", no::module_version);
+
+  py::def("python", no::python_version);
 
   py::def("log", no::log);
 
@@ -101,6 +107,16 @@ BOOST_PYTHON_MODULE(neworder)
 const char* neworder::module_name()
 {
   return "neworder";
+}
+
+const char* neworder::module_version()
+{
+  return NEWORDER_VERSION_STRING;
+}
+
+std::string neworder::python_version()
+{
+  return pycpp::Environment::version();
 }
 
 void neworder::log(const py::object& msg)
