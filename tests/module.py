@@ -11,9 +11,9 @@ def test():
   dv = no.DVector(10)
 
   rng0 = no.UStream(0)
-  no.log(rng0.get(10).tolist())
-  rng1 = no.UStream(0)
-  no.log(rng1.get(10).tolist())
+  no.log(rng0.get(10))
+  rng1 = no.UStream(1)
+  no.log(rng1.get(10))
 
   # test arithmetic
   dv = dv + 0.5
@@ -28,9 +28,12 @@ def test():
   f = no.Callback("2 + 2")
 
   no.testVec = no.DVector.fromlist([1,2,3,4])
-  # TODO this could be improved
+
+  no.testVec2 = no.SVector.fromlist(["a", "b", "c"])
   no.log(no.testVec)
-  no.log(no.testVec.tolist())
+  no.log(str(no.testVec))
+  no.log(repr(no.testVec))
+  no.log(no.testVec2)
   no.log(no.testVec[3])
 
   no.log(f())

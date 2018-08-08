@@ -20,6 +20,9 @@ public:
   // check for errors in the python env: if it returns, there is no error
   static std::string check() noexcept;
 
+  // returns the python version
+  static std::string version();
+
 };
 
 }

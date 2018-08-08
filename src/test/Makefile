@@ -26,6 +26,6 @@ test: testharness
 	PYTHONPATH=.:../../tests LD_LIBRARY_PATH=../lib:$(LD_LIBRARY_PATH) ./testharness module
 
 clean:
-	rm -rf $(dep) $(obj) test
+	rm -rf $(dep) $(obj) testharness
 
 .PHONY: clean test

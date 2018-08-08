@@ -6,11 +6,17 @@ import glob
 import neworder
 
 # define some global variables
-initial_populations = glob.glob("examples/people/ssm_*_MSOA11_ppp_2011.csv")
-asfr = "examples/people/TowerHamletsFertility.csv"
-asmr = "examples/people/TowerHamletsMortality.csv"
-asxr = "examples/people/NewETHPOP_inmig.csv"
-
+initial_populations = glob.glob("examples/people/ssm_E08*_MSOA11_ppp_2011.csv")
+asfr = "examples/people/NewETHPOP_fertility.csv"
+asmr = "examples/people/NewETHPOP_mortality.csv"
+# internal in-migration
+asir = "examples/people/NewETHPOP_inmig.csv"
+# internal out-migration
+asor = "examples/people/NewETHPOP_outmig.csv"
+# immigration
+ascr = "examples/people/NewETHPOP_immig.csv"
+# emigration
+asxr = "examples/people/NewETHPOP_emig.csv"
 
 # MP split initial population files over threads
 def partition(arr, count):
@@ -18,43 +24,35 @@ def partition(arr, count):
 
 initial_populations = partition(initial_populations, neworder.nprocs)
 
-neworder.log("{}/{}: {}".format(neworder.procid, neworder.nprocs, initial_populations[neworder.procid]))
-
 # running/debug options
 loglevel = 1
-do_checks = True # Faith
-# assumed to be methods of class_ returning True if checks pass
-checks = {
-  "check": { "object": "people", "method": "check", "parameters" : [] }
-}
  
 # initialisation
 initialisations = {
-  # TODO initial_populations[neworder.procid]
-  "people": { "module": "population", "class_": "Population", "parameters": [initial_populations[neworder.procid], asfr, asmr] }
+  "people": { "module": "population", "class_": "Population", "parameters": [initial_populations[neworder.procid], asfr, asmr, asir, asor, ascr, asxr] }
 }
-
-# mechanisms to have deferred/shared evaluation of parameters:
-# 1) store a value in neworder 
-# 2) construct a Callback to be evaluated as needed  
 
 # define the evolution
 neworder.timespan = neworder.DVector.fromlist([2011.25, 2015.25, 2020.25])
 neworder.timestep = 1.0 # TODO beware rounding errors 
 
+# timestep must be defined in neworder
 transitions = { 
-  "fertility": { "object": "people", "method": "births", "parameters": [neworder.timestep] }, \
-  "mortality": { "object": "people", "method": "deaths", "parameters": [neworder.timestep] }, \
-  "migration": { "object": "people", "method": "migrations", "parameters": [neworder.timestep] }, \
-  "age": { "object": "people", "method": "age", "parameters": [neworder.timestep] } \
+  "fertility": "people.births(timestep)", 
+  "mortality": "people.deaths(timestep)", 
+  "migration": "people.migrations(timestep)", 
+  "age": "people.age(timestep)" 
 }
 
-# generates filename according to current time TODO and thread (MPI_COMM_RANK)
-output_file_callback = neworder.Callback( '"examples/people/dm_T_N_M.csv".replace("T_N_M", "{:.3f}_{}_{}".format(neworder.time, neworder.procid, neworder.nprocs))' )
+# checks to perform after each timestep. Assumed to return a boolean 
+do_checks = True # Faith
+# assumed to be methods of class_ returning True if checks pass
+checks = {
+  "check": "people.check()"
+}
 
-# Finalisation 
-# TODO rename to e.g. checkpoints
-finalisations = {
-  # "object": "people" # TODO link to module when multiple
-  "write_table" : { "object": "people", "method": "write_table", "parameters": [output_file_callback] }
+# Generate output at each checkpoint  
+checkpoints = {
+  "check_data" : "people.check()",
+  "write_table" : "people.write_table()" 
 }

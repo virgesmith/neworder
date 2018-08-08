@@ -3,6 +3,7 @@
 #include "python.h"
 
 #include <vector>
+#include <map>
 
 namespace neworder {
 
@@ -11,21 +12,28 @@ namespace neworder {
 class Callback
 {
 public:
-  Callback(const std::string& code) : m_code(code) { }
+  explicit Callback(const std::string& code) : m_code(code) { }
 
   ~Callback() = default;
 
-  py::object operator()() const 
+  py::object operator()() const;
+
+  const std::string& code() const 
   {
-    // see https://www.boost.org/doc/libs/1_66_0/libs/python/doc/html/reference/embedding.html#embedding.boost_python_exec_hpp
-    return py::eval(m_code.c_str()/*, globals, locals*/);
+    return m_code;
   }
 
 private:
   std::string m_code;
 };
 
+typedef std::map<std::string, Callback> CallbackTable;
+
 const char* module_name();
+
+const char* module_version();
+
+std::string python_version();
 
 // msg is forcibly coerced to a string
 void log(const py::object& msg);
@@ -56,7 +64,40 @@ std::vector<T> py_list_to_vector(const py::list& l)
   return v;
 }
 
+template<typename T>
+std::string vector_to_string(const std::vector<T>& v)
+{
+  if (v.empty()) 
+    return "[]";
+
+  std::ostringstream str;
+  str << "[" << v[0];
+  for (size_t i = 1; i < v.size(); ++i)
+  {
+    str << ", " << v[i];
+  }
+  str << "]";
+  return str.str();
 }
+
+// Specialisation for strings - explicitly quotes each element
+template<>
+inline std::string vector_to_string(const std::vector<std::string>& v)
+{
+  if (v.empty()) 
+    return "[]";
+
+  std::ostringstream str;
+  str << "['" << v[0];
+  for (size_t i = 1; i < v.size(); ++i)
+  {
+    str << "', '" << v[i];
+  }
+  str << "']";
+  return str.str();
+}
+
+} // namespace neworder
 
 template<typename T>
 std::vector<T> operator+(const std::vector<T>& v, T y)

@@ -18,6 +18,6 @@ libneworder.so: $(obj)
 -include $(dep)
 
 clean:
-	rm -rf $(dep) $(obj) test1	
+	rm -rf $(dep) $(obj) libneworder.so	
 
 .PHONY: clean test

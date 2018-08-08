@@ -8,7 +8,6 @@
 
 #include "python.h"
 
-#include <map>
 #include <iostream>
 #include <cstdlib>
 
@@ -31,15 +30,20 @@ int run(int rank, int size)
 
     bool do_checks = py::extract<bool>(config.attr("do_checks"))();
 
-    // TODO direct init in python of an ivector?
+    // TODO direct init in python of a DVector?
     const std::vector<double>& timespan = py::extract<std::vector<double>>(self.attr("timespan"))();
     double timestep = py::extract<double>(self.attr("timestep"))();
 
-    std::cout << "[C++] " << timespan[0] << " init: ";
+    // Do not allow a zero timestep as this will result in an infinite loop
+    if (timestep == 0.0)
+    {
+      throw std::runtime_error("Timestep cannot be zero!");
+    }
+
+    std::cout << "[C++] t=" << timespan[0] << " init: ";
 
     // list of module-class-constructor args -> list of objects
     py::list initialisations = py::dict(config.attr("initialisations")).items();
-    std::map<std::string, py::object> objects;
     for (int i = 0; i < py::len(initialisations); ++i)
     {
       py::dict spec = py::dict(initialisations[i][1]);
@@ -55,50 +59,36 @@ int run(int rank, int size)
 
       // taking a const ref here to stay results in an empty string, which is bizarre love triangle
       const std::string name = py::extract<std::string>(initialisations[i][0])();
-      objects.insert(std::make_pair(name, object));
+      self.attr(name.c_str()) = object;
       std::cout << name << " ";
     }
     std::cout << std::endl;
 
-    // See https://stackoverflow.com/questions/6116345/boostpython-possible-to-automatically-convert-from-dict-stdmap
-    pycpp::FunctionTable transitionTable;
+    no::CallbackTable transitionTable; 
     py::list transitions = py::dict(config.attr("transitions")).items();
-
     for (int i = 0; i < py::len(transitions); ++i)
     {
-      py::dict spec = py::dict(transitions[i][1]);
-      ;
-      transitionTable.insert(std::make_pair(
-        py::extract<std::string>(transitions[i][0])(), 
-        pycpp::Functor(objects[py::extract<std::string>(spec["object"])()].attr(spec["method"]), py::list(spec["parameters"]))
-      ));
-      //std::cout << py::object(transitions[i][0]) << std::endl;
+      transitionTable.insert(std::make_pair(py::extract<std::string>(transitions[i][0])(), 
+                                            no::Callback(py::extract<std::string>(transitions[i][1])())));
     }
 
-    // Load check functors only if checks enabled
-    pycpp::FunctionTable checkTable;
+    no::CallbackTable checkTable; 
     if (do_checks)
     {
       py::list checks = py::dict(config.attr("checks")).items();
       for (int i = 0; i < py::len(checks); ++i)
       {
-        py::dict spec = py::dict(checks[i][1]);
-        checkTable.insert(std::make_pair(
-          py::extract<std::string>(checks[i][0])(), 
-          pycpp::Functor(objects.begin()->second.attr(spec["method"]), py::list(spec["parameters"]))
-        ));
+        checkTable.insert(std::make_pair(py::extract<std::string>(checks[i][0])(), 
+                                        no::Callback(py::extract<std::string>(checks[i][1])())));
       }
     }
 
-    pycpp::FunctionTable finalisationTable;
-    py::list finalisations = py::dict(config.attr("finalisations")).items();
-    for (int i = 0; i < py::len(finalisations); ++i)
+    no::CallbackTable checkpointTable; 
+    py::list checkpoints = py::dict(config.attr("checkpoints")).items();
+    for (int i = 0; i < py::len(checkpoints); ++i)
     {
-      py::dict spec = py::dict(finalisations[i][1]);
-      finalisationTable.insert(std::make_pair(
-        py::extract<std::string>(finalisations[i][0])(), 
-        pycpp::Functor(objects.begin()->second.attr(spec["method"]), py::list(spec["parameters"]))
-      ));
+      checkpointTable.insert(std::make_pair(py::extract<std::string>(checkpoints[i][0])(), 
+                                            no::Callback(py::extract<std::string>(checkpoints[i][1])())));
     }
 
     // Loop with checkpoints
@@ -107,7 +97,7 @@ int run(int rank, int size)
     {
       for (; t <= timespan[i]; t += timestep)
       {
-        std::cout << "[C++] " << t << " exec: ";
+        std::cout << "[C++] t=" << t << " exec: ";
         // TODO is there a way to do this in-place? does it really matter?
         self.attr("time") = py::object(t);
 
@@ -127,12 +117,12 @@ int run(int rank, int size)
         }
       }
       std::cout << "[C++] checkpoint: ";
-      // Finalisation
-      for (auto it = finalisationTable.begin(); it != finalisationTable.end(); ++it)
+      for (auto it = checkpointTable.begin(); it != checkpointTable.end(); ++it)
       {
-        std::cout << it->first << " ";   
+        std::cout << it->first << ": ";   
+        // Note: return value is ignored (exec not eval)
         (it->second)();  
-      }
+      } 
       std::cout << std::endl;
     }
     std::cout << "[C++] SUCCESS" << std::endl;

@@ -56,5 +56,11 @@
     "list": "cpp",
     "iomanip": "cpp",
     "typeindex": "cpp"
-  }
+  },
+  "spellright.language": "en_GB",
+  "spellright.documentTypes": [
+    "markdown",
+    "latex",
+    "plaintext"
+  ]
 }
