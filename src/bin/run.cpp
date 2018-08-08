@@ -14,6 +14,18 @@
 // TODO Logger...?
 namespace no = neworder;
 
+void append_model_path(const char* path)
+{
+  if (!path) return;
+  const char* current = getenv("PYTHONPATH");
+  std::string pythonpath = std::string(path);
+  if (current)
+    pythonpath = pythonpath + ":" + current;
+  setenv("PYTHONPATH", pythonpath.c_str(), 1);
+  std::cout << "[C++] PYTHONPATH=" << pythonpath << std::endl;
+}
+
+
 int run(int rank, int size)
 {
   std::cout << "[C++] process " << rank << " of " << size << std::endl; 

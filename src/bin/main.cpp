@@ -25,9 +25,8 @@ int main(int argc, const char* argv[])
               << "where <model-path> is a directory containing the model config (config.py) plus the model definition python files" << std::endl;
     exit(1);
   }
-  std::cout << "[C++] setting PYTHONPATH=" << argv[1] << std::endl;
-  setenv("PYTHONPATH", argv[1], 1);
-
+  append_model_path(argv[1]);
+  
   // single-process
   return run(0, 1);
 }
