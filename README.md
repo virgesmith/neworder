@@ -56,7 +56,9 @@ $ module switch gnu gnu/7.2.0
 $ module switch boost boost/1.65.1
 $ module switch python python/3.6.5
 ```
-Currently experiencing issues running tests:
+Intel compiler has CXXABI/GLIBC-related linker errors with libpython.
+
+~~Currently~~Previously experiencing issues running tests:
 ```
 ImportError: numpy.core.multiarray failed to import
 ...
@@ -65,7 +67,7 @@ make[1]: *** [test] Error 1
 make[1]: Leaving directory `/nobackup/geoaps/dev/neworder/src/test'
 make: *** [test] Error 2
 ```
-which looks the same as the travis python build issue, and running examples/people fails with:
+which was down to PYTHONPATH being obilterated. looks the same as the travis python build issue, and running examples/people ~~fails~~failed with:
 
 ```bash
 $ ./run.sh 
@@ -75,6 +77,21 @@ ImportError: numpy.core.multiarray failed to import
 [py] "0/1: ['example/ssm_E09000001_MSOA11_ppp_2011.csv']"
 [C++] 2011.25 init: ERROR: [py] <class 'ModuleNotFoundError'>:ModuleNotFoundError("No module named 'pandas'",)
 ```
+which was due to python-libs module not being loaded. 
+
+### Conda
+`neworder` may not be compatilble at all with conda - it seems that they statically link to libpython. Further investigation required.
+
+### Non-Conda
+- Global python packages are old and the code isn't compatible. This can be resolved by updating at user-level, e.g.:
+```
+$ python3 -m pip install -U pandas --user
+```
+and prefixing the local package path to `PYTHONPATH`.
+
+- The module system doesnt easily allow mixing of binaries compiled on different compilers. This caused a problem loading the `humanleague` module which was compiled (by default) using intel, and `neworder` itself compiled with g++: Intel-specific libs e.g. libimf.so weren't found. Might be able to hack `LD_LIBRARY_PATH` to fix this?
+
+
 # Examples
 
 __NB the following are works-in-progress and subject to change, the documentation may not reflect the current code__
