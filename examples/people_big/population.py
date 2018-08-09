@@ -177,6 +177,6 @@ class Population:
     return True # Faith
 
   def write_table(self):
-    filename = "./examples/people/dm_{:.3f}_{}-{}.csv".format(neworder.time, neworder.procid, neworder.nprocs)
+    filename = "./examples/people_big/data/dm_{:.3f}_{}-{}.csv".format(neworder.time, neworder.procid, neworder.nprocs)
     neworder.log("writing %s" % filename)
     return self.data.to_csv(filename, index=False)
