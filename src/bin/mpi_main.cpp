@@ -11,7 +11,7 @@ int main(int argc, const char* argv[])
   // It's added to PYTHONPATH
   if (argc < 2)
   {
-    std::cerr << "usage: neworder <model-path>\n"
+    std::cerr << "usage: neworder_mpi <model-path>\n"
               << "where <model-path> is a directory containing the model config (config.py) plus the model definition python files" << std::endl;
     exit(1);
   }

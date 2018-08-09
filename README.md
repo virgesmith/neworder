@@ -189,23 +189,19 @@ people
 ```
 ### Parallel Execution
 
-The above model has been modified to run in massively parallel mode using [MPI](https://en.wikipedia.org/wiki/Message_Passing_Interface). For example, to run the simulation for all 348 LADs in England & Wales, each with its own microsynthesised population file:
+The above model has been modified to run in massively parallel mode using [MPI](https://en.wikipedia.org/wiki/Message_Passing_Interface), for the entire population of England & Wales (approx 56 million people as of 2011 census). The input data is not under source control due to its size, but the 348 input files (one per local authority) are divided roughly equally over the MPI processes. This particular example, with its simple in-out migration model, lends itself easily to parallel execution as no interprocess communication is required. Future development of this package will enable interprocess communication, for e.g. moving people from one region to another.  
 
-NB The input data is not under source control due to its size.
+The microsimulation has been run on the ARC3 cluster, part of the HPC facilities at the University of Leeds, and took about 3 minutes over 24 cores to simulate the peopulation over a 10 year period.
 
-```bash
-$ ./mpi_run people_big 80
-```
-and the 348 input files will be divided roughly equally over the 80 processes. This particular example lends itself easily to parallel execution as no interprocess communication is required. Future development of this package will enable interprocess communication, for e.g. moving people from one region to another.
+See the [examples/people_big](examples/people_big) directory and the script [mpi_job.sh](mpi_job.sh)
 
 ## Derivative Pricing
 
 Monte-Carlo simulation is a [common technique in quantitative finance](https://en.wikipedia.org/wiki/Monte_Carlo_methods_in_finance). 
 
-A European call option is a derivative contract that grants the holder the right (but not the obligation) 
+A [European call option](https://en.wikipedia.org/wiki/Call_option) is a derivative contract that grants the holder the right (but not the obligation) 
 to buy an underlying stock S at a fixed "strike" price K at some given future time T (the expiry). Similarly,
 a put option grants the right (but not obligation) to sell, rather than buy, at a fixed price.
-See https://en.wikipedia.org/wiki/Call_option.
 
 In order to calculate the fair value of a derivative contract one can simulate a (large) number of paths the underlying stock may take 
 (according to current market conditions and some model assumptions). We then take the mean of the derivative price for 
