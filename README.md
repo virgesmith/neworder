@@ -117,9 +117,15 @@ This example is an ultra-simple illustration of the structure required, all the 
 
 The model is configured here: [examples/hello_world/config.py](examples/hello_world/config.py). This file refers to a second file in which the "model" is defined, see [examples/hello_world/greet.py](examples/hello_world/greet.py)
 
-## Microsimulation of People
+## Diagnostics
 
-In this example, the input data is one or more csv files containing microsynthesised 2011 populations generated from UK census data, by age, gender and ethnicity. The transitions modelled are: ageing, births, deaths and migrations. 
+This isn't really an example, it just outputs useful diagnostic information to track down bugs/problems.
+
+See [examples/diagnostics/config.py](examples/diagnostics/config.py)
+
+## Microsimulation of People (single )
+
+In this example, the input data is a csv file containing a microsynthesised 2011 population of Newcastle generated from UK census data, by age, gender and ethnicity. The transitions modelled are: ageing, births, deaths and migrations. 
 
 Ageing simply increments individual's ages according to the timestep. 
 
@@ -129,7 +135,13 @@ For the fertility model newborns simply inherit their mother's location and ethn
 
 People who have died are simply removed from the simulation.
 
-NB dealing with competing transitions 
+Domestic migrations are given by rates per age, dex and ethnicity. Inward migration is based on the population ex-LAD, whereas outward migration is based on the population of the LAD being simulated.
+
+International migrations are absolute (fractional) counts of individuals by age, sex and ethnicity, based on 2011 data. The values are rounded using a total-preserving algorithm. For emigration this presents a compilation: a situation can arise where a person who doesn't sctually exist in the population is marked for migration.
+
+Outward migrations are simply removed from the population. (They are not distributed in this model)
+
+NB dealing with competing transitions...
 
 During the simulation, at each timestep the model displays some summary data: 
 - the time
@@ -177,12 +189,14 @@ people
 ```
 ### Parallel Execution
 
-The above model can be run in massively parallel mode using [MPI](https://en.wikipedia.org/wiki/Message_Passing_Interface). For example, to run the simulation for all 347 LADs in England & Wales, each with its own microsynthesised population file:
+The above model has been modified to run in massively parallel mode using [MPI](https://en.wikipedia.org/wiki/Message_Passing_Interface). For example, to run the simulation for all 348 LADs in England & Wales, each with its own microsynthesised population file:
+
+NB The input data is not under source control due to its size.
 
 ```bash
-$ mpirun -n 80 src/bin/neworder_mpi examples/people
+$ ./mpi_run people_big 80
 ```
-and the 347 input files will be divided roughly equally over the 80 processes. This particular example lends itself easily to parallel execution as no interprocess communication is required. Future development of this package will enable interprocess communication, for e.g. moving people from one region to another.
+and the 348 input files will be divided roughly equally over the 80 processes. This particular example lends itself easily to parallel execution as no interprocess communication is required. Future development of this package will enable interprocess communication, for e.g. moving people from one region to another.
 
 ## Derivative Pricing
 

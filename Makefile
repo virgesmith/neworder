@@ -10,7 +10,7 @@ LDFLAGS := $(shell python$(PYVER)-config --ldflags)
 
 export
 
-all: lib bin
+all: lib bin mpi test
 
 lib: 
 	+cd src/lib && $(MAKE)

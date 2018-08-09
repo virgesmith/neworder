@@ -6,7 +6,7 @@ import glob
 import neworder
 
 # define some global variables
-initial_populations = glob.glob("examples/people/data/ssm_E08*_MSOA11_ppp_2011.csv")
+initial_populations = glob.glob("examples/people_big/data/ssm_*_MSOA11_ppp_2011.csv")
 asfr = "examples/shared/NewETHPOP_fertility.csv"
 asmr = "examples/shared/NewETHPOP_mortality.csv"
 # internal in-migration

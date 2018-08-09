@@ -1,5 +1,5 @@
 """
- population.py
+Large-scale version of population.py
 """
 
 import pandas as pd
@@ -8,12 +8,7 @@ import neworder
 
 from helpers import *
 
-def _col(age, sex):
-  col = "M" if sex == 1 else "F" if sex == 2 else "?"
-  col = col + str(age-1) + "." + str(age)
-  return col
 
- 
 # TODO only support single LAD...? (LAD-specific dynamics)
 class Population:
   def __init__(self, inputdata, asfr, asmr, asir, asor, ascr, asxr):
@@ -22,27 +17,30 @@ class Population:
     if not len(inputdata):
       raise ValueError("proc {}/{}: no input data".format(neworder.procid, neworder.nprocs))
 
-    self.lad = inputdata[0].split("_")[1]
+    self.lads = [file.split("_")[2] for file in inputdata]
 
     self.data = pd.DataFrame()
     for file in inputdata: 
-      self.data = self.data.append(pd.read_csv(file))
+      data = pd.read_csv(file)
+      data["LAD"] = file.split("_")[2]
+      self.data = self.data.append(data)
 
-    self.fertility = create_from_ethpop_data(pd.read_csv(asfr), self.lad)
-    self.mortality = create_from_ethpop_data(pd.read_csv(asfr), self.lad)
-    self.in_migration = create_from_ethpop_data(pd.read_csv(asir), self.lad)
-    self.out_migration = create_from_ethpop_data(pd.read_csv(asor), self.lad)
-    self.immigration = create_from_ethpop_data(pd.read_csv(ascr), self.lad)
-    self.emigration = create_from_ethpop_data(pd.read_csv(asxr), self.lad)
+    neworder.log("Preprocessing transition data for %s" % ", ".join(self.lads))
+    self.fertility = create_multi_from_ethpop_data(pd.read_csv(asfr), self.lads)
+    self.mortality = create_multi_from_ethpop_data(pd.read_csv(asfr), self.lads)
+    self.in_migration = create_multi_from_ethpop_data(pd.read_csv(asir), self.lads)
+    self.out_migration = create_multi_from_ethpop_data(pd.read_csv(asor), self.lads)
+    self.immigration = create_multi_from_ethpop_data(pd.read_csv(ascr), self.lads)
+    self.emigration = create_multi_from_ethpop_data(pd.read_csv(asxr), self.lads)
 
-    # converts fractional category totals into individuals
-    self.immigrants = generate_intl_migrants(self.immigration, True)
-    # for emigrants don't need individuals
-    self.emigrants = generate_intl_migrants(self.emigration, False)
+    # # converts fractional category totals into individuals
+    # self.immigrants = generate_intl_migrants(self.immigration, True)
+    # # for emigrants don't need individuals
+    # self.emigrants = generate_intl_migrants(self.emigration, False)
 
     # seed RNG: for now, rows in data * sum(DC1117EW_C_AGE) - TODO add MPI rank/size?
     seed = int(len(self.data) * self.data.DC1117EW_C_AGE.sum()) 
-    neworder.log("{} seed: {}".format(self.lad, seed)) 
+    neworder.log("{} seed: {}".format(", ".join(self.lads), seed)) 
     self.rstream = neworder.UStream(seed)
 
     # use this to identify people (uniquely only within this table)
@@ -67,7 +65,7 @@ class Population:
 
     # Now map the appropriate fertility rate to each female
     # might be a more efficient way of generating this array
-    rates = females.join(self.fertility, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].tolist()
+    rates = females.join(self.fertility, on=["LAD", "NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].tolist()
     # Then randomly determine if a birth occurred (neworder callback)
     # python disallows scalar float mult of float list, but neworder.DVector does support this
     h = np.array(neworder.hazard_v(neworder.DVector.fromlist(rates) * deltat).tolist())
@@ -89,7 +87,7 @@ class Population:
 
     # Map the appropriate mortality rate to each female
     # might be a more efficient way of generating this array
-    rates = self.data.join(self.mortality, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].tolist()
+    rates = self.data.join(self.mortality, on=["LAD", "NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].tolist()
 
     # Then randomly determine if a birth occurred
     # neworder callback (requires inefficient conversions: Series/np.array -> list -> DVector -> list -> np.array)
@@ -104,7 +102,7 @@ class Population:
     # in-migrations: 
     # - assign the rates to the incumbent popultion appropriately by age,sex,ethnicity
     # - randomly sample this population, clone and append
-    in_rates = self.data.join(self.in_migration, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].tolist()
+    in_rates = self.data.join(self.in_migration, on=["LAD", "NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].tolist()
 
     # in-migration should be sampling from the whole population ex-LAD, instead do an approximation by scaling up the LAD population
     # NOTE this is wrong for a number of reasons esp. as it cannot sample category combinations that don't already exist in the LAD
@@ -113,7 +111,7 @@ class Population:
     
     incoming = self.data[h_in == 1].copy()
 
-    out_rates = self.data.join(self.out_migration, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].tolist()
+    out_rates = self.data.join(self.out_migration, on=["LAD", "NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].tolist()
 
     h_out = np.array(neworder.hazard_v(neworder.DVector.fromlist(out_rates) * deltat).tolist())
 
@@ -123,20 +121,20 @@ class Population:
     # Append incomers to main population and adjust counter
     # Assign a new id
     incoming.PID = range(self.counter, self.counter + len(incoming))
-    incoming.Area = self.lad
+    incoming.Area = incoming.LAD
     # assign a new random fractional age based on census age category
     incoming.Age = incoming.DC1117EW_C_AGE - self.rstream.get(len(incoming)).tolist()
     self.data = self.data.append(incoming, sort=False)
     self.counter = self.counter + len(incoming)
     
-    # international    
-    intl_incoming = self.immigrants.copy()
-    intl_incoming["PID"] = range(self.counter, self.counter + len(intl_incoming))
-    intl_incoming["Area"] = self.lad
-    # assign a new random fractional age based on census age category
-    intl_incoming["Age"] = intl_incoming.DC1117EW_C_AGE - self.rstream.get(len(intl_incoming)).tolist()
-    self.data = self.data.append(intl_incoming, sort=False)
-    self.counter = self.counter + len(intl_incoming)
+    # international disabled for now
+    # intl_incoming = self.immigrants.copy()
+    # intl_incoming["PID"] = range(self.counter, self.counter + len(intl_incoming))
+    # intl_incoming["Area"] = self.lad
+    # # assign a new random fractional age based on census age category
+    # intl_incoming["Age"] = intl_incoming.DC1117EW_C_AGE - self.rstream.get(len(intl_incoming)).tolist()
+    # self.data = self.data.append(intl_incoming, sort=False)
+    # self.counter = self.counter + len(intl_incoming)
 
     # # TODO emigration
     # intl_outgoing = self.emigrants.copy()
@@ -153,7 +151,7 @@ class Population:
     #self.data
 
     # record net migration
-    self.in_out = (h_in.sum(), h_out.sum(), len(self.immigrants), len(self.emigrants))
+    self.in_out = (h_in.sum(), h_out.sum(), 0, 0) # len(self.immigrants), len(self.emigrants))
 
   def mean_age(self):
     return self.data.Age.mean()
@@ -171,7 +169,7 @@ class Population:
 
   def check(self):
     """ State of the nation """
-    check(self.data)
+    #check(self.data)
     neworder.log("check OK: time={:.3f} size={} mean_age={:.2f}, pct_female={:.2f} net_migration={} ({}-{}+{}-{})" \
       .format(neworder.time, self.size(), self.mean_age(), 100.0 * self.gender_split(), 
       self.in_out[0] - self.in_out[1] + self.in_out[2] - self.in_out[3], 
@@ -179,6 +177,6 @@ class Population:
     return True # Faith
 
   def write_table(self):
-    filename = "./examples/people/dm_{}_{:.3f}_{}-{}.csv".format(self.lad, neworder.time, neworder.procid, neworder.nprocs)
+    filename = "./examples/people/dm_{:.3f}_{}-{}.csv".format(neworder.time, neworder.procid, neworder.nprocs)
     neworder.log("writing %s" % filename)
     return self.data.to_csv(filename, index=False)

@@ -8,12 +8,7 @@ import neworder
 
 from helpers import *
 
-def _col(age, sex):
-  col = "M" if sex == 1 else "F" if sex == 2 else "?"
-  col = col + str(age-1) + "." + str(age)
-  return col
 
- 
 # TODO only support single LAD...? (LAD-specific dynamics)
 class Population:
   def __init__(self, inputdata, asfr, asmr, asir, asor, ascr, asxr):
