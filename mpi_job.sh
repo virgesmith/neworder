@@ -1,7 +1,5 @@
 #!/bin/bash 
-# Use borne shell  
-#$ -m e
-#$ -M a.p.smith@leeds.ac.uk
+
 ##$ -l h_vmem=2G
 # Export variables and use current working directory 
 #$ -cwd -V 
