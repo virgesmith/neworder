@@ -28,3 +28,7 @@ neworder.timestep = neworder.timespan[1]
 initialisations = {}
 transitions = {}
 checkpoints = {}
+
+# test callback
+neworder.log("2 + 2 = %d" % neworder.Callback("2+2")())
+

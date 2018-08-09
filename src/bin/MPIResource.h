@@ -10,7 +10,7 @@ class MPIResource
 {
 public:
 
-	MPIResource(int* pargc, char*** pargv);
+	MPIResource(int* pargc, const char*** pargv);
 
 	~MPIResource();
 	

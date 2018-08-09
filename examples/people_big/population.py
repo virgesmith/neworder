@@ -18,9 +18,15 @@ def _col(age, sex):
 class Population:
   def __init__(self, inputdata, asfr, asmr, asir, asor, ascr, asxr):
 
-    self.lad = inputdata.split("_")[1]
+    # guard for no input data (if more MPI processes than input files)
+    if not len(inputdata):
+      raise ValueError("proc {}/{}: no input data".format(neworder.procid, neworder.nprocs))
 
-    self.data = pd.read_csv(inputdata)
+    self.lad = inputdata[0].split("_")[1]
+
+    self.data = pd.DataFrame()
+    for file in inputdata: 
+      self.data = self.data.append(pd.read_csv(file))
 
     self.fertility = create_from_ethpop_data(pd.read_csv(asfr), self.lad)
     self.mortality = create_from_ethpop_data(pd.read_csv(asfr), self.lad)
@@ -75,7 +81,7 @@ class Population:
     newborns.DC1117EW_C_SEX = np.array(neworder.hazard(0.5, len(newborns)).tolist()) + 1
 
     # Finally append newborns to main population and adjust counter
-    self.data = self.data.append(newborns)
+    self.data = self.data.append(newborns, sort=False)
     self.counter = self.counter + len(newborns)
   
   def deaths(self, deltat):
@@ -120,7 +126,7 @@ class Population:
     incoming.Area = self.lad
     # assign a new random fractional age based on census age category
     incoming.Age = incoming.DC1117EW_C_AGE - self.rstream.get(len(incoming)).tolist()
-    self.data = self.data.append(incoming)
+    self.data = self.data.append(incoming, sort=False)
     self.counter = self.counter + len(incoming)
     
     # international    
@@ -129,7 +135,7 @@ class Population:
     intl_incoming["Area"] = self.lad
     # assign a new random fractional age based on census age category
     intl_incoming["Age"] = intl_incoming.DC1117EW_C_AGE - self.rstream.get(len(intl_incoming)).tolist()
-    self.data = self.data.append(intl_incoming)
+    self.data = self.data.append(intl_incoming, sort=False)
     self.counter = self.counter + len(intl_incoming)
 
     # # TODO emigration
@@ -173,6 +179,6 @@ class Population:
     return True # Faith
 
   def write_table(self):
-    filename = "./examples/people/dm_{}_{:.3f}.csv".format(self.lad, neworder.time)
+    filename = "./examples/people/dm_{}_{:.3f}_{}-{}.csv".format(self.lad, neworder.time, neworder.procid, neworder.nprocs)
     neworder.log("writing %s" % filename)
     return self.data.to_csv(filename, index=False)

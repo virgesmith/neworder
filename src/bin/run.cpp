@@ -14,11 +14,17 @@
 // TODO Logger...?
 namespace no = neworder;
 
-void append_model_path(const char* path)
+void append_model_paths(const char* paths[], size_t n)
 {
-  if (!path) return;
+  if (!paths || !n) return;
   const char* current = getenv("PYTHONPATH");
-  std::string pythonpath = std::string(path);
+  std::string pythonpath = std::string(paths[0]);
+  for (size_t i = 1; i < n; ++i)
+  {
+    pythonpath += ":";
+    pythonpath += paths[i]; 
+  }
+
   if (current)
     pythonpath = pythonpath + ":" + current;
   setenv("PYTHONPATH", pythonpath.c_str(), 1);

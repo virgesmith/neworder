@@ -2,10 +2,11 @@
 """ config.py
 Microsimulation config
 """
+import glob
 import neworder
 
 # define some global variables
-initial_population = "examples/people/ssm_E08000021_MSOA11_ppp_2011.csv"
+initial_populations = glob.glob("examples/people/data/ssm_E08*_MSOA11_ppp_2011.csv")
 asfr = "examples/shared/NewETHPOP_fertility.csv"
 asmr = "examples/shared/NewETHPOP_mortality.csv"
 # internal in-migration
@@ -17,15 +18,18 @@ ascr = "examples/shared/NewETHPOP_immig.csv"
 # emigration
 asxr = "examples/shared/NewETHPOP_emig.csv"
 
+# MP split initial population files over threads
+def partition(arr, count):
+  return [arr[i::count] for i in range(count)]
+
+initial_populations = partition(initial_populations, neworder.nprocs)
 
 # running/debug options
 loglevel = 1
-# this model isnt meant for parallel execution
-assert neworder.nprocs == 1
-
+ 
 # initialisation
 initialisations = {
-  "people": { "module": "population", "class_": "Population", "parameters": [initial_population, asfr, asmr, asir, asor, ascr, asxr] }
+  "people": { "module": "population", "class_": "Population", "parameters": [initial_populations[neworder.procid], asfr, asmr, asir, asor, ascr, asxr] }
 }
 
 # define the evolution
