@@ -12,18 +12,21 @@ namespace neworder {
 class Callback
 {
 public:
-  explicit Callback(const std::string& code) : m_code(code) { }
+  explicit Callback(const std::string& code);
 
   ~Callback() = default;
 
   py::object operator()() const;
 
-  const std::string& code() const 
+  bool is_exec() const { return m_exec; }
+
+  const std::string& code() const
   {
     return m_code;
   }
 
 private:
+  bool m_exec;
   std::string m_code;
 };
 
@@ -34,6 +37,9 @@ const char* module_name();
 const char* module_version();
 
 std::string python_version();
+
+// interactive shell
+void shell();
 
 // msg is forcibly coerced to a string
 void log(const py::object& msg);

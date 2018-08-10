@@ -47,4 +47,7 @@ std::vector<double> stopping(double prob, size_t n);
 // vector stopping 
 std::vector<double> stopping_v(const std::vector<double>& prob);
 
+// vector stopping for non-homogeneous poisson process
+std::vector<double> stopping_nhpp(const std::vector<double>& lambda_t, size_t n);
+
 }

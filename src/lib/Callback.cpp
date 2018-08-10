@@ -11,11 +11,30 @@
 #include <iostream>
 
 
+neworder::Callback::Callback(const std::string& code) : m_exec(false), m_code(code)
+{
+  // Hack to determine whether to "eval" or "exec" - use ":=" to denote assignment
+  size_t idx = m_code.find(":=");
+  if (idx != std::string::npos)
+  {
+    m_exec = true;
+    m_code.replace(idx, 2, "=");
+  }
+}
+
+
 py::object neworder::Callback::operator()() const 
 {
   // see https://www.boost.org/doc/libs/1_66_0/libs/python/doc/html/reference/embedding.html#embedding.boost_python_exec_hpp
   // evaluate the global/local namespaces at the last minute? or do they update dynamically?
-  return py::eval(m_code.c_str(), py::import("__main__").attr("__dict__"), py::import("neworder").attr("__dict__"));
+  if (m_exec)
+  {
+    return py::exec(m_code.c_str(), py::import("__main__").attr("__dict__"), py::import("neworder").attr("__dict__"));
+  }
+  else
+  {
+    return py::eval(m_code.c_str(), py::import("__main__").attr("__dict__"), py::import("neworder").attr("__dict__"));
+  }
 }
 
 namespace {
@@ -47,9 +66,13 @@ BOOST_PYTHON_MODULE(neworder)
 
   py::def("log", no::log);
 
+  py::def("shell", no::shell);
+
   py::def("hazard", no::hazard);
 
   py::def("stopping", no::stopping);
+
+  py::def("stopping_nhpp", no::stopping_nhpp);
 
   py::def("hazard_v", no::hazard_v);
 
@@ -117,6 +140,39 @@ const char* neworder::module_version()
 std::string neworder::python_version()
 {
   return pycpp::Environment::version();
+}
+
+void neworder::shell()
+{
+  std::cout << python_version() << "\nInteractive shell (ctrl-D to exit)." 
+    "\nUse := as assignment operator, e.g. a:=2+2" << std::endl;
+  std::string s;
+  while (!std::cin.eof()) 
+  { 
+    // need to trap interactive error in situ
+    try 
+    {
+      std::cout << "[neworder] >>> ";
+      std::getline(std::cin, s);
+      if (!s.empty())
+      {
+        Callback statement(s);
+        // only show output if its an eval
+        if (statement.is_exec())
+        {
+          statement();
+        } 
+        else
+        {
+          std::cout << statement() << std::endl;
+        }
+      }
+    }
+    catch (py::error_already_set&)
+    {
+      std::cerr << "ERROR: [py] " << pycpp::Environment::check() << std::endl;
+    }
+  }
 }
 
 void neworder::log(const py::object& msg)

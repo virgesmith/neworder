@@ -9,13 +9,13 @@ import person
 
 # "An arbitrarily selected value, chosen to produce a life expectancy of about 70 years."
 neworder.mortality_hazard = 0.014
-population_size = 10
+population_size = 10000
 
 # running/debug options
 loglevel = 1
 do_checks = True
 checks = { 
-  "life_expectancy": "people.mean_lifespan()"
+#  "life_expectancy": "people.life_expectancy >"
 }
  
 # initialisation, this creates the population but doesnt assign a time of death
@@ -32,9 +32,10 @@ neworder.timestep = neworder.time_infinity
 # transitions: simply samples time of death for each individual
 transitions = {
 #  "tod" : "people.sample()"
-  "tod" : "[p.time_mortality_event() for p in people.population]"
+  "tod" : "people.calc_life_expectancy()"
 }
 
 checkpoints = {
-  "life_expectancy": "people.mean_lifespan()"
+  "life_expectancy": "log(people.life_expectancy)",
+  "shell": "shell()"
 }

@@ -21,7 +21,7 @@ def test():
   #dv = dv + dv
   dv = 0.5 * dv
   dv = dv * 0.5
-  # dv = dv / 0.w5
+  # dv = dv / 0.5
 
   no.log(np.array(no.hazard_v(rng1.get(1000)).tolist()).mean())
 
@@ -37,5 +37,21 @@ def test():
   no.log(no.testVec[3])
 
   no.log(f())
+
+  # test thinning algorithm for non-homogeneous Poisson process
+  h = no.DVector.fromlist([0.014] * 10)
+  le = no.stopping_nhpp(h, 10000).tolist()
+  no.log(sum(le)/len(le))
+
+  # this also tests a zero hazard rate 
+  h = no.DVector.fromlist([i/3000 for i in range(100)])
+  #no.log(h)
+  le = no.stopping_nhpp(h, 10000).tolist()
+  no.log(sum(le)/len(le))
+
+  # not convinced this is working correctly
+  h = no.DVector.fromlist([0.999, 0.1])
+  le = no.stopping_nhpp(h, 1000).tolist()
+  no.log(sum(le)/len(le))
 
   return True
