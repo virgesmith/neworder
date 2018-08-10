@@ -37,4 +37,3 @@ py::object pycpp::Functor::operator()() const
   }
 }
 
-

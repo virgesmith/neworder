@@ -1,9 +1,9 @@
 
 #include "run.h"
 
-#include "Inspect.h"
-#include "Environment.h"
+//#include "Inspect.h"
 #include "Functor.h"
+#include "Environment.h"
 #include "Callback.h"
 
 #include "python.h"

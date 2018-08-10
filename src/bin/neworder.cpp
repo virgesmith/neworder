@@ -1,19 +1,9 @@
 
 #include "run.h"
 
-#include "Inspect.h"
-#include "Environment.h"
-#include "Functor.h"
-#include "Callback.h"
-
-#include "python.h"
-
-#include <map>
 #include <iostream>
-#include <cstdlib>
 
 // TODO Logger...?
-namespace no = neworder;
 
 int main(int argc, const char* argv[])
 {

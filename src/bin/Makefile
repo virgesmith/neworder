@@ -1,11 +1,11 @@
 
 CXXFLAGS += -I../lib -I../include
 
-src=main.cpp run.cpp
+src=neworder.cpp run.cpp
 obj=$(src:.cpp=.o)
 dep=$(src:.cpp=.d)
 
-mpi_src=mpi_main.cpp run.cpp MPIResource.cpp
+mpi_src=neworder_mpi.cpp run.cpp MPIResource.cpp
 
 #$(info $(CXXFLAGS))
 #$(info $(LDFLAGS))

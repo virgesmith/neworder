@@ -18,5 +18,5 @@ testharness
 dm*.csv
 **/data/
 
-# MODGEN examples
-examples/Chapter*
+# MODGEN example code
+**/Chapter*/ModgenExample
