@@ -12,7 +12,7 @@ namespace neworder {
 class Callback
 {
 public:
-  explicit Callback(const std::string& code, bool exec=false);
+  explicit Callback(const std::string& code, bool exec=false/*, const std::string& locals = ""*/);
 
   ~Callback() = default;
 
@@ -28,6 +28,8 @@ public:
 private:
   bool m_exec;
   std::string m_code;
+  py::object m_globals;
+  py::object m_locals;
 };
 
 typedef std::map<std::string, Callback> CallbackTable;

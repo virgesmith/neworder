@@ -11,11 +11,11 @@
 #include <iostream>
 
 
-neworder::Callback::Callback(const std::string& code, bool exec) : m_exec(exec), m_code(code)
+neworder::Callback::Callback(const std::string& code, bool exec/*, const std::string& locals*/) : m_exec(exec), m_code(code)
 {
   // TODO (assuming they ref current env)
-  //m_global = 
-  //m_local = 
+  m_globals = py::import("__main__").attr("__dict__");
+  m_locals = py::import("neworder").attr("__dict__");
 }
 
 
@@ -25,11 +25,11 @@ py::object neworder::Callback::operator()() const
   // evaluate the global/local namespaces at the last minute? or do they update dynamically?
   if (m_exec)
   {
-    return py::exec(m_code.c_str(), py::import("__main__").attr("__dict__"), py::import("neworder").attr("__dict__"));
+    return py::exec(m_code.c_str(), m_globals, m_locals);
   }
   else
   {
-    return py::eval(m_code.c_str(), py::import("__main__").attr("__dict__"), py::import("neworder").attr("__dict__"));
+    return py::eval(m_code.c_str(), m_globals, m_locals);
   }
 }
 
