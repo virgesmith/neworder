@@ -79,6 +79,9 @@ def create_multi_from_ethpop_data(raw_data, lads):
 
   data = raw_data.drop(remove, axis=1)
 
+  # TODO Fix census-merged LADs (doesn't play well with join on multiindex)
+
+
   # Filter by our location and remove other unwanted columns
   # partial match so works with census-merged LADs 
   data = data[data["LAD.code"].str.contains("|".join(lads))].drop(['Unnamed: 0', 'LAD.name'], axis=1)

@@ -180,7 +180,12 @@ void neworder::shell()
 
 void neworder::log(const py::object& msg)
 {
-  std::cout << "[py] " << pycpp::as_string(msg.ptr()) << std::endl;
+  // TODO more efficient way?
+  py::object self = py::import("neworder");
+  int rank = py::extract<int>(self.attr("procid"))();
+  int size = py::extract<int>(self.attr("nprocs"))();
+
+  std::cout << "[py " << rank << "/" << size << "] " << pycpp::as_string(msg.ptr()) << std::endl;
 }
 
 void neworder::import_module()

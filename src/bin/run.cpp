@@ -34,7 +34,7 @@ void append_model_paths(const char* paths[], size_t n)
 
 int run(int rank, int size)
 {
-  std::cout << "[C++] process " << rank << " of " << size << std::endl; 
+  std::cout << "[C++ " << rank << "/" << size << "] process init" << std::endl; 
   pycpp::Environment env;
   try
   {
