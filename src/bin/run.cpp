@@ -38,6 +38,7 @@ int run(int rank, int size)
   pycpp::Environment env;
   try
   {
+    // TODO move into env?
     py::object self = py::import("neworder");
 
     self.attr("procid") = rank;
