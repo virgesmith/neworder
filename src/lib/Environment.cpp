@@ -44,6 +44,7 @@ std::string pycpp::Environment::check() noexcept
     PyObject *type, *value, *traceback;
     PyErr_Fetch(&type, &value, &traceback);
 
+    // TODO split type/value
     if (type && value)
     {
       // TODO sort this out

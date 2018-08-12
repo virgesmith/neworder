@@ -11,15 +11,11 @@
 #include <iostream>
 
 
-neworder::Callback::Callback(const std::string& code) : m_exec(false), m_code(code)
+neworder::Callback::Callback(const std::string& code, bool exec) : m_exec(exec), m_code(code)
 {
-  // Hack to determine whether to "eval" or "exec" - use ":=" to denote assignment
-  size_t idx = m_code.find(":=");
-  if (idx != std::string::npos)
-  {
-    m_exec = true;
-    m_code.replace(idx, 2, "=");
-  }
+  // TODO (assuming they ref current env)
+  //m_global = 
+  //m_local = 
 }
 
 
@@ -145,8 +141,11 @@ std::string neworder::python_version()
 void neworder::shell()
 {
   std::cout << python_version() << "\nInteractive shell (ctrl-D to exit)." 
-    "\nUse := as assignment operator, e.g. a:=2+2" << std::endl;
+    "\nUse 'V:' prefix to eval (e.g. V:2+2), 'X:' prefix to exec (e.g. X:a=2+2)" << std::endl;
   std::string s;
+  std::cin.ignore(-1); // discard
+  //std::cin.ignore(1, '\n');
+  std::cin.clear();
   while (!std::cin.eof()) 
   { 
     // need to trap interactive error in situ
@@ -154,18 +153,22 @@ void neworder::shell()
     {
       std::cout << "[neworder] >>> ";
       std::getline(std::cin, s);
-      if (!s.empty())
+
+      if (s.size() < 3 || (s[0] != 'V' && s[0] != 'X') || s[1] != ':')
       {
-        Callback statement(s);
-        // only show output if its an eval
-        if (statement.is_exec())
-        {
-          statement();
-        } 
-        else
-        {
-          std::cout << statement() << std::endl;
-        }
+        log(py::object("python expression must be prefixed with 'V:'(eval) or 'X:'(exec)"));
+        continue;
+      }
+
+      Callback statement(s.replace(0, 2, ""), s[0] == 'X');
+      // only show output if its an eval
+      if (statement.is_exec())
+      {
+        statement();
+      } 
+      else
+      {
+        std::cout << statement() << std::endl;
       }
     }
     catch (py::error_already_set&)

@@ -12,7 +12,7 @@ namespace neworder {
 class Callback
 {
 public:
-  explicit Callback(const std::string& code);
+  explicit Callback(const std::string& code, bool exec=false);
 
   ~Callback() = default;
 
