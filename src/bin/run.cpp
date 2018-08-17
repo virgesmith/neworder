@@ -83,14 +83,16 @@ int run(int rank, int size)
     }
     std::cout << std::endl;
 
+    // execs
     no::CallbackTable transitionTable; 
     py::list transitions = py::dict(config.attr("transitions")).items();
     for (int i = 0; i < py::len(transitions); ++i)
     {
       transitionTable.insert(std::make_pair(py::extract<std::string>(transitions[i][0])(), 
-                                            no::Callback(py::extract<std::string>(transitions[i][1])())));
+                                            no::Callback(py::extract<std::string>(transitions[i][1])(), true)));
     }
 
+    // evals
     no::CallbackTable checkTable; 
     if (do_checks)
     {
@@ -102,12 +104,13 @@ int run(int rank, int size)
       }
     }
 
+    // execs
     no::CallbackTable checkpointTable; 
     py::list checkpoints = py::dict(config.attr("checkpoints")).items();
     for (int i = 0; i < py::len(checkpoints); ++i)
     {
       checkpointTable.insert(std::make_pair(py::extract<std::string>(checkpoints[i][0])(), 
-                                            no::Callback(py::extract<std::string>(checkpoints[i][1])())));
+                                            no::Callback(py::extract<std::string>(checkpoints[i][1])(), true)));
     }
 
     // Loop with checkpoints

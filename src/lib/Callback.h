@@ -40,8 +40,8 @@ const char* module_version();
 
 std::string python_version();
 
-// interactive shell
-void shell();
+// interactive shell mk2 - uses the code module
+void shell(/*const py::object& local*/);
 
 // msg is forcibly coerced to a string
 void log(const py::object& msg);

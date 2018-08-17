@@ -11,13 +11,15 @@ neworder.timespan = neworder.DVector.fromlist([0, 1])
 # We only need one timestep
 neworder.timestep = neworder.timespan[1]
 
-# No checks to run during the simulation
+# Checks to run during the simulation
 loglevel = 1
 do_checks = True
-# no per-timestep checks implemented since there is only one timestep
+# checks only called once since there is only one timestep
 checks = {
   # a do nothing-check purely for illustration - checks must evaluate to boolean 
-  "dummy": "True"
+  # Ony eval-able expressions allowed here.
+  "eval": "True",
+  #"exec": "a=True" # will fail, assigment is not eval-able
 }
 
 # Initialisation - construct an instance of Greet
@@ -33,9 +35,10 @@ initialisations = {
 }
 
 # The "transition" in this case fetches the current username from the os
-# Note that the code is exec'd not eval'd: any return value is ignored
+# Note that the code is exec'd not eval'd: any return value is discarded
 transitions = { 
-  "who": "greeter.get_name()"
+  "who": "greeter.get_name()",
+  "exec": "a=1" # won't fail. a is in neworder namespace
 }
 
 # Say hello when the empty simulation is done
@@ -43,6 +46,10 @@ transitions = {
 # equivalent to 
 # import neworder
 # neworder.greeter()
+# TODO control over order of execution...
 checkpoints = {
-  "say_hello" : "greeter()"
+  "exec": "b=a+1", # shouldn't fail. a is in neworder namespace, and already initialised
+  "exec2": "print(b)",
+  "say_hello" : "greeter()",
+  "shell": "shell()",
 }

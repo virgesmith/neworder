@@ -18,7 +18,6 @@ neworder::Callback::Callback(const std::string& code, bool exec/*, const std::st
   m_locals = py::import("neworder").attr("__dict__");
 }
 
-
 py::object neworder::Callback::operator()() const 
 {
   // see https://www.boost.org/doc/libs/1_66_0/libs/python/doc/html/reference/embedding.html#embedding.boost_python_exec_hpp
@@ -138,45 +137,57 @@ std::string neworder::python_version()
   return pycpp::Environment::version();
 }
 
-void neworder::shell()
+// Deprecated
+// void neworder::shell()
+// {
+//   std::cout << python_version() << "\nInteractive shell (ctrl-D to exit)." 
+//     "\nUse 'V:' prefix to eval (e.g. V:2+2), 'X:' prefix to exec (e.g. X:a=2+2)" << std::endl;
+//   std::string s;
+//   std::cin.ignore(-1); // discard
+//   //std::cin.ignore(1, '\n');
+//   std::cin.clear();
+//   while (!std::cin.eof()) 
+//   { 
+//     // need to trap interactive error in situ
+//     try 
+//     {
+//       std::cout << "[neworder] >>> ";
+//       std::getline(std::cin, s);
+
+//       if (s.size() < 3 || (s[0] != 'V' && s[0] != 'X') || s[1] != ':')
+//       {
+//         log(py::object("python expression must be prefixed with 'V:'(eval) or 'X:'(exec)"));
+//         continue;
+//       }
+
+//       Callback statement(s.replace(0, 2, ""), s[0] == 'X');
+//       // only show output if its an eval
+//       if (statement.is_exec())
+//       {
+//         statement();
+//       } 
+//       else
+//       {
+//         std::cout << statement() << std::endl;
+//       }
+//     }
+//     catch (py::error_already_set&)
+//     {
+//       std::cerr << "ERROR: [py] " << pycpp::Environment::check() << std::endl;
+//     }
+//   }
+// }
+
+void neworder::shell(/*const py::object& local*/)
 {
-  std::cout << python_version() << "\nInteractive shell (ctrl-D to exit)." 
-    "\nUse 'V:' prefix to eval (e.g. V:2+2), 'X:' prefix to exec (e.g. X:a=2+2)" << std::endl;
-  std::string s;
-  std::cin.ignore(-1); // discard
-  //std::cin.ignore(1, '\n');
-  std::cin.clear();
-  while (!std::cin.eof()) 
-  { 
-    // need to trap interactive error in situ
-    try 
-    {
-      std::cout << "[neworder] >>> ";
-      std::getline(std::cin, s);
-
-      if (s.size() < 3 || (s[0] != 'V' && s[0] != 'X') || s[1] != ':')
-      {
-        log(py::object("python expression must be prefixed with 'V:'(eval) or 'X:'(exec)"));
-        continue;
-      }
-
-      Callback statement(s.replace(0, 2, ""), s[0] == 'X');
-      // only show output if its an eval
-      if (statement.is_exec())
-      {
-        statement();
-      } 
-      else
-      {
-        std::cout << statement() << std::endl;
-      }
-    }
-    catch (py::error_already_set&)
-    {
-      std::cerr << "ERROR: [py] " << pycpp::Environment::check() << std::endl;
-    }
-  }
+  py::dict kwargs;
+  kwargs["banner"] = py::str("[neworder debug shell]");
+  //kwargs["exitmsg"] = py::str("exiting neworder shell");
+  //py::import("neworder");
+  //kwargs["local"] = py::handle<>(PyObject_Dir());
+  py::object interpreter = py::import("code").attr("interact")(*py::tuple(), **kwargs);
 }
+
 
 void neworder::log(const py::object& msg)
 {
