@@ -18,8 +18,8 @@ class Population:
     self.data = pd.read_csv(inputdata)
 
     self.fertility = create_from_ethpop_data(pd.read_csv(asfr), self.lad)
-    self.mortality = create_from_ethpop_data(pd.read_csv(asfr), self.lad)
-    self.in_migration = create_from_ethpop_data(pd.read_csv(asir), self.lad)
+    self.mortality = create_from_ethpop_data(pd.read_csv(asmr), self.lad)
+    self.in_migration = local_rate_from_national_rate(create_from_ethpop_data(pd.read_csv(asir), self.lad), len(self.data))
     self.out_migration = create_from_ethpop_data(pd.read_csv(asor), self.lad)
     self.immigration = create_from_ethpop_data(pd.read_csv(ascr), self.lad)
     self.emigration = create_from_ethpop_data(pd.read_csv(asxr), self.lad)
@@ -97,8 +97,7 @@ class Population:
 
     # in-migration should be sampling from the whole population ex-LAD, instead do an approximation by scaling up the LAD population
     # NOTE this is wrong for a number of reasons esp. as it cannot sample category combinations that don't already exist in the LAD
-    scale = 50000000.0 / len(self.data)
-    h_in = np.array(neworder.hazard_v(neworder.DVector.fromlist(in_rates) * scale * deltat).tolist())
+    h_in = np.array(neworder.hazard_v(neworder.DVector.fromlist(in_rates) * deltat).tolist())
     
     incoming = self.data[h_in == 1].copy()
 

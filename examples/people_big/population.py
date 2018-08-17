@@ -27,8 +27,8 @@ class Population:
 
     neworder.log("Preprocessing transition data for %s" % ", ".join(self.lads))
     self.fertility = create_multi_from_ethpop_data(pd.read_csv(asfr), self.lads)
-    self.mortality = create_multi_from_ethpop_data(pd.read_csv(asfr), self.lads)
-    self.in_migration = create_multi_from_ethpop_data(pd.read_csv(asir), self.lads)
+    self.mortality = create_multi_from_ethpop_data(pd.read_csv(asmr), self.lads)
+    self.in_migration = local_rates_from_national_rate(create_multi_from_ethpop_data(pd.read_csv(asir), self.lads), self.data)
     self.out_migration = create_multi_from_ethpop_data(pd.read_csv(asor), self.lads)
     self.immigration = create_multi_from_ethpop_data(pd.read_csv(ascr), self.lads)
     self.emigration = create_multi_from_ethpop_data(pd.read_csv(asxr), self.lads)

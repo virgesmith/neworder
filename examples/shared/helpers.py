@@ -35,6 +35,43 @@ def census_eth_to_newethpop_eth(data):
   data["NewEthpop_ETH"] = data.DC2101EW_C_ETHPUK11.map(eth_map) #, na_action=None)
   return data.drop("DC2101EW_C_ETHPUK11", axis=1)
 
+def local_rate_from_national_rate(data, localpop):
+  """
+  Scales up a rate based on national to that of local
+  """
+  # 2011 E&W population was ~56.1M
+  scale = 56100000.0 / localpop
+  data.Rate = data.Rate * scale
+  return data
+
+def local_rates_from_national_rate(data, pop):
+  """
+  Multi-lad version of above
+  """
+  lads = pop.LAD.unique()
+  print(lads)
+  #print(pop.head())
+  #print(data.head())
+
+  for lad in lads:
+    localpop = len(pop[pop.LAD == lad])
+    scale = 56100000 / localpop
+    print(lad, scale) 
+    #print(data.loc[lad].head())
+    data.loc[lad, "Rate"] = data.loc[lad, "Rate"].values * scale
+    #print(data.loc[lad].head())    
+    #print(data.xs(lad, level=0, drop_level=False).head())
+    #data[data.LAD==lad].Rate = data[data.LAD==lad].Rate * scale
+  return data  
+
+def local_rate_rescale_from_absolute(data, pop):
+  """
+  Turns absolute (2011) values into rates
+  """
+  scale = 1.0 / localpop
+  data.Rate = data.Rate * scale
+  return data
+
 
 def create_from_ethpop_data(raw_data, lad):
   """ Processes raw NewETHPOP in/out migration data into a LAD-specific table that can be used efficiently """
@@ -79,14 +116,21 @@ def create_multi_from_ethpop_data(raw_data, lads):
 
   data = raw_data.drop(remove, axis=1)
 
-  # TODO Fix census-merged LADs (doesn't play well with join on multiindex)
-
+  # Fix census-merged LADs (doesn't play well with join on multiindex)
+  # TODO this also requires rescaling the values by the relative sizes of the LADs
+  # e.g. 7397 / 219340 for City/Westminster
+  data.replace("E09000001+E09000033", "E09000001", inplace=True)
+  data.replace("E06000052+E06000053", "E06000052", inplace=True)
+  dups = data[(data["LAD.code"] == "E09000001") | (data["LAD.code"] == "E06000052")].copy()
+  dups.replace("E09000001", "E09000033", inplace=True)
+  dups.replace("E06000052", "E06000053", inplace=True)
+  data = data.append(dups)
 
   # Filter by our location and remove other unwanted columns
   # partial match so works with census-merged LADs 
-  data = data[data["LAD.code"].str.contains("|".join(lads))].drop(['Unnamed: 0', 'LAD.name'], axis=1)
+  data = data[data["LAD.code"].isin(lads)].drop(['Unnamed: 0', 'LAD.name'], axis=1)
 
-  # "Melt" the table (collapsing all the age-sex columns into a single column containing)
+  # "Melt" the table (collapsing all the age-sex columns into a single column containing the original column headings)
   data = data.melt(id_vars=['ETH.group', 'LAD.code'])
 
   # Create separate age and sex columns
