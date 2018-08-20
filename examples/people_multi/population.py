@@ -106,8 +106,7 @@ class Population:
 
     # in-migration should be sampling from the whole population ex-LAD, instead do an approximation by scaling up the LAD population
     # NOTE this is wrong for a number of reasons esp. as it cannot sample category combinations that don't already exist in the LAD
-    scale = 50000000.0 / len(self.data)
-    h_in = np.array(neworder.hazard_v(neworder.DVector.fromlist(in_rates) * scale * deltat).tolist())
+    h_in = np.array(neworder.hazard_v(neworder.DVector.fromlist(in_rates) * deltat).tolist())
     
     incoming = self.data[h_in == 1].copy()
 
@@ -177,6 +176,7 @@ class Population:
     return True # Faith
 
   def write_table(self):
-    filename = "./examples/people_big/data/dm_{:.3f}_{}-{}.csv".format(neworder.time, neworder.procid, neworder.nprocs)
+    # TODO define path in config
+    filename = "./examples/people_multi/data/dm_{:.3f}_{}-{}.csv".format(neworder.time, neworder.procid, neworder.nprocs)
     neworder.log("writing %s" % filename)
     return self.data.to_csv(filename, index=False)

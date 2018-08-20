@@ -19,7 +19,15 @@ class Population:
 
     self.fertility = create_from_ethpop_data(pd.read_csv(asfr), self.lad)
     self.mortality = create_from_ethpop_data(pd.read_csv(asmr), self.lad)
-    self.in_migration = local_rate_from_national_rate(create_from_ethpop_data(pd.read_csv(asir), self.lad), len(self.data))
+    # assume the in-migration rates are based on the national population and need to be rescaled...
+    base_pop = len(self.data)
+    # deal with census-merged LADs
+    if self.lad == "E09000001" or self.lad == "E09000033":
+      base_pop = 219340 + 7397
+    elif self.lad == "E06000052" or self.lad == "E06000053":
+      raise NotImplementedError("Cornwall CM LAD adj")
+    self.in_migration = local_rate_from_national_rate(create_from_ethpop_data(pd.read_csv(asir), self.lad), base_pop)
+    # assume the out-migration rates don't require adjustment
     self.out_migration = create_from_ethpop_data(pd.read_csv(asor), self.lad)
     self.immigration = create_from_ethpop_data(pd.read_csv(ascr), self.lad)
     self.emigration = create_from_ethpop_data(pd.read_csv(asxr), self.lad)
@@ -117,14 +125,14 @@ class Population:
     self.data = self.data.append(incoming)
     self.counter = self.counter + len(incoming)
     
-    # international    
-    intl_incoming = self.immigrants.copy()
-    intl_incoming["PID"] = range(self.counter, self.counter + len(intl_incoming))
-    intl_incoming["Area"] = self.lad
-    # assign a new random fractional age based on census age category
-    intl_incoming["Age"] = intl_incoming.DC1117EW_C_AGE - self.rstream.get(len(intl_incoming)).tolist()
-    self.data = self.data.append(intl_incoming)
-    self.counter = self.counter + len(intl_incoming)
+    # # international    
+    # intl_incoming = self.immigrants.copy()
+    # intl_incoming["PID"] = range(self.counter, self.counter + len(intl_incoming))
+    # intl_incoming["Area"] = self.lad
+    # # assign a new random fractional age based on census age category
+    # intl_incoming["Age"] = intl_incoming.DC1117EW_C_AGE - self.rstream.get(len(intl_incoming)).tolist()
+    # self.data = self.data.append(intl_incoming)
+    # self.counter = self.counter + len(intl_incoming)
 
     # # TODO emigration
     # intl_outgoing = self.emigrants.copy()

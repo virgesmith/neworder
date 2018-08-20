@@ -48,8 +48,7 @@ transitions = {
 # neworder.greeter()
 # TODO control over order of execution...
 checkpoints = {
-  "exec": "b=a+1", # shouldn't fail. a is in neworder namespace, and already initialised
-  "exec2": "print(b)",
+  "exec": "b=a+1", # exec - shouldn't fail. a, b are in neworder namespace, and already initialised
+  "print": "print(b)",
   "say_hello" : "greeter()",
-  "shell": "shell()",
 }

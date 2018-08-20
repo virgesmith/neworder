@@ -17,7 +17,6 @@ ascr = "examples/shared/NewETHPOP_immig.csv"
 # emigration
 asxr = "examples/shared/NewETHPOP_emig.csv"
 
-
 # running/debug options
 loglevel = 1
 # this model isnt meant for parallel execution
