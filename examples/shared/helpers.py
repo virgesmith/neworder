@@ -42,10 +42,9 @@ def local_rate_from_national_rate(data, localpop):
   """
   Scales up a rate based on national to that of local
   """
-  # 2011 E&W population was ~56.1M
-  scale = 56100000.0 / localpop
+  # 2011 UK population was ~62.74M
+  scale = 62740000.0 / localpop
   data.Rate = data.Rate * scale
-  print("single", scale)
   return data
 
 def local_rates_from_national_rate(data, pop):
@@ -59,13 +58,12 @@ def local_rates_from_national_rate(data, pop):
 
   for lad in lads:
     localpop = len(pop[pop.LAD == lad])
-    scale = 56100000 / localpop
+    scale = 62740000 / localpop
     # deal with census merged LADs
     if lad == "E09000001" or lad == "E09000033":
-      scale = 56100000 / (7397 + 219340) 
+      scale = 62740000 / (7397 + 219340) 
     elif lad == "E06000052" or lad == "E06000053":
       raise NotImplementedError("TODO Cornwall/Scillys CM LAD adj")
-    print(lad, scale)
 
     #print(lad, scale) 
     # TODO fix PerformanceWarning: indexing past lexsort depth may impact performance.
