@@ -7,8 +7,9 @@ Neworder is a prototype C++ microsimulation package inspired by [openm++](https:
 
 ## Key requirements:
 - low barriers to entry: users need only write standard python code, little or no new coding skills required.
-- flexibility: models are defined entirely in user code
-- speed: embedded C++ framework and module are compiled and optimised code
+- flexibility: models are defined entirely in user code.
+- reusability: leverage python modules like numpy, pandas.
+- speed: embedded C++ framework and module are compiled and optimised code.
 - scalability: can be run on a desktop or a HPC cluster, and will support parallel execution using MPI.
 
 ## Proof-of-concept 
@@ -38,6 +39,8 @@ $ make PYVER=3.5 BOOST_PYTHON_LIB=boost_python-py35 && make PYVER=3.5 BOOST_PYTH
 ```
 
 ## HPC installation (ARC3)
+
+[These instructions are specific to ARC3 but may be of some use on other clusters - YMMV]
 
 Switch to gnu toolchain and add python and boost libraries:
 ```bash
@@ -113,25 +116,49 @@ which will run the model defined in the directory `./examples/<name>`
 
 ## The obligatory "Hello world" example
 
-This example is an ultra-simple illustration of the structure required, all the files are extensively comments. 
+This example is an ultra-simple illustration of the structure required, all the files are extensively commented. It can be used as a skeleton for new project. 
 
 The model is configured here: [examples/hello_world/config.py](examples/hello_world/config.py). This file refers to a second file in which the "model" is defined, see [examples/hello_world/greet.py](examples/hello_world/greet.py)
 
 ## Diagnostics
 
-This isn't really an example, it just outputs useful diagnostic information to track down bugs/problems.
+This isn't really an example, it just outputs useful diagnostic information to track down bugs/problems, and opens a debug shell so that the neworder environment can be inspected. Below we use neworder to sample stopping times based on a 10% hazard rate:
 
+```
+$ ./run_example.sh diagnostics
+[C++] PYTHONPATH=examples/diagnostics:examples/shared
+[C++ 0/1] process init
+[C++] embedded python version: 3.6.5 (default, Apr  1 2018, 05:46:30)  [GCC 7.3.0]
+[py 0/1] MODULE=neworder0.0.0_boost1_65_1
+[py 0/1] PYTHON=3.6.5 (default, Apr  1 2018, 05:46:30)  [GCC 7.3.0]
+[py 0/1] Loaded neworder/boost/python libs:
+[py 0/1]   libpython3.6m.so.1.0 => /usr/lib/x86_64-linux-gnu/libpython3.6m.so.1.0 (0x00007f57a2013000)
+[py 0/1]   libboost_python3-py36.so.1.65.1 => /usr/lib/x86_64-linux-gnu/libboost_python3-py36.so.1.65.1 (0x00007f57a1dd4000)
+[py 0/1]   libneworder.so => src/lib/libneworder.so (0x00007f57a1ae4000)
+[py 0/1] PYTHONPATH=examples/diagnostics:examples/shared
+[py 0/1] 2 + 2 = 4
+[C++] t=0 init:
+[C++] t=1 exec:
+[starting neworder debug shell]
+[C++] checkpoint: shell: >>> import neworder
+>>> neworder.stopping(0.1, 5).tolist()
+[3.234112066396531, 6.7050939131094625, 16.084241975178248, 3.013623898076906, 2.8498469412444076]]
+>>>
+[exiting neworder debug shell]
+
+[C++] SUCCESS
+```
 See [examples/diagnostics/config.py](examples/diagnostics/config.py)
 
-## Microsimulation of People (single )
+## Microsimulation of People (single area)
 
 In this example, the input data is a csv file containing a microsynthesised 2011 population of Newcastle generated from UK census data, by age, gender and ethnicity. The transitions modelled are: ageing, births, deaths and migrations. 
 
 Ageing simply increments individual's ages according to the timestep. 
 
-Births, deaths and migrations are are modelled using Monte-Carlo sampling of distributions parameterised by age, sex and ethnicity-specific fertility, mortality and migration rates respectively, which are drawn from the [NewETHPOP](http://www.ethpop.org/) project
+Births, deaths and migrations are are modelled using Monte-Carlo sampling of distributions parameterised by age, sex and ethnicity-specific fertility, mortality and migration rates respectively, which are drawn from the [NewETHPOP](http://www.ethpop.org/) project.
 
-For the fertility model newborns simply inherit their mother's location and ethnicity, are born aged zero, and have a randomly selected gender (equal probability). The migration model is an 'in-out' model, i.e. it is not a full origin-destination model. Flows are either inward from 'elsewhere' or outward to 'elsewhere'.
+For the fertility model newborns simply inherit their mother's location and ethnicity, are born aged zero, and have a randomly selected gender (even probability). The migration model is an 'in-out' model, i.e. it is not a full origin-destination model. Flows are either inward from 'elsewhere' or outward to 'elsewhere'.
 
 People who have died are simply removed from the simulation.
 
@@ -193,7 +220,7 @@ The above model has been modified to run in massively parallel mode using [MPI](
 
 The microsimulation has been run on the ARC3 cluster, part of the HPC facilities at the University of Leeds, and took about 3 minutes over 24 cores to simulate the peopulation over a 10 year period.
 
-See the [examples/people_big](examples/people_big) directory and the script [mpi_job.sh](mpi_job.sh)
+See the [examples/people_big](examples/people_multi) directory and the script [mpi_job.sh](mpi_job.sh)
 
 ## Derivative Pricing
 
@@ -205,16 +232,16 @@ a put option grants the right (but not obligation) to sell, rather than buy, at 
 
 In order to calculate the fair value of a derivative contract one can simulate a (large) number of paths the underlying stock may take 
 (according to current market conditions and some model assumptions). We then take the mean of the derivative price for 
-each simulated path to get the value of the derivative _at expiry_. This then is discounted to get the current fair value.
+each simulated path to get the value of the derivative _at expiry_. Finally this price is discounted to get the current fair value.
 
-We can easily framing a derivative derivative pricing problem in terms of a microsimulation model:
-- start with an intial (t=0) population of N (identical) underlying prices
-- evolve each price using Monte-Carlo simulation of the stochastic differential equation (SDE):
+We can easily frame a derivative derivative pricing problem in terms of a microsimulation model:
+- start with an intial (t=0) population of N (identical) underlying prices. Social scientists could refer to this as a 'cohort'. 
+- evolve each price to option expiry time (t=T) using Monte-Carlo simulation of the stochastic differential equation (SDE):
 
   dS/S = (r-q)dt + vdW
 
-  where S is price, r is risk-free rate, q is continuous dividend yield, v is volatility and dW a Wiener process
-- at expiry (t=T) compute the option prices for each underlying and take the mean
+  where S is price, r is risk-free rate, q is continuous dividend yield, v is volatility and dW a Wiener process (a 1-d Brownian motion).
+- compute the option prices for each of the underlyings and take the mean
 - discount the option price back to valuation date (t=0)
 
 For this simple option we can also compute an analytic fair value under the Black-Scholes model, and use this to determine the accuracy of the Monte-Carlo simulation.

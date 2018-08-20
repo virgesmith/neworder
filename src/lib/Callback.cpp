@@ -181,7 +181,8 @@ std::string neworder::python_version()
 void neworder::shell(/*const py::object& local*/)
 {
   py::dict kwargs;
-  kwargs["banner"] = py::str("[neworder debug shell]");
+  kwargs["banner"] = py::str("[starting neworder debug shell]");
+  kwargs["exitmsg"] = py::str("[exiting neworder debug shell]");
   //kwargs["exitmsg"] = py::str("exiting neworder shell");
   //py::import("neworder");
   //kwargs["local"] = py::handle<>(PyObject_Dir());
