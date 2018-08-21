@@ -32,11 +32,6 @@ class Population:
     self.immigration = local_rate_rescale_from_absolute(create_from_ethpop_data(pd.read_csv(ascr), self.lad), base_pop)
     self.emigration = local_rate_rescale_from_absolute(create_from_ethpop_data(pd.read_csv(asxr), self.lad), base_pop)
 
-    # # converts fractional category totals into individuals
-    # self.immigrants = generate_intl_migrants(self.immigration, True)
-    # # for emigrants don't need individuals
-    # self.emigrants = generate_intl_migrants(self.emigration, False)
-
     # seed RNG: for now, rows in data * sum(DC1117EW_C_AGE) - TODO add MPI rank/size?
     seed = int(len(self.data) * self.data.DC1117EW_C_AGE.sum()) 
     neworder.log("{} seed: {}".format(self.lad, seed)) 

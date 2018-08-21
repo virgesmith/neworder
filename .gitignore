@@ -20,3 +20,5 @@ dm*.csv
 
 # MODGEN example code
 **/Chapter*/ModgenExample
+# bulk data
+examples/people_multi/data
