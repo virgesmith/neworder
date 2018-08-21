@@ -4,7 +4,9 @@ Helper functions for the people example
 
 import pandas as pd
 import numpy as np
-import humanleague as hl
+#import humanleague as hl
+
+UK_POP_2011 = 62740000.0
 
 def census_eth_to_newethpop_eth(data):
   """ Maps census categories (DC2101EW_C_ETHPUK11) to NewEthpop. Note this is a one-way mapping """
@@ -43,7 +45,7 @@ def local_rate_from_national_rate(data, localpop):
   Scales up a rate based on national to that of local
   """
   # 2011 UK population was ~62.74M
-  scale = 62740000.0 / localpop
+  scale = UK_POP_2011 / localpop
   data.Rate = data.Rate * scale
   return data
 
@@ -58,10 +60,10 @@ def local_rates_from_national_rate(data, pop):
 
   for lad in lads:
     localpop = len(pop[pop.LAD == lad])
-    scale = 62740000 / localpop
+    scale = UK_POP_2011 / localpop
     # deal with census merged LADs
     if lad == "E09000001" or lad == "E09000033":
-      scale = 62740000 / (7397 + 219340) 
+      scale = UK_POP_2011 / (7397 + 219340) 
     elif lad == "E06000052" or lad == "E06000053":
       raise NotImplementedError("TODO Cornwall/Scillys CM LAD adj")
 
@@ -71,14 +73,14 @@ def local_rates_from_national_rate(data, pop):
 
   return data  
 
-def local_rate_rescale_from_absolute(data, pop):
+def local_rate_rescale_from_absolute(data, localpop):
   """
-  Turns absolute (2011) values into rates
+  Turns absolute (2011) values into rates. Use for intl migration figures that are absolute values per LAD
   """
-  scale = 1.0 / localpop
+  # This is roughly rescaled by age(86)/gender(2)/eth(12)
+  scale = 2064.0 / localpop
   data.Rate = data.Rate * scale
   return data
-
 
 def create_from_ethpop_data(raw_data, lad):
   """ Processes raw NewETHPOP in/out migration data into a LAD-specific table that can be used efficiently """
@@ -152,24 +154,6 @@ def create_multi_from_ethpop_data(raw_data, lads):
   data.set_index(["LAD", "NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"], inplace=True)
   return data
 
-def generate_intl_migrants(migrant_data, expand):
-  # incorporate international migrations
-  # NB these are absolute (fractional) numbers - not varying in time
-  total = migrant_data.Rate.sum() 
-  # Convert to whole numbers - first normalise
-  migrant_data.Rate = migrant_data.Rate.values / total
-  # then fit nearest integer (this respects total much better than simple rounding)
-  migrant_data.Rate = hl.prob2IntFreq(migrant_data.Rate.values, int(total))["freq"]
-
-  migrants = migrant_data[migrant_data.Rate>0]
-  # expand individuals into rows
-  if expand:
-    migrants = migrants["Rate"].repeat(migrants["Rate"]).reset_index().drop("Rate", axis=1)
-  else:
-    migrants = migrants.reset_index()
-
-  return migrants
-
 def check(data):
   # check no duplicated PID
   if len(data[data.duplicated(['PID'], keep=False)].head()):
@@ -177,7 +161,8 @@ def check(data):
   # Valid ETH, SEX, AGE
   if not np.array_equal(sorted(data.DC1117EW_C_SEX.unique()), [1,2]):
     raise ValueError("invalid gender value")
-  if not np.array_equal(sorted(data.DC1117EW_C_AGE.unique().astype(int)), range(1,87)):
+  if min(data.DC1117EW_C_AGE.unique().astype(int)) < 1 or \
+     max(data.DC1117EW_C_AGE.unique().astype(int)) > 86:
     raise ValueError("invalid catgorical age value")
   # this can go below zero for cat 86+
   if (data.DC1117EW_C_AGE - data.Age).max() >= 1.0:

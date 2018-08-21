@@ -24,7 +24,6 @@ matrix:
       script:
       - sudo apt install python3-dev libboost-python-dev
       - python3 -m pip install -U numpy pandas 
-      - export PYTHONPATH=/home/travis/virtualenv/python3.5.6/lib/python3.5/site-packages
       - make PYVER=3.5 BOOST_PYTHON_LIB=boost_python-py35 && make PYVER=3.5 BOOST_PYTHON_LIB=boost_python-py35 test
 
     - language: python
