@@ -38,6 +38,20 @@ def from_census_eth(data):
   data["NewEthpop_ETH"] = data.DC2101EW_C_ETHPUK11.map(eth_map) #, na_action=None)
   return data.drop("DC2101EW_C_ETHPUK11", axis=1)
 
+def update_lad_codes(data):
+  """ Updates LAD codes to 2015 """
+  lad_mapping = { "E08000020":  "E08000037", # Gateshead
+                  "E06000048":  "E06000057", # Northumberland
+                  "E07000100":  "E07000240", # St Albans
+                  "E07000101":  "E07000243", # Stevenage
+                  "E07000104":  "E07000241", # Welwyn-Hatfield
+                  "E07000097":  "E07000244", # East Hertfordshire
+  }
+
+  data.replace(lad_mapping, inplace=True) #[colname]
+  return data
+
+
 def local_rate_from_national_rate(data, localpop):
   """
   Scales up a rate based on national to that of local
@@ -84,9 +98,6 @@ def local_rates_from_absolute(data, pop):
   Multi-lad version of above
   """
   lads = pop.LAD.unique()
-  #print(lads)
-  #print(pop.head())
-  #print(data.head())
 
   for lad in lads:
     localpop = len(pop[pop.LAD == lad])
@@ -114,7 +125,7 @@ def create(raw_data, lad):
   'F87.88', 'F88.89', 'F89.90', 'F90.91', 'F91.92', 'F92.93', 'F93.94', 'F94.95',
   'F95.96', 'F96.97', 'F97.98', 'F98.99', 'F99.100', 'F100.101p']
 
-  data = raw_data.drop(remove, axis=1)
+  data = update_lad_codes(raw_data.drop(remove, axis=1))
 
   # Filter by our location and remove other unwanted columns
   # partial match so works with census-merged LADs 
@@ -144,7 +155,7 @@ def create_multi(raw_data, lads):
   'F87.88', 'F88.89', 'F89.90', 'F90.91', 'F91.92', 'F92.93', 'F93.94', 'F94.95',
   'F95.96', 'F96.97', 'F97.98', 'F98.99', 'F99.100', 'F100.101p']
 
-  data = raw_data.drop(remove, axis=1)
+  data = update_lad_codes(raw_data.drop(remove, axis=1))
 
   # Fix census-merged LADs (doesn't play well with join on multiindex)
   # This also requires rescaling the values by the relative sizes of the LADs
