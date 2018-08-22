@@ -33,6 +33,12 @@ class Population:
     self.immigration = ethpop.local_rate_rescale_from_absolute(ethpop.create(pd.read_csv(ascr), self.lad), base_pop)
     self.emigration = ethpop.local_rate_rescale_from_absolute(ethpop.create(pd.read_csv(asxr), self.lad), base_pop)
 
+    # Force flat rates for testing purposes
+    #self.in_migration.Rate = 0.05
+    #self.out_migration.Rate = 0.05
+    #self.immigration.Rate = 0.01
+    #self.emigration.Rate = 0.01
+
     # seed RNG: for now, rows in data * sum(DC1117EW_C_AGE) - TODO add MPI rank/size?
     seed = int(len(self.data) * self.data.DC1117EW_C_AGE.sum()) 
     neworder.log("{} seed: {}".format(self.lad, seed)) 
