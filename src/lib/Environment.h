@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Global.h"
+
 #include "python.h"
 
 #include <string>
@@ -9,8 +11,6 @@ namespace pycpp {
 struct Environment
 {
 public:
-  Environment();
-
   ~Environment();
 
   // Disable any copy/assignment
@@ -38,6 +38,10 @@ public:
   py::object& operator()() { return *m_self; }
 
 private:
+  // Singletons only
+  Environment();
+  friend Environment& Global::instance<Environment>();
+
   int m_procid;
   int m_nprocs;
   // TODO wor out why this segfaults if the dtor is called (even on exit)
