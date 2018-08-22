@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 import neworder
 
+import ethpop
 from helpers import *
 
 class Population:
@@ -24,17 +25,12 @@ class Population:
       self.data = self.data.append(data)
 
     neworder.log("Preprocessing transition data for %s" % ", ".join(self.lads))
-    self.fertility = create_multi_from_ethpop_data(pd.read_csv(asfr), self.lads)
-    self.mortality = create_multi_from_ethpop_data(pd.read_csv(asmr), self.lads)
-    self.in_migration = local_rates_from_national_rate(create_multi_from_ethpop_data(pd.read_csv(asir), self.lads), self.data)
-    self.out_migration = create_multi_from_ethpop_data(pd.read_csv(asor), self.lads)
-    self.immigration = local_rates_from_absolute(create_multi_from_ethpop_data(pd.read_csv(ascr), self.lads), self.data)
-    self.emigration = local_rates_from_absolute(create_multi_from_ethpop_data(pd.read_csv(asxr), self.lads), self.data)
-
-    # # converts fractional category totals into individuals
-    # self.immigrants = generate_intl_migrants(self.immigration, True)
-    # # for emigrants don't need individuals
-    # self.emigrants = generate_intl_migrants(self.emigration, False)
+    self.fertility = ethpop.create_multi(pd.read_csv(asfr), self.lads)
+    self.mortality = ethpop.create_multi(pd.read_csv(asmr), self.lads)
+    self.in_migration = ethpop.local_rates_from_national_rate(ethpop.create_multi(pd.read_csv(asir), self.lads), self.data)
+    self.out_migration = ethpop.create_multi(pd.read_csv(asor), self.lads)
+    self.immigration = ethpop.local_rates_from_absolute(ethpop.create_multi(pd.read_csv(ascr), self.lads), self.data)
+    self.emigration = ethpop.local_rates_from_absolute(ethpop.create_multi(pd.read_csv(asxr), self.lads), self.data)
 
     # seed RNG: for now, rows in data * sum(DC1117EW_C_AGE) - TODO add MPI rank/size?
     seed = int(len(self.data) * self.data.DC1117EW_C_AGE.sum()) 
@@ -48,7 +44,7 @@ class Population:
     # actual age is randomised within the bound of the category
     # TODO segfault can occur if mix ops with DVector and array/list...
     self.data["Age"] = self.data.DC1117EW_C_AGE - self.rstream.get(len(self.data)).tolist()
-    self.data = census_eth_to_newethpop_eth(self.data)
+    self.data = ethpop.from_census_eth(self.data)
 
   def age(self, deltat):
     # Increment age by timestep and update census age categorty (used for ASFR/ASMR lookup)

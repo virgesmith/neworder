@@ -7,6 +7,7 @@ import numpy as np
 import neworder
 
 from helpers import *
+import ethpop
 
 
 # TODO only support single LAD...? (LAD-specific dynamics)
@@ -17,8 +18,8 @@ class Population:
 
     self.data = pd.read_csv(inputdata)
 
-    self.fertility = create_from_ethpop_data(pd.read_csv(asfr), self.lad)
-    self.mortality = create_from_ethpop_data(pd.read_csv(asmr), self.lad)
+    self.fertility = ethpop.create(pd.read_csv(asfr), self.lad)
+    self.mortality = ethpop.create(pd.read_csv(asmr), self.lad)
     # assume the in-migration rates are based on the national population and need to be rescaled...
     base_pop = len(self.data)
     # deal with census-merged LADs
@@ -26,11 +27,11 @@ class Population:
       base_pop = 219340 + 7397
     elif self.lad == "E06000052" or self.lad == "E06000053":
       raise NotImplementedError("Cornwall CM LAD adj")
-    self.in_migration = local_rate_from_national_rate(create_from_ethpop_data(pd.read_csv(asir), self.lad), base_pop)
+    self.in_migration = ethpop.local_rate_from_national_rate(ethpop.create(pd.read_csv(asir), self.lad), base_pop)
     # assume the out-migration rates don't require adjustment
-    self.out_migration = create_from_ethpop_data(pd.read_csv(asor), self.lad)
-    self.immigration = local_rate_rescale_from_absolute(create_from_ethpop_data(pd.read_csv(ascr), self.lad), base_pop)
-    self.emigration = local_rate_rescale_from_absolute(create_from_ethpop_data(pd.read_csv(asxr), self.lad), base_pop)
+    self.out_migration = ethpop.create(pd.read_csv(asor), self.lad)
+    self.immigration = ethpop.local_rate_rescale_from_absolute(ethpop.create(pd.read_csv(ascr), self.lad), base_pop)
+    self.emigration = ethpop.local_rate_rescale_from_absolute(ethpop.create(pd.read_csv(asxr), self.lad), base_pop)
 
     # seed RNG: for now, rows in data * sum(DC1117EW_C_AGE) - TODO add MPI rank/size?
     seed = int(len(self.data) * self.data.DC1117EW_C_AGE.sum()) 
@@ -44,7 +45,7 @@ class Population:
     # actual age is randomised within the bound of the category
     # TODO segfault can occur if mix ops with DVector and array/list...
     self.data["Age"] = self.data.DC1117EW_C_AGE - self.rstream.get(len(self.data)).tolist()
-    self.data = census_eth_to_newethpop_eth(self.data)
+    self.data = ethpop.from_census_eth(self.data)
 
   def age(self, deltat):
     # Increment age by timestep and update census age categorty (used for ASFR/ASMR lookup)
