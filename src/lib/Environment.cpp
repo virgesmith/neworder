@@ -3,14 +3,12 @@
 #include "Inspect.h"
 #include "Callback.h"
 
-#include "python.h"
-
 #include <algorithm>
 #include <string>
 #include <iostream>
 
 
-pycpp::Environment::Environment() 
+pycpp::Environment::Environment() : m_procid(-1), m_nprocs(0) 
 {
   // make the neworder module available in embedded python env
   neworder::import_module();
@@ -22,6 +20,9 @@ pycpp::Environment::Environment()
 
   // init numpy
   numpy_init(); // things go bad if this gets called more than once?
+
+  m_self = new py::object(py::import("neworder"));
+  // make our rank/size visible to python
 } 
 
 pycpp::Environment::~Environment() 
