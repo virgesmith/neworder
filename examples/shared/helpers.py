@@ -7,6 +7,7 @@ import numpy as np
 #import humanleague as hl
 
 UK_POP_2011 = 62740000.0
+ALL_CATEGORIES = 2 * 86 * 12 # gender by age by eth
 
 def census_eth_to_newethpop_eth(data):
   """ Maps census categories (DC2101EW_C_ETHPUK11) to NewEthpop. Note this is a one-way mapping """
@@ -37,9 +38,6 @@ def census_eth_to_newethpop_eth(data):
   data["NewEthpop_ETH"] = data.DC2101EW_C_ETHPUK11.map(eth_map) #, na_action=None)
   return data.drop("DC2101EW_C_ETHPUK11", axis=1)
 
-# inmig should be / by local pop E09000001/33 sum = 1.62
-# outmig should be / by national pop E09000001/33 sum = 163
-
 def local_rate_from_national_rate(data, localpop):
   """
   Scales up a rate based on national to that of local
@@ -65,9 +63,8 @@ def local_rates_from_national_rate(data, pop):
     if lad == "E09000001" or lad == "E09000033":
       scale = UK_POP_2011 / (7397 + 219340) 
     elif lad == "E06000052" or lad == "E06000053":
-      raise NotImplementedError("TODO Cornwall/Scillys CM LAD adj")
+      scale = UK_POP_2011 / (533514 + 2222)
 
-    #print(lad, scale) 
     # TODO fix PerformanceWarning: indexing past lexsort depth may impact performance.
     data.loc[lad, "Rate"] = data.loc[lad, "Rate"].values * scale
 
@@ -78,9 +75,33 @@ def local_rate_rescale_from_absolute(data, localpop):
   Turns absolute (2011) values into rates. Use for intl migration figures that are absolute values per LAD
   """
   # This is roughly rescaled by age(86)/gender(2)/eth(12)
-  scale = 2064.0 / localpop
+  scale = ALL_CATEGORIES / localpop
   data.Rate = data.Rate * scale
   return data
+
+def local_rates_from_absolute(data, pop):
+  """
+  Multi-lad version of above
+  """
+  lads = pop.LAD.unique()
+  #print(lads)
+  #print(pop.head())
+  #print(data.head())
+
+  for lad in lads:
+    localpop = len(pop[pop.LAD == lad])
+    scale = ALL_CATEGORIES / localpop
+    # deal with census merged LADs
+    if lad == "E09000001" or lad == "E09000033":
+      scale = ALL_CATEGORIES / (7397 + 219340) 
+    elif lad == "E06000052" or lad == "E06000053":
+      scale = ALL_CATEGORIES / (533514 + 2222)
+
+    #print(lad, scale) 
+    # TODO fix PerformanceWarning: indexing past lexsort depth may impact performance.
+    data.loc[lad, "Rate"] = data.loc[lad, "Rate"].values * scale
+
+  return data  
 
 def create_from_ethpop_data(raw_data, lad):
   """ Processes raw NewETHPOP in/out migration data into a LAD-specific table that can be used efficiently """

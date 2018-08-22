@@ -93,7 +93,7 @@ class Population:
     
   def migrations(self, deltat):
 
-    # in-migrations: 
+    # internal immigration: 
     # - assign the rates to the incumbent popultion appropriately by age,sex,ethnicity
     # - randomly sample this population, clone and append
     in_rates = self.data.join(self.in_migration, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].tolist()
@@ -113,14 +113,13 @@ class Population:
     self.data = self.data.append(incoming)
     self.counter = self.counter + len(incoming)
 
+    # internal emigration: 
     out_rates = self.data.join(self.out_migration, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].tolist()
-
     h_out = np.array(neworder.hazard_v(neworder.DVector.fromlist(out_rates) * deltat).tolist())
-
     # remove outgoing migrants
     self.data = self.data[h_out!=1]
 
-    # international
+    # international immigration
     # Sampling from local population is not ideal
     intl_in_rates = self.data.join(self.immigration, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].tolist()
     h_intl_in = np.array(neworder.hazard_v(neworder.DVector.fromlist(intl_in_rates) * deltat).tolist())
@@ -133,9 +132,9 @@ class Population:
     self.data = self.data.append(intl_incoming)
     self.counter = self.counter + len(intl_incoming)
 
+    # international emigrtion
     intl_out_rates = self.data.join(self.emigration, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].tolist()
     h_intl_out = np.array(neworder.hazard_v(neworder.DVector.fromlist(intl_out_rates) * deltat).tolist())
-
     # remove outgoing migrants
     self.data = self.data[h_intl_out!=1]
 

@@ -8,8 +8,6 @@ import neworder
 
 from helpers import *
 
-
-# TODO only support single LAD...? (LAD-specific dynamics)
 class Population:
   def __init__(self, inputdata, asfr, asmr, asir, asor, ascr, asxr):
 
@@ -30,8 +28,8 @@ class Population:
     self.mortality = create_multi_from_ethpop_data(pd.read_csv(asmr), self.lads)
     self.in_migration = local_rates_from_national_rate(create_multi_from_ethpop_data(pd.read_csv(asir), self.lads), self.data)
     self.out_migration = create_multi_from_ethpop_data(pd.read_csv(asor), self.lads)
-    self.immigration = create_multi_from_ethpop_data(pd.read_csv(ascr), self.lads)
-    self.emigration = create_multi_from_ethpop_data(pd.read_csv(asxr), self.lads)
+    self.immigration = local_rates_from_absolute(create_multi_from_ethpop_data(pd.read_csv(ascr), self.lads), self.data)
+    self.emigration = local_rates_from_absolute(create_multi_from_ethpop_data(pd.read_csv(asxr), self.lads), self.data)
 
     # # converts fractional category totals into individuals
     # self.immigrants = generate_intl_migrants(self.immigration, True)
@@ -99,23 +97,15 @@ class Population:
     
   def migrations(self, deltat):
 
-    # in-migrations: 
+    # internal immigrations: 
     # - assign the rates to the incumbent popultion appropriately by age,sex,ethnicity
     # - randomly sample this population, clone and append
     in_rates = self.data.join(self.in_migration, on=["LAD", "NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].tolist()
-
     # in-migration should be sampling from the whole population ex-LAD, instead do an approximation by scaling up the LAD population
     # NOTE this is wrong for a number of reasons esp. as it cannot sample category combinations that don't already exist in the LAD
     h_in = np.array(neworder.hazard_v(neworder.DVector.fromlist(in_rates) * deltat).tolist())
     
     incoming = self.data[h_in == 1].copy()
-
-    out_rates = self.data.join(self.out_migration, on=["LAD", "NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].tolist()
-
-    h_out = np.array(neworder.hazard_v(neworder.DVector.fromlist(out_rates) * deltat).tolist())
-
-    # remove outgoing migrants
-    self.data = self.data[h_out!=1]
 
     # Append incomers to main population and adjust counter
     # Assign a new id
@@ -125,32 +115,32 @@ class Population:
     incoming.Age = incoming.DC1117EW_C_AGE - self.rstream.get(len(incoming)).tolist()
     self.data = self.data.append(incoming, sort=False)
     self.counter = self.counter + len(incoming)
-    
-    # international disabled for now
-    # intl_incoming = self.immigrants.copy()
-    # intl_incoming["PID"] = range(self.counter, self.counter + len(intl_incoming))
-    # intl_incoming["Area"] = self.lad
-    # # assign a new random fractional age based on census age category
-    # intl_incoming["Age"] = intl_incoming.DC1117EW_C_AGE - self.rstream.get(len(intl_incoming)).tolist()
-    # self.data = self.data.append(intl_incoming, sort=False)
-    # self.counter = self.counter + len(intl_incoming)
 
-    # # TODO emigration
-    # intl_outgoing = self.emigrants.copy()
-    # #print(intl_outgoing.head())
-    # for i in range(len(intl_outgoing)):
-    #   ref = self.data[(self.data.NewEthpop_ETH == intl_outgoing.iloc[i].NewEthpop_ETH)
-    #     & (self.data.DC1117EW_C_SEX == intl_outgoing.iloc[i].DC1117EW_C_SEX)
-    #     & (self.data.DC1117EW_C_AGE == intl_outgoing.iloc[i].DC1117EW_C_AGE)]
-    #   count = intl_outgoing.iloc[i].Rate
-    #   print(count, len(ref))
-    #   print(str(ref.sample(min(count, len(ref)), replace=False)))
-      
-    #print(len(self.data), len(intl_outgoing))
-    #self.data
+    # internal emigration
+    out_rates = self.data.join(self.out_migration, on=["LAD", "NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].tolist()
+    h_out = np.array(neworder.hazard_v(neworder.DVector.fromlist(out_rates) * deltat).tolist())
+    # remove outgoing migrants
+    self.data = self.data[h_out!=1]
+
+    intl_in_rates = self.data.join(self.immigration, on=["LAD", "NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].tolist()
+    h_intl_in = np.array(neworder.hazard_v(neworder.DVector.fromlist(intl_in_rates) * deltat).tolist())
+
+    intl_incoming = self.data[h_intl_in == 1].copy()
+    intl_incoming.PID = range(self.counter, self.counter + len(intl_incoming))
+    intl_incoming.Area = "INTL" #self.lad
+    # assign a new random fractional age based on census age category
+    intl_incoming.Age = intl_incoming.DC1117EW_C_AGE - self.rstream.get(len(intl_incoming)).tolist()
+    self.data = self.data.append(intl_incoming)
+    self.counter = self.counter + len(intl_incoming)
+
+    # international emigrtion
+    intl_out_rates = self.data.join(self.emigration, on=["LAD", "NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].tolist()
+    h_intl_out = np.array(neworder.hazard_v(neworder.DVector.fromlist(intl_out_rates) * deltat).tolist())
+    # remove outgoing migrants
+    self.data = self.data[h_intl_out!=1]
 
     # record net migration
-    self.in_out = (h_in.sum(), h_out.sum(), 0, 0) # len(self.immigrants), len(self.emigrants))
+    self.in_out = (h_in.sum(), h_out.sum(), h_intl_in.sum(), h_intl_out.sum())
 
   def mean_age(self):
     return self.data.Age.mean()
