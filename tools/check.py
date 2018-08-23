@@ -27,14 +27,14 @@ spec = importlib.util.spec_from_file_location(modulename, modulename)
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 
-required_symbols = ["loglevel", "do_checks", "initialisations", "transitions", "finalisations"]
+required_symbols = ["loglevel", "do_checks", "initialisations", "transitions", "checkpoints"]
 symbols = dir(module)
 
 print("checking", modulename + "...")
 have_required = have_required and check(symbols, required_symbols)
 
 # symbols that are defined by the user, not by the embedded env
-required_symbols = ["timespan", "timestep"]
+required_symbols = ["procid", "nprocs", "timespan", "timestep"]
 symbols = dir(neworder)
 print("checking neworder user definitions...")
 

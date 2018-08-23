@@ -21,6 +21,20 @@ class Callback:
   def __init__(self, string):
     pass
 
+# Stub log
+def name():
+  return "stub"
+
+def version():
+  return "0"
+
+def python():
+  import sys
+  return sys.version
+
+def log(_):
+  pass
+
 # Default multiprocess settings
 nprocs = 1
 procid = 0
