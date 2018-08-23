@@ -10,7 +10,6 @@
 // RAII wrapper for MPI initialisation
 MPIResource::MPIResource(int* pargc, const char*** pargv)
 {
-  // TODO check return values?
   int status = MPI_Init(pargc, const_cast<char***>(pargv));
   if (status != MPI_SUCCESS)
   {

@@ -1,11 +1,11 @@
 
 #include "run.h"
 
-//#include "Inspect.h"
 #include "Functor.h"
 #include "Environment.h"
 #include "Callback.h"
 
+#include "Global.h"
 #include "python.h"
 
 #include <iostream>
@@ -34,24 +34,19 @@ void append_model_paths(const char* paths[], size_t n)
 
 int run(int rank, int size)
 {
-  std::cout << "[C++ " << rank << "/" << size << "] process init" << std::endl; 
-  pycpp::Environment env;
+  pycpp::Environment& env = Global::instance<pycpp::Environment>();
+  env.setid(rank, size);
+  //std::cout << "[C++ " << rank << "/" << size << "] process init" << std::endl; 
   try
   {
-    // TODO move into env?
-    py::object self = py::import("neworder");
-
-    self.attr("procid") = rank;
-    self.attr("nprocs") = size;
-
     // TODO specify Path(?) on cmd line?
     py::object config = py::import("config");
 
     bool do_checks = py::extract<bool>(config.attr("do_checks"))();
 
     // TODO direct init in python of a DVector?
-    const std::vector<double>& timespan = py::extract<std::vector<double>>(self.attr("timespan"))();
-    double timestep = py::extract<double>(self.attr("timestep"))();
+    const std::vector<double>& timespan = py::extract<std::vector<double>>(env().attr("timespan"))();
+    double timestep = py::extract<double>(env().attr("timestep"))();
 
     // Do not allow a zero timestep as this will result in an infinite loop
     if (timestep == 0.0)
@@ -78,7 +73,7 @@ int run(int rank, int size)
 
       // taking a const ref here to stay results in an empty string, which is bizarre love triangle
       const std::string name = py::extract<std::string>(initialisations[i][0])();
-      self.attr(name.c_str()) = object;
+      env().attr(name.c_str()) = object;
       std::cout << name << " ";
     }
     std::cout << std::endl;
@@ -121,7 +116,7 @@ int run(int rank, int size)
       {
         std::cout << "[C++] t=" << t << " exec: ";
         // TODO is there a way to do this in-place? does it really matter?
-        self.attr("time") = py::object(t);
+        env().attr("time") = py::object(t);
 
         for (auto it = transitionTable.begin(); it != transitionTable.end(); ++it)
         {

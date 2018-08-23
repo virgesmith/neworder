@@ -1,5 +1,5 @@
 #include "Environment.h"
-
+#include "Global.h"
 #include "python.h"
 
 #include <vector>
@@ -15,7 +15,7 @@ void test_errors();
 
 int main(int argc, const char* argv[]) 
 {
-  pycpp::Environment env;
+  pycpp::Environment& env = Global::instance<pycpp::Environment>();
   try
   {
     // TODO move into env?
