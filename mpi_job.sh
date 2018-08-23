@@ -1,5 +1,7 @@
 
 #$ -cwd -V 
+# Memory
+#$ -l h_vmem=2G
 # Request runtime 
 #$ -l h_rt=1:00:00 
 # Request CPU cores 
@@ -16,9 +18,5 @@
 export PYTHONPATH=~/.local/lib/python3.6/site-packages:$PYTHONPATH
 export LD_LIBRARY_PATH=src/lib:$LD_LIBRARY_PATH 
 
-#echo Start: $(date) > mpi_out.log
-
-mpirun src/bin/neworder_mpi examples/people_big examples/shared >> mpi_out.log 2> mpi_err.log
-
-#echo Finish: $(date) >> mpi_out.log
+mpirun src/bin/neworder_mpi examples/people_multi examples/shared
 

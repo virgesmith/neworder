@@ -45,7 +45,7 @@ def update_lad_codes(data):
                   "E07000100":  "E07000240", # St Albans
                   "E07000101":  "E07000243", # Stevenage
                   "E07000104":  "E07000241", # Welwyn-Hatfield
-                  "E07000097":  "E07000244", # East Hertfordshire
+                  "E07000097":  "E07000242", # East Hertfordshire
   }
 
   data.replace(lad_mapping, inplace=True) #[colname]
