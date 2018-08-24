@@ -7,7 +7,7 @@
 #include <memory>
 #include <mutex>
 
-// Threadsafe(?) global singleton access
+// Threadsafe global singleton access
 namespace Global
 {
   template<typename T>

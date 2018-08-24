@@ -1,10 +1,9 @@
 #include "Environment.h"
-#include "Global.h"
+
 #include "python.h"
 
 #include <vector>
 #include <string>
-
 #include <iostream>
 
 void test1(const std::string& modulename, const std::string& functionname, const std::vector<std::string>& args);
@@ -15,7 +14,7 @@ void test_errors();
 
 int main(int argc, const char* argv[]) 
 {
-  pycpp::Environment& env = Global::instance<pycpp::Environment>();
+  pycpp::Environment& env = pycpp::Environment::init(0, 1);
   try
   {
     // load module, call func with args

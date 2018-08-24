@@ -1,25 +1,23 @@
 
 #include "Rand.h"
+#include "Environment.h"
 
 #include <vector>
 #include <random>
 #include <algorithm>
 
-// TODO thread/process-safe seeding
-namespace {
-std::mt19937 prng(77027465);
-}
 
-neworder::UStream::UStream(int64_t seed) : m_seed(seed), m_prng(seed), m_dist(0.0, 1.0)
+neworder::UStream::UStream() : m_dist(0.0, 1.0)
 {
 }
 
 std::vector<double> neworder::UStream::get(int n)
 {
+  std::mt19937& prng = pycpp::Environment::get().prng();
   std::vector<double> ret(n);
   for (int i = 0; i < n; ++i)
   {
-    ret[i] = m_dist(m_prng);
+    ret[i] = m_dist(prng);
   }
   return ret;
 }
@@ -28,7 +26,7 @@ std::vector<double> neworder::UStream::get(int n)
 // simple hazard 
 std::vector<int> neworder::hazard(double prob, size_t n)
 {
-  // TODO thread/process-safe seeding
+  std::mt19937& prng = pycpp::Environment::get().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
   std::vector<int> h(n);
@@ -40,7 +38,7 @@ std::vector<int> neworder::hazard(double prob, size_t n)
 // simple hazard 
 std::vector<int> neworder::hazard_v(const std::vector<double>& prob)
 {
-  // TODO thread/process-safe seeding
+  std::mt19937& prng = pycpp::Environment::get().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
   size_t n = prob.size();
@@ -55,7 +53,7 @@ std::vector<int> neworder::hazard_v(const std::vector<double>& prob)
 // computes stopping times 
 std::vector<double> neworder::stopping(double prob, size_t n)
 {
-  // TODO thread/process-safe seeding
+  std::mt19937& prng = pycpp::Environment::get().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
   double rprob = 1.0 / prob;
@@ -75,7 +73,7 @@ std::vector<double> neworder::stopping(double prob, size_t n)
 // Lewis, Peter A., and Gerald S. Shedler. "Simulation of nonhomogeneous Poisson processes by thinning." Naval Research Logistics (NRL) 26.3 (1979): 403-413.
 std::vector<double> neworder::stopping_nhpp(const std::vector<double>& lambda_t, size_t n)
 {
-  // TODO thread/process-safe seeding
+  std::mt19937& prng = pycpp::Environment::get().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
   // What is the optimal lambda_u? For now largest value
@@ -122,7 +120,7 @@ std::vector<double> neworder::stopping_nhpp(const std::vector<double>& lambda_t,
 // computes stopping times 
 std::vector<double> neworder::stopping_v(const std::vector<double>& prob)
 {
-  // TODO thread/process-safe seeding
+  std::mt19937& prng = pycpp::Environment::get().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);  
 
   size_t n = prob.size();

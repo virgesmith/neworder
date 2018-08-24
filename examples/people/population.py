@@ -42,7 +42,7 @@ class Population:
     # seed RNG: for now, rows in data * sum(DC1117EW_C_AGE) - TODO add MPI rank/size?
     seed = int(len(self.data) * self.data.DC1117EW_C_AGE.sum()) 
     neworder.log("{} seed: {}".format(self.lad, seed)) 
-    self.rstream = neworder.UStream(seed)
+    self.rstream = neworder.UStream()
 
     # use this to identify people (uniquely only within this table)
     self.counter = len(self.data)

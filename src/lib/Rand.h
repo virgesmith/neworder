@@ -1,22 +1,21 @@
 
 #pragma once
 
-//#include "Global.h"
-
 #include <vector>
 #include <random>
 #include <cstddef>
 #include <cstdint>
 
-// TODO need threadsafe RNG independence/seeding
+// TODO rename to MC
 
 namespace neworder {
 
-// Uniform random stream in [0,1)
+// TODO this can just be a function now 
+// Uniform random [0,1) fed from the environment's PRNG stream
 class UStream
 {
 public:
-  UStream(int64_t seed);
+  UStream();
 
   ~UStream() = default;
 
@@ -27,11 +26,7 @@ public:
 
   std::vector<double> get(int n);
 
-  int64_t seed() const { return m_seed; }
-
 private:
-  int64_t m_seed;
-  std::mt19937 m_prng;
   std::uniform_real_distribution<> m_dist;  
 };
 

@@ -111,10 +111,9 @@ BOOST_PYTHON_MODULE(neworder)
     .def("fromlist", &no::py_list_to_vector<std::string>)
     ;
 
-  py::class_<no::UStream>("UStream", py::init<int64_t>())
-    .def("seed", &no::UStream::seed)
-    .def("get", &no::UStream::get)
-    ;  
+   py::class_<no::UStream>("UStream")
+     .def("get", &no::UStream::get)
+     ;  
 
   py::class_<no::Callback>("Callback", py::init<std::string>())
     .def("__call__", &no::Callback::operator())
@@ -193,8 +192,7 @@ void neworder::log(const py::object& msg)
 {
   // TODO more efficient way?
   py::object self = py::import("neworder");
-  const auto& id = Global::instance<pycpp::Environment>().getid();
-  std::cout << "[py " << id.first << "/" << id.second << "] " << pycpp::as_string(msg.ptr()) << std::endl;
+  std::cout << "[py " << pycpp::Environment::get().id() << "] " << pycpp::as_string(msg.ptr()) << std::endl;
 }
 
 void neworder::import_module()

@@ -10,9 +10,9 @@ def test():
 
   dv = no.DVector(10)
 
-  rng0 = no.UStream(0)
+  rng0 = no.UStream()
   no.log(rng0.get(10))
-  rng1 = no.UStream(1)
+  rng1 = no.UStream()
   no.log(rng1.get(10))
 
   # test arithmetic

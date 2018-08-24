@@ -5,7 +5,6 @@
 #include "Environment.h"
 #include "Callback.h"
 
-#include "Global.h"
 #include "python.h"
 
 #include <iostream>
@@ -34,9 +33,7 @@ void append_model_paths(const char* paths[], size_t n)
 
 int run(int rank, int size)
 {
-  pycpp::Environment& env = Global::instance<pycpp::Environment>();
-  env.setid(rank, size);
-  //std::cout << "[C++ " << rank << "/" << size << "] process init" << std::endl; 
+  pycpp::Environment& env = pycpp::Environment::init(rank, size);
   try
   {
     // TODO specify Path(?) on cmd line?

@@ -4,6 +4,7 @@
 
 #include "python.h"
 
+#include <random>
 #include <string>
 
 namespace pycpp {
@@ -11,6 +12,7 @@ namespace pycpp {
 struct Environment
 {
 public:
+
   ~Environment();
 
   // Disable any copy/assignment
@@ -25,19 +27,17 @@ public:
   // returns the python version
   static std::string version();
 
-  // If multithreaded/MPI this must be set to ensure independence of RNG streams (and accurate logging) 
-  void setid(int rank, int size)
-  {
-    m_id.first = rank;
-    m_id.second = size;
-    m_self->attr("procid") = rank;
-    m_self->attr("nprocs") = size;
-  }
+  // Use this function to create the environemt
+  // it ensures the PRNG has been seeded independently for parallel jobs
+  // seeds will be a consecutive numbers starting at a (large prime) multiple of the total no of processes
+  static Environment& init(int rank, int size);
 
-  std::pair<int, int> getid() const
-  {
-    return m_id;
-  }
+  // syntactic sugar
+  static Environment& get();
+
+  const std::string& id() const;
+
+  std::mt19937& prng();
 
   // returns the env as a python object 
   //operator py::object&() { return m_self; } doesnt implicitly cast
@@ -49,9 +49,12 @@ private:
   friend Environment& Global::instance<Environment>();
 
   // MPI rank/size
-  std::pair<int, int> m_id;
-  // TODO wor out why this segfaults if the dtor is called (even on exit)
+  int m_rank;
+  int m_size;
+  // TODO work out why this segfaults if the dtor is called (even on exit)
   py::object* m_self;
+  // thread/process-safe seeding
+  std::unique_ptr<std::mt19937> m_prng;
 };
 
 }

@@ -38,10 +38,7 @@ class Population:
     # self.immigration.Rate = 0.01
     # self.emigration.Rate = 0.01
 
-    # seed RNG: for now, rows in data * sum(DC1117EW_C_AGE) * MPI size + MPI rank
-    seed = int(len(self.data) * self.data.DC1117EW_C_AGE.sum()) * neworder.nprocs + neworder.procid
-    neworder.log("{} seed: {}".format(", ".join(self.lads), seed)) 
-    self.rstream = neworder.UStream(seed)
+    self.rstream = neworder.UStream()
 
     # use this to identify people (uniquely only within this table)
     self.counter = len(self.data)
