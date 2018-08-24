@@ -8,7 +8,7 @@
 #include <iostream>
 
 
-pycpp::Environment::Environment() : m_procid(-1), m_nprocs(0) 
+pycpp::Environment::Environment() : m_id({0, 1}) 
 {
   // make the neworder module available in embedded python env
   neworder::import_module();

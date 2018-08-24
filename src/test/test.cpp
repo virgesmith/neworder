@@ -18,11 +18,6 @@ int main(int argc, const char* argv[])
   pycpp::Environment& env = Global::instance<pycpp::Environment>();
   try
   {
-    // TODO move into env?
-    py::object self = py::import("neworder");
-    self.attr("procid") = 0;
-    self.attr("nprocs") = 1;
-
     // load module, call func with args
     test1("op", "mul", {"2", "3"});
     test1("op", "void", {"2", "3"});

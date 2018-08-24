@@ -25,12 +25,18 @@ public:
   // returns the python version
   static std::string version();
 
+  // If multithreaded/MPI this must be set to ensure independence of RNG streams (and accurate logging) 
   void setid(int rank, int size)
   {
-    m_procid = rank;
-    m_nprocs = size;
+    m_id.first = rank;
+    m_id.second = size;
     m_self->attr("procid") = rank;
     m_self->attr("nprocs") = size;
+  }
+
+  std::pair<int, int> getid() const
+  {
+    return m_id;
   }
 
   // returns the env as a python object 
@@ -42,8 +48,8 @@ private:
   Environment();
   friend Environment& Global::instance<Environment>();
 
-  int m_procid;
-  int m_nprocs;
+  // MPI rank/size
+  std::pair<int, int> m_id;
   // TODO wor out why this segfaults if the dtor is called (even on exit)
   py::object* m_self;
 };

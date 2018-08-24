@@ -189,15 +189,12 @@ void neworder::shell(/*const py::object& local*/)
   py::object interpreter = py::import("code").attr("interact")(*py::tuple(), **kwargs);
 }
 
-
 void neworder::log(const py::object& msg)
 {
   // TODO more efficient way?
   py::object self = py::import("neworder");
-  int rank = py::extract<int>(self.attr("procid"))();
-  int size = py::extract<int>(self.attr("nprocs"))();
-
-  std::cout << "[py " << rank << "/" << size << "] " << pycpp::as_string(msg.ptr()) << std::endl;
+  const auto& id = Global::instance<pycpp::Environment>().getid();
+  std::cout << "[py " << id.first << "/" << id.second << "] " << pycpp::as_string(msg.ptr()) << std::endl;
 }
 
 void neworder::import_module()
