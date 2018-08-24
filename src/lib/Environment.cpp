@@ -19,8 +19,7 @@ pycpp::Environment& pycpp::Environment::init(int rank, int size)
   //env.m_prng.reset(std::make_unique<std::mt19937>(77027473 * size + rank));
   env.m_prng.reset(new std::mt19937(77027473 * size + rank));
 
-  std::cout << env.context() << "process init, seed=" << 77027473 * size + rank << std::endl; 
-
+  std::cout << env.context() << "env init, seed=" << 77027473 * size + rank << std::endl; 
   std::cout << env.context() << "embedded python version: " << version() << std::endl;
 
   return env;

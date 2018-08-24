@@ -27,7 +27,7 @@ void append_model_paths(const char* paths[], size_t n)
   if (current)
     pythonpath = pythonpath + ":" + current;
   setenv("PYTHONPATH", pythonpath.c_str(), 1);
-  std::cout << "[pre-init] PYTHONPATH=" << pythonpath << std::endl;
+  std::cout << "[pre-env] PYTHONPATH=" << pythonpath << std::endl;
 }
 
 
