@@ -4,7 +4,7 @@
 //#include "Array.h"
 #include "Environment.h"
 #include "Inspect.h"
-#include "Rand.h"
+#include "MonteCarlo.h"
 
 #include "python.h"
 
@@ -53,26 +53,22 @@ BOOST_PYTHON_MODULE(neworder)
 {
   namespace no = neworder;
 
+  // utility/diagnostics
   py::def("name", no::module_name);
-
   py::def("version", no::module_version);
-
   py::def("python", no::python_version);
-
   py::def("log", no::log);
-
   py::def("shell", no::shell);
 
+  // MC
+  py::def("ustream", no::ustream);
   py::def("hazard", no::hazard);
-
   py::def("stopping", no::stopping);
-
   py::def("stopping_nhpp", no::stopping_nhpp);
-
   py::def("hazard_v", no::hazard_v);
-
   py::def("stopping_v", no::stopping_v);
 
+  // Containers
   py::class_<std::vector<double>>("DVector", py::init<int>())
     .def("__len__", &std::vector<double>::size)
     .def("clear", &std::vector<double>::clear)
@@ -111,10 +107,7 @@ BOOST_PYTHON_MODULE(neworder)
     .def("fromlist", &no::py_list_to_vector<std::string>)
     ;
 
-   py::class_<no::UStream>("UStream")
-     .def("get", &no::UStream::get)
-     ;  
-
+  // Python code
   py::class_<no::Callback>("Callback", py::init<std::string>())
     .def("__call__", &no::Callback::operator())
     //.def("__str__", &no::Callback::code)
@@ -133,7 +126,7 @@ const char* neworder::module_version()
 
 std::string neworder::python_version()
 {
-  return pycpp::Environment::version();
+  return pycpp::Environment::get().version();
 }
 
 // Deprecated
@@ -182,7 +175,6 @@ void neworder::shell(/*const py::object& local*/)
   py::dict kwargs;
   kwargs["banner"] = py::str("[starting neworder debug shell]");
   kwargs["exitmsg"] = py::str("[exiting neworder debug shell]");
-  //kwargs["exitmsg"] = py::str("exiting neworder shell");
   //py::import("neworder");
   //kwargs["local"] = py::handle<>(PyObject_Dir());
   py::object interpreter = py::import("code").attr("interact")(*py::tuple(), **kwargs);
@@ -192,7 +184,7 @@ void neworder::log(const py::object& msg)
 {
   // TODO more efficient way?
   py::object self = py::import("neworder");
-  std::cout << "[py " << pycpp::Environment::get().id() << "] " << pycpp::as_string(msg.ptr()) << std::endl;
+  std::cout << pycpp::Environment::get().context(pycpp::Environment::PY) << pycpp::as_string(msg.ptr()) << std::endl;
 }
 
 void neworder::import_module()

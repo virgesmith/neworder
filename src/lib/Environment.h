@@ -13,6 +13,10 @@ struct Environment
 {
 public:
 
+  // Context
+  static const int CPP = 0;
+  static const int PY = 1;
+
   ~Environment();
 
   // Disable any copy/assignment
@@ -20,12 +24,6 @@ public:
   Environment& operator=(const Environment&) = delete;
   Environment(const Environment&&) = delete;
   Environment& operator=(const Environment&&) = delete;
-
-  // check for errors in the python env: if it returns, there is no error
-  static std::string check() noexcept;
-
-  // returns the python version
-  static std::string version();
 
   // Use this function to create the environemt
   // it ensures the PRNG has been seeded independently for parallel jobs
@@ -35,8 +33,16 @@ public:
   // syntactic sugar
   static Environment& get();
 
-  const std::string& id() const;
+  // check for errors in the python env (use after catching py::error_already_set)
+  static std::string get_error() noexcept;
 
+  // returns the python version
+  static std::string version();
+
+  // returns "rank/size"
+  const std::string& context(int ctx = CPP) const;
+
+  // One RNG stream per env
   std::mt19937& prng();
 
   // returns the env as a python object 

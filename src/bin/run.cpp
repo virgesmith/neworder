@@ -27,7 +27,7 @@ void append_model_paths(const char* paths[], size_t n)
   if (current)
     pythonpath = pythonpath + ":" + current;
   setenv("PYTHONPATH", pythonpath.c_str(), 1);
-  std::cout << "[C++] PYTHONPATH=" << pythonpath << std::endl;
+  std::cout << "[pre-init] PYTHONPATH=" << pythonpath << std::endl;
 }
 
 
@@ -51,7 +51,7 @@ int run(int rank, int size)
       throw std::runtime_error("Timestep cannot be zero!");
     }
 
-    std::cout << "[C++] t=" << timespan[0] << " init: ";
+    std::cout << env.context() << "t=" << timespan[0] << " init: ";
 
     // list of module-class-constructor args -> list of objects
     py::list initialisations = py::dict(config.attr("initialisations")).items();
@@ -111,7 +111,7 @@ int run(int rank, int size)
     {
       for (; t <= timespan[i]; t += timestep)
       {
-        std::cout << "[C++] t=" << t << " exec: ";
+        std::cout << env.context() << "t=" << t << " exec: ";
         // TODO is there a way to do this in-place? does it really matter?
         env().attr("time") = py::object(t);
 
@@ -130,7 +130,7 @@ int run(int rank, int size)
           }  
         }
       }
-      std::cout << "[C++] checkpoint: ";
+      std::cout << env.context() << "checkpoint: ";
       for (auto it = checkpointTable.begin(); it != checkpointTable.end(); ++it)
       {
         std::cout << it->first << ": ";   
@@ -139,21 +139,21 @@ int run(int rank, int size)
       } 
       std::cout << std::endl;
     }
-    std::cout << "[C++] SUCCESS" << std::endl;
+    std::cout << env.context() << "SUCCESS" << std::endl;
   }
   catch (py::error_already_set&)
   {
-    std::cerr << "ERROR: [py] " << pycpp::Environment::check() << std::endl;
+    std::cerr << "ERROR: " << env.context(pycpp::Environment::PY) << " " << env.get_error() << std::endl;
     return 1;
   }
   catch (std::exception& e)
   {
-    std::cerr << "ERROR: [C++] " << e.what() << std::endl;
+    std::cerr << "ERROR: " << env.context() << " " << e.what() << std::endl;
     return 1;
   }
   catch(...)
   {
-    std::cerr << "ERROR: [C++] unknown exception" << std::endl;
+    std::cerr << "ERROR: unknown exception" << std::endl;
     return 1;
   }
   return 0;

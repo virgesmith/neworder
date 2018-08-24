@@ -10,10 +10,8 @@ def test():
 
   dv = no.DVector(10)
 
-  rng0 = no.UStream()
-  no.log(rng0.get(10))
-  rng1 = no.UStream()
-  no.log(rng1.get(10))
+  no.log(no.ustream(10))
+  no.log(no.ustream(10))
 
   # test arithmetic
   dv = dv + 0.5
@@ -23,7 +21,7 @@ def test():
   dv = dv * 0.5
   # dv = dv / 0.5
 
-  no.log(np.array(no.hazard_v(rng1.get(1000)).tolist()).mean())
+  no.log(np.array(no.hazard_v(no.ustream(1000)).tolist()).mean())
 
   f = no.Callback("2 + 2")
 

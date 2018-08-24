@@ -1,3 +1,4 @@
+// Deprecated
 
 // test4 - boost.Python
 #include "Inspect.h"

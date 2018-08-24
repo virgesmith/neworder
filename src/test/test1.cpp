@@ -1,3 +1,6 @@
+
+// Deprecated
+
 #include "Inspect.h"
 #include "Callback.h"
 #include "python.h"

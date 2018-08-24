@@ -104,9 +104,6 @@ class Person():
 
 class RiskPaths():
   def __init__(self, n):
-    # TODO seed
-    # TODO check this affects C++ functions
-    self.ustream = neworder.UStream()
 
     # initialise population
     self.population = [ Person() for _ in range(n) ]

@@ -5,7 +5,7 @@ Microsimulation config
 import neworder
 
 # define some global variables
-initial_population = "examples/people/ssm_E08000021_MSOA11_ppp_2011.csv"
+initial_population = "examples/people/ssm_E09000001_MSOA11_ppp_2011.csv"
 asfr = "examples/shared/NewETHPOP_fertility.csv"
 asmr = "examples/shared/NewETHPOP_mortality.csv"
 # internal in-migration

@@ -36,7 +36,7 @@ int main(int argc, const char* argv[])
     test_errors();
 
     // TODO how to determine tests pass/fail?
-    std::cout << "[C++] running python modules:" << std::endl;
+    std::cout << env.context() << " running python modules:" << std::endl;
     for (int i = 1; i < argc; ++i)
     {
       py::object module = py::import(argv[i]);
@@ -47,17 +47,17 @@ int main(int argc, const char* argv[])
   }
   catch (py::error_already_set&)
   {
-    std::cerr << "ERROR: [python] " << pycpp::Environment::check() << std::endl;
+    std::cerr << env.context(pycpp::Environment::PY) << "ERROR:" << env.get_error() << std::endl;
     return 1;
   }
   catch (std::exception& e)
   {
-    std::cerr << "ERROR: [C++] " << e.what() << std::endl;
+    std::cerr << "ERROR:" << e.what() << std::endl;
     return 1;
   }
   catch(...)
   {
-    std::cerr << "ERROR: [C++] unknown exception" << std::endl;
+    std::cerr << "ERROR: unknown exception" << std::endl;
     return 1;
   }
   return 0;

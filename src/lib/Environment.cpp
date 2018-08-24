@@ -19,7 +19,9 @@ pycpp::Environment& pycpp::Environment::init(int rank, int size)
   //env.m_prng.reset(std::make_unique<std::mt19937>(77027473 * size + rank));
   env.m_prng.reset(new std::mt19937(77027473 * size + rank));
 
-  std::cout << "[C++ " << env.id() << "] process init, seed=" << 77027473 * size + rank << std::endl; 
+  std::cout << env.context() << "process init, seed=" << 77027473 * size + rank << std::endl; 
+
+  std::cout << env.context() << "embedded python version: " << version() << std::endl;
 
   return env;
 }
@@ -30,10 +32,11 @@ pycpp::Environment& pycpp::Environment::get()
   return Global::instance<Environment>();
 }
 
-const std::string& pycpp::Environment::id() const
+const std::string& pycpp::Environment::context(int ctx) const
 {
-  static const std::string idstring = std::to_string(m_rank) + "/" + std::to_string(m_size);
-  return idstring;
+  static const std::string idstring_cpp = "[no " + std::to_string(m_rank) + "/" + std::to_string(m_size) + "] ";
+  static const std::string idstring_py = "[py " + std::to_string(m_rank) + "/" + std::to_string(m_size) + "] ";
+  return ctx == 0 ? idstring_cpp : idstring_py;
 }
 
 std::mt19937& pycpp::Environment::prng()
@@ -53,13 +56,12 @@ pycpp::Environment::Environment()
   // Init python env
   Py_Initialize();
 
-  std::cout << "[C++] embedded python version: " << version() << std::endl;
-
   // init numpy
   numpy_init(); // things go bad if this gets called more than once?
 
   m_self = new py::object(py::import("neworder"));
   // make our rank/size visible to python
+
 } 
 
 pycpp::Environment::~Environment() 
@@ -72,32 +74,33 @@ pycpp::Environment::~Environment()
   Py_Finalize();
 }
 
-// TODO return a bool as well as a string?
-// TODO error msg member of env?
 // check for errors in the python env: if it returns, there is no error
-// use C API here as can't have anything throwing
-std::string pycpp::Environment::check() noexcept
+// copied from: https://wiki.python.org/moin/boost.python/EmbeddingPython
+std::string pycpp::Environment::get_error() noexcept
 {
   // see PyErr_Fetch: https://docs.python.org/3/c-api/exceptions.html
+  std::string message;
   if (PyErr_Occurred())
   {
-    PyObject *type, *value, *traceback;
-    PyErr_Fetch(&type, &value, &traceback);
+    PyObject *exc,*val,*tb;
+    PyErr_Fetch(&exc,&val,&tb);
+    PyErr_NormalizeException(&exc,&val,&tb);
 
-    // TODO split type/value
-    if (type && value)
+    py::handle<> hexc(exc), hval(py::allow_null(val)), htb(py::allow_null(tb));
+    if(!hval)
     {
-      // TODO sort this out
-      std::string message = pycpp::as_string(type) + ":" + pycpp::as_string(value);
-//      PyErr_Restore(type, value, traceback);
-      // TODO dump traceback (when not null)
-      // if (traceback)
-      //   std::cerr << "Python stack:\n" << pycpp::String::force(traceback).operator std::string() << std::endl;
-      return message;
+      return py::extract<std::string>(py::str(hexc));
     }
+    else
+    {
+      py::object traceback(py::import("traceback"));
+      py::object format_exception(traceback.attr("format_exception"));
+      py::object formatted_list(format_exception(hexc,hval,htb));
+      py::object formatted(py::str("").join(formatted_list));
+      return py::extract<std::string>(formatted);
+    } 
   }
-
-  return "unable to determine error";
+  return "unable to determine python error";
 }
 
 std::string pycpp::Environment::version()

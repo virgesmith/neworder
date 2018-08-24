@@ -1,5 +1,5 @@
 
-#include "Rand.h"
+#include "MonteCarlo.h"
 #include "Environment.h"
 
 #include <vector>
@@ -7,18 +7,18 @@
 #include <algorithm>
 
 
-neworder::UStream::UStream() : m_dist(0.0, 1.0)
-{
-}
 
-std::vector<double> neworder::UStream::get(int n)
+std::vector<double> neworder::ustream(int n)
 {
   std::mt19937& prng = pycpp::Environment::get().prng();
+  std::uniform_real_distribution<> dist(0.0, 1.0); // can't make this const, so best not make it static 
   std::vector<double> ret(n);
-  for (int i = 0; i < n; ++i)
-  {
-    ret[i] = m_dist(prng);
-  }
+  std::generate(ret.begin(), ret.end(), [&](){ return dist(prng); });
+  // for (int i = 0; i < n; ++i)
+  // {
+  //   ret[i] = dist(prng);
+  // }
+
   return ret;
 }
 

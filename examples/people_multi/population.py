@@ -38,7 +38,6 @@ class Population:
     # self.immigration.Rate = 0.01
     # self.emigration.Rate = 0.01
 
-    self.rstream = neworder.UStream()
 
     # use this to identify people (uniquely only within this table)
     self.counter = len(self.data)
@@ -46,7 +45,7 @@ class Population:
     # Reformatting of input data is required to match Ethpop categories
     # actual age is randomised within the bound of the category
     # TODO segfault can occur if mix ops with DVector and array/list...
-    self.data["Age"] = self.data.DC1117EW_C_AGE - self.rstream.get(len(self.data)).tolist()
+    self.data["Age"] = self.data.DC1117EW_C_AGE - neworder.ustream(len(self.data)).tolist()
     self.data = ethpop.from_census_eth(self.data)
 
   def age(self, deltat):
@@ -70,7 +69,7 @@ class Population:
     # The babies are a clone of the new mothers, with with changed PID, reset age and randomised gender (keeping location and ethnicity)
     newborns = females[h == 1].copy()
     newborns.PID = range(self.counter, self.counter + len(newborns))
-    newborns.Age = self.rstream.get(len(newborns)).tolist() # born within the last 12 months
+    newborns.Age = neworder.ustream(len(newborns)).tolist() # born within the last 12 months
     newborns.DC1117EW_C_AGE = 1 # this is 0-1 in census category
     # NOTE: do not convert to pd.Series here to stay as this has its own index which conflicts with the main table
     newborns.DC1117EW_C_SEX = np.array(neworder.hazard(0.5, len(newborns)).tolist()) + 1
@@ -111,7 +110,7 @@ class Population:
     incoming.PID = range(self.counter, self.counter + len(incoming))
     incoming.Area = incoming.LAD
     # assign a new random fractional age based on census age category
-    incoming.Age = incoming.DC1117EW_C_AGE - self.rstream.get(len(incoming)).tolist()
+    incoming.Age = incoming.DC1117EW_C_AGE - neworder.ustream(len(incoming)).tolist()
     self.data = self.data.append(incoming, sort=False)
     self.counter = self.counter + len(incoming)
 
@@ -128,7 +127,7 @@ class Population:
     intl_incoming.PID = range(self.counter, self.counter + len(intl_incoming))
     intl_incoming.Area = "INTL" #self.lad
     # assign a new random fractional age based on census age category
-    intl_incoming.Age = intl_incoming.DC1117EW_C_AGE - self.rstream.get(len(intl_incoming)).tolist()
+    intl_incoming.Age = intl_incoming.DC1117EW_C_AGE - neworder.ustream(len(intl_incoming)).tolist()
     self.data = self.data.append(intl_incoming)
     self.counter = self.counter + len(intl_incoming)
 

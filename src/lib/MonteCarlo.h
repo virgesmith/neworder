@@ -10,25 +10,8 @@
 
 namespace neworder {
 
-// TODO this can just be a function now 
 // Uniform random [0,1) fed from the environment's PRNG stream
-class UStream
-{
-public:
-  UStream();
-
-  ~UStream() = default;
-
-  // disable copy/assign to avoid non-independent streams
-  // TODO work out how to export to python with no copy?
-  // RStream(const RStream&) = delete;
-  // RStream& operator=(const RStream&) = delete;
-
-  std::vector<double> get(int n);
-
-private:
-  std::uniform_real_distribution<> m_dist;  
-};
+std::vector<double> ustream(int n);
 
 // single-prob hazard 
 std::vector<int> hazard(double prob, size_t n);
