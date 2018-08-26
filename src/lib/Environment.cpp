@@ -15,11 +15,24 @@ pycpp::Environment& pycpp::Environment::init(int rank, int size)
   env.m_size = size;
   env.m_self->attr("procid") = rank;
   env.m_self->attr("nprocs") = size;
-  // requires C++14. moot anyway as only one arg?
-  //env.m_prng.reset(std::make_unique<std::mt19937>(77027473 * size + rank));
-  env.m_prng.reset(new std::mt19937(77027473 * size + rank));
 
-  std::cout << env.context() << "env init, seed=" << 77027473 * size + rank << std::endl; 
+  // TODO python func to set sequence and reset rng
+  // // config is not loaded yet...
+  // if (!pycpp::has_attr(*env.m_self, "sequence"))
+  // {
+  //   env.m_self->attr("sequence") = std::vector<int>(1, 0);      
+  // }
+  // TODO is there a way to directly ref the python-created C++ object (as a vector<int>&)? (extract appears to copy)
+  //py::extract<std::vector<int>>(env.m_self->attr("sequence"));
+
+  // Default sequence, may be overridden
+  env.m_sequence = std::vector<int>(1, 0);
+  env.m_seqno = 0;
+
+  // Init rng
+  env.m_prng.reset(new std::mt19937(77027473 * env.m_sequence[env.m_seqno] + 19937 * size + rank));
+
+  std::cout << env.context() << "env init" << std::endl; 
   std::cout << env.context() << "embedded python version: " << version() << std::endl;
 
   return env;
@@ -33,9 +46,21 @@ pycpp::Environment& pycpp::Environment::get()
 
 const std::string& pycpp::Environment::context(int ctx) const
 {
-  static const std::string idstring_cpp = "[no " + std::to_string(m_rank) + "/" + std::to_string(m_size) + "] ";
-  static const std::string idstring_py = "[py " + std::to_string(m_rank) + "/" + std::to_string(m_size) + "] ";
+  static const std::string idstring_cpp = "[no " + std::to_string(m_sequence[m_seqno]) + "-" + std::to_string(m_rank) + "/" + std::to_string(m_size) + "] ";
+  static const std::string idstring_py = "[py " + std::to_string(m_sequence[m_seqno]) + "-" + std::to_string(m_rank) + "/" + std::to_string(m_size) + "] ";
   return ctx == 0 ? idstring_cpp : idstring_py;
+}
+
+// Take next stream
+bool pycpp::Environment::next()
+{
+  ++m_seqno;
+  if (m_seqno == m_sequence.size())
+    return false;
+
+  // ensure stream indepence w.r.t. sequence and MPI rank/size
+  m_prng->seed(77027473 * m_sequence[m_seqno] + 19937 * m_size + m_rank);
+  return true;
 }
 
 std::mt19937& pycpp::Environment::prng()

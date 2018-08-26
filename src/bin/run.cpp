@@ -53,27 +53,6 @@ int run(int rank, int size)
 
     std::cout << env.context() << "t=" << timespan[0] << " init: ";
 
-    // list of module-class-constructor args -> list of objects
-    py::list initialisations = py::dict(config.attr("initialisations")).items();
-    for (int i = 0; i < py::len(initialisations); ++i)
-    {
-      py::dict spec = py::dict(initialisations[i][1]);
-      //std::cout << pycpp::as_string(spec) << std::endl;
-      std::string modulename = py::extract<std::string>(spec["module"])();
-      std::string class_name = py::extract<std::string>(spec["class_"])();
-      py::list args = py::list(spec["parameters"]);
-
-      py::object module = py::import(modulename.c_str());
-      py::object class_ = module.attr(class_name.c_str());
-      //std::cout << pycpp::as_string(args) << std::endl;
-      py::object object = pycpp::Functor(class_, args)();
-
-      // taking a const ref here to stay results in an empty string, which is bizarre love triangle
-      const std::string name = py::extract<std::string>(initialisations[i][0])();
-      env().attr(name.c_str()) = object;
-      std::cout << name << " ";
-    }
-    std::cout << std::endl;
 
     // execs
     no::CallbackTable transitionTable; 
@@ -104,42 +83,69 @@ int run(int rank, int size)
       checkpointTable.insert(std::make_pair(py::extract<std::string>(checkpoints[i][0])(), 
                                             no::Callback(py::extract<std::string>(checkpoints[i][1])(), true)));
     }
+    // Iterate over sequence(s)
+    do {
 
-    // Loop with checkpoints
-    double t = timespan[0] + timestep;
-    for (size_t i = 1; i < timespan.size(); ++i)
-    {
-      for (; t <= timespan[i]; t += timestep)
+      // reset stuff...
+      // initialisations...
+    // list of module-class-constructor args -> list of objects
+      py::list initialisations = py::dict(config.attr("initialisations")).items();
+      for (int i = 0; i < py::len(initialisations); ++i)
       {
-        std::cout << env.context() << "t=" << t << " exec: ";
-        // TODO is there a way to do this in-place? does it really matter?
-        env().attr("time") = py::object(t);
+        py::dict spec = py::dict(initialisations[i][1]);
+        //std::cout << pycpp::as_string(spec) << std::endl;
+        std::string modulename = py::extract<std::string>(spec["module"])();
+        std::string class_name = py::extract<std::string>(spec["class_"])();
+        py::list args = py::list(spec["parameters"]);
 
-        for (auto it = transitionTable.begin(); it != transitionTable.end(); ++it)
-        {
-          std::cout << it->first << " ";   
-          (it->second)();  
-        }
-        std::cout << std::endl;
-        for (auto it = checkTable.begin(); it != checkTable.end(); ++it)
-        {
-          bool ok = py::extract<bool>((it->second)())();
-          if (!ok) 
-          {
-            throw std::runtime_error("check failed");
-          }  
-        }
+        py::object module = py::import(modulename.c_str());
+        py::object class_ = module.attr(class_name.c_str());
+        //std::cout << pycpp::as_string(args) << std::endl;
+        py::object object = pycpp::Functor(class_, args)();
+
+        // taking a const ref here to stay results in an empty string, which is bizarre love triangle
+        const std::string name = py::extract<std::string>(initialisations[i][0])();
+        env().attr(name.c_str()) = object;
+        std::cout << name << " ";
       }
-      std::cout << env.context() << "checkpoint: ";
-      for (auto it = checkpointTable.begin(); it != checkpointTable.end(); ++it)
-      {
-        std::cout << it->first << ": ";   
-        // Note: return value is ignored (exec not eval)
-        (it->second)();  
-      } 
       std::cout << std::endl;
-    }
-    std::cout << env.context() << "SUCCESS" << std::endl;
+
+      // Loop with checkpoints
+      double t = timespan[0] + timestep;
+      for (size_t i = 1; i < timespan.size(); ++i)
+      {
+        for (; t <= timespan[i]; t += timestep)
+        {
+          std::cout << env.context() << "t=" << t << " exec: ";
+          // TODO is there a way to do this in-place? does it really matter?
+          env().attr("time") = py::object(t);
+
+          for (auto it = transitionTable.begin(); it != transitionTable.end(); ++it)
+          {
+            std::cout << it->first << " ";   
+            (it->second)();  
+          }
+          std::cout << std::endl;
+          for (auto it = checkTable.begin(); it != checkTable.end(); ++it)
+          {
+            bool ok = py::extract<bool>((it->second)())();
+            if (!ok) 
+            {
+              throw std::runtime_error("check failed");
+            }  
+          }
+        }
+        std::cout << env.context() << "checkpoint: ";
+        for (auto it = checkpointTable.begin(); it != checkpointTable.end(); ++it)
+        {
+          std::cout << it->first << ": ";   
+          // Note: return value is ignored (exec not eval)
+          (it->second)();  
+        } 
+        std::cout << std::endl;
+      }
+      std::cout << env.context() << "SUCCESS" << std::endl;
+    } while (env.next());
   }
   catch (py::error_already_set&)
   {

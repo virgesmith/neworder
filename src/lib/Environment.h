@@ -39,8 +39,11 @@ public:
   // returns the python version
   static std::string version();
 
-  // returns "rank/size"
+  // returns "seq-rank/size"
   const std::string& context(int ctx = CPP) const;
+
+  // iterate the RNG stream sequence
+  bool next();
 
   // One RNG stream per env
   std::mt19937& prng();
@@ -54,6 +57,9 @@ private:
   Environment();
   friend Environment& Global::instance<Environment>();
 
+  // RNG sequence index
+  size_t m_seqno;
+  std::vector<int> m_sequence;
   // MPI rank/size
   int m_rank;
   int m_size;
