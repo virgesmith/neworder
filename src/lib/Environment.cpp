@@ -11,23 +11,16 @@
 pycpp::Environment& pycpp::Environment::init(int rank, int size)
 {
   Environment& env = Global::instance<Environment>();
+  // TODO is is possible to avoid this duplication?
   env.m_rank = rank;
   env.m_size = size;
   env.m_self->attr("procid") = rank;
   env.m_self->attr("nprocs") = size;
 
-  // TODO python func to set sequence and reset rng
-  // // config is not loaded yet...
-  // if (!pycpp::has_attr(*env.m_self, "sequence"))
-  // {
-  //   env.m_self->attr("sequence") = std::vector<int>(1, 0);      
-  // }
-  // TODO is there a way to directly ref the python-created C++ object (as a vector<int>&)? (extract appears to copy)
-  //py::extract<std::vector<int>>(env.m_self->attr("sequence"));
-
-  // Default sequence, may be overridden
+  // Default sequence, may be overridden, using the (python) variable neworder.sequence
   env.m_sequence = std::vector<int>(1, 0);
   env.m_seqno = 0;
+  env.m_self->attr("seq") = 0;
 
   // Init rng
   env.m_prng.reset(new std::mt19937(77027473 * env.m_sequence[env.m_seqno] + 19937 * size + rank));
@@ -44,11 +37,11 @@ pycpp::Environment& pycpp::Environment::get()
   return Global::instance<Environment>();
 }
 
-const std::string& pycpp::Environment::context(int ctx) const
+std::string pycpp::Environment::context(int ctx) const
 {
-  static const std::string idstring_cpp = "[no " + std::to_string(m_sequence[m_seqno]) + "-" + std::to_string(m_rank) + "/" + std::to_string(m_size) + "] ";
-  static const std::string idstring_py = "[py " + std::to_string(m_sequence[m_seqno]) + "-" + std::to_string(m_rank) + "/" + std::to_string(m_size) + "] ";
-  return ctx == 0 ? idstring_cpp : idstring_py;
+  std::string idstring = ctx == 0 ? "[no " : "[py ";
+  idstring += std::to_string(m_sequence[m_seqno]) + "-" + std::to_string(m_rank) + "/" + std::to_string(m_size) + "] ";
+  return idstring;
 }
 
 // Take next stream
@@ -60,7 +53,18 @@ bool pycpp::Environment::next()
 
   // ensure stream indepence w.r.t. sequence and MPI rank/size
   m_prng->seed(77027473 * m_sequence[m_seqno] + 19937 * m_size + m_rank);
+  m_self->attr("seq") = m_sequence[m_seqno];
+
   return true;
+}
+
+// Sets a PRNG sequence (and resets counter)
+void pycpp::Environment::seed(const std::vector<int>& seq)
+{
+  m_sequence = seq;
+  m_seqno = -1;
+  next();
+
 }
 
 std::mt19937& pycpp::Environment::prng()

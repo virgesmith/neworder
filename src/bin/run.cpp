@@ -41,6 +41,12 @@ int run(int rank, int size)
 
     bool do_checks = py::extract<bool>(config.attr("do_checks"))();
 
+    // TODO python func to set sequence and reset rng
+    if (pycpp::has_attr(env(), "sequence"))
+    {
+      env.seed(py::extract<std::vector<int>>(env().attr("sequence")));
+    }
+  
     // TODO direct init in python of a DVector?
     const std::vector<double>& timespan = py::extract<std::vector<double>>(env().attr("timespan"))();
     double timestep = py::extract<double>(env().attr("timestep"))();

@@ -40,12 +40,15 @@ public:
   static std::string version();
 
   // returns "seq-rank/size"
-  const std::string& context(int ctx = CPP) const;
+  std::string context(int ctx = CPP) const;
+
+  // set the RNG stream sequence
+  void seed(const std::vector<int>& seq);
 
   // iterate the RNG stream sequence
   bool next();
 
-  // One RNG stream per env
+  // Accress the NRG stream (one per env)
   std::mt19937& prng();
 
   // returns the env as a python object 

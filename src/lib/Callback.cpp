@@ -68,6 +68,8 @@ BOOST_PYTHON_MODULE(neworder)
   py::def("hazard_v", no::hazard_v);
   py::def("stopping_v", no::stopping_v);
 
+  // TODO env?
+
   // Containers
   py::class_<std::vector<double>>("DVector", py::init<int>())
     .def("__len__", &std::vector<double>::size)
@@ -128,47 +130,6 @@ std::string neworder::python_version()
 {
   return pycpp::Environment::get().version();
 }
-
-// Deprecated
-// void neworder::shell()
-// {
-//   std::cout << python_version() << "\nInteractive shell (ctrl-D to exit)." 
-//     "\nUse 'V:' prefix to eval (e.g. V:2+2), 'X:' prefix to exec (e.g. X:a=2+2)" << std::endl;
-//   std::string s;
-//   std::cin.ignore(-1); // discard
-//   //std::cin.ignore(1, '\n');
-//   std::cin.clear();
-//   while (!std::cin.eof()) 
-//   { 
-//     // need to trap interactive error in situ
-//     try 
-//     {
-//       std::cout << "[neworder] >>> ";
-//       std::getline(std::cin, s);
-
-//       if (s.size() < 3 || (s[0] != 'V' && s[0] != 'X') || s[1] != ':')
-//       {
-//         log(py::object("python expression must be prefixed with 'V:'(eval) or 'X:'(exec)"));
-//         continue;
-//       }
-
-//       Callback statement(s.replace(0, 2, ""), s[0] == 'X');
-//       // only show output if its an eval
-//       if (statement.is_exec())
-//       {
-//         statement();
-//       } 
-//       else
-//       {
-//         std::cout << statement() << std::endl;
-//       }
-//     }
-//     catch (py::error_already_set&)
-//     {
-//       std::cerr << "ERROR: [py] " << pycpp::Environment::check() << std::endl;
-//     }
-//   }
-// }
 
 void neworder::shell(/*const py::object& local*/)
 {

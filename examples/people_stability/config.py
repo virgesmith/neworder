@@ -32,7 +32,7 @@ initialisations = {
 
 # define the outer sequence loop (optional)
 # run 4 sims
-neworder.sequence = neworder.IVector.fromlist([0,1,2,3])
+neworder.sequence = neworder.IVector.fromlist([3,1,2,0])
 
 # define the evolution
 neworder.timespan = neworder.DVector.fromlist([2011.25, 2020.25])
