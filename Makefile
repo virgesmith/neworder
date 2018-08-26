@@ -10,19 +10,20 @@ LDFLAGS := $(shell python$(PYVER)-config --ldflags)
 
 export
 
-all: lib bin test
+all: lib bin
 
 lib: 
 	+cd src/lib && $(MAKE)
 
 bin: lib
 	+cd src/bin && $(MAKE)
+	+cd src/test && $(MAKE)
 
 mpi: lib
 	+cd src/bin && $(MAKE) neworder_mpi
 
-test: lib 
-	+cd src/test && $(MAKE)
+test: bin 
+	+cd src/test && $(MAKE) test
 
 clean:
 	cd src/lib && $(MAKE) clean

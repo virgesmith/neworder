@@ -22,14 +22,17 @@ loglevel = 1
 # this model isnt meant for parallel execution
 assert neworder.nprocs == 1, "This example is configured to be run as a single process only"
 
+# define the outer sequence loop (optional)
+# run 4 sims
+neworder.sequence = neworder.IVector.fromlist([3,1,2,0])
+# define the evolution
+neworder.timespan = neworder.DVector.fromlist([2011.25, 2020.25])
+neworder.timestep = 1.0 # TODO beware rounding errors 
+
 # initialisation
 initialisations = {
   "people": { "module": "population", "class_": "Population", "parameters": [initial_population, asfr, asmr, asir, asor, ascr, asxr] }
 }
-
-# define the evolution
-neworder.timespan = neworder.DVector.fromlist([2011.25, 2020.25])
-neworder.timestep = 1.0 # TODO beware rounding errors 
 
 # timestep must be defined in neworder
 transitions = { 

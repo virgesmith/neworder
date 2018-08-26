@@ -11,7 +11,7 @@ src=$(wildcard *.cpp)
 obj=$(src:.cpp=.o)
 dep=$(src:.cpp=.d)
 
-all: test
+all: testharness
 
 testharness: $(obj)
 	$(CXX) -o $@ $^ $(LDFLAGS) -L ../lib -lneworder
