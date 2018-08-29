@@ -66,7 +66,7 @@ int run(int rank, int size)
     for (int i = 0; i < py::len(transitions); ++i)
     {
       transitionTable.insert(std::make_pair(py::extract<std::string>(transitions[i][0])(), 
-                                            no::Callback(py::extract<std::string>(transitions[i][1])(), true)));
+                                            no::Callback::exec(py::extract<std::string>(transitions[i][1])())));
     }
 
     // evals
@@ -77,7 +77,7 @@ int run(int rank, int size)
       for (int i = 0; i < py::len(checks); ++i)
       {
         checkTable.insert(std::make_pair(py::extract<std::string>(checks[i][0])(), 
-                                        no::Callback(py::extract<std::string>(checks[i][1])())));
+                                        no::Callback::eval(py::extract<std::string>(checks[i][1])())));
       }
     }
 
@@ -87,7 +87,7 @@ int run(int rank, int size)
     for (int i = 0; i < py::len(checkpoints); ++i)
     {
       checkpointTable.insert(std::make_pair(py::extract<std::string>(checkpoints[i][0])(), 
-                                            no::Callback(py::extract<std::string>(checkpoints[i][1])(), true)));
+                                            no::Callback::exec(py::extract<std::string>(checkpoints[i][1])())));
     }
     // Iterate over sequence(s)
     do {

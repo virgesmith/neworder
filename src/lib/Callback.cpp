@@ -11,6 +11,16 @@
 #include <iostream>
 
 
+neworder::Callback neworder::Callback::eval(const std::string& code)
+{
+  return Callback(code, false);
+}
+
+neworder::Callback neworder::Callback::exec(const std::string& code)
+{
+  return Callback(code, true);
+}
+
 neworder::Callback::Callback(const std::string& code, bool exec/*, const std::string& locals*/) : m_exec(exec), m_code(code)
 {
   // TODO (assuming they ref current env)
@@ -68,6 +78,8 @@ BOOST_PYTHON_MODULE(neworder)
   py::def("hazard_v", no::hazard_v);
   py::def("stopping_v", no::stopping_v);
 
+  py::def("lazy_exec", no::Callback::exec);
+  py::def("lazy_eval", no::Callback::eval);
   // TODO env?
 
   // Containers
@@ -109,10 +121,10 @@ BOOST_PYTHON_MODULE(neworder)
     .def("fromlist", &no::py_list_to_vector<std::string>)
     ;
 
-  // Python code
-  py::class_<no::Callback>("Callback", py::init<std::string>())
+  // Deferred eval/exec of Python code
+  py::class_<no::Callback>("Callback", py::no_init)
     .def("__call__", &no::Callback::operator())
-    //.def("__str__", &no::Callback::code)
+    .def("__str__", &no::Callback::code)
     ;
 }
 

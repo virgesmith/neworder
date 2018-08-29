@@ -23,11 +23,11 @@ int main(int argc, const char* argv[])
     test1("pop", "func", {});
 
     // load module, object, call methods
-    test2("pop", "population", {"size", "print", "size"});
+    //test2("pop", "population", {"size", "print", "size"});
 
     // load module, object, modify member, call method
-    test3("pop", "population", "array", "columns");
-    test3("pop", "population", "array", "values");
+    //test3("pop", "population", "array", "columns");
+    //test3("pop", "population", "array", "values");
 
     // boost.Python.numpy
     //test4();

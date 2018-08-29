@@ -7,25 +7,30 @@
 
 namespace neworder {
 
-// Define a piece of python code to be executed on calling
+// Define a piece of python code to be exec/eval-u(a)ted on calling operator()
 // Perhaps better named LazyEval?
 class Callback
 {
 public:
-  explicit Callback(const std::string& code, bool exec=false/*, const std::string& locals = ""*/);
-
+  // Construct using one of these two variants 
+  static Callback exec(const std::string& code);
+  static Callback eval(const std::string& code);
+  
   ~Callback() = default;
 
   py::object operator()() const;
 
   bool is_exec() const { return m_exec; }
 
-  const std::string& code() const
+  const std::string code() const
   {
-    return m_code;
+    return (m_exec ? "exec(\"" : "eval(\"") + m_code + "\")";
   }
 
 private:
+  // construct using one of the static functions
+  Callback(const std::string& code, bool exec);
+
   bool m_exec;
   std::string m_code;
   py::object m_globals;

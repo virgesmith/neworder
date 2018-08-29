@@ -16,10 +16,11 @@ class DVector:
   def fromlist(x):
     return list(x)
 
-# Stub callback
-class Callback:
-  def __init__(self, string):
-    pass
+# Stub delayed eval/exec
+def lazy_eval(_):
+  pass
+def lazy_exec(_):
+  pass
 
 # Stub log
 def name():

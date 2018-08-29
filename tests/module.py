@@ -23,7 +23,7 @@ def test():
 
   no.log(np.array(no.hazard_v(no.ustream(1000)).tolist()).mean())
 
-  f = no.Callback("2 + 2")
+  f = no.lazy_eval("2 + 2")
 
   no.testVec = no.DVector.fromlist([1,2,3,4])
 
