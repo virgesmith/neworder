@@ -50,13 +50,18 @@ void test_np()
   neworder::Callback::exec("import neworder;neworder.log(neworder.a)")();  
 
   // load a DF and try to extract/modify...
-  neworder::Callback::exec("import pandas as pd;import neworder;neworder.df=pd.read_csv('../../examples/people/ssm_E09000001_MSOA11_ppp_2011.csv')")();
+  neworder::Callback::exec("import pandas as pd;import neworder;neworder.df=pd.read_csv('../../tests/df.csv')")();
 
   py::object df = module.attr("df");
   np::ndarray c = np::from_object(df.attr("columns").attr("values"));
   neworder::log(py::str(c));
   c[1] = "Changed";
 
-  neworder::Callback::exec("import pandas as pd;import neworder;neworder.log(neworder.df.columns.values)")();
+  // cat modify DF values directly as 2d-array (it copies), need to select individual columns
+  np::ndarray v = np::from_object(df.attr("Changed"));
+  neworder::log(py::str(v));
+  v[0] = "MOVED!";
+  neworder::log(py::str(v));
+  neworder::Callback::exec("import pandas as pd;import neworder;neworder.log(neworder.df.head())")();
 
 }

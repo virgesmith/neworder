@@ -7,7 +7,6 @@
 //#include <numpy/arrayobject.h>
 // See https://docs.scipy.org/doc/numpy/reference/c-api.html
 
-//#include <boost/python.hpp>
 #include <boost/python/numpy.hpp>
 
 namespace np = boost::python::numpy;
