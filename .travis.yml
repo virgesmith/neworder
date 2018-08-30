@@ -19,7 +19,10 @@ matrix:
 #      - python3 -m pip install numpy pandas --upgrade --ignore-installed
       - python3 -m pip install -U numpy pandas
       - sudo tools/boost_python.sh
-      - make PYVER=3.5 BOOST_PYTHON_LIB=boost_python35 && make PYVER=3.5 BOOST_PYTHON_LIB=boost_python35 test
+      - export PYVER=3.5
+      - export BOOST_PYTHON_LIB=boost_python35 
+      - export BOOST_NUMPY_LIB=boost_numpy35 
+      - make && make test
 
     - language: python
       python: 3.5
