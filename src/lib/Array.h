@@ -1,4 +1,4 @@
-
+#error NOT TO BE USED (FOR NOW)
 #pragma once 
 
 #include "Object.h"

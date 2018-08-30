@@ -154,6 +154,7 @@ void neworder::shell(/*const py::object& local*/)
   py::object interpreter = py::import("code").attr("interact")(*py::tuple(), **kwargs);
 }
 
+// TODO fix hard-coded python context...
 void neworder::log(const py::object& msg)
 {
   // TODO more efficient way?
