@@ -58,7 +58,8 @@ bool pycpp::Environment::next()
   return true;
 }
 
-// Sets a PRNG sequence (and resets counter)
+
+// Sets a PRNG sequence (and resets sequence counter)
 void pycpp::Environment::seed(const std::vector<int>& seq)
 {
   m_sequence = seq;

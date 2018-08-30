@@ -6,6 +6,9 @@ are the option itself, and the underlying stock (essentially the market) that go
 
 import neworder
 
+# run 4 times
+neworder.sequence = neworder.IVector.fromlist([0,1,2,3])
+
 # market data
 spot = 100.0 # underlying spot price
 rate = 0.02  # risk-free interest rate
@@ -38,7 +41,9 @@ initialisations = {
 
 transitions = { 
   # compute the option price
-  "compute_mc_price": "option.mc(nsims)" 
+  "compute_mc_price": "option.mc(nsims)"
+  # use QRNG
+  #"compute_mc_price": "option.mc(nsims, quasi=True)" 
 }
 
 checkpoints = {

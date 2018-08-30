@@ -4,7 +4,6 @@ Defines and values a European vanilla option using Monte-Carlo
 
 from helpers import *
 from math import *
-import numpy as np
 
 import neworder
 
@@ -19,11 +18,15 @@ class Option():
     self.pv = 0.0
     self.nsims = 0
 
-  def mc(self, nsims):
+  def mc(self, nsims, quasi=False):
     # get the time from the environment
     dt = neworder.time
+    if quasi:
+      normals = nstream_q(nsims)
+    else:
+      normals = nstream(nsims)
     # compute underlying prices at dt
-    underlyings = self.stock.spot * np.exp((self.stock.rate - self.stock.divy - 0.5 * self.stock.vol * self.stock.vol) * dt + np.random.normal(size=nsims) * self.stock.vol * sqrt(dt))
+    underlyings = self.stock.spot * np.exp((self.stock.rate - self.stock.divy - 0.5 * self.stock.vol * self.stock.vol) * dt + normals * self.stock.vol * sqrt(dt))
     # compute option prices at dt
     if self.callput == "CALL":
       option = (underlyings - self.strike).clip(min=0.0).mean()
