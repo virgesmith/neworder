@@ -1,7 +1,7 @@
 
 CXXFLAGS += -I../include -I../lib
 
-LDFLAGS +=  -l$(BOOST_PYTHON_LIB) -l$(BOOST_NUMPY_LIB)
+LDFLAGS += -l$(BOOST_PYTHON_LIB) -l$(BOOST_NUMPY_LIB)
 
 #$(info $(CXXFLAGS))
 #$(info $(LDFLAGS))

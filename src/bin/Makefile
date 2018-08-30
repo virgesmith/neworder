@@ -11,7 +11,7 @@ mpi_src=neworder_mpi.cpp run.cpp MPIResource.cpp
 #$(info $(LDFLAGS))
 MPICXX=mpicxx
 
-LDFLAGS += -l$(BOOST_PYTHON_LIB)
+LDFLAGS += -l$(BOOST_PYTHON_LIB) -l$(BOOST_NUMPY_LIB)
 
 all: neworder
 

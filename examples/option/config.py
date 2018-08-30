@@ -41,9 +41,9 @@ initialisations = {
 
 transitions = { 
   # compute the option price
-  "compute_mc_price": "option.mc(nsims)"
+  #"compute_mc_price": "option.mc(nsims)"
   # use QRNG
-  #"compute_mc_price": "option.mc(nsims, quasi=True)" 
+  "compute_mc_price": "option.mc(nsims, quasi=True)" 
 }
 
 checkpoints = {

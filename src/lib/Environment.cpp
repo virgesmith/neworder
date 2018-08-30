@@ -1,7 +1,7 @@
 
 #include "Environment.h"
 #include "Inspect.h"
-#include "Callback.h"
+#include "Module.h"
 
 #include <algorithm>
 #include <string>
@@ -10,8 +10,9 @@
 // This function must be used to init the environment
 pycpp::Environment& pycpp::Environment::init(int rank, int size)
 {
+  // make our rank/size visible to python
   Environment& env = Global::instance<Environment>();
-  // TODO is is possible to avoid this duplication?
+  // TODO is it possible to avoid this duplication? probably not
   env.m_rank = rank;
   env.m_size = size;
   env.m_self->attr("procid") = rank;
@@ -86,10 +87,9 @@ pycpp::Environment::Environment()
   Py_Initialize();
 
   // init numpy
-  numpy_init(); // things go bad if this gets called more than once?
+  np::initialize();
 
   m_self = new py::object(py::import("neworder"));
-  // make our rank/size visible to python
 
 } 
 

@@ -2,6 +2,8 @@
 
 // test4 - boost.numpy
 #include "Inspect.h"
+#include "Module.h"
+#include "Environment.h"
 
 #include "python.h"
 #include "numpy.h"
@@ -12,36 +14,43 @@
 #include <iostream>
 
 
-template<typename T, typename R=T>
-struct Uinc
-{
-  typedef T argument_type;
-  typedef R result_type;
-  R operator()(T x) { return x + 1; }
-};
-
 void test_np()
 {
-  np::initialize();
-
   std::cout << "[C++] boost.Python.numpy test" << std::endl;
 
-  // load a DF and try to extract...
+  pycpp::Environment& env = pycpp::Environment::get();
 
-  // See here but note compile error ‘class boost::python::api::object’ has no member named ‘def’
-  // https://boostorg.github.io/python/doc/html/numpy/tutorial/index.html
-  // np::ndarray array = np::from_object(o.attr("array"));
-  // //py::object array = o.attr("array");
-  // std::cout << "[C++] " << array;
+  py::object module = py::import("neworder");
 
-  // std::cout << ", adding 1..." << std::endl;
+  // create an array and expose to python...
+  py::tuple shape = py::make_tuple(3, 3);
+  np::dtype dtype = np::dtype::get_builtin<double>();
+  np::ndarray a = np::zeros(shape, dtype);
+  module.attr("a") = a;
 
-  // py::object uinc = py::class_<Uinc<int, int>, boost::shared_ptr<Uinc<int, int>>>("Uinc");
-  // uinc.def("__call__", np::unary_ufunc<Uinc<int, int>>::make());
-  // py::object ud_inst = uinc();
+  // TODO proper test stuff
 
-  // py::object result = ud_inst.attr("__call__")(array);
-  // std::cout << result << std::endl;
+  neworder::Callback::exec("import neworder;neworder.log(neworder.a);a[1,1]=3.14")();  
 
+  // check its been modified
+  neworder::log(py::str(a));
+
+  // modify it again
+  // yuck
+  double* p = reinterpret_cast<double*>(a.get_data());
+
+  int dim = a.get_nd();
+  // assumes dim >=1 
+  int s = a.shape(0);
+  for (int i = 1; i < dim; ++i)
+    s *= a.shape(i);
+  for (int i = 0; i < s; ++i)
+    p[i] = (double)i / 10;
+
+  neworder::Callback::exec("import neworder;neworder.log(neworder.a)")();  
+
+
+
+  // load a DF and try to extract/modify...
 
 }

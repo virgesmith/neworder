@@ -3,6 +3,7 @@
 #include "Global.h"
 
 #include "python.h"
+#include "numpy.h"
 
 #include <random>
 #include <string>
