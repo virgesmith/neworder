@@ -9,7 +9,7 @@
 void test1(const std::string& modulename, const std::string& functionname, const std::vector<std::string>& args);
 void test2(const std::string& modulename, const std::string& objectname, const std::vector<std::string>& methodnames);
 void test3(const std::string& modulename, const std::string& objectname, const std::string& membername, const std::string& methodname);
-void test4();
+void test_np();
 void test_errors();
 
 int main(int argc, const char* argv[]) 
@@ -30,7 +30,7 @@ int main(int argc, const char* argv[])
     //test3("pop", "population", "array", "values");
 
     // boost.Python.numpy
-    //test4();
+    test_np();
 
     // doesnt extract the python error type/msg 
     test_errors();

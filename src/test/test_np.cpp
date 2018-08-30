@@ -1,9 +1,10 @@
 // Deprecated
 
-// test4 - boost.Python
+// test4 - boost.numpy
 #include "Inspect.h"
 
 #include "python.h"
+#include "numpy.h"
 
 #include <vector>
 #include <string>
@@ -19,16 +20,13 @@ struct Uinc
   R operator()(T x) { return x + 1; }
 };
 
-void test4()
+void test_np()
 {
-  //np::initialize();
+  np::initialize();
 
   std::cout << "[C++] boost.Python.numpy test" << std::endl;
 
-  py::object module = py::import("pop");
-
-  py::object o = module.attr("population");
-  std::cout << "[C++] " << o << std::endl;
+  // load a DF and try to extract...
 
   // See here but note compile error ‘class boost::python::api::object’ has no member named ‘def’
   // https://boostorg.github.io/python/doc/html/numpy/tutorial/index.html
