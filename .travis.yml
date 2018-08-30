@@ -19,14 +19,14 @@ matrix:
 #      - python3 -m pip install numpy pandas --upgrade --ignore-installed
       - python3 -m pip install -U numpy pandas
       - sudo tools/boost_python.sh
-      - make PYVER=3.5 BOOST_PYTHON_LIB=boost_python-py35 && make PYVER=3.5 BOOST_PYTHON_LIB=boost_python-py35 test
+      - make PYVER=3.5 BOOST_PYTHON_LIB=boost_python35 && make PYVER=3.5 BOOST_PYTHON_LIB=boost_python35 test
 
     - language: python
       python: 3.5
       script:
       - sudo apt install python3-dev libboost-python-dev
       - python3 -m pip install -U numpy pandas 
-      - make PYVER=3.5 BOOST_PYTHON_LIB=boost_python-py35 && make PYVER=3.5 BOOST_PYTHON_LIB=boost_python-py35 test
+      - make PYVER=3.5 BOOST_PYTHON_LIB=boost_python35 && make PYVER=3.5 BOOST_PYTHON_LIB=boost_python35 test
 
     - language: python
       python: 3.6
