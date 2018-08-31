@@ -20,7 +20,7 @@ int main(int argc, const char* argv[])
     // load module, call func with args
     test1("op", "mul", {"2", "3"});
     test1("op", "void", {"2", "3"});
-    test1("pop", "func", {});
+    //test1("pop", "func", {});
 
     // load module, object, call methods
     //test2("pop", "population", {"size", "print", "size"});
@@ -42,7 +42,7 @@ int main(int argc, const char* argv[])
       py::object module = py::import(argv[i]);
       py::object testfunc = module.attr("test");
       bool success = py::extract<bool>(testfunc())();
-      std::cout << "[C++] " << argv[i] << ":" << (success ? "PASS" : "FAIL") << std::endl;
+      std::cout << env.context() << argv[i] << ":" << (success ? "PASS" : "FAIL") << std::endl;
     }
   }
   catch (py::error_already_set&)
@@ -52,12 +52,12 @@ int main(int argc, const char* argv[])
   }
   catch (std::exception& e)
   {
-    std::cerr << "ERROR:" << e.what() << std::endl;
+    std::cerr << env.context() << "ERROR:" << e.what() << std::endl;
     return 1;
   }
   catch(...)
   {
-    std::cerr << "ERROR: unknown exception" << std::endl;
+    std::cerr << env.context() << "ERROR: unknown exception" << std::endl;
     return 1;
   }
   return 0;

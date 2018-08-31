@@ -20,14 +20,14 @@ void test1(const std::string& modulename, const std::string& functionname, const
   py::object module = py::import(modulename.c_str());
   py::object function(module.attr(functionname.c_str()));
 
-  for (const auto& attr: pycpp::dir(module)) 
-  {
-    std::cout << "[C++] ::" << attr.first << " [" << attr.second << "]" << std::endl;
-    for (const auto& sattr: pycpp::dir(module.attr(attr.first.c_str()))) 
-    {
-      std::cout << "[C++] " << attr.first << "::" << sattr.first << " [" << sattr.second << "]" << std::endl;
-    }
-  }
+  // for (const auto& attr: pycpp::dir(module)) 
+  // {
+  //   std::cout << "[C++] ::" << attr.first << " [" << attr.second << "]" << std::endl;
+  //   for (const auto& sattr: pycpp::dir(module.attr(attr.first.c_str()))) 
+  //   {
+  //     std::cout << "[C++] " << attr.first << "::" << sattr.first << " [" << sattr.second << "]" << std::endl;
+  //   }
+  // }
 
   std::vector<int> args(argstrings.size());
   for (size_t i = 0; i < argstrings.size(); ++i)

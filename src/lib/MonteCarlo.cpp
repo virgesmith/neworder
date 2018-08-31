@@ -10,14 +10,47 @@
 
 #include <iostream>
 
-// struct Hazard
-// {
-//   typedef double first_argument_type;
-//   typedef double second_argument_type;
-//   typedef int result_type;
+// Realised random outcomes based on vector of hazard rates
+struct Hazard : pycpp::UnaryArrayOp<int, double>
+{
+  Hazard() : m_prng(pycpp::Environment::get().prng()), m_dist(0.0, 1.0) { }      
 
-//   double operator()(double a,double b) const { return (dist(prng) < prob) ? 1 : 0; }
-// };
+  int operator()(double p)
+  {
+    return (m_dist(m_prng) < p) ? 1 : 0;
+  } 
+
+  np::ndarray operator()(const np::ndarray& arg)
+  {
+    return call_impl(arg);
+  }
+
+private:
+  std::mt19937& m_prng;
+  std::uniform_real_distribution<double> m_dist;  
+};
+
+
+// Turns vector of hazard rates into random stopping times
+struct Stopping : pycpp::UnaryArrayOp<double, double>
+{
+  Stopping() : m_prng(pycpp::Environment::get().prng()), m_dist(0.0, 1.0) { }      
+
+  double operator()(double p)
+  {
+    return -::log(m_dist(m_prng)) / p;
+  } 
+
+  np::ndarray operator()(const np::ndarray& arg)
+  {
+    return call_impl(arg);
+  }
+
+private:
+  std::mt19937& m_prng;
+  std::uniform_real_distribution<double> m_dist;  
+};
+
 
 np::ndarray neworder::ustream(size_t n)
 {
@@ -30,7 +63,7 @@ np::ndarray neworder::ustream(size_t n)
   return a;
 }
 
-// simple hazard 
+// simple hazard constant probability 
 np::ndarray neworder::hazard(double prob, size_t n)
 {
   std::mt19937& prng = pycpp::Environment::get().prng();
@@ -44,37 +77,12 @@ np::ndarray neworder::hazard(double prob, size_t n)
   return h;
 }
 
-// simple hazard 
+// hazard with varying probablities 
 np::ndarray neworder::hazard_v(const np::ndarray& prob)
 {
-  std::mt19937& prng = pycpp::Environment::get().prng();
-  std::uniform_real_distribution<> dist(0.0, 1.0);
-
-  size_t n = pycpp::size(prob);
-  np::ndarray h = pycpp::empty_1d_array<int>(n); 
-  int* p = reinterpret_cast<int*>(h.get_data());
-  for (size_t i = 0; i < n; ++i)
-    p[i] = (dist(prng) < prob[i]) ? 1 : 0;
-  return h;
+  Hazard f;
+  return f(prob);
 }
-
-
-struct StoppingFunctor
-{
-  typedef double argument_type;
-  typedef double result_type;
-
-  StoppingFunctor() : m_prng(pycpp::Environment::get().prng()), m_dist(0.0, 1.0) { }      
-
-  double operator()(double p)
-  {
-    return -::log(m_dist(m_prng)) / p;
-  } 
-
-private:
-  std::mt19937& m_prng;
-  std::uniform_real_distribution<double> m_dist;  
-};
 
 // computes stopping times 
 np::ndarray neworder::stopping(double prob, size_t n)
@@ -89,20 +97,8 @@ np::ndarray neworder::stopping(double prob, size_t n)
 
 np::ndarray neworder::stopping_v(const np::ndarray& prob)
 {
-  std::mt19937& prng = pycpp::Environment::get().prng();
-  std::uniform_real_distribution<> dist(0.0, 1.0);
-
-  size_t n = pycpp::size(prob);
-  double* p = reinterpret_cast<double*>(prob.get_data());
-
-  np::ndarray h = pycpp::empty_1d_array<double>(n);
-  double* ph = reinterpret_cast<double*>(h.get_data());
-  for (size_t i = 0; i < n; ++i)
-  {
-    ph[i] = -::log(dist(prng)) / p[i];
-  }
-
-  return h;
+  Stopping f;
+  return f(prob);
 }
 
 // MC stopping time for a non-homogeneous poisson process, given
