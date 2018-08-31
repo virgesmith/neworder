@@ -11,6 +11,15 @@
 
 #include <iostream>
 
+namespace {
+// not visible to (rest of) C++
+void log_obj(const py::object& msg)
+{
+  std::cout << pycpp::Environment::get().context(pycpp::Environment::PY) << pycpp::as_string(msg.ptr()) << std::endl;
+}
+
+}
+
 
 neworder::Callback neworder::Callback::eval(const std::string& code)
 {
@@ -60,6 +69,7 @@ void vector_set(std::vector<T>& v, int i, T val)
 
 }
 
+
 BOOST_PYTHON_MODULE(neworder)
 {
   namespace no = neworder;
@@ -68,7 +78,7 @@ BOOST_PYTHON_MODULE(neworder)
   py::def("name", no::module_name);
   py::def("version", no::module_version);
   py::def("python", no::python_version);
-  py::def("log", no::log);
+  py::def("log", log_obj);
   py::def("shell", no::shell);
 
   // MC
@@ -154,13 +164,20 @@ void neworder::shell(/*const py::object& local*/)
   py::object interpreter = py::import("code").attr("interact")(*py::tuple(), **kwargs);
 }
 
-// TODO fix hard-coded python context...
+// python-visible log function defined above
+
+// not visible to python
+void neworder::log(const std::string& msg)
+{
+  std::cout << pycpp::Environment::get().context() << msg << std::endl;
+}
+
+// not visible to python
 void neworder::log(const py::object& msg)
 {
-  // TODO more efficient way?
-  py::object self = py::import("neworder");
-  std::cout << pycpp::Environment::get().context(pycpp::Environment::PY) << pycpp::as_string(msg.ptr()) << std::endl;
+  std::cout << pycpp::Environment::get().context() << pycpp::as_string(msg.ptr()) << std::endl;
 }
+
 
 void neworder::import_module()
 {

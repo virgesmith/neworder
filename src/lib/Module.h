@@ -48,8 +48,10 @@ std::string python_version();
 // interactive shell mk2 - uses the code module
 void shell(/*const py::object& local*/);
 
+// TODO these are not visible to python and don't really belong here
 // msg is forcibly coerced to a string
 void log(const py::object& msg);
+void log(const std::string& msg);
 
 void import_module();
 

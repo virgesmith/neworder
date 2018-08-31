@@ -37,5 +37,39 @@ np::ndarray zero_1d_array(size_t n)
   return np::zeros(1, (Py_intptr_t*)&n, np::dtype::get_builtin<T>());
 }
 
+template<typename R, typename A>
+struct UnaryArrayOp
+{
+  typedef A argument_type;
+  typedef R result_type;
+
+  virtual ~UnaryArrayOp() { }
+
+  virtual R operator()(A) = 0;
+
+  // workaround since cant seem to call directly from derived
+  np::ndarray /*operator()*/call_impl(const py::object& arg) 
+  {
+    return np::array(np::unary_ufunc<UnaryArrayOp<R,A>>::call(*this, arg, py::object()));      
+  }
+};
+
+template<typename R, typename A1, typename A2>
+struct BinaryArrayOp
+{
+  typedef A1 first_argument_type;
+  typedef A2 second_argument_type;
+  typedef R result_type;
+
+  virtual ~BinaryArrayOp() { }
+
+  virtual R operator()(A1, A2) = 0;
+
+  // workaround since cant seem to call directly from derived
+  np::ndarray /*operator()*/call_impl(const py::object& arg1, const py::object& arg2) 
+  {
+    return np::array(np::binary_ufunc<BinaryArrayOp<R, A1, A2>>::call(*this, arg1, arg2, py::object()));      
+  }
+};
 
 }

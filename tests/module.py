@@ -38,6 +38,7 @@ def test():
 
   # test thinning algorithm for non-homogeneous Poisson process
   h = np.array([0.014] * 10)
+  l = no.stopping_v(h)
   le = no.stopping_nhpp(h, 10000)
   no.log(sum(le)/len(le))
 
