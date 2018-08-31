@@ -1,5 +1,6 @@
 # https://docs.python.org/3/extending/embedding.html
 
+import numpy as np
 import neworder
 
 def printvec(x):
@@ -41,7 +42,7 @@ printvec(v2)
 
 h = neworder.hazard(0.2, 10)
 printvec(h)
-hv = neworder.hazard_v(neworder.DVector.fromlist([0.1, 0.2, 0.3, 0.4, 0.5]))
+hv = neworder.hazard_v(np.array([0.1, 0.2, 0.3, 0.4, 0.5]))
 printvec(hv)
 s = neworder.stopping(0.1, 10)
 printvec(s)

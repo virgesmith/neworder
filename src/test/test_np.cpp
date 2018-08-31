@@ -57,7 +57,7 @@ void test_np()
   neworder::log(py::str(c));
   c[1] = "Changed";
 
-  // cat modify DF values directly as 2d-array (it copies), need to select individual columns
+  // Can't modify DF values directly as 2d-array (it copies), need to select individual columns
   np::ndarray v = np::from_object(df.attr("Changed"));
   neworder::log(py::str(v));
   v[0] = "MOVED!";

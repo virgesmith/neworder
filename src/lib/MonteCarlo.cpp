@@ -8,45 +8,52 @@
 
 
 
-std::vector<double> neworder::ustream(int n)
+// std::vector<double> neworder::ustream(int n)
+// {
+//   std::mt19937& prng = pycpp::Environment::get().prng();
+//   std::uniform_real_distribution<> dist(0.0, 1.0); // can't make this const, so best not make it static 
+//   std::vector<double> ret(n);
+//   std::generate(ret.begin(), ret.end(), [&](){ return dist(prng); });
+
+//   return ret;
+// }
+
+np::ndarray neworder::ustream(size_t n)
 {
   std::mt19937& prng = pycpp::Environment::get().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0); // can't make this const, so best not make it static 
-  std::vector<double> ret(n);
-  std::generate(ret.begin(), ret.end(), [&](){ return dist(prng); });
-  // for (int i = 0; i < n; ++i)
-  // {
-  //   ret[i] = dist(prng);
-  // }
-
-  return ret;
+  np::ndarray a = pycpp::empty_1d_array<double>(n); 
+  double* p = reinterpret_cast<double*>(a.get_data());
+  std::generate(p, p + n, [&](){ return dist(prng); });
+  return a;
 }
 
 
+
 // simple hazard 
-std::vector<int> neworder::hazard(double prob, size_t n)
+np::ndarray neworder::hazard(double prob, size_t n)
 {
   std::mt19937& prng = pycpp::Environment::get().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
-  std::vector<int> h(n);
-  for (auto& it: h)
-    it = (dist(prng) < prob) ? 1 : 0;
+  np::ndarray h = pycpp::empty_1d_array<int>(n); 
+  int* p = reinterpret_cast<int*>(h.get_data());
+  for (size_t i = 0; i < n; ++i)
+    p[i] = (dist(prng) < prob) ? 1 : 0;
   return h;
 }
 
 // simple hazard 
-std::vector<int> neworder::hazard_v(const std::vector<double>& prob)
+np::ndarray neworder::hazard_v(const np::ndarray& prob)
 {
   std::mt19937& prng = pycpp::Environment::get().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
-  size_t n = prob.size();
-  std::vector<int> h(n);
+  size_t n = pycpp::size(prob);
+  np::ndarray h = pycpp::empty_1d_array<int>(n); 
+  int* p = reinterpret_cast<int*>(h.get_data());
   for (size_t i = 0; i < n; ++i)
-  {
-    h[i] = (dist(prng) < prob[i]) ? 1 : 0;
-  }
+    p[i] = (dist(prng) < prob[i]) ? 1 : 0;
   return h;
 }
 

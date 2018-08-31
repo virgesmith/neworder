@@ -1,23 +1,23 @@
 
 #pragma once
 
+#include "numpy.h"
+
 #include <vector>
 #include <random>
 #include <cstddef>
 #include <cstdint>
 
-// TODO rename to MC
-
 namespace neworder {
 
 // Uniform random [0,1) fed from the environment's PRNG stream
-std::vector<double> ustream(int n);
+np::ndarray ustream(size_t n);
 
 // single-prob hazard 
-std::vector<int> hazard(double prob, size_t n);
+np::ndarray hazard(double prob, size_t n);
 
 // vector hazard 
-std::vector<int> hazard_v(const std::vector<double>& prob);
+np::ndarray hazard_v(const np::ndarray& prob);
 
 // compute stopping times 
 std::vector<double> stopping(double prob, size_t n);

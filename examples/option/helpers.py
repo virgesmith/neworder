@@ -10,7 +10,7 @@ from humanleague import sobolSequence
 
 def nstream(n):
   """ Return a vector of n normally distributed pseudorandom variates (mean zero unity variance) """
-  return scipy.stats.norm.ppf(np.array(neworder.ustream(n).tolist()))
+  return scipy.stats.norm.ppf(neworder.ustream_np(n))
 
 def nstream_q(n):
   """ Return a vector of n normally distributed quasirandom variates (mean zero unity variance) """
@@ -21,7 +21,7 @@ def norm_cdf(x):
   return (1.0 + erf(x / sqrt(2.0))) / 2.0
 
 def bs_euro_option(S, K, r, q, T, vol, callput):
-  """ Compute Black-Schole European option price """
+  """ Compute Black-Scholes European option price """
   srt = vol * sqrt(T)
   rqs2t = (r - q + 0.5 * vol * vol) * T
   d1 = (log(S/K) + rqs2t) / srt

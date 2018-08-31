@@ -57,7 +57,9 @@
     "iomanip": "cpp",
     "typeindex": "cpp",
     "random": "cpp",
-    "string": "cpp"
+    "string": "cpp",
+    "forward_list": "cpp",
+    "unordered_set": "cpp"
   },
   "spellright.language": "en_GB",
   "spellright.documentTypes": [

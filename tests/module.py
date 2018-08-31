@@ -12,7 +12,7 @@ def test():
 
   no.log(no.ustream(10))
   no.log(no.ustream(10))
-
+  
   # test arithmetic
   dv = dv + 0.5
   dv = 0.5 + dv
@@ -21,7 +21,7 @@ def test():
   dv = dv * 0.5
   # dv = dv / 0.5
 
-  no.log(np.array(no.hazard_v(no.ustream(1000)).tolist()).mean())
+  no.log(no.hazard_v(no.ustream(1000)).mean())
 
   f = no.lazy_eval("2 + 2")
 
