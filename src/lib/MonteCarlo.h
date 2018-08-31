@@ -20,12 +20,12 @@ np::ndarray hazard(double prob, size_t n);
 np::ndarray hazard_v(const np::ndarray& prob);
 
 // compute stopping times 
-std::vector<double> stopping(double prob, size_t n);
+np::ndarray stopping(double prob, size_t n);
 
 // vector stopping 
-std::vector<double> stopping_v(const std::vector<double>& prob);
+np::ndarray stopping_v(const np::ndarray& prob);
 
 // vector stopping for non-homogeneous poisson process
-std::vector<double> stopping_nhpp(const std::vector<double>& lambda_t, size_t n);
+np::ndarray stopping_nhpp(const np::ndarray& lambda_t, size_t n);
 
 }
