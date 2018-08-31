@@ -11,7 +11,6 @@
 
 namespace np = boost::python::numpy;
 
-
 // helper functions for ndarrays
 namespace pycpp {
 
@@ -36,6 +35,28 @@ np::ndarray zero_1d_array(size_t n)
 {
   return np::zeros(1, (Py_intptr_t*)&n, np::dtype::get_builtin<T>());
 }
+
+// TODO far less hassle to provide a function that takes size and a lambda
+// Construct numpy arrays from flat values or other sources (e.g. RNG)
+template<typename R>
+struct NullaryArrayOp
+{
+  typedef R value_type;
+
+  virtual ~NullaryArrayOp() { }
+  
+  virtual R operator()() = 0;
+
+  // workaround since cant seem to call directly from derived
+  np::ndarray /*operator()*/call_impl(size_t n) 
+  {
+    np::ndarray a = pycpp::empty_1d_array<value_type>(n); 
+    double* p = reinterpret_cast<value_type*>(a.get_data());
+    std::generate(p, p + n, [this]() { return operator()(); });
+    return a;
+  }
+
+};
 
 template<typename R, typename A>
 struct UnaryArrayOp

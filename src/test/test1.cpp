@@ -1,6 +1,6 @@
 
-// Deprecated
 
+#include "Environment.h"
 #include "Inspect.h"
 #include "Module.h"
 #include "python.h"
@@ -11,8 +11,8 @@
 
 void test1(const std::string& modulename, const std::string& functionname, const std::vector<std::string>& argstrings)
 {
-
-  std::cout << "[C++] " << modulename << ":" << functionname;
+  pycpp::Environment& env = pycpp::Environment::get();
+  std::cout << env.context() << modulename << ":" << functionname;
   for (const auto& arg: argstrings)
     std::cout << " " << arg;
   std::cout << std::endl;
@@ -35,5 +35,5 @@ void test1(const std::string& modulename, const std::string& functionname, const
     args[i] = std::stoi(argstrings[i]);
   }
   py::object result = args.size() == 2 ? function(args[0], args[1]) : function();
-  std::cout << "[C++] Result: " << result << std::endl;
+  std::cout << env.context() << "Result: " << result << std::endl;
 }

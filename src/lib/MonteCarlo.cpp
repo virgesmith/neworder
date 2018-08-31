@@ -52,15 +52,45 @@ private:
 };
 
 
+// np::ndarray neworder::ustream(size_t n)
+// {
+//   std::mt19937& prng = pycpp::Environment::get().prng();
+//   std::uniform_real_distribution<> dist(0.0, 1.0); // can't make this const, so best not make it static 
+//   np::ndarray a = pycpp::empty_1d_array<double>(n); 
+//   // TODO ufunc?
+//   double* p = reinterpret_cast<double*>(a.get_data());
+//   std::generate(p, p + n, [&](){ return dist(prng); });
+//   return a;
+// }
+
 np::ndarray neworder::ustream(size_t n)
 {
-  std::mt19937& prng = pycpp::Environment::get().prng();
-  std::uniform_real_distribution<> dist(0.0, 1.0); // can't make this const, so best not make it static 
-  np::ndarray a = pycpp::empty_1d_array<double>(n); 
-  // TODO ufunc?
-  double* p = reinterpret_cast<double*>(a.get_data());
-  std::generate(p, p + n, [&](){ return dist(prng); });
-  return a;
+  struct PrngFill : pycpp::NullaryArrayOp<double>
+  {
+    PrngFill() : prng(pycpp::Environment::get().prng()), dist(0.0, 1.0) { }
+ 
+    double operator()()
+    {
+      return dist(prng);
+    }
+
+    np::ndarray operator()(size_t n)
+    {
+      return call_impl(n);
+    }
+
+  private:
+
+    std::mt19937& prng;
+    std::uniform_real_distribution<double> dist; 
+  };
+
+  PrngFill f;
+  return f(n);
+  // np::ndarray a = pycpp::empty_1d_array<double>(n); 
+  // // TODO ufunc?
+  // double* p = reinterpret_cast<double*>(a.get_data());
+  // std::generate(p, p + n, [&](){ return dist(prng); });
 }
 
 // simple hazard constant probability 
@@ -87,10 +117,15 @@ np::ndarray neworder::hazard_v(const np::ndarray& prob)
 // computes stopping times 
 np::ndarray neworder::stopping(double prob, size_t n)
 {
-  np::ndarray s = pycpp::empty_1d_array<double>(n);
+  std::mt19937& prng = pycpp::Environment::get().prng();
+  std::uniform_real_distribution<> dist(0.0, 1.0);
 
-  // StoppingFunctor f;
-  // np::unary_ufunc<StoppingFunctor>::call(f, s, s)(prob);
+  double rprob = 1.0 / prob;
+  np::ndarray s = pycpp::empty_1d_array<double>(n);
+  // TODO ufunc?
+  double* p = reinterpret_cast<double*>(s.get_data());
+  for (size_t i = 0; i < n; ++i)
+    p[i] = -::log(dist(prng)) * rprob;
 
   return s;
 }
