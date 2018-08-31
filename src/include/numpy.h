@@ -24,39 +24,29 @@ inline size_t size(const np::ndarray& a)
   return s;
 }
 
+// Uninitialised 1d array
 template<typename T>
 np::ndarray empty_1d_array(size_t n)
 {
   return np::empty(1, (Py_intptr_t*)&n, np::dtype::get_builtin<T>());
 }
 
+// Zero-initialised 1d array
 template<typename T>
 np::ndarray zero_1d_array(size_t n)
 {
   return np::zeros(1, (Py_intptr_t*)&n, np::dtype::get_builtin<T>());
 }
 
-// TODO far less hassle to provide a function that takes size and a lambda
-// Construct numpy arrays from flat values or other sources (e.g. RNG)
-template<typename R>
-struct NullaryArrayOp
+// Create a 1d array, initialising with a function
+template<typename T>
+np::ndarray make_array(size_t n, const std::function<T()>& f)
 {
-  typedef R value_type;
-
-  virtual ~NullaryArrayOp() { }
-  
-  virtual R operator()() = 0;
-
-  // workaround since cant seem to call directly from derived
-  np::ndarray /*operator()*/call_impl(size_t n) 
-  {
-    np::ndarray a = pycpp::empty_1d_array<value_type>(n); 
-    double* p = reinterpret_cast<value_type*>(a.get_data());
-    std::generate(p, p + n, [this]() { return operator()(); });
-    return a;
-  }
-
-};
+  np::ndarray a = pycpp::empty_1d_array<T>(n); 
+  T* p = reinterpret_cast<T*>(a.get_data());
+  std::generate(p, p + n, f);
+  return a;
+}
 
 template<typename R, typename A>
 struct UnaryArrayOp

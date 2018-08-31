@@ -1,14 +1,11 @@
 
 #include "MonteCarlo.h"
 #include "Environment.h"
-#include "Module.h"
 
 #include <vector>
 #include <random>
 #include <algorithm>
 #include <cmath>
-
-#include <iostream>
 
 // Realised random outcomes based on vector of hazard rates
 struct Hazard : pycpp::UnaryArrayOp<int, double>
@@ -18,7 +15,7 @@ struct Hazard : pycpp::UnaryArrayOp<int, double>
   int operator()(double p)
   {
     return (m_dist(m_prng) < p) ? 1 : 0;
-  } 
+  }
 
   np::ndarray operator()(const np::ndarray& arg)
   {
@@ -51,46 +48,12 @@ private:
   std::uniform_real_distribution<double> m_dist;  
 };
 
-
-// np::ndarray neworder::ustream(size_t n)
-// {
-//   std::mt19937& prng = pycpp::Environment::get().prng();
-//   std::uniform_real_distribution<> dist(0.0, 1.0); // can't make this const, so best not make it static 
-//   np::ndarray a = pycpp::empty_1d_array<double>(n); 
-//   // TODO ufunc?
-//   double* p = reinterpret_cast<double*>(a.get_data());
-//   std::generate(p, p + n, [&](){ return dist(prng); });
-//   return a;
-// }
-
 np::ndarray neworder::ustream(size_t n)
 {
-  struct PrngFill : pycpp::NullaryArrayOp<double>
-  {
-    PrngFill() : prng(pycpp::Environment::get().prng()), dist(0.0, 1.0) { }
- 
-    double operator()()
-    {
-      return dist(prng);
-    }
+  std::mt19937& prng = pycpp::Environment::get().prng();
+  std::uniform_real_distribution<> dist(0.0, 1.0);
 
-    np::ndarray operator()(size_t n)
-    {
-      return call_impl(n);
-    }
-
-  private:
-
-    std::mt19937& prng;
-    std::uniform_real_distribution<double> dist; 
-  };
-
-  PrngFill f;
-  return f(n);
-  // np::ndarray a = pycpp::empty_1d_array<double>(n); 
-  // // TODO ufunc?
-  // double* p = reinterpret_cast<double*>(a.get_data());
-  // std::generate(p, p + n, [&](){ return dist(prng); });
+  return pycpp::make_array<double>(n, [&](){ return dist(prng); });
 }
 
 // simple hazard constant probability 
@@ -99,12 +62,7 @@ np::ndarray neworder::hazard(double prob, size_t n)
   std::mt19937& prng = pycpp::Environment::get().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
-  np::ndarray h = pycpp::empty_1d_array<int>(n); 
-  // TODO ufunc?
-  int* p = reinterpret_cast<int*>(h.get_data());
-  for (size_t i = 0; i < n; ++i)
-    p[i] = (dist(prng) < prob) ? 1 : 0;
-  return h;
+  return pycpp::make_array<int>(n, [&]() { return (dist(prng) < prob) ? 1 : 0; });
 }
 
 // hazard with varying probablities 
@@ -119,15 +77,9 @@ np::ndarray neworder::stopping(double prob, size_t n)
 {
   std::mt19937& prng = pycpp::Environment::get().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
-
   double rprob = 1.0 / prob;
-  np::ndarray s = pycpp::empty_1d_array<double>(n);
-  // TODO ufunc?
-  double* p = reinterpret_cast<double*>(s.get_data());
-  for (size_t i = 0; i < n; ++i)
-    p[i] = -::log(dist(prng)) * rprob;
 
-  return s;
+  return pycpp::make_array<double>(n, [&]() { return -::log(dist(prng)) * rprob; });
 }
 
 np::ndarray neworder::stopping_v(const np::ndarray& prob)
