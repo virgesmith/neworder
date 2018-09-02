@@ -22,7 +22,7 @@ neworder.log("PYTHONPATH=" + os.environ["PYTHONPATH"] if "PYTHONPATH" in os.envi
 # TODO more sophisitcated impl of the log level/checking 
 loglevel = 1 
 do_checks = False 
-neworder.timespan = neworder.DVector.fromlist([0,1])
+neworder.timespan = np.array([0,1])
 neworder.timestep = neworder.timespan[1]
 
 initialisations = {}

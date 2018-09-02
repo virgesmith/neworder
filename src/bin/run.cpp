@@ -47,8 +47,8 @@ int run(int rank, int size)
       env.seed(np::from_object(env().attr("sequence")));
     }
   
-    // TODO direct init in python of a DVector?
-    const std::vector<double>& timespan = py::extract<std::vector<double>>(env().attr("timespan"))();
+    //const std::vector<double>& timespan = py::extract<std::vector<double>>(env().attr("timespan"))();
+    const np::ndarray& timespan = np::from_object(env().attr("timespan"));
     double timestep = py::extract<double>(env().attr("timestep"))();
 
     // Do not allow a zero timestep as this will result in an infinite loop
@@ -57,7 +57,7 @@ int run(int rank, int size)
       throw std::runtime_error("Timestep cannot be zero!");
     }
 
-    std::cout << env.context() << "t=" << timespan[0] << " init: ";
+    std::cout << env.context() << "t=" << pycpp::at<double>(timespan, 0) << " init: ";
 
 
     // execs
@@ -117,10 +117,11 @@ int run(int rank, int size)
       std::cout << std::endl;
 
       // Loop with checkpoints
-      double t = timespan[0] + timestep;
-      for (size_t i = 1; i < timespan.size(); ++i)
+      double t = pycpp::at<double>(timespan, 0) + timestep;
+      for (size_t i = 1; i < pycpp::size(timespan); ++i)
       {
-        for (; t <= timespan[i]; t += timestep)
+        double checkpoint = pycpp::at<double>(timespan, i);
+        for (; t <= checkpoint; t += timestep)
         {
           std::cout << env.context() << "t=" << t << " exec: ";
           // TODO is there a way to do this in-place? does it really matter?

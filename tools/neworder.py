@@ -11,10 +11,6 @@ You may need to ensure the path to this file is in your PYTHONPATH, e.g.
 $ PYTHONPATH=tools python3 example/population.py
 """
 
-# Stub DVector
-class DVector:
-  def fromlist(x):
-    return list(x)
 
 # Stub delayed eval/exec
 def lazy_eval(_):

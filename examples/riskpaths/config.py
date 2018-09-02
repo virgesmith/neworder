@@ -16,7 +16,7 @@ https://www.statcan.gc.ca/eng/microsimulation/modgen/new/chap4/chap4
   available at www.statcan.gc.ca/microsimulation/modgen/modgen-eng.htm'
 
 """
-
+import numpy as np
 import neworder
 
 # TODO parameterise
@@ -40,7 +40,7 @@ initialisations = {
 
 # This timeline represents persons age
 # range LIFE
-neworder.timespan = neworder.DVector.fromlist([0, 100])
+neworder.timespan = np.array([0, 100])
 neworder.timestep = 1
 
 

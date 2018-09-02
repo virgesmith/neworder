@@ -44,8 +44,7 @@ class Population:
 
     # Reformatting of input data is required to match Ethpop categories
     # actual age is randomised within the bound of the category
-    # TODO segfault can occur if mix ops with DVector and array/list...
-    self.data["Age"] = self.data.DC1117EW_C_AGE - neworder.ustream(len(self.data)).tolist()
+    self.data["Age"] = self.data.DC1117EW_C_AGE - neworder.ustream(len(self.data))
     self.data = ethpop.from_census_eth(self.data)
 
   def age(self, deltat):
@@ -61,18 +60,17 @@ class Population:
 
     # Now map the appropriate fertility rate to each female
     # might be a more efficient way of generating this array
-    rates = females.join(self.fertility, on=["LAD", "NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].tolist()
+    rates = females.join(self.fertility, on=["LAD", "NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].values
     # Then randomly determine if a birth occurred (neworder callback)
-    # python disallows scalar float mult of float list, but neworder.DVector does support this
-    h = np.array(neworder.hazard_v(neworder.DVector.fromlist(rates) * deltat).tolist())
+    h = neworder.hazard_v(rates * deltat)
 
     # The babies are a clone of the new mothers, with with changed PID, reset age and randomised gender (keeping location and ethnicity)
     newborns = females[h == 1].copy()
     newborns.PID = range(self.counter, self.counter + len(newborns))
-    newborns.Age = neworder.ustream(len(newborns)).tolist() # born within the last 12 months
+    newborns.Age = neworder.ustream(len(newborns)) # born within the last 12 months
     newborns.DC1117EW_C_AGE = 1 # this is 0-1 in census category
     # NOTE: do not convert to pd.Series here to stay as this has its own index which conflicts with the main table
-    newborns.DC1117EW_C_SEX = np.array(neworder.hazard(0.5, len(newborns)).tolist()) + 1
+    newborns.DC1117EW_C_SEX = neworder.hazard(0.5, len(newborns)) + 1
 
     # Finally append newborns to main population and adjust counter
     self.data = self.data.append(newborns, sort=False)
@@ -83,12 +81,10 @@ class Population:
 
     # Map the appropriate mortality rate to each female
     # might be a more efficient way of generating this array
-    rates = self.data.join(self.mortality, on=["LAD", "NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].tolist()
+    rates = self.data.join(self.mortality, on=["LAD", "NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"]
 
     # Then randomly determine if a birth occurred
-    # neworder callback (requires inefficient conversions: Series/np.array -> list -> DVector -> list -> np.array)
-    # python disallows scalar float mult of float list, but neworder.DVector does support this
-    h = np.array(neworder.hazard_v(neworder.DVector.fromlist(rates) * deltat).tolist())
+    h = neworder.hazard_v(rates.values * deltat)
 
     # Finally remove deceased from table
     self.data = self.data[h!=1]
@@ -98,10 +94,10 @@ class Population:
     # internal immigrations: 
     # - assign the rates to the incumbent popultion appropriately by age,sex,ethnicity
     # - randomly sample this population, clone and append
-    in_rates = self.data.join(self.in_migration, on=["LAD", "NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].tolist()
+    in_rates = self.data.join(self.in_migration, on=["LAD", "NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].values
     # in-migration should be sampling from the whole population ex-LAD, instead do an approximation by scaling up the LAD population
     # NOTE this is wrong for a number of reasons esp. as it cannot sample category combinations that don't already exist in the LAD
-    h_in = np.array(neworder.hazard_v(neworder.DVector.fromlist(in_rates) * deltat).tolist())
+    h_in = neworder.hazard_v(in_rates * deltat)
     
     incoming = self.data[h_in == 1].copy()
 
@@ -115,13 +111,13 @@ class Population:
     self.counter = self.counter + len(incoming)
 
     # internal emigration
-    out_rates = self.data.join(self.out_migration, on=["LAD", "NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].tolist()
-    h_out = np.array(neworder.hazard_v(neworder.DVector.fromlist(out_rates) * deltat).tolist())
+    out_rates = self.data.join(self.out_migration, on=["LAD", "NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"]
+    h_out = neworder.hazard_v(out_rates.values * deltat)
     # remove outgoing migrants
     self.data = self.data[h_out!=1]
 
-    intl_in_rates = self.data.join(self.immigration, on=["LAD", "NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].tolist()
-    h_intl_in = np.array(neworder.hazard_v(neworder.DVector.fromlist(intl_in_rates) * deltat).tolist())
+    intl_in_rates = self.data.join(self.immigration, on=["LAD", "NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"]
+    h_intl_in = neworder.hazard_v(intl_in_rates.values * deltat)
 
     intl_incoming = self.data[h_intl_in == 1].copy()
     intl_incoming.PID = range(self.counter, self.counter + len(intl_incoming))
@@ -132,8 +128,8 @@ class Population:
     self.counter = self.counter + len(intl_incoming)
 
     # international emigrtion
-    intl_out_rates = self.data.join(self.emigration, on=["LAD", "NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].tolist()
-    h_intl_out = np.array(neworder.hazard_v(neworder.DVector.fromlist(intl_out_rates) * deltat).tolist())
+    intl_out_rates = self.data.join(self.emigration, on=["LAD", "NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"]
+    h_intl_out = neworder.hazard_v(intl_out_rates.values * deltat)
     # remove outgoing migrants
     self.data = self.data[h_intl_out!=1]
 

@@ -27,7 +27,7 @@ assert neworder.nprocs == 1, "This example is configured to be run as a single p
 # run 4 sims
 neworder.sequence = np.array([3,1,2,0])
 # define the evolution
-neworder.timespan = neworder.DVector.fromlist([2011.25, 2020.25])
+neworder.timespan = np.array([2011.25, 2020.25])
 neworder.timestep = 1.0 # TODO beware rounding errors 
 
 # initialisation

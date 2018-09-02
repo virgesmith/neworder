@@ -44,8 +44,7 @@ class Population:
 
     # Reformatting of input data is required to match Ethpop categories
     # actual age is randomised within the bound of the category
-    # TODO segfault can occur if mix ops with DVector and array/list...
-    self.data["Age"] = self.data.DC1117EW_C_AGE - neworder.ustream(len(self.data)).tolist()
+    self.data["Age"] = self.data.DC1117EW_C_AGE - neworder.ustream(len(self.data))
     self.data = ethpop.from_census_eth(self.data)
 
   def age(self, deltat):
@@ -63,7 +62,6 @@ class Population:
     # might be a more efficient way of generating this array
     rates = females.join(self.fertility, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].values
     # Then randomly determine if a birth occurred (neworder callback)
-    # python disallows scalar float mult of float list, but neworder.DVector does support this
     h = neworder.hazard_v(rates * deltat)
 
     # The babies are a clone of the new mothers, with with changed PID, reset age and randomised gender (keeping location and ethnicity)
@@ -83,12 +81,10 @@ class Population:
 
     # Map the appropriate mortality rate to each female
     # might be a more efficient way of generating this array
-    rates = self.data.join(self.mortality, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].values
+    rates = self.data.join(self.mortality, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"]
 
     # Then randomly determine if a birth occurred
-    # neworder callback (requires inefficient conversions: Series/np.array -> list -> DVector -> list -> np.array)
-    # python disallows scalar float mult of float list, but neworder.DVector does support this
-    h = neworder.hazard_v(rates * deltat)
+    h = neworder.hazard_v(rates.values * deltat)
 
     # Finally remove deceased from table
     self.data = self.data[h!=1]

@@ -1,7 +1,8 @@
 
 """ config.py
-Microsimulation config
+Microsimulation config for mulit-LAD MPI simulation
 """
+import numpy as np
 import glob
 import neworder
 
@@ -33,7 +34,7 @@ initialisations = {
 }
 
 # define the evolution
-neworder.timespan = neworder.DVector.fromlist([2011.25, 2015.25, 2020.25])
+neworder.timespan = np.array([2011.25, 2015.25, 2020.25])
 neworder.timestep = 1.0 # TODO beware rounding errors 
 
 # timestep must be defined in neworder

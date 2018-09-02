@@ -3,7 +3,7 @@ Chapter 1
 This is a direct neworder cover version of the Basic Cohort Model from the Belanger & Sabourin book
 See https://www.microsimulationandpopulationdynamics.com/
 """
-
+import numpy as np
 import neworder
 import person
 
@@ -26,7 +26,7 @@ initialisations = {
 # use a large positive number to denote an infinite timespan (better than say -1 as it just works in inequalities)
 neworder.time_infinity = 1e9
 # This is case-based model - only a dummy timeline is required
-neworder.timespan = neworder.DVector.fromlist([0, neworder.time_infinity])
+neworder.timespan = np.array([0, neworder.time_infinity])
 neworder.timestep = neworder.time_infinity
 
 # transitions: simply samples time of death for each individual

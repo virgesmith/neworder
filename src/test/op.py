@@ -22,13 +22,9 @@ notafunc = 3
 
 neworder.log("callback: %s" % neworder.name())
 
-v = neworder.DVector(20)
+v = np.zeros(20, dtype=float)
 
 v[0] = 3.4
-neworder.log(v)
-v[1] = v[0]
-neworder.log(v)
-v.clear()
 neworder.log(v)
 
 # use "object" for strings, str will do char 

@@ -3,11 +3,13 @@ The simplest functional neworder configuration
 Serves as a skeleton for user projects
 """
 
+# for shared arrays
+import numpy as np
 # Expose the enviroment to python
 import neworder
 
 # Timeline is compulsory - define a dummy timeline
-neworder.timespan = neworder.DVector.fromlist([0, 1])
+neworder.timespan = np.array([0, 1])
 # We only need one timestep
 neworder.timestep = neworder.timespan[1]
 

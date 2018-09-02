@@ -8,24 +8,13 @@ import numpy as np
 
 def test():
 
-  dv = no.DVector(10)
-
   no.log(no.ustream(10))
-  no.log(no.ustream(10))
-  
-  # test arithmetic
-  dv = dv + 0.5
-  dv = 0.5 + dv
-  #dv = dv + dv
-  dv = 0.5 * dv
-  dv = dv * 0.5
-  # dv = dv / 0.5
 
   no.log(no.hazard_v(no.ustream(1000)).mean())
 
   f = no.lazy_eval("2 + 2")
 
-  no.testVec = no.DVector.fromlist([1,2,3,4])
+  no.testVec = np.array([1,2,3,4])
 
   no.testVec2 = np.array(["a", "b", "c"])
   no.log(no.testVec)
