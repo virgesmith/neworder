@@ -44,7 +44,7 @@ public:
   std::string context(int ctx = CPP) const;
 
   // set the RNG stream sequence
-  void seed(const std::vector<int>& seq);
+  void seed(const np::ndarray& seq);
 
   // iterate the RNG stream sequence
   bool next();
@@ -63,7 +63,7 @@ private:
 
   // RNG sequence index
   size_t m_seqno;
-  std::vector<int> m_sequence;
+  //np::ndarray* m_sequence;
   // MPI rank/size
   int m_rank;
   int m_size;

@@ -7,8 +7,8 @@ are the option itself, and the underlying stock (essentially the market) that go
 import numpy as np
 import neworder
 
-# run 4 times
-neworder.sequence = neworder.IVector.fromlist([0,1,2,3])
+# run 4 times NB contained type is int64
+neworder.sequence = np.array([0,1,2,3])
 
 # market data
 spot = 100.0 # underlying spot price

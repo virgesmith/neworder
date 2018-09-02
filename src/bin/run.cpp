@@ -44,7 +44,7 @@ int run(int rank, int size)
     // TODO python func to set sequence and reset rng
     if (pycpp::has_attr(env(), "sequence"))
     {
-      env.seed(py::extract<std::vector<int>>(env().attr("sequence")));
+      env.seed(np::from_object(env().attr("sequence")));
     }
   
     // TODO direct init in python of a DVector?

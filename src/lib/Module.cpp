@@ -113,24 +113,24 @@ BOOST_PYTHON_MODULE(neworder)
     .def(double() * py::self)
     // .def(self / double)
     ;  
-  py::class_<std::vector<int>>("IVector", py::init<int>())
-    .def("__len__", &std::vector<int>::size)
-    .def("clear", &std::vector<int>::clear)
-    .def("__getitem__", &vector_get<int>/*, py::return_value_policy<py::copy_non_const_reference>()*/)
-    .def("__setitem__", &vector_set<int>, py::with_custodian_and_ward<1,2>()) // to let container keep value
-    .def("__str__", &no::vector_to_string<int>)
-    .def("tolist", &no::vector_to_py_list<int>)
-    .def("fromlist", &no::py_list_to_vector<int>)
-    ;  
-  py::class_<std::vector<std::string>>("SVector", py::init<int>())
-    .def("__len__", &std::vector<std::string>::size)
-    .def("clear", &std::vector<std::string>::clear)
-    .def("__getitem__", &vector_get<std::string>/*, py::return_value_policy<py::copy_non_const_reference>()*/)
-    .def("__setitem__", &vector_set<std::string>, py::with_custodian_and_ward<1,2>()) // to let container keep value
-    .def("__str__", &no::vector_to_string<std::string>)
-    .def("tolist", &no::vector_to_py_list<std::string>)
-    .def("fromlist", &no::py_list_to_vector<std::string>)
-    ;
+  // py::class_<std::vector<int>>("IVector", py::init<int>())
+  //   .def("__len__", &std::vector<int>::size)
+  //   .def("clear", &std::vector<int>::clear)
+  //   .def("__getitem__", &vector_get<int>/*, py::return_value_policy<py::copy_non_const_reference>()*/)
+  //   .def("__setitem__", &vector_set<int>, py::with_custodian_and_ward<1,2>()) // to let container keep value
+  //   .def("__str__", &no::vector_to_string<int>)
+  //   .def("tolist", &no::vector_to_py_list<int>)
+  //   .def("fromlist", &no::py_list_to_vector<int>)
+  //   ;  
+  // py::class_<std::vector<std::string>>("SVector", py::init<int>())
+  //   .def("__len__", &std::vector<std::string>::size)
+  //   .def("clear", &std::vector<std::string>::clear)
+  //   .def("__getitem__", &vector_get<std::string>/*, py::return_value_policy<py::copy_non_const_reference>()*/)
+  //   .def("__setitem__", &vector_set<std::string>, py::with_custodian_and_ward<1,2>()) // to let container keep value
+  //   .def("__str__", &no::vector_to_string<std::string>)
+  //   .def("tolist", &no::vector_to_py_list<std::string>)
+  //   .def("fromlist", &no::py_list_to_vector<std::string>)
+  //   ;
 
   // Deferred eval/exec of Python code
   py::class_<no::Callback>("Callback", py::no_init)

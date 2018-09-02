@@ -27,7 +27,7 @@ def test():
 
   no.testVec = no.DVector.fromlist([1,2,3,4])
 
-  no.testVec2 = no.SVector.fromlist(["a", "b", "c"])
+  no.testVec2 = np.array(["a", "b", "c"])
   no.log(no.testVec)
   no.log(str(no.testVec))
   no.log(repr(no.testVec))

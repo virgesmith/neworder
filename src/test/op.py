@@ -3,9 +3,6 @@
 import numpy as np
 import neworder
 
-def printvec(x):
-  neworder.log(x)
-
 def add(a,b):
   return a + b
 
@@ -28,22 +25,23 @@ neworder.log("callback: %s" % neworder.name())
 v = neworder.DVector(20)
 
 v[0] = 3.4
-printvec(v)
+neworder.log(v)
 v[1] = v[0]
-printvec(v)
+neworder.log(v)
 v.clear()
-printvec(v)
+neworder.log(v)
 
-v2 = neworder.SVector(10)
+# use "object" for strings, str will do char 
+v2 = np.empty(10, dtype=object)
 for i in range(0,10):
   v2[i] = str(i) + " potato"
 
-printvec(v2)
+neworder.log(v2)
 
 h = neworder.hazard(0.2, 10)
-printvec(h)
+neworder.log(h)
 hv = neworder.hazard_v(np.array([0.1, 0.2, 0.3, 0.4, 0.5]))
-printvec(hv)
+neworder.log(hv)
 s = neworder.stopping(0.1, 10)
-printvec(s)
+neworder.log(s)
 

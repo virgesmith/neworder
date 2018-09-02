@@ -18,13 +18,17 @@ pycpp::Environment& pycpp::Environment::init(int rank, int size)
   env.m_self->attr("procid") = rank;
   env.m_self->attr("nprocs") = size;
 
-  // Default sequence, may be overridden, using the (python) variable neworder.sequence
-  env.m_sequence = std::vector<int>(1, 0);
+  // Default sequence is [0]. May be overridden, using the (python) variable neworder.sequence
+  if (!pycpp::has_attr(*env.m_self, "sequence"))
+  {
+    env.m_self->attr("sequence") = pycpp::zero_1d_array<int64_t>(1);
+  }
+  np::ndarray sequence = np::from_object(env.m_self->attr("sequence"));
   env.m_seqno = 0;
   env.m_self->attr("seq") = 0;
 
   // Init rng
-  env.m_prng.reset(new std::mt19937(77027473 * env.m_sequence[env.m_seqno] + 19937 * size + rank));
+  env.m_prng.reset(new std::mt19937(77027473 * pycpp::at<int64_t>(sequence, env.m_seqno) + 19937 * size + rank));
 
   std::cout << env.context() << "env init" << std::endl; 
   std::cout << env.context() << "embedded python version: " << version() << std::endl;
@@ -40,33 +44,34 @@ pycpp::Environment& pycpp::Environment::get()
 
 std::string pycpp::Environment::context(int ctx) const
 {
+  np::ndarray sequence = np::from_object(m_self->attr("sequence"));
   std::string idstring = ctx == 0 ? "[no " : "[py ";
-  idstring += std::to_string(m_sequence[m_seqno]) + "-" + std::to_string(m_rank) + "/" + std::to_string(m_size) + "] ";
+  idstring += std::to_string(pycpp::at<int64_t>(sequence, m_seqno)) + "-" + std::to_string(m_rank) + "/" + std::to_string(m_size) + "] ";
   return idstring;
 }
 
 // Take next stream
 bool pycpp::Environment::next()
 {
+  np::ndarray sequence = np::from_object(m_self->attr("sequence"));
   ++m_seqno;
-  if (m_seqno == m_sequence.size())
+  if (m_seqno == pycpp::size(sequence))
     return false;
 
   // ensure stream indepence w.r.t. sequence and MPI rank/size
-  m_prng->seed(77027473 * m_sequence[m_seqno] + 19937 * m_size + m_rank);
-  m_self->attr("seq") = m_sequence[m_seqno];
+  m_prng->seed(77027473 * pycpp::at<int64_t>(sequence, m_seqno) + 19937 * m_size + m_rank);
+  m_self->attr("seq") = pycpp::at<int64_t>(sequence, m_seqno);
 
   return true;
 }
 
 
 // Sets a PRNG sequence (and resets sequence counter)
-void pycpp::Environment::seed(const std::vector<int>& seq)
+void pycpp::Environment::seed(const np::ndarray& seq)
 {
-  m_sequence = seq;
+  m_self->attr("sequence") = seq;
   m_seqno = -1;
   next();
-
 }
 
 std::mt19937& pycpp::Environment::prng()
