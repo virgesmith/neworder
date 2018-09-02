@@ -3,14 +3,50 @@
 [![Build Status](https://travis-ci.org/virgesmith/neworder.png?branch=master)](https://travis-ci.org/virgesmith/neworder) 
 [![License](https://img.shields.io/github/license/mashape/apistatus.svg)](https://opensource.org/licenses/MIT)
 
-Neworder is a prototype C++ microsimulation package inspired by [openm++](https://ompp.sourceforge.io/) and MODGEN. Models are defined in high-level code (python) and executed in an embedded simulation framework (C++) which exposes a subset of itself as a python module. (In order words the C++ framework can call python _and vice versa_) 
+Neworder is a prototype C++ microsimulation package inspired by [openm++](https://ompp.sourceforge.io/) and MODGEN. Models are defined in high-level code (python) and executed in an embedded simulation framework (C++) which exposes a subset of itself as a python module. (In order words the C++ framework can call python _and vice versa_).
+
+As python and C++ have very different memory models, it's not possible to directly share data, i.e. safely have a python object and a C++ object both referencing (and potentially modifying) the same memory location. However, there is a crucial exception to this: the numpy ndarray type. This is fundamental to the operation of the framework, as it enables the C++ module to directly access (and modify) pandas data frames (which do not have a native C API).
 
 ## Key requirements:
 - low barriers to entry: users need only write standard python code, little or no new coding skills required.
 - flexibility: models are defined entirely in user code.
 - reusability: leverage python modules like numpy, pandas.
 - speed: embedded C++ framework and module are compiled and optimised code.
-- scalability: can be run on a desktop or a HPC cluster, and will support parallel execution using MPI.
+- scalability: can be run on a desktop or a HPC cluster, supporting parallel execution using MPI.
+
+## Framework
+The aim is to provide as flexible and minimal a framework as possible. The model must fit the following requirements:
+
+### Requirements
+#### Compulsory
+The framework minimal requirements are that:
+- a timeline and a timestep is defined<sup>*</sup>. The timeline can be partitioned, for example for running a 40-year simulation with 1 year timesteps, but outputting results every 5 years. These are referred to as "checkpoints", and the end of the timeline is considered to be a checkpoint.
+- python code to be executed at the first timestep, e.g. to load or microsynthesise an initial population, and any data governing the dynamics.
+- python code to roll the population forward to the next timestep.
+- python code to be executed at each checkpoint, typically
+
+&ast; case-based simulation support is in progress. In this case the timeline refers not to absolute time but the age of the cohort.
+
+#### Optional
+And the following are optional:
+- python code to run at each timestep to perform checks
+- an outer sequence: this defines a number of runs of the same simulation whilst ensuring RNG independence.
+
+# Provision
+The framework provides:
+- the main "loop" over sequence (if specified), and timeline. 
+- a parallel execution framework supporting interprocess communication<sup>*</sup>.
+- independent deterministic pseudorandom number streams for each process and sequence.
+- a library of Monte-Carlo methods.
+- a mechanism to specify lazily evaluated/executed (i.e. deferred) python code.
+- ad-hoc development of fast implementations of slow-running python code, i.e. python code with explicit loops<sup>*</sup>. 
+- a logging framework.
+
+&ast; asterisk denotes functionality that is planned or under development.
+
+The framework specifically does not provide:
+- arrays: use numpy wherever possible. The framework can access numpy arrays directly.
+- data frames: use pandas wherever possible. The raw data is accessible by the framework.
 
 ## Proof-of-concept 
 A simulation of a population of people by age, gender, ethnicity and location (LAD or MSOA) over a 40-year period. There are two distinct use cases:

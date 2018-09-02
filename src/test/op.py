@@ -40,4 +40,7 @@ hv = neworder.hazard_v(np.array([0.1, 0.2, 0.3, 0.4, 0.5]))
 neworder.log(hv)
 s = neworder.stopping(0.1, 10)
 neworder.log(s)
-
+sv = neworder.stopping_v(np.array([0.1, 0.2, 0.3, 0.4, 0.5]))
+neworder.log(sv)
+nhpp = neworder.stopping_nhpp(np.array([0.1, 0.2, 0.3, 0.4, 0.5]), 10)
+neworder.log(nhpp)

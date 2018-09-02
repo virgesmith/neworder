@@ -47,6 +47,7 @@ np::ndarray zero_1d_array(size_t n)
 }
 
 // Create a 1d array, initialising with a function
+// e.g. "ones" is make_array<double>(n, [](){ return 1.0; })
 template<typename T>
 np::ndarray make_array(size_t n, const std::function<T()>& f)
 {

@@ -7,6 +7,7 @@ Prints diagnostic info
 import os
 import sys
 import subprocess
+import numpy as np
 import neworder
 
 
@@ -22,7 +23,8 @@ neworder.log("PYTHONPATH=" + os.environ["PYTHONPATH"] if "PYTHONPATH" in os.envi
 # TODO more sophisitcated impl of the log level/checking 
 loglevel = 1 
 do_checks = False 
-neworder.timespan = np.array([0,1])
+# note timeline must be represented by floats
+neworder.timespan = np.array([0,1], dtype=float)
 neworder.timestep = neworder.timespan[1]
 
 initialisations = {}
