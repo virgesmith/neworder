@@ -67,8 +67,10 @@ struct UnaryArrayOp
 
   virtual R operator()(A) = 0;
 
-  // workaround since cant seem to call directly from derived
-  np::ndarray /*operator()*/call_impl(const py::object& arg) 
+  // implementing the above function in a derived class hides the (below) base-class implementations of operator() 
+  // see https://stackoverflow.com/questions/1628768/why-does-an-overridden-function-in-the-derived-class-hide-other-overloads-of-the/1629074#1629074
+  // use a using declaration in the derived class to force it to be visible
+  np::ndarray operator()(const py::object& arg) 
   {
     return np::array(np::unary_ufunc<UnaryArrayOp<R,A>>::call(*this, arg, py::object()));      
   }
@@ -85,8 +87,10 @@ struct BinaryArrayOp
 
   virtual R operator()(A1, A2) = 0;
 
-  // workaround since cant seem to call directly from derived
-  np::ndarray /*operator()*/call_impl(const py::object& arg1, const py::object& arg2) 
+  // implementing the above function in a derived class hides the (below) base-class implementations of operator() 
+  // see https://stackoverflow.com/questions/1628768/why-does-an-overridden-function-in-the-derived-class-hide-other-overloads-of-the/1629074#1629074
+  // use a using declaration in the derived class to force it to be visible
+  np::ndarray operator()(const py::object& arg1, const py::object& arg2) 
   {
     return np::array(np::binary_ufunc<BinaryArrayOp<R, A1, A2>>::call(*this, arg1, arg2, py::object()));      
   }

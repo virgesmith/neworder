@@ -70,11 +70,9 @@ void test_np()
     
     double operator()(double x) { return m_m * x + m_c; }
 
-    // workaround since cant seem to call op() from derived if implemented in base only
-    np::ndarray operator()(const py::object& arg) 
-    {
-      return call_impl(arg);
-    }
+    // workaround: above function hides base-class implementations of operator() 
+    // see https://stackoverflow.com/questions/1628768/why-does-an-overridden-function-in-the-derived-class-hide-other-overloads-of-the/1629074#1629074
+    using pycpp::UnaryArrayOp<double, double>::operator();
 
   private:
     double m_m;
@@ -88,11 +86,9 @@ void test_np()
     
     double operator()(double x, double y) { return m_m * (x + y) + m_c; }
 
-    // workaround since cant seem to call op() from derived if implemented in base only
-    np::ndarray operator()(const py::object& arg1, const py::object& arg2) 
-    {
-      return call_impl(arg1, arg2);
-    }
+    // workaround: above function hides base-class implementations of operator() 
+    // see https://stackoverflow.com/questions/1628768/why-does-an-overridden-function-in-the-derived-class-hide-other-overloads-of-the/1629074#1629074
+    using pycpp::BinaryArrayOp<double, double, double>::operator();
 
   private:
     double m_m;

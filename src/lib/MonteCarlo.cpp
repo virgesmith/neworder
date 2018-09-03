@@ -17,10 +17,10 @@ struct Hazard : pycpp::UnaryArrayOp<int, double>
     return (m_dist(m_prng) < p) ? 1 : 0;
   }
 
-  np::ndarray operator()(const np::ndarray& arg)
-  {
-    return call_impl(arg);
-  }
+  // implementing the above function in a derived class hides the (below) base-class implementations of operator() 
+  // see https://stackoverflow.com/questions/1628768/why-does-an-overridden-function-in-the-derived-class-hide-other-overloads-of-the/1629074#1629074
+  // force it to be visible:
+  using pycpp::UnaryArrayOp<int, double>::operator();
 
 private:
   std::mt19937& m_prng;
@@ -38,10 +38,11 @@ struct Stopping : pycpp::UnaryArrayOp<double, double>
     return -::log(m_dist(m_prng)) / p;
   } 
 
-  np::ndarray operator()(const np::ndarray& arg)
-  {
-    return call_impl(arg);
-  }
+  // implementing the above function in a derived class hides the (below) base-class implementations of operator() 
+  // see https://stackoverflow.com/questions/1628768/why-does-an-overridden-function-in-the-derived-class-hide-other-overloads-of-the/1629074#1629074
+  // force it to be visible:
+  using pycpp::UnaryArrayOp<double, double>::operator();
+
 
 private:
   std::mt19937& m_prng;
