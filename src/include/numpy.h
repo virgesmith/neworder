@@ -32,6 +32,18 @@ T& at(const np::ndarray& a, size_t index)
   return *(reinterpret_cast<T*>(a.get_data()) + index);
 }
 
+template<typename T>
+T* begin(const np::ndarray& a)
+{
+  return reinterpret_cast<T*>(a.get_data());
+}
+
+template<typename T>
+T* end(const np::ndarray& a)
+{
+  return begin<T>(a) + size(a);
+}
+
 // Uninitialised 1d array
 template<typename T>
 np::ndarray empty_1d_array(size_t n)

@@ -105,4 +105,47 @@ void test_np()
   
   neworder::log(out2);
 
+  // Test vector-scalar operations
+  // Inner product - rather than having operator() for syntactic sugar I'm using the constructor for this purpose
+  // and providing an explicit operator double to produce the result. This avoids the extra pair of brackets (FWIW)
+  struct DotFunc : pycpp::BinaryArrayOp<double, double, double>
+  {
+    typedef pycpp::BinaryArrayOp<double, double, double> super;
+    
+    double operator()(double x, double y) { return x * y; }
+
+    // no workaround: above function hides base-class implementations of operator() 
+    // We actually want to provide our own implementation - that returns a scalar rather than a vector 
+    // So the base implementation remains hidden, we use it in our override to calculate the products,
+    // which are then summed. 
+
+    DotFunc(const py::object& arg1, const py::object& arg2) : m_result(0.0)
+    {
+      np::ndarray products = super::operator()(arg1, arg2);
+
+      for (double* p = pycpp::begin<double>(products); p != pycpp::end<double>(products); ++p)
+      {
+        m_result += *p;
+      }
+    }
+
+    operator double()
+    {
+      return m_result;
+    }
+
+  private:
+    double m_result;
+  };
+
+  np::ndarray v1 = pycpp::make_array<double>(10, [](){ return 2.0; });
+  np::ndarray v2 = pycpp::make_array<double>(10, [](){ return 0.4; });
+  neworder::log(v1);
+  neworder::log(v2);
+  neworder::log("Dot prod: " + std::to_string(DotFunc(v1, v2)));
+
+  // now see if it works with vector * scalar
+  py::object scalar(1.0);
+  neworder::log("scalar * vector sum: " + std::to_string(DotFunc(v1, scalar)));
+
 }
