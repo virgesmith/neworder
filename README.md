@@ -7,7 +7,7 @@ Neworder is a prototype C++ microsimulation package inspired by [openm++](https:
 
 As python and C++ have very different memory models, it's not possible to directly share data, i.e. safely have a python object and a C++ object both referencing (and potentially modifying) the same memory location. However, there is a crucial exception to this: the numpy ndarray type. This is fundamental to the operation of the framework, as it enables the C++ module to directly access (and modify) pandas data frames (which do not have a native C API).
 
-## Key requirements:
+## Key Features:
 - low barriers to entry: users need only write standard python code, little or no new coding skills required.
 - flexibility: models are defined entirely in user code.
 - reusability: leverage python modules like numpy, pandas.
@@ -44,9 +44,9 @@ The framework provides:
 
 &ast; asterisk denotes functionality that is planned or under development.
 
-The framework specifically does not provide:
+Where possible, the functionality available in existing python libraries should be used. The framework specifically does not provide:
 - arrays: use numpy wherever possible. The framework can access numpy arrays directly.
-- data frames: use pandas wherever possible. The raw data is accessible by the framework.
+- data frames: use pandas wherever possible. Data frames are accessible in the framework via numpy arrays.
 
 ## Proof-of-concept 
 A simulation of a population of people by age, gender, ethnicity and location (LAD or MSOA) over a 40-year period. There are two distinct use cases:
@@ -63,6 +63,15 @@ _So far only tested on Ubuntu 16.04/18.04_
 $ sudo apt install -y build-essential python3 python3-dev python3-pip libboost-python-dev
 $ python3 -m pip install -U numpy pandas
 ```
+### Boost
+
+Boost.numpy was introduced in version 1.63, Boost 1.65.1 or higher is recommended. For platforms that come with older versions, see e.g. [this script](tools/boost_python.sh) which downloads 1.67 and builds only the python modules for python3:
+
+```bash
+./bootstrap.sh --prefix=/usr/local --with-libraries=python --with-python=$(which python3)
+./b2 cxxflags=-DBOOST_NO_AUTO_PTR install
+```
+
 ## Clone, build and test
 ```
 $ git clone https://github.com/virgesmith/neworder
@@ -119,7 +128,7 @@ ImportError: numpy.core.multiarray failed to import
 which was due to python-libs module not being loaded. 
 
 ### Conda
-`neworder` may not be compatilble at all with conda - it seems that they statically link to libpython. Further investigation required.
+`neworder` may not be compatible at all with conda - it seems that their conda python binary statically links to libpython. Further investigation required.
 
 ### Non-Conda
 - Global python packages are old and the code isn't compatible. This can be resolved by updating at user-level, e.g.:
@@ -162,29 +171,34 @@ This isn't really an example, it just outputs useful diagnostic information to t
 
 ```
 $ ./run_example.sh diagnostics
-[C++] PYTHONPATH=examples/diagnostics:examples/shared
-[C++ 0/1] process init
-[C++] embedded python version: 3.6.5 (default, Apr  1 2018, 05:46:30)  [GCC 7.3.0]
-[py 0/1] MODULE=neworder0.0.0_boost1_65_1
-[py 0/1] PYTHON=3.6.5 (default, Apr  1 2018, 05:46:30)  [GCC 7.3.0]
-[py 0/1] Loaded neworder/boost/python libs:
-[py 0/1]   libpython3.6m.so.1.0 => /usr/lib/x86_64-linux-gnu/libpython3.6m.so.1.0 (0x00007f57a2013000)
-[py 0/1]   libboost_python3-py36.so.1.65.1 => /usr/lib/x86_64-linux-gnu/libboost_python3-py36.so.1.65.1 (0x00007f57a1dd4000)
-[py 0/1]   libneworder.so => src/lib/libneworder.so (0x00007f57a1ae4000)
-[py 0/1] PYTHONPATH=examples/diagnostics:examples/shared
-[py 0/1] 2 + 2 = 4
-[C++] t=0 init:
-[C++] t=1 exec:
+[pre-env] PYTHONPATH=examples/diagnostics:examples/shared
+[no 0-0/1] env init
+[no 0-0/1] embedded python version: 3.6.5 (default, Apr  1 2018, 05:46:30)  [GCC 7.3.0]
+[py 0-0/1] MODULE=neworder0.0.0_boost1_65_1
+[py 0-0/1] PYTHON=3.6.5 (default, Apr  1 2018, 05:46:30)  [GCC 7.3.0]
+[py 0-0/1] Loaded neworder/boost/python libs:
+[py 0-0/1]   libpython3.6m.so.1.0 => /usr/lib/x86_64-linux-gnu/libpython3.6m.so.1.0 (0x00007f00d34a1000)
+[py 0-0/1]   libboost_python3-py36.so.1.65.1 => /usr/lib/x86_64-linux-gnu/libboost_python3-py36.so.1.65.1 (0x00007f00d3262000)
+[py 0-0/1]   libboost_numpy3-py36.so.1.65.1 => /usr/lib/x86_64-linux-gnu/libboost_numpy3-py36.so.1.65.1 (0x00007f00d3057000)
+[py 0-0/1]   libneworder.so => src/lib/libneworder.so (0x00007f00d2de5000)
+[py 0-0/1] PYTHONPATH=examples/diagnostics:examples/shared
+[no 0-0/1] t=0 init:
+[no 0-0/1] t=1 exec:
 [starting neworder debug shell]
-[C++] checkpoint: shell: >>> import neworder
->>> neworder.stopping(0.1, 5).tolist()
-[3.234112066396531, 6.7050939131094625, 16.084241975178248, 3.013623898076906, 2.8498469412444076]]
+[no 0-0/1] checkpoint: shell: >>> import neworder
+>>> neworder.stopping(0.1, 5)
+array([30.43439191, 13.88102712,  1.69985666, 13.28639123,  1.75969325])
 >>>
 [exiting neworder debug shell]
 
-[C++] SUCCESS
+[no 0-0/1] SUCCESS
 ```
 See [examples/diagnostics/config.py](examples/diagnostics/config.py)
+
+In the output above, the prefix in square brackets contains the following information
+- Source of message: `no` if logged from the framework itself, `py` if logged from python code.
+- the sequence number (default 0) used to differentiate multiple simulations of the same inputs.
+- the process id ('rank' in MPI parlance) and the total number of processes ('size' in MPI parlance).
 
 ## Microsimulation of People (single area)
 

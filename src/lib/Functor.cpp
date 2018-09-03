@@ -4,11 +4,8 @@
 #include "Inspect.h"
 #include "python.h"
 
-//#include <iostream>
-
 pycpp::Functor::Functor(py::object func, py::list args) : m_func(func)
 { 
-  //std::cout << pycpp::as_string(args) << std::endl;
   // avoids oddd error passing list elements directly as args 
   m_args.reserve(py::len(args));
   for (int i = 0; i < py::len(args); ++i) 

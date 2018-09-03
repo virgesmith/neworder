@@ -22,20 +22,12 @@ int main(int argc, const char* argv[])
     test1("op", "void", {"2", "3"});
     //test1("pop", "func", {});
 
-    // load module, object, call methods
-    //test2("pop", "population", {"size", "print", "size"});
-
-    // load module, object, modify member, call method
-    //test3("pop", "population", "array", "columns");
-    //test3("pop", "population", "array", "values");
-
     // boost.Python.numpy
     test_np();
 
     // doesnt extract the python error type/msg 
     test_errors();
 
-    // TODO how to determine tests pass/fail?
     std::cout << env.context() << " running python modules:" << std::endl;
     for (int i = 1; i < argc; ++i)
     {

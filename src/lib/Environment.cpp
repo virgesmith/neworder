@@ -54,9 +54,9 @@ std::string pycpp::Environment::context(int ctx) const
 bool pycpp::Environment::next()
 {
   np::ndarray sequence = np::from_object(m_self->attr("sequence"));
-  ++m_seqno;
-  if (m_seqno == pycpp::size(sequence))
+  if (m_seqno == pycpp::size(sequence) - 1)
     return false;
+  ++m_seqno;
 
   // ensure stream indepence w.r.t. sequence and MPI rank/size
   m_prng->seed(77027473 * pycpp::at<int64_t>(sequence, m_seqno) + 19937 * m_size + m_rank);
@@ -100,6 +100,7 @@ pycpp::Environment::Environment()
 
 pycpp::Environment::~Environment() 
 {
+  std::cout << pycpp::Environment::get().context() << "env finalise" << std::endl; 
   // Python >=3.6
   // if (Py_FinalizeEx() < 0)
   // {

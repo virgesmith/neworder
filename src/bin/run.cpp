@@ -59,7 +59,6 @@ int run(int rank, int size)
 
     std::cout << env.context() << "t=" << pycpp::at<double>(timespan, 0) << " init: ";
 
-
     // execs
     no::CallbackTable transitionTable; 
     py::list transitions = py::dict(config.attr("transitions")).items();

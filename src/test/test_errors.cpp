@@ -16,7 +16,7 @@ void test_errors()
   }
   catch (py::error_already_set&)
   {
-    std::cout << pycpp::Environment::get().context() << "caught expected: " << pycpp::Environment::get_error() << std::endl;
+    std::cerr << pycpp::Environment::get().context() << "caught expected: " << pycpp::Environment::get_error() << std::endl;
     caught = true;
   }
   // Nobody expects this code to be executed
