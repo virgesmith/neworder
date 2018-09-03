@@ -27,7 +27,7 @@ void append_model_paths(const char* paths[], size_t n)
   if (current)
     pythonpath = pythonpath + ":" + current;
   setenv("PYTHONPATH", pythonpath.c_str(), 1);
-  std::cout << "[pre-env] PYTHONPATH=" << pythonpath << std::endl;
+//  std::cout << "[pre-env] PYTHONPATH=" << pythonpath << std::endl;
 }
 
 
@@ -36,10 +36,14 @@ int run(int rank, int size)
   pycpp::Environment& env = pycpp::Environment::init(rank, size);
   try
   {
-    // TODO specify Path(?) on cmd line?
+    // Load (and exec) config file
     py::object config = py::import("config");
 
-    bool do_checks = py::extract<bool>(config.attr("do_checks"))();
+    bool do_checks = py::extract<bool>(env().attr("do_checks"))();
+
+    int log_level = py::extract<int>(env().attr("log_level"))();
+    // TODO actually do something with log_level...
+    (void)log_level;
 
     // TODO python func to set sequence and reset rng
     if (pycpp::has_attr(env(), "sequence"))
@@ -47,7 +51,6 @@ int run(int rank, int size)
       env.seed(np::from_object(env().attr("sequence")));
     }
   
-    //const std::vector<double>& timespan = py::extract<std::vector<double>>(env().attr("timespan"))();
     const np::ndarray& timespan = np::from_object(env().attr("timespan"));
     double timestep = py::extract<double>(env().attr("timestep"))();
 
@@ -61,7 +64,7 @@ int run(int rank, int size)
 
     // execs
     no::CallbackTable transitionTable; 
-    py::list transitions = py::dict(config.attr("transitions")).items();
+    py::list transitions = py::dict(env().attr("transitions")).items();
     for (int i = 0; i < py::len(transitions); ++i)
     {
       transitionTable.insert(std::make_pair(py::extract<std::string>(transitions[i][0])(), 
@@ -72,7 +75,7 @@ int run(int rank, int size)
     no::CallbackTable checkTable; 
     if (do_checks)
     {
-      py::list checks = py::dict(config.attr("checks")).items();
+      py::list checks = py::dict(env().attr("checks")).items();
       for (int i = 0; i < py::len(checks); ++i)
       {
         checkTable.insert(std::make_pair(py::extract<std::string>(checks[i][0])(), 
@@ -82,7 +85,7 @@ int run(int rank, int size)
 
     // execs
     no::CallbackTable checkpointTable; 
-    py::list checkpoints = py::dict(config.attr("checkpoints")).items();
+    py::list checkpoints = py::dict(env().attr("checkpoints")).items();
     for (int i = 0; i < py::len(checkpoints); ++i)
     {
       checkpointTable.insert(std::make_pair(py::extract<std::string>(checkpoints[i][0])(), 
@@ -93,8 +96,8 @@ int run(int rank, int size)
 
       // reset stuff...
       // initialisations...
-    // list of module-class-constructor args -> list of objects
-      py::list initialisations = py::dict(config.attr("initialisations")).items();
+      // list of module-class-constructor args -> list of objects
+      py::list initialisations = py::dict(env().attr("initialisations")).items();
       for (int i = 0; i < py::len(initialisations); ++i)
       {
         py::dict spec = py::dict(initialisations[i][1]);

@@ -40,10 +40,14 @@ name       | type        | default | description
 `sequence` | int array   | `[0]`   | an array specifying the number of simulations to perform. (Each element is used to seed the RNG stream)
 `procid`   | int         | `0`     | identifies process for parallel runs. (Used to seed the RNG stream)
 `nprocs`   | int         | `1`     | total number of processes in simulation. (Used to seed the RNG stream)
-`timestep` | float       |        | the size of the timestep (floating-point value)
-`timeline` | float array |        | the timeline of the simulation (floating-point array)
-
-TODO loglevel, do_checks, checks, initialisations, checkpoints
+`timestep` | float       |         | the size of the timestep 
+`timeline` | float array |         | the timeline of the simulation 
+`log_level`| int         |         | currently unused. control verbosity of output 
+`do_checks`| bool        |         | run functions specified in `checks` after each timestep 
+`initialisations`| dict  |         | initialisation function(s)/constructors  
+`transitions`| dict      |         | model evolution functions (per-timestep)  
+`checks`   | dict        | {}      | specify functions to run after each timestep 
+`checkpoints`| dict      |         | perform specified code at each checkpoint 
 
 # Provision
 The framework provides:
@@ -152,7 +156,6 @@ and prefixing the local package path to `PYTHONPATH`.
 
 - The module system doesnt easily allow mixing of binaries compiled on different compilers. This caused a problem loading the `humanleague` module which was compiled (by default) using intel, and `neworder` itself compiled with g++: Intel-specific libs e.g. libimf.so weren't found. Might be able to hack `LD_LIBRARY_PATH` to fix this?
 
-
 # Examples
 
 __NB the following are works-in-progress and subject to change, the documentation may not reflect the current code__
@@ -184,7 +187,6 @@ This isn't really an example, it just outputs useful diagnostic information to t
 
 ```
 $ ./run_example.sh diagnostics
-[pre-env] PYTHONPATH=examples/diagnostics:examples/shared
 [no 0-0/1] env init
 [no 0-0/1] embedded python version: 3.6.5 (default, Apr  1 2018, 05:46:30)  [GCC 7.3.0]
 [py 0-0/1] MODULE=neworder0.0.0_boost1_65_1

@@ -1,7 +1,7 @@
 """
 diagnostics.py
 
-Prints diagnostic info
+Prints diagnostic info and drops into an interactive shell
 """
 
 import os
@@ -9,7 +9,6 @@ import sys
 import subprocess
 import numpy as np
 import neworder
-
 
 neworder.log("MODULE=" + neworder.name() + neworder.version())
 neworder.log("PYTHON=" + neworder.python())
@@ -21,17 +20,17 @@ neworder.log("Loaded neworder/boost/python libs:")
 neworder.log("PYTHONPATH=" + os.environ["PYTHONPATH"] if "PYTHONPATH" in os.environ else "<undefined>")
 
 # TODO more sophisitcated impl of the log level/checking 
-loglevel = 1 
-do_checks = False 
+neworder.log_level = 1 
+neworder.do_checks = False 
 # note timeline must be represented by floats
 neworder.timespan = np.array([0,1], dtype=float)
 neworder.timestep = neworder.timespan[1]
 
-initialisations = {}
-transitions = {}
+neworder.initialisations = {}
+neworder.transitions = {}
 
 # finally, open an interactive shell
-checkpoints = {
+neworder.checkpoints = {
   "shell": "shell()"
 }
 

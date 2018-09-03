@@ -12,7 +12,7 @@ neworder.mortality_hazard = 0.014
 population_size = 10000
 
 # running/debug options
-loglevel = 1
+log_level = 1
 do_checks = True
 checks = { 
 #  "life_expectancy": "people.life_expectancy >"

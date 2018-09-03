@@ -26,27 +26,27 @@ neworder.timespan = np.array([0, expiry])
 neworder.timestep = expiry
 neworder.nsims = 100000 # number of prices to simulate
 
-loglevel = 1
-do_checks = False
+neworder.log_level = 1
+neworder.do_checks = False
 # no per-timestep checks implemented since there is only one timestep
-checks = { }
+neworder.checks = { }
 
 # delayed evaluation for initialisations
 get_stock = neworder.lazy_eval("market")
 
 # initialisation
-initialisations = {
+neworder.initialisations = {
   "market": { "module": "market", "class_": "Market", "parameters": [spot, rate, divy, vol] },
   "option": { "module": "option", "class_": "Option", "parameters": [get_stock, callput, strike, expiry] }
 }
 
-transitions = { 
+neworder.transitions = { 
   # compute the option price
   #"compute_mc_price": "option.mc(nsims)"
   # use QRNG
   "compute_mc_price": "option.mc(nsims, quasi=True)" 
 }
 
-checkpoints = {
+neworder.checkpoints = {
    "compare_mc_price": "option.check()"
 }

@@ -26,7 +26,7 @@ def partition(arr, count):
 initial_populations = partition(initial_populations, neworder.nprocs)
 
 # running/debug options
-loglevel = 1
+log_level = 1
  
 # initialisation
 initialisations = {

@@ -26,7 +26,7 @@ neworder.fertility_rate = 0.01
 population_size = 100
 
 # running/debug options
-loglevel = 1
+log_level = 1
 do_checks = True # Faith
 # assumed to be methods of class_ returning True if checks pass
 checks = {

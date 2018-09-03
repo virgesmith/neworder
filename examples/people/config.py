@@ -19,7 +19,7 @@ ascr = "examples/shared/NewETHPOP_immig.csv"
 asxr = "examples/shared/NewETHPOP_emig.csv"
 
 # running/debug options
-loglevel = 1
+log_level = 1
 # this model isnt meant for parallel execution
 assert neworder.nprocs == 1, "This example is configured to be run as a single process only"
 

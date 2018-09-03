@@ -14,7 +14,13 @@ def check(symbols, symbol_list):
     print("  " + symbol + "?", symbol in symbols)
   return got_required
 
-  #return symbol in symbols
+def check_opt(symbols, symbol_list):
+  #got_required = True
+  for symbol in symbol_list:
+    if hasattr(neworder, symbol):
+      print("  " + symbol + ":", getattr(neworder, symbol))
+    else:
+      print("  " + symbol + ": [undefined]")
 
 if len(sys.argv) != 2:
   print("usage: check.py config-file")
@@ -27,17 +33,16 @@ spec = importlib.util.spec_from_file_location(modulename, modulename)
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 
-required_symbols = ["loglevel", "do_checks", "initialisations", "transitions", "checkpoints"]
-symbols = dir(module)
-
-print("checking", modulename + "...")
-have_required = have_required and check(symbols, required_symbols)
-
-# symbols that are defined by the user, not by the embedded env
-required_symbols = ["procid", "nprocs", "timespan", "timestep"]
 symbols = dir(neworder)
-print("checking neworder user definitions...")
 
+required_symbols = ["timespan", "timestep", "initialisations", "transitions", "checkpoints"]
+
+print("checking required", modulename + "...")
 have_required = have_required and check(symbols, required_symbols)
+
+optional_symbols = ["procid", "nprocs", "log_level", "do_checks", "checks"] 
+
+print("checking optional", modulename + "...")
+check_opt(symbols, optional_symbols)
 
 print("CHECK OK" if have_required else "MISSING DEFINITION(s)")
