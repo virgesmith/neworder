@@ -22,7 +22,7 @@ testharness: $(obj)
 
 #TODO $(shell ls ../../tests/*.py) ... then strip .py
 test: testharness
-	PYTHONPATH=.:../../tests:$(PYTHONPATH) LD_LIBRARY_PATH=../lib:$(LD_LIBRARY_PATH) ./testharness module
+	PYTHONPATH=.:../../tests:$(PYTHONPATH) LD_LIBRARY_PATH=../lib:$(LD_LIBRARY_PATH) ./testharness module op
 
 clean:
 	rm -rf $(dep) $(obj) testharness

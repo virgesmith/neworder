@@ -27,8 +27,9 @@ inline size_t size(const np::ndarray& a)
 template<typename T>
 T& at(const np::ndarray& a, size_t index)
 {
-  if (a.get_nd() != 1)
-    throw std::runtime_error("np::array dim>1");
+  // Flattened indexing. TODO reuse Index from humanleague if necess
+  // if (a.get_nd() != 1)
+  //   throw std::runtime_error("np::array dim>1");
   return *(reinterpret_cast<T*>(a.get_data()) + index);
 }
 

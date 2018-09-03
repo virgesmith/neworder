@@ -8,22 +8,17 @@ import numpy as np
 
 def test():
 
-  no.log(no.ustream(10))
-
-  no.log(no.hazard_v(no.ustream(1000)).mean())
+  s = no.ustream(10000)
+  if not isinstance(s, np.ndarray):
+    return False
+  if not len(s) == 10000:
+    return False
+  if not abs(np.mean(s) - 0.5) < 0.01:
+    return False
 
   f = no.lazy_eval("2 + 2")
-
-  no.testVec = np.array([1,2,3,4])
-
-  no.testVec2 = np.array(["a", "b", "c"])
-  no.log(no.testVec)
-  no.log(str(no.testVec))
-  no.log(repr(no.testVec))
-  no.log(no.testVec2)
-  no.log(no.testVec[3])
-
-  no.log(f())
+  if not f() == 4: 
+    return False
 
   # test thinning algorithm for non-homogeneous Poisson process
   h = np.array([0.014] * 10)

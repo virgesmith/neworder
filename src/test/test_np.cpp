@@ -1,6 +1,7 @@
-// Deprecated
 
-// test4 - boost.numpy
+// test boost.numpy
+#include "test.h"
+
 #include "Inspect.h"
 #include "Module.h"
 #include "Environment.h"
@@ -26,16 +27,25 @@ void test_np()
   np::dtype dtype = np::dtype::get_builtin<double>();
   np::ndarray a = np::zeros(shape, dtype);
   module.attr("a") = a;
+  CHECK(a.get_nd() == 2);
+  CHECK(pycpp::size(a) == 9);
+
 
   // TODO proper test stuff
-
-  neworder::Callback::exec("import neworder;neworder.log(neworder.a);a[1,1]=3.14")();  
+  neworder::Callback::exec("a[1,1]=6.25")();  
 
   // check its been modified
-  neworder::log(pycpp::as_string(a));
+  CHECK(pycpp::at<double>(a,4) == 6.25);
 
+
+  // TODO what's going wrong here? ++p happening twice per loop?
   // modify it again
-  // yuck
+  // size_t i = 0;
+  // for (double* p = pycpp::begin<double>(a); p != pycpp::end<double>(a); ++i, ++p)
+  // { 
+  //   p[i] = (double)i / 8;
+  // }
+
   double* p = reinterpret_cast<double*>(a.get_data());
 
   int dim = a.get_nd();
@@ -46,23 +56,32 @@ void test_np()
   for (int i = 0; i < s; ++i)
     p[i] = (double)i / 10;
 
-  neworder::Callback::exec("import neworder;neworder.log(neworder.a)")();  
+  //neworder::shell();
+  CHECK(neworder::Callback::eval("a[0,0] == 0.0")());  
+  CHECK(neworder::Callback::eval("a[0,1] == 0.1")());  
+  CHECK(neworder::Callback::eval("a[1,1] == 0.4")());  
+  CHECK(neworder::Callback::eval("a[2,1] == 0.7")());  
+  CHECK(neworder::Callback::eval("a[2,2] == 0.8")());  
 
   // load a DF and try to extract/modify...
   neworder::Callback::exec("import pandas as pd;import neworder;neworder.df=pd.read_csv('../../tests/df.csv')")();
-
   py::object df = module.attr("df");
   np::ndarray c = np::from_object(df.attr("columns").attr("values"));
-  neworder::log(pycpp::as_string(c));
   c[1] = "Changed";
+  // check unchanged
+  CHECK(neworder::Callback::eval("df.columns.values[0] == 'PID'")());
+  // check changed
+  CHECK(neworder::Callback::eval("df.columns.values[1] == 'Changed'")());
 
   // Can't modify DF values directly as 2d-array (it copies), need to select individual columns
   np::ndarray v = np::from_object(df.attr("Changed"));
-  neworder::log(pycpp::as_string(v));
   v[0] = "MOVED!";
-  neworder::log(pycpp::as_string(v));
-  neworder::Callback::exec("import pandas as pd;import neworder;neworder.log(neworder.df.head())")();
+  // check changed
+  CHECK(neworder::Callback::eval("df.Changed[0] == 'MOVED!'")());
+  // check unchanged
+  CHECK(neworder::Callback::eval("df.Changed[1] == 'E02000001'")());
 
+  //neworder::Callback::exec("import pandas as pd;import neworder;neworder.log(neworder.df.head())")();
 
   struct UnaryArrayFunc : pycpp::UnaryArrayOp<double, double>
   {
@@ -96,14 +115,14 @@ void test_np()
   };
 
   np::ndarray in = pycpp::zero_1d_array<double>(9);
-  UnaryArrayFunc f(1.0, 2.718);
+  UnaryArrayFunc f(1.0, 2.75);
   np::ndarray out = f(in);
-  neworder::log(out);
+  CHECK(pycpp::at<double>(out, 0) == 2.75);
 
-  BinaryArrayFunc g(3.141, 1.0);
+  BinaryArrayFunc g(3.125, 1.0);
   np::ndarray out2 = g(in, out);
   
-  neworder::log(out2);
+  CHECK(pycpp::at<double>(out2, 0) == 2.75 * 3.125 + 1.0);
 
   // Test vector-scalar operations
   // Inner product - rather than having operator() for syntactic sugar I'm using the constructor for this purpose
@@ -139,13 +158,11 @@ void test_np()
   };
 
   np::ndarray v1 = pycpp::make_array<double>(10, [](){ return 2.0; });
-  np::ndarray v2 = pycpp::make_array<double>(10, [](){ return 0.4; });
-  neworder::log(v1);
-  neworder::log(v2);
-  neworder::log("Dot prod: " + std::to_string(DotFunc(v1, v2)));
+  np::ndarray v2 = pycpp::make_array<double>(10, [](){ return 0.5; });
+  CHECK(DotFunc(v1, v2) == 10.0);
 
   // now see if it works with vector * scalar
   py::object scalar(1.0);
-  neworder::log("scalar * vector sum: " + std::to_string(DotFunc(v1, scalar)));
+  CHECK(DotFunc(v1, scalar) == 20.0);
 
 }

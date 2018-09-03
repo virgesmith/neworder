@@ -20,10 +20,10 @@ The aim is to provide as flexible and minimal a framework as possible. The model
 ### Requirements
 #### Compulsory
 The framework minimal requirements are that:
-- a timeline and a timestep is defined<sup>*</sup>. The timeline can be partitioned, for example for running a 40-year simulation with 1 year timesteps, but outputting results every 5 years. These are referred to as "checkpoints", and the end of the timeline is considered to be a checkpoint.
+- a timeline and a timestep is defined<sup>*</sup>. The timeline can be partitioned, for example for running a 40-year simulation with 1 year timesteps, but outputting results every 5 years. These are referred to as "checkpoints", and the end of the timeline is always considered to be a checkpoint.
 - python code to be executed at the first timestep, e.g. to load or microsynthesise an initial population, and any data governing the dynamics.
-- python code to roll the population forward to the next timestep.
-- python code to be executed at each checkpoint, typically
+- python code to evolve to the next timestep, which can (and typically will) involve multiple processes and can be implemented in multiple functions.
+- python code to be executed at each checkpoint, typically writing intermediate results.
 
 &ast; case-based simulation support is in progress. In this case the timeline refers not to absolute time but the age of the cohort.
 
@@ -31,6 +31,19 @@ The framework minimal requirements are that:
 And the following are optional:
 - python code to run at each timestep to perform checks
 - an outer sequence: this defines a number of runs of the same simulation whilst ensuring RNG independence.
+
+#### Special Variables
+The neworder python module defines, or requires the model to define, the following variables:
+
+name       | type        | default | description
+-----------|-------------|---------|--------------
+`sequence` | int array   | `[0]`   | an array specifying the number of simulations to perform. (Each element is used to seed the RNG stream)
+`procid`   | int         | `0`     | identifies process for parallel runs. (Used to seed the RNG stream)
+`nprocs`   | int         | `1`     | total number of processes in simulation. (Used to seed the RNG stream)
+`timestep` | float       |        | the size of the timestep (floating-point value)
+`timeline` | float array |        | the timeline of the simulation (floating-point array)
+
+TODO loglevel, do_checks, checks, initialisations, checkpoints
 
 # Provision
 The framework provides:
