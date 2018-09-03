@@ -30,33 +30,24 @@ void test_np()
   CHECK(a.get_nd() == 2);
   CHECK(pycpp::size(a) == 9);
 
-
-  // TODO proper test stuff
+  // python modifies array
   neworder::Callback::exec("a[1,1]=6.25")();  
 
-  // check its been modified
+  // check C++ sees its been modified
   CHECK(pycpp::at<double>(a,4) == 6.25);
 
-
-  // TODO what's going wrong here? ++p happening twice per loop?
-  // modify it again
+  // // TODO what's going wrong here? ++p happening twice per loop?
+  // // modify it in C++
   // size_t i = 0;
   // for (double* p = pycpp::begin<double>(a); p != pycpp::end<double>(a); ++i, ++p)
   // { 
   //   p[i] = (double)i / 8;
   // }
+  for (size_t i = 0; i < pycpp::size(a); ++i)
+  {
+    pycpp::at<double>(a, i) = (double)i / 10;
+  }
 
-  double* p = reinterpret_cast<double*>(a.get_data());
-
-  int dim = a.get_nd();
-  // assumes dim >=1 
-  int s = a.shape(0);
-  for (int i = 1; i < dim; ++i)
-    s *= a.shape(i);
-  for (int i = 0; i < s; ++i)
-    p[i] = (double)i / 10;
-
-  //neworder::shell();
   CHECK(neworder::Callback::eval("a[0,0] == 0.0")());  
   CHECK(neworder::Callback::eval("a[0,1] == 0.1")());  
   CHECK(neworder::Callback::eval("a[1,1] == 0.4")());  

@@ -20,11 +20,24 @@ def test():
   if not f() == 4: 
     return False
 
+  # TODO this overlaps/duplicates tests in op.py - reorganise
+
   # test thinning algorithm for non-homogeneous Poisson process
   h = np.array([0.014] * 10)
-  l = no.stopping_v(h)
-  le = no.stopping_nhpp(h, 10000)
-  no.log(sum(le)/len(le))
+  #l = no.stopping_v(h)
+  l = no.stopping_nhpp(h, 10000)
+  if not abs(np.mean(l) * 0.014 - 1.0) < 0.01:
+    return False
+
+  # test a certain(ish) hazard rate
+  h = np.array([0.99, 0.99, 0.01])
+  l = no.stopping_nhpp(h, 10000)
+  no.log("TODO NHPP appears broken: %f" % np.mean(l))
+
+  # test a zero(ish) hazard rate
+  h = np.array([1e-30, 1e-30, 1e-30, .9999])
+  l = no.stopping_nhpp(h, 10000)
+  no.log("TODO NHPP appears broken: %f" % np.mean(l))
 
   # this also tests a zero hazard rate 
   h = np.array([i/3000 for i in range(100)])
