@@ -15,28 +15,40 @@ std::string operator ""_s(const char* p, size_t s)
   return std::string(p, p + s);
 }
 
-// specialise for const char*
-template<> 
-std::string operator%(std::string&& str, const char* value)
+template<>
+std::string to_string_impl(const char* v)
 {
-  size_t s = str.find("%%");
-  if (s != std::string::npos)
-  {
-    str.replace(s, 2, value); 
-  }
-  return std::move(str);
+  return std::string(v);
 }
 
-// non-template for string (specialisation isn't matched for some reason)
-std::string operator%(std::string&& str, const std::string& value)
+std::string to_string_impl(const std::string& v)
 {
-  size_t s = str.find("%%");
-  if (s != std::string::npos)
-  {
-    str.replace(s, 2, value); 
-  }
-  return std::move(str);
+  return v;
 }
+
+
+// // specialise for const char*
+// template<> 
+// std::string operator%(std::string&& str, const char* value)
+// {
+//   size_t s = str.find("%%");
+//   if (s != std::string::npos)
+//   {
+//     str.replace(s, 2, value); 
+//   }
+//   return std::move(str);
+// }
+
+// // non-template for string (specialisation isn't matched for some reason)
+// std::string operator%(std::string&& str, const std::string& value)
+// {
+//   size_t s = str.find("%%");
+//   if (s != std::string::npos)
+//   {
+//     str.replace(s, 2, value); 
+//   }
+//   return std::move(str);
+// }
 
 // not visible to python
 void neworder::log(const std::string& msg)

@@ -40,9 +40,6 @@ int main(int argc, const char* argv[])
       CHECK(py::extract<bool>(testfunc())());
     }
 
-    std::string x("string");
-    neworder::log("blah %% %% %% %% %% %% blah"_s % 1 % "stringliteral"_s % x % "const char*" % (1.0/7));
-
     REPORT()
   }
   catch (py::error_already_set&)

@@ -13,11 +13,7 @@
 void test1(const std::string& modulename, const std::string& functionname, const std::vector<std::string>& argstrings, const py::object& expected)
 {
   pycpp::Environment& env = pycpp::Environment::get();
-  neworder::log("%%: %%"_s % modulename % functionname);
-  // TODO log arrays
-  // for (const auto& arg: argstrings)
-  //   std::cout << " " << arg;
-  // std::cout << std::endl;
+  neworder::log("%%: %% %%"_s % modulename % functionname % argstrings);
 
   py::object module = py::import(modulename.c_str());
   py::object function(module.attr(functionname.c_str()));

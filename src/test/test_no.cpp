@@ -16,7 +16,9 @@
 
 void test_no()
 {
-  neworder::log("neworder module test");
+  // test logging - use (,) operator combo to make it look like one arg returning bool. If a problem will be an exception or worse
+  CHECK((neworder::log("neworder module test"), true));
+  CHECK((neworder::log("test logging types: %% %% %% %% %% %%"_s % false % 0 % 0.0 % "" % ""_s % std::vector<int>(10)), true));
 
   /*pycpp::Environment& env =*/ pycpp::Environment::get();
   py::object module = py::import("neworder");
@@ -34,8 +36,4 @@ void test_no()
   CHECK(py::extract<bool>(neworder::Callback::eval("name() == '%%'"_s % neworder::module_name())()));
   CHECK(py::extract<bool>(neworder::Callback::eval("version() == '%%'"_s % neworder::module_version())()));
   CHECK(py::extract<bool>(neworder::Callback::eval("python() == '%%'"_s % neworder::python_version()/*.c_str()*/)()));
-  // py::def("name", no::module_name);
-  // py::def("version", no::module_version);
-  // py::def("python", no::python_version);
-
 }
