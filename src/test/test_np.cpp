@@ -18,7 +18,7 @@ void test_np()
 {
   neworder::log("boost.Python.numpy test");
 
-  pycpp::Environment& env = pycpp::Environment::get();
+  //pycpp::Environment& env = pycpp::Environment::get();
 
   py::object module = py::import("neworder");
 

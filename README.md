@@ -13,9 +13,12 @@ As python and C++ have very different memory models, it's not possible to direct
 - reusability: leverage python modules like numpy, pandas.
 - speed: embedded C++ framework and module are compiled and optimised code.
 - scalability: can be run on a desktop or a HPC cluster, supporting parallel execution using MPI.
+- data agnosticism: the framework does not impose any constraints on data sources/formats/databases. 
 
 ## Framework
-The aim is to provide as flexible and minimal a framework as possible. The model must fit the following requirements:
+The aim is to provide as flexible and minimal a framework as possible. Being data agnostic means that this framework can be run standalone, or integrated into workflows where e.g. input data is scraped from the web and results are written to a database. Internally, however, pandas dataframes are the obvious choice of data structure for this type of modelling. 
+
+The sections below list minimal requirements that must be met, and those that - if specified - will be used:
 
 ### Requirements
 #### Compulsory

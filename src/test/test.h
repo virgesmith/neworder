@@ -15,21 +15,17 @@ struct Test
 #define LOG_INFO(x) neworder::log(x)
 #define LOG_WARNING(x) neworder::log(x)
 #define LOG_ERROR(x) neworder::log(x)
- 
-// TODO see if tmp string can be avoided...
 
 #define CHECK(cond) \
   ++Global::instance<Test>().t; \
   if (!(cond)) \
   { \
     ++Global::instance<Test>().f; \
-    std::string tmp = format("FAIL %%:%% %%", __FILE__, __LINE__); \
-    LOG_ERROR(format(tmp.c_str(), #cond)); \
+    LOG_ERROR("FAIL %%:%% %%"_s % __FILE__ % __LINE__ % #cond); \
   } \
   else \
   { \
-    std::string tmp = format("PASS %%:%% %%", __FILE__, __LINE__); \
-    LOG_INFO(format(tmp.c_str(), #cond)); \
+    LOG_INFO("PASS %%:%% %%"_s % __FILE__ % __LINE__ % #cond); \
   }
 
 #define CHECK_THROWS(expr, except) \
@@ -50,21 +46,19 @@ struct Test
 	  Global::instance<Test>().f += caught ? 0 : 1; \
 	  if (caught) \
     { \
-      std::string tmp = format("PASS %%:%% %% throws %%", __FILE__, __LINE__); \
-	    LOG_INFO(format(tmp.c_str(), #expr, #except)); \
+      LOG_INFO("PASS %%:%% %% throws %%"_s % __FILE__ % __LINE__ % #expr % #except); \
     } \
     else \
     { \
-      std::string tmp = format("FAIL %%:%% %% throws %%", __FILE__, __LINE__); \
-      LOG_INFO(format(tmp.c_str(), #expr, #except)); \
+      LOG_ERROR("FAIL %%:%% %% throws %%"_s % __FILE__ % __LINE__ % #expr % #except); \
     } \
 	}
 
 #define REPORT() \
-  LOG_INFO(format("Tests run: %%", Global::instance<Test>().t)); \
+  LOG_INFO("Tests run: %%"_s % Global::instance<Test>().t); \
   if (Global::instance<Test>().f) \
   { \
-    LOG_WARNING(format("%% FAILURES", Global::instance<Test>().f)); \
+    LOG_WARNING("%% FAILURES"_s % Global::instance<Test>().f); \
   } \
   else \
   { \

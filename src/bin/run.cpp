@@ -4,6 +4,7 @@
 #include "Functor.h"
 #include "Environment.h"
 #include "Module.h"
+#include "Log.h"
 
 #include "python.h"
 
@@ -27,7 +28,6 @@ void append_model_paths(const char* paths[], size_t n)
   if (current)
     pythonpath = pythonpath + ":" + current;
   setenv("PYTHONPATH", pythonpath.c_str(), 1);
-//  std::cout << "[pre-env] PYTHONPATH=" << pythonpath << std::endl;
 }
 
 
@@ -60,7 +60,7 @@ int run(int rank, int size)
       throw std::runtime_error("Timestep cannot be zero!");
     }
 
-    std::cout << env.context() << "t=" << pycpp::at<double>(timespan, 0) << " init: ";
+    neworder::log("t=%% init:"_s % pycpp::at<double>(timespan, 0));
 
     // execs
     no::CallbackTable transitionTable; 
@@ -101,22 +101,19 @@ int run(int rank, int size)
       for (int i = 0; i < py::len(initialisations); ++i)
       {
         py::dict spec = py::dict(initialisations[i][1]);
-        //std::cout << pycpp::as_string(spec) << std::endl;
         std::string modulename = py::extract<std::string>(spec["module"])();
         std::string class_name = py::extract<std::string>(spec["class_"])();
         py::list args = py::list(spec["parameters"]);
 
         py::object module = py::import(modulename.c_str());
         py::object class_ = module.attr(class_name.c_str());
-        //std::cout << pycpp::as_string(args) << std::endl;
         py::object object = pycpp::Functor(class_, args)();
 
         // taking a const ref here to stay results in an empty string, which is bizarre love triangle
         const std::string name = py::extract<std::string>(initialisations[i][0])();
         env().attr(name.c_str()) = object;
-        std::cout << name << " ";
+        neworder::log("calling initialisation %%"_s % name);
       }
-      std::cout << std::endl;
 
       // Loop with checkpoints
       double t = pycpp::at<double>(timespan, 0) + timestep;
@@ -125,16 +122,14 @@ int run(int rank, int size)
         double checkpoint = pycpp::at<double>(timespan, i);
         for (; t <= checkpoint; t += timestep)
         {
-          std::cout << env.context() << "t=" << t << " exec: ";
           // TODO is there a way to do this in-place? does it really matter?
           env().attr("time") = py::object(t);
 
           for (auto it = transitionTable.begin(); it != transitionTable.end(); ++it)
           {
-            std::cout << it->first << " ";   
+            neworder::log("timestep %%: %% "_s % t % it->first);
             (it->second)();  
           }
-          std::cout << std::endl;
           for (auto it = checkTable.begin(); it != checkTable.end(); ++it)
           {
             bool ok = py::extract<bool>((it->second)())();
@@ -144,16 +139,14 @@ int run(int rank, int size)
             }  
           }
         }
-        std::cout << env.context() << "checkpoint: ";
         for (auto it = checkpointTable.begin(); it != checkpointTable.end(); ++it)
         {
-          std::cout << it->first << ": ";   
+          neworder::log("checkpoint %%: %%"_s % t % it->first);   
           // Note: return value is ignored (exec not eval)
           (it->second)();  
         } 
-        std::cout << std::endl;
       }
-      std::cout << env.context() << "SUCCESS" << std::endl;
+      neworder::log("SUCCESS");
     } while (env.next());
   }
   catch (py::error_already_set&)

@@ -2,10 +2,11 @@
 #include "Environment.h"
 #include "Inspect.h"
 #include "Module.h"
+#include "Log.h"
 
 #include <algorithm>
 #include <string>
-#include <iostream>
+
 
 // This function must be used to init the environment
 pycpp::Environment& pycpp::Environment::init(int rank, int size)
@@ -30,8 +31,8 @@ pycpp::Environment& pycpp::Environment::init(int rank, int size)
   // Init rng
   env.m_prng.reset(new std::mt19937(77027473 * pycpp::at<int64_t>(sequence, env.m_seqno) + 19937 * size + rank));
 
-  std::cout << env.context() << "env init" << std::endl; 
-  std::cout << env.context() << "embedded python version: " << version() << std::endl;
+  neworder::log("env init");
+  neworder::log("embedded python version: %%"_s % version());
 
   return env;
 }
@@ -100,7 +101,6 @@ pycpp::Environment::Environment()
 
 pycpp::Environment::~Environment() 
 {
-  std::cout << pycpp::Environment::get().context() << "env finalise" << std::endl; 
   // Python >=3.6
   // if (Py_FinalizeEx() < 0)
   // {

@@ -13,6 +13,7 @@ void test_no();
 void test_np();
 void test_errors();
 
+
 int main(int argc, const char* argv[]) 
 {
   pycpp::Environment& env = pycpp::Environment::init(0, 1);
@@ -31,13 +32,17 @@ int main(int argc, const char* argv[])
     // doesnt extract the python error type/msg 
     test_errors();
 
-    std::cout << env.context() << "Testing python modules:" << std::endl;
+    neworder::log("Testing python modules");
     for (int i = 1; i < argc; ++i)
     {
       py::object module = py::import(argv[i]);
       py::object testfunc = module.attr("test");
       CHECK(py::extract<bool>(testfunc())());
     }
+
+    std::string x("string");
+    neworder::log("blah %% %% %% %% %% %% blah"_s % 1 % "stringliteral"_s % x % "const char*" % (1.0/7));
+
     REPORT()
   }
   catch (py::error_already_set&)

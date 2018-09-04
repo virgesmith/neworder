@@ -12,7 +12,8 @@
 #include <iostream>
 
 namespace {
-// not visible to (rest of) C++
+
+// not visible to (rest of) C++ - use function declareds in Log.h
 void log_obj(const py::object& msg)
 {
   std::cout << pycpp::Environment::get().context(pycpp::Environment::PY) << pycpp::as_string(msg.ptr()) << std::endl;
@@ -80,17 +81,6 @@ void neworder::shell(/*const py::object& local*/)
 
 // python-visible log function defined above
 
-// not visible to python
-void neworder::log(const std::string& msg)
-{
-  std::cout << pycpp::Environment::get().context() << msg << std::endl;
-}
-
-// not visible to python
-void neworder::log(const py::object& msg)
-{
-  std::cout << pycpp::Environment::get().context() << pycpp::as_string(msg.ptr()) << std::endl;
-}
 
 BOOST_PYTHON_MODULE(neworder)
 {
