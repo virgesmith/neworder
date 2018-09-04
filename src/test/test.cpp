@@ -9,6 +9,7 @@
 #include <iostream>
 
 void test1(const std::string& modulename, const std::string& functionname, const std::vector<std::string>& args, const py::object& expected);
+void test_no();
 void test_np();
 void test_errors();
 
@@ -20,6 +21,9 @@ int main(int argc, const char* argv[])
     // load module, call func with args
     test1("op", "mul", {"2", "3"}, py::object(6));
     test1("op", "void", {"2", "3"}, py::object());
+
+    // module
+    test_no();
 
     // boost.Python.numpy
     test_np();
