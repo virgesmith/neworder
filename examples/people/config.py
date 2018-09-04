@@ -5,7 +5,7 @@ Microsimulation config
 import numpy as np
 import neworder
 
-# define some global variables
+# define some global variables describing where the starting population and the parameters of the dynamics come from
 initial_population = "examples/people/ssm_E09000001_MSOA11_ppp_2011.csv"
 asfr = "examples/shared/NewETHPOP_fertility.csv"
 asmr = "examples/shared/NewETHPOP_mortality.csv"
@@ -19,7 +19,7 @@ ascr = "examples/shared/NewETHPOP_immig.csv"
 asxr = "examples/shared/NewETHPOP_emig.csv"
 
 # running/debug options
-log_level = 1
+neworder.log_level = 1
 # this model isnt meant for parallel execution
 assert neworder.nprocs == 1, "This example is configured to be run as a single process only"
 
@@ -31,12 +31,12 @@ neworder.timespan = np.array([2011.25, 2020.25])
 neworder.timestep = 1.0 # TODO beware rounding errors 
 
 # initialisation
-initialisations = {
+neworder.initialisations = {
   "people": { "module": "population", "class_": "Population", "parameters": [initial_population, asfr, asmr, asir, asor, ascr, asxr] }
 }
 
 # timestep must be defined in neworder
-transitions = { 
+neworder.transitions = { 
   "fertility": "people.births(timestep)", 
   "mortality": "people.deaths(timestep)", 
   "migration": "people.migrations(timestep)", 
@@ -44,14 +44,14 @@ transitions = {
 }
 
 # checks to perform after each timestep. Assumed to return a boolean 
-do_checks = True # Faith
+neworder.do_checks = True # Faith
 # assumed to be methods of class_ returning True if checks pass
-checks = {
+neworder.checks = {
   "check": "people.check()"
 }
 
 # Generate output at each checkpoint  
-checkpoints = {
-  "check_data" : "people.check()",
+neworder.checkpoints = {
+#  "check_data" : "people.check()",
   "write_table" : "people.write_table()" 
 }

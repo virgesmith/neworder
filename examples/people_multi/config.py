@@ -6,7 +6,7 @@ import numpy as np
 import glob
 import neworder
 
-# define some global variables
+# define some global variables describing where the starting population and the parameters of the dynamics come from
 initial_populations = glob.glob("examples/people_multi/data/ssm_*_MSOA11_ppp_2011.csv")
 asfr = "examples/shared/NewETHPOP_fertility.csv"
 asmr = "examples/shared/NewETHPOP_mortality.csv"
@@ -19,17 +19,17 @@ ascr = "examples/shared/NewETHPOP_immig.csv"
 # emigration
 asxr = "examples/shared/NewETHPOP_emig.csv"
 
-# MP split initial population files over threads
+# MPI split initial population files over threads
 def partition(arr, count):
   return [arr[i::count] for i in range(count)]
 
 initial_populations = partition(initial_populations, neworder.nprocs)
 
 # running/debug options
-log_level = 1
+neworder.log_level = 1
  
 # initialisation
-initialisations = {
+neworder.initialisations = {
   "people": { "module": "population", "class_": "Population", "parameters": [initial_populations[neworder.procid], asfr, asmr, asir, asor, ascr, asxr] }
 }
 
@@ -38,7 +38,7 @@ neworder.timespan = np.array([2011.25, 2015.25, 2020.25])
 neworder.timestep = 1.0 # TODO beware rounding errors 
 
 # timestep must be defined in neworder
-transitions = { 
+neworder.transitions = { 
   "fertility": "people.births(timestep)", 
   "mortality": "people.deaths(timestep)", 
   "migration": "people.migrations(timestep)", 
@@ -46,14 +46,14 @@ transitions = {
 }
 
 # checks to perform after each timestep. Assumed to return a boolean 
-do_checks = True # Faith
+neworder.do_checks = True # Faith
 # assumed to be methods of class_ returning True if checks pass
-checks = {
+neworder.checks = {
   "check": "people.check()"
 }
 
 # Generate output at each checkpoint  
-checkpoints = {
-  "check_data" : "people.check()",
-  "write_table" : "people.write_table()" 
+neworder.checkpoints = {
+  #"check_data" : "people.check()",
+  "write_table" : "people.write_table()"  
 }

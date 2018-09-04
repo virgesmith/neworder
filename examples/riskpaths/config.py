@@ -20,21 +20,21 @@ import numpy as np
 import neworder
 
 # TODO parameterise
-neworder.mortality_rate = 0.01
-neworder.fertility_rate = 0.01
+mortality_rate = 0.01
+fertility_rate = 0.01
 
 population_size = 100
 
 # running/debug options
-log_level = 1
-do_checks = True # Faith
+neworder.log_level = 1
+neworder.do_checks = True # Faith
 # assumed to be methods of class_ returning True if checks pass
-checks = {
+neworder.checks = {
   #"check": "people.check()"
 }
  
 # initialisation
-initialisations = {
+neworder.initialisations = {
   "people": { "module": "riskpaths", "class_": "RiskPaths", "parameters": [population_size] }
 }
 
@@ -44,11 +44,11 @@ neworder.timespan = np.array([0, 100])
 neworder.timestep = 1
 
 
-transitions = {
+neworder.transitions = {
   "status": "people.alive()"
 }
 
 
 # Finalisation 
-checkpoints = {
+neworder.checkpoints = {
 }
