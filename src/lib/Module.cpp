@@ -105,6 +105,10 @@ BOOST_PYTHON_MODULE(neworder)
   py::def("lazy_eval", no::Callback::eval);
   // TODO env?
 
+  // working on pandas df manipulation  
+  py::def("transition", no::transition);
+  py::def("directmod", no::directmod);
+
   // Deferred eval/exec of Python code
   py::class_<no::Callback>("Callback", py::no_init)
     .def("__call__", &no::Callback::operator())

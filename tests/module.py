@@ -5,6 +5,7 @@ Test framework expects modules with a function called test that
 """
 import neworder as no
 import numpy as np
+import pandas as pd
 
 def test():
 
@@ -49,5 +50,12 @@ def test():
   h = np.array([0.999, 0.1])
   le = no.stopping_nhpp(h, 1000)
   no.log(sum(le)/len(le))
+
+  # pass df
+  df = pd.read_csv("../../tests/df.csv")
+  no.transition(df["DC2101EW_C_ETHPUK11"].values)
+  no.log(df.head())
+  no.directmod(df, "DC2101EW_C_ETHPUK11")
+  no.log(df.head())
 
   return True
