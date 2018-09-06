@@ -66,7 +66,7 @@ def test():
 
   # 6.3MB file
   import pickle
-  bigdf = pd.read_csv("../../examples/people/ssm_E08000021_MSOA11_ppp_2011.csv")
+  bigdf = pd.read_csv("../../examples/people/ssm_E09000001_MSOA11_ppp_2011.csv")
   no.log("data {} len={}".format(type(bigdf), len(bigdf))) # rows in DF
   pickled = pickle.dumps(bigdf)
   no.log("pickled {} len={}".format(type(pickled), len(pickled))) # 9.5MB binary serialised
@@ -74,10 +74,10 @@ def test():
   unpickled = pickle.loads(pickled)
   no.log("unpickled {} len={}".format(type(unpickled), len(unpickled))) # rows in DF
 
-  # from io import StringIO
-  # buf = StringIO()
-  # bigdf.to_csv(buf, index=False)
-  # csvbuf = buf.getvalue()
-  # no.log("pickled {} len={}".format(type(csvbuf), len(csvbuf))) # 6.3MB csv
+  from io import StringIO
+  buf = StringIO()
+  bigdf.to_csv(buf, index=False)
+  csvbuf = buf.getvalue()
+  no.log("csvbuf {} len={}".format(type(csvbuf), len(csvbuf))) # 6.3MB csv
 
   return True
