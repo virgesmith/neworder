@@ -16,6 +16,7 @@ pycpp::Environment& pycpp::Environment::init(int rank, int size)
   // TODO is it possible to avoid this duplication? probably not
   env.m_rank = rank;
   env.m_size = size;
+  // TODO consider using MPI terminology
   env.m_self->attr("procid") = rank;
   env.m_self->attr("nprocs") = size;
 

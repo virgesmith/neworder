@@ -13,4 +13,8 @@ void directmod(py::object& df, const std::string& colname);
 
 py::object append(const py::object& df1, const py::object& df2);
 
+void send(const py::object& o);
+
+py::object receive();
+
 }} //neworder::df

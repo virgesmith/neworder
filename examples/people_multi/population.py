@@ -32,6 +32,11 @@ class Population:
     self.immigration = ethpop.local_rates_from_absolute(ethpop.create_multi(pd.read_csv(ascr), self.lads), self.data)
     self.emigration = ethpop.local_rates_from_absolute(ethpop.create_multi(pd.read_csv(asxr), self.lads), self.data)
 
+    if neworder.procid == 0:
+      neworder.send(1)
+    if neworder.procid == 1:
+      neworder.receive()
+
     # Force flat rates for testing purposes
     # self.in_migration.Rate = 0.05
     # self.out_migration.Rate = 0.05

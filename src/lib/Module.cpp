@@ -111,6 +111,10 @@ BOOST_PYTHON_MODULE(neworder)
   py::def("directmod", no::df::directmod);
   py::def("append", no::df::append, py::return_value_policy<py::return_by_value>());
 
+  // MPI
+  py::def("send", no::df::send);
+  py::def("receive", no::df::receive);
+  
   // Deferred eval/exec of Python code
   py::class_<no::Callback>("Callback", py::no_init)
     .def("__call__", &no::Callback::operator())

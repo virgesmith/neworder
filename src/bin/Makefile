@@ -5,10 +5,6 @@ src=neworder$(SUFFIX).cpp run.cpp
 obj=$(src:.cpp=.o)
 dep=$(src:.cpp=.d)
 
-$(info $(obj))
-$(info $(dep))
-
-
 LDFLAGS += -l$(BOOST_PYTHON_LIB) -l$(BOOST_NUMPY_LIB)
 
 all: neworder$(SUFFIX)
