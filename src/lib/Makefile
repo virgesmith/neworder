@@ -7,9 +7,9 @@ CXXFLAGS += -I../include
 
 LDFLAGS += -l$(BOOST_PYTHON_LIB) -l$(BOOST_NUMPY_LIB)
 
-all: libneworder.so
+all: libneworder$(SUFFIX).so
 
-libneworder.so: $(obj)
+libneworder$(SUFFIX).so: $(obj)
 	$(CXX) -shared -o $@ $^ $(LDFLAGS)
 
 %.d: %.cpp
@@ -18,6 +18,6 @@ libneworder.so: $(obj)
 -include $(dep)
 
 clean:
-	rm -rf $(dep) $(obj) libneworder.so	
+	rm -rf $(dep) $(obj) libneworder$(SUFFIX).so	
 
 .PHONY: clean test

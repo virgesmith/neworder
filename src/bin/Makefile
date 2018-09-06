@@ -1,25 +1,20 @@
 
 CXXFLAGS += -I../lib -I../include
 
-src=neworder.cpp run.cpp
+src=neworder$(SUFFIX).cpp run.cpp
 obj=$(src:.cpp=.o)
 dep=$(src:.cpp=.d)
 
-mpi_src=neworder_mpi.cpp run.cpp MPIResource.cpp
+$(info $(obj))
+$(info $(dep))
 
-#$(info $(CXXFLAGS))
-#$(info $(LDFLAGS))
-MPICXX=mpicxx
 
 LDFLAGS += -l$(BOOST_PYTHON_LIB) -l$(BOOST_NUMPY_LIB)
 
-all: neworder
+all: neworder$(SUFFIX)
 
-neworder: $(obj)
-	$(CXX) -o $@ $^ $(LDFLAGS) -L ../lib -lneworder
-
-neworder_mpi: $(mpi_src)
-	$(MPICXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS) -L ../lib -lneworder
+neworder$(SUFFIX): $(obj)
+	$(CXX) -o $@ $^ $(LDFLAGS) -L ../lib -lneworder$(SUFFIX)
 
 %.d: %.cpp
 	@$(CXX) $(CXXFLAGS) $< -MM -MT $(@:.d=.o) >$@
@@ -27,6 +22,6 @@ neworder_mpi: $(mpi_src)
 -include $(dep)
 
 clean:
-	rm -rf $(dep) $(obj) neworder neworder_mpi
+	rm -rf $(dep) $(obj) neworder$(SUFFIX)
 
 .PHONY: clean

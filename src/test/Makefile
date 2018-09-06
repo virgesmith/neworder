@@ -10,10 +10,10 @@ src=$(wildcard *.cpp)
 obj=$(src:.cpp=.o)
 dep=$(src:.cpp=.d)
 
-all: testharness
+all: testharness$(SUFFIX)
 
-testharness: $(obj)
-	$(CXX) -o $@ $^ $(LDFLAGS) -L ../lib -lneworder
+testharness$(SUFFIX): $(obj)
+	$(CXX) -o $@ $^ $(LDFLAGS) -L ../lib -lneworder$(SUFFIX)
 
 %.d: %.cpp
 	@$(CXX) $(CXXFLAGS) $< -MM -MT $(@:.d=.o) >$@
@@ -21,10 +21,10 @@ testharness: $(obj)
 -include $(dep)
 
 #TODO $(shell ls ../../tests/*.py) ... then strip .py
-test: testharness
-	PYTHONPATH=.:../../tests:$(PYTHONPATH) LD_LIBRARY_PATH=../lib:$(LD_LIBRARY_PATH) ./testharness module op
+test: testharness$(SUFFIX)
+	PYTHONPATH=.:../../tests:$(PYTHONPATH) LD_LIBRARY_PATH=../lib:$(LD_LIBRARY_PATH) ./testharness$(SUFFIX) module op
 
 clean:
-	rm -rf $(dep) $(obj) testharness
+	rm -rf $(dep) $(obj) testharness$(SUFFIX)
 
 .PHONY: clean test

@@ -1,6 +1,8 @@
 
 #pragma once 
 
+#ifdef NEWORDER_MPI
+
 #include <mpi.h>
 //#include <mpicxx.h> ???
 
@@ -30,3 +32,4 @@ private:
 	char m_processorName[MPI_MAX_PROCESSOR_NAME];
 };
 
+#endif

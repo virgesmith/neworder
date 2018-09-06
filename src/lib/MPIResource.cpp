@@ -1,4 +1,5 @@
 
+#ifdef NEWORDER_MPI
 
 #include "MPIResource.h"
 
@@ -50,4 +51,4 @@ int MPIResource::size() const { return m_worldSize; }
 
 const char* MPIResource::name() const { return m_processorName; }
 	
-
+#endif
