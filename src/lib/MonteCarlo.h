@@ -28,8 +28,4 @@ np::ndarray stopping_v(const np::ndarray& prob);
 // vector stopping for non-homogeneous poisson process
 np::ndarray stopping_nhpp(const np::ndarray& lambda_t, size_t n);
 
-void transition(np::ndarray& col);
-
-void directmod(py::object& df, const std::string& colname);
-
 }

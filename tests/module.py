@@ -6,6 +6,7 @@ Test framework expects modules with a function called test that
 import neworder as no
 import numpy as np
 import pandas as pd
+import pandas.io.packers
 
 def test():
 
@@ -58,4 +59,14 @@ def test():
   no.directmod(df, "DC2101EW_C_ETHPUK11")
   no.log(df.head())
 
+  no.log(len(df))
+  df2 = df.copy()
+  df3 = no.append(df,df2)
+  no.log(len(df3))
+  no.log(df3.index)
+
+  serialised = str(pandas.io.packers.encode(df))
+  no.log(type(serialised))
+  no.log(serialised)
+  
   return True

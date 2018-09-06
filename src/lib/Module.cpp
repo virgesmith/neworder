@@ -6,6 +6,7 @@
 #include "Environment.h"
 #include "Inspect.h"
 #include "MonteCarlo.h"
+#include "DataFrame.h"
 
 #include "python.h"
 
@@ -106,8 +107,9 @@ BOOST_PYTHON_MODULE(neworder)
   // TODO env?
 
   // working on pandas df manipulation  
-  py::def("transition", no::transition);
-  py::def("directmod", no::directmod);
+  py::def("transition", no::df::transition);
+  py::def("directmod", no::df::directmod);
+  py::def("append", no::df::append, py::return_value_policy<py::return_by_value>());
 
   // Deferred eval/exec of Python code
   py::class_<no::Callback>("Callback", py::no_init)
