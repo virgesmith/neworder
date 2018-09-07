@@ -19,6 +19,12 @@ struct mpi_type_trait<int>
 };
 
 template<>
+struct mpi_type_trait<char>
+{
+  static const int type = MPI_CHAR;
+};
+
+template<>
 struct mpi_type_trait<unsigned char>
 {
   static const int type = MPI_UNSIGNED_CHAR;
@@ -33,10 +39,12 @@ void send(const T& data, int process)
   MPI_Send(&data, 1, mpi_type_trait<T>::type, process, 0, MPI_COMM_WORLD);
 }
 
-template<typename T>
-void send(const T& data, int len, int process)
+template<>
+void send(const std::string& data, int process)
 {
-  MPI_Send(&data, len, mpi_type_trait<T>::type, process, 0, MPI_COMM_WORLD);
+  int size = data.size();
+  MPI_Send(&size, 1, mpi_type_trait<int>::type, process, 0, MPI_COMM_WORLD);
+  MPI_Send(data.data(), data.size(), mpi_type_trait<std::string::value_type>::type, process, 0, MPI_COMM_WORLD);
 }
 
 template<typename T>
@@ -45,10 +53,13 @@ void receive(T& data, int process)
   MPI_Recv(&data, 1, mpi_type_trait<T>::type, process, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 }
 
-template<typename T>
-void receive(T& data, int len, int process)
+template<>
+void receive(std::string& data, int process)
 {
-  MPI_Recv(&data, len, mpi_type_trait<T>::type, process, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+  int size;
+  MPI_Recv(&size, 1, mpi_type_trait<int>::type, process, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+  data.resize(size);
+  MPI_Recv(&*data.begin(), size, mpi_type_trait<std::string::value_type>::type, process, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 }
 
 #else

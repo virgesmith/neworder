@@ -115,6 +115,9 @@ BOOST_PYTHON_MODULE(neworder)
   py::def("send", no::df::send);
   py::def("receive", no::df::receive);
   
+  py::def("send_csv", no::df::send_csv);
+  py::def("receive_csv", no::df::receive_csv);
+  
   // Deferred eval/exec of Python code
   py::class_<no::Callback>("Callback", py::no_init)
     .def("__call__", &no::Callback::operator())

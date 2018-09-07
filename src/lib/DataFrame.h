@@ -17,4 +17,8 @@ void send(const py::object& o);
 
 py::object receive();
 
+void send_csv(const py::object& o);
+
+py::object receive_csv();
+
 }} //neworder::df

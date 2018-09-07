@@ -74,10 +74,15 @@ def test():
   unpickled = pickle.loads(pickled)
   no.log("unpickled {} len={}".format(type(unpickled), len(unpickled))) # rows in DF
 
-  from io import StringIO
-  buf = StringIO()
+  #from io import StringIO
+  import io
+  buf = io.StringIO()
   bigdf.to_csv(buf, index=False)
   csvbuf = buf.getvalue()
   no.log("csvbuf {} len={}".format(type(csvbuf), len(csvbuf))) # 6.3MB csv
+
+  buf2 = io.StringIO(csvbuf)
+  unbuffed = pd.read_csv(buf2);
+  no.log("uncsvbuf {} len={}".format(type(unbuffed), len(unbuffed))) # 6.3MB csv
 
   return True
