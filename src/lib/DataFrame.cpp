@@ -38,7 +38,7 @@ void neworder::df::directmod(py::object& df, const std::string& colname)
 // append two DFs?
 py::object neworder::df::append(const py::object& df1, const py::object& df2)
 {
-  // TODO kwargs ignore _index
+  // TODO kwargs ignore_index
   py::dict kwargs;
   kwargs["ignore_index"] = true;
   py::object result = df1.attr("append")(df2, kwargs);
@@ -46,16 +46,18 @@ py::object neworder::df::append(const py::object& df1, const py::object& df2)
 }
 
 // to the next rank 
-void neworder::df::send(const py::object& )
+void neworder::df::send(const py::object& o, int rank)
 {
-  // py::object pickle = py::import("pickle");
-  // py::object serialised = pickle.attr("dumps")(o);
-  int x = 10;
-  neworder::log("sending %% to 1"_s % x);
-  neworder::mpi::send(x, 1);
+  py::object pickle = py::import("pickle");
+  py::object serialised = pickle.attr("dumps")(o);
+
+  // something along the lines of (see https://docs.python.org/3.6/c-api/buffer.html)
+  void* p = (Py_buffer*)serialised.ptr(); 
+  neworder::log("sending 0 (*%%) to 1"_s % (size_t)p);
+  neworder::mpi::send(0, 1);
 }
 
-py::object neworder::df::receive()
+py::object neworder::df::receive(int rank)
 {
   // py::object pickle = py::import("pickle");
   // py::object o = pickle.attr("dumps")(o);
@@ -65,23 +67,22 @@ py::object neworder::df::receive()
   return py::object();
 }
 
-void neworder::df::send_csv(const py::object& df)
+void neworder::df::send_csv(const py::object& df, int rank)
 {
-  int toprocid = 1;
   py::object io = py::import("io");
   py::object buf = io.attr("StringIO")();
-  py::dict kwargs;
-  kwargs["index"] = false;
-  df.attr("to_csv")(buf);//, kwargs);
+  // py::dict kwargs;
+  // kwargs["index"] = py::object(false);
+  
+  df.attr("to_csv")(buf); //, kwargs); //TODO why not working 
   std::string csvbuf = py::extract<std::string>(buf.attr("getvalue")())();
-  neworder::mpi::send(csvbuf, toprocid);
+  neworder::mpi::send(csvbuf, rank);
 }
 
-py::object neworder::df::receive_csv()
+py::object neworder::df::receive_csv(int rank)
 {
-  int fromproc = 0;
   std::string buf;
-  neworder::mpi::receive(buf, fromproc);
+  neworder::mpi::receive(buf, rank);
 
   py::object io = py::import("io");
   py::object pd = py::import("pandas");

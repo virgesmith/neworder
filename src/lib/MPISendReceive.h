@@ -65,12 +65,9 @@ void receive(std::string& data, int process)
   MPI_Recv(&size, 1, mpi_type_trait<int>::type, process, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 //  neworder::log("recv length %%"_s % size);
 
-  std::string::value_type* buf = new std::string::value_type[size];
-
-  MPI_Recv(buf, size, mpi_type_trait<std::string::value_type>::type, process, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-  data = std::string(buf, buf + size);
+  data.resize(size);
+  MPI_Recv(&data[0], size, mpi_type_trait<std::string::value_type>::type, process, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
   //neworder::log("recvd length %%..."_s % buf[0]);
-  delete[] buf;
 }
 
 #else

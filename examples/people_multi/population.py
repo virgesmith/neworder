@@ -39,9 +39,9 @@ class Population:
 
     if neworder.procid == 0:
       neworder.log("sending df len %d rows from 0" % len(self.fertility))
-      neworder.send_csv(self.fertility)
+      neworder.send_csv(self.fertility, 1)
     if neworder.procid == 1:
-      df = neworder.receive_csv()
+      df = neworder.receive_csv(0)
       neworder.log("got df len %d rows from 0" % len(df))
       neworder.log(df.head())
   
