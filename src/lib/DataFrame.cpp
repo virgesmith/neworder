@@ -68,28 +68,18 @@ py::object neworder::df::receive()
 void neworder::df::send_csv(const py::object& df)
 {
   int toprocid = 1;
-  // import io
-  // buf = io.StringIO()
-  // bigdf.to_csv(buf, index=False)
-  // csvbuf = buf.getvalue()
-  // no.log("csvbuf {} len={}".format(type(csvbuf), len(csvbuf))) # 6.3MB csv
   py::object io = py::import("io");
   py::object buf = io.attr("StringIO")();
   py::dict kwargs;
   kwargs["index"] = false;
   df.attr("to_csv")(buf);//, kwargs);
   std::string csvbuf = py::extract<std::string>(buf.attr("getvalue")())();
-  neworder::log("sending csv len %% to 1"_s % csvbuf.size());
-  neworder::mpi::send((int)csvbuf.size(), toprocid);
-  neworder::mpi::send(csvbuf[0], toprocid);
+  neworder::mpi::send(csvbuf, toprocid);
 }
 
 py::object neworder::df::receive_csv()
 {
   int fromproc = 0;
-  // buf2 = io.StringIO(csvbuf)
-  // unbuffed = pd.read_csv(buf2);
-  // no.log("uncsvbuf {} len={}".format(type(unbuffed), len(unbuffed))) # 6.3MB csv
   std::string buf;
   neworder::mpi::receive(buf, fromproc);
 

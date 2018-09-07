@@ -46,9 +46,9 @@ void send(const std::string& data, int process)
 {
   int size = data.size();
   MPI_Send(&size, 1, mpi_type_trait<int>::type, process, 0, MPI_COMM_WORLD);
-  neworder::log("send length %%"_s % size);
+//  neworder::log("send length %%"_s % size);
   MPI_Send(data.data(), data.size(), mpi_type_trait<std::string::value_type>::type, process, 0, MPI_COMM_WORLD);
-  neworder::log("send %%"_s % data.substr(40));
+//  neworder::log("send %%"_s % data.substr(40));
 
 }
 
@@ -63,14 +63,14 @@ void receive(std::string& data, int process)
 {
   int size;
   MPI_Recv(&size, 1, mpi_type_trait<int>::type, process, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-  neworder::log("recv length %%"_s % size);
+//  neworder::log("recv length %%"_s % size);
 
   std::string::value_type* buf = new std::string::value_type[size];
 
   MPI_Recv(buf, size, mpi_type_trait<std::string::value_type>::type, process, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
   data = std::string(buf, buf + size);
-  buf[17] = 0;
-  neworder::log("recvd length %%..."_s % buf[0]);
+  //neworder::log("recvd length %%..."_s % buf[0]);
+  delete[] buf;
 }
 
 #else

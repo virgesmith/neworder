@@ -38,13 +38,13 @@ class Population:
       neworder.receive()
 
     if neworder.procid == 0:
+      neworder.log("sending df len %d rows from 0" % len(self.fertility))
       neworder.send_csv(self.fertility)
     if neworder.procid == 1:
       df = neworder.receive_csv()
-      neworder.log("got df len %d from 0" % len(df))
+      neworder.log("got df len %d rows from 0" % len(df))
       neworder.log(df.head())
-
-
+  
     exit()
     # Force flat rates for testing purposes
     # self.in_migration.Rate = 0.05
