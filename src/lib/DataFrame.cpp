@@ -3,6 +3,8 @@
 
 #include "MPISendReceive.h"
 
+#include "python.h"
+
 void neworder::df::transition(np::ndarray& col)
 {
   // std::mt19937& prng = pycpp::Environment::get().prng();
@@ -33,6 +35,7 @@ void neworder::df::directmod(py::object& df, const std::string& colname)
   }
 }
 
+// TODO remove when its all working
 #include "Log.h"
 
 // append two DFs?
@@ -51,23 +54,27 @@ void neworder::df::send(const py::object& o, int rank)
   py::object pickle = py::import("pickle");
   py::object serialised = pickle.attr("dumps")(o);
 
+  //you can also write checks here for length, verify the 
+  //buffer is memory-contiguous, etc.
+  mpi::Buffer b(PyBytes_AsString(serialised.ptr()), (int)PyBytes_Size(serialised.ptr()));
+
   // something along the lines of (see https://docs.python.org/3.6/c-api/buffer.html)
-  std::string s(PyBytes_AsString(serialised.ptr()), py::len(serialised)); 
+  //std::string s(PyBytes_AsString(serialised.ptr()), py::len(serialised)); 
   //neworder::log("sending %% (len %%) to 1"_s % s % s.size());
-  neworder::mpi::send(s, rank);
+  neworder::mpi::send(b, rank);
 }
 
 py::object neworder::df::receive(int rank)
 {
-  std::string s;
-  neworder::mpi::receive(s, rank);
+  mpi::Buffer b;
+  neworder::mpi::receive(b, rank);
 
   py::object pickle = py::import("pickle");
   // from https://stackoverflow.com/questions/16232520/how-to-expose-raw-byte-buffers-with-boostpython
   // PyObject* py_buf = PyBuffer_FromReadWriteMemory(buffer, size);
   // object retval = object(handle<>(py_buf));
   
-  py::object o = pickle.attr("loads")(py::handle<>(PyBytes_FromString(s.c_str())));
+  py::object o = pickle.attr("loads")(py::handle<>(PyBytes_FromStringAndSize(b.buf, b.size)));
   //neworder::log("got %% from %%"_s % s % rank);
   return o;
 }
