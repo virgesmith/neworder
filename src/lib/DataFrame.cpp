@@ -52,29 +52,32 @@ void neworder::df::send(const py::object& o, int rank)
   py::object serialised = pickle.attr("dumps")(o);
 
   // something along the lines of (see https://docs.python.org/3.6/c-api/buffer.html)
-  void* p = (Py_buffer*)serialised.ptr(); 
-  neworder::log("sending 0 (*%%) to 1"_s % (size_t)p);
-  neworder::mpi::send(0, 1);
+  std::string s(PyBytes_AsString(serialised.ptr()), py::len(serialised)); 
+  //neworder::log("sending %% (len %%) to 1"_s % s % s.size());
+  neworder::mpi::send(s, rank);
 }
 
 py::object neworder::df::receive(int rank)
 {
-  // py::object pickle = py::import("pickle");
-  // py::object o = pickle.attr("dumps")(o);
-  int x;
-  neworder::mpi::receive(x, 0);
-  neworder::log("got %% from 0"_s % x);
-  return py::object();
+  std::string s;
+  neworder::mpi::receive(s, rank);
+
+  py::object pickle = py::import("pickle");
+
+  py::object o = pickle.attr("loads")(py::handle<>(PyBytes_FromString(s.c_str())));
+  //neworder::log("got %% from %%"_s % s % rank);
+  return o;
 }
 
 void neworder::df::send_csv(const py::object& df, int rank)
 {
   py::object io = py::import("io");
   py::object buf = io.attr("StringIO")();
-  // py::dict kwargs;
-  // kwargs["index"] = py::object(false);
+  py::dict kwargs;
+  kwargs["path_or_buf"] = buf;
+  kwargs["index"] = py::object(false);
   
-  df.attr("to_csv")(buf); //, kwargs); //TODO why not working 
+  df.attr("to_csv")(kwargs); //, kwargs); //TODO why not working 
   std::string csvbuf = py::extract<std::string>(buf.attr("getvalue")())();
   neworder::mpi::send(csvbuf, rank);
 }

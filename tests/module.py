@@ -14,7 +14,7 @@ def test():
     return False
   if not len(s) == 10000:
     return False
-  if not abs(np.mean(s) - 0.5) < 0.01:
+  if not abs(np.mean(s) - 0.5) < 0.02:
     return False
 
   f = no.lazy_eval("2 + 2")
@@ -27,7 +27,8 @@ def test():
   h = np.array([0.014] * 10)
   #l = no.stopping_v(h)
   l = no.stopping_nhpp(h, 10000)
-  if not abs(np.mean(l) * 0.014 - 1.0) < 0.01:
+  if not abs(np.mean(l) * 0.014 - 1.0) < 0.03:
+    no.log("stopping_nhpp test failed %f" % abs(np.mean(l) * 0.014 - 1.0))
     return False
 
   # test a certain(ish) hazard rate

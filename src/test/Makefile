@@ -3,10 +3,12 @@ CXXFLAGS += -I../include -I../lib
 
 LDFLAGS += -l$(BOOST_PYTHON_LIB) -l$(BOOST_NUMPY_LIB)
 
+MPIEXEC = mpirun -n 2
+
 #$(info $(CXXFLAGS))
 #$(info $(LDFLAGS))
 
-src=$(wildcard *.cpp)
+src=$(wildcard test_*.cpp) test1.cpp test$(SUFFIX).cpp
 obj=$(src:.cpp=.o)
 dep=$(src:.cpp=.d)
 
@@ -22,7 +24,7 @@ testharness$(SUFFIX): $(obj)
 
 #TODO $(shell ls ../../tests/*.py) ... then strip .py
 test: testharness$(SUFFIX)
-	PYTHONPATH=.:../../tests:$(PYTHONPATH) LD_LIBRARY_PATH=../lib:$(LD_LIBRARY_PATH) ./testharness$(SUFFIX) module op
+	PYTHONPATH=.:../../tests:$(PYTHONPATH) LD_LIBRARY_PATH=../lib:$(LD_LIBRARY_PATH) $(MPIEXEC) ./testharness$(SUFFIX) module op mpi
 
 clean:
 	rm -rf $(dep) $(obj) testharness$(SUFFIX)

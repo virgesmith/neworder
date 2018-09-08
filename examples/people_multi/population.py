@@ -32,26 +32,11 @@ class Population:
     self.immigration = ethpop.local_rates_from_absolute(ethpop.create_multi(pd.read_csv(ascr), self.lads), self.data)
     self.emigration = ethpop.local_rates_from_absolute(ethpop.create_multi(pd.read_csv(asxr), self.lads), self.data)
 
-    if neworder.procid == 0:
-      neworder.send(1)
-    if neworder.procid == 1:
-      neworder.receive()
-
-    if neworder.procid == 0:
-      neworder.log("sending df len %d rows from 0" % len(self.fertility))
-      neworder.send_csv(self.fertility, 1)
-    if neworder.procid == 1:
-      df = neworder.receive_csv(0)
-      neworder.log("got df len %d rows from 0" % len(df))
-      neworder.log(df.head())
-  
-    exit()
     # Force flat rates for testing purposes
     # self.in_migration.Rate = 0.05
     # self.out_migration.Rate = 0.05
     # self.immigration.Rate = 0.01
     # self.emigration.Rate = 0.01
-
 
     # use this to identify people (uniquely only within this table)
     self.counter = len(self.data)
