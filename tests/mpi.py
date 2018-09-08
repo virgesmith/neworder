@@ -4,19 +4,35 @@ import numpy as np
 import pandas as pd
 import neworder
 
+def send_recv(x):
+  if neworder.procid == 0:
+    neworder.send(x, 1)
+  if neworder.procid == 1:
+    y = neworder.receive(0)
+    neworder.log("MPI: 0 sent {}={} 1 recd {}={}".format(type(x), x, type(y), y))
+    if y != x:
+     return False
+  return True
+
 def test():
   if neworder.nprocs == 1:
     neworder.log("Skipping MPI tests")
     return True
   
-  x = 10
-  if neworder.procid == 0:
-    neworder.send(x, 1)
-  if neworder.procid == 1:
-    y = neworder.receive(0)
-    neworder.log("MPI: 0 sent %d 1 recd %d" % (x, y))
-    if y != x:
-     return False
+  if not send_recv(True):
+    return False
+
+  if not send_recv(10):
+    return  
+    
+  if not send_recv(10.01):
+    return False
+
+  # Fails
+  # if not send_recv("abcdef"):
+  #   return False
+  # if not send_recv([1,2,3]):
+  #   return False
 
   df = pd.read_csv("../../tests/ssm_E09000001_MSOA11_ppp_2011.csv")
   if neworder.procid == 0:

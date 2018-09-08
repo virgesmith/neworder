@@ -73,11 +73,11 @@ void neworder::df::send_csv(const py::object& df, int rank)
 {
   py::object io = py::import("io");
   py::object buf = io.attr("StringIO")();
-  py::dict kwargs;
-  kwargs["path_or_buf"] = buf;
-  kwargs["index"] = py::object(false);
-  
-  df.attr("to_csv")(kwargs); //, kwargs); //TODO why not working 
+  // kwargs broken?
+  // py::dict kwargs;
+  // kwargs["index"] = false;
+  // to_csv(path_or_buf=None, sep=', ', na_rep='', float_format=None, columns=None, header=True, index=True...
+  df.attr("to_csv")(buf); //, ", ", "", py::object(), py::object(), true, false); 
   std::string csvbuf = py::extract<std::string>(buf.attr("getvalue")())();
   neworder::mpi::send(csvbuf, rank);
 }
@@ -91,6 +91,8 @@ py::object neworder::df::receive_csv(int rank)
   py::object pd = py::import("pandas");
   py::object pybuf = io.attr("StringIO")(buf);
   py::object df = pd.attr("read_csv")(pybuf);
+  // temp workaround for not being able to pass to_csv index=False arg
+  df = df.attr("drop")("Unnamed: 0", 1);
   return df;
 }
 
