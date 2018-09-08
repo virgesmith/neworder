@@ -10,7 +10,9 @@ CXXFLAGS = $(shell python$(PYVER)-config --cflags | sed 's/-Wstrict-prototypes//
 CXXFLAGS += -fPIC -std=c++11 -DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION -DBOOST_NO_AUTO_PTR
 LDFLAGS := $(shell python$(PYVER)-config --ldflags)
 
+# MPI not enabled
 SUFFIX :=
+MPIEXEC := 
 
 export
 

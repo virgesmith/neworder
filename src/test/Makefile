@@ -3,12 +3,10 @@ CXXFLAGS += -I../include -I../lib
 
 LDFLAGS += -l$(BOOST_PYTHON_LIB) -l$(BOOST_NUMPY_LIB)
 
-MPIEXEC = mpirun -n 2
-
 #$(info $(CXXFLAGS))
 #$(info $(LDFLAGS))
 
-src=$(wildcard test_*.cpp) test1.cpp test$(SUFFIX).cpp
+src=test1.cpp test_no.cpp test_np.cpp test_errors.cpp test$(SUFFIX).cpp
 obj=$(src:.cpp=.o)
 dep=$(src:.cpp=.d)
 

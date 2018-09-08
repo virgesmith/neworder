@@ -8,6 +8,7 @@ BOOST_NUMPY_LIB=boost_numpy3-py36
 # also set (CXXFLAGS below) NEWORDER_MPI to prevent skipping of MPI-specific code
 CXX=mpicxx
 SUFFIX := _mpi
+MPIEXEC := mpirun -n 2
 
 # Query python env for compile and link settings
 CXXFLAGS = $(shell python$(PYVER)-config --cflags | sed 's/-Wstrict-prototypes//g' | sed 's/-O3//g') -I$(shell python$(PYVER) -c "import numpy;print(numpy.get_include())")
