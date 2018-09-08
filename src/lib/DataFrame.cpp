@@ -63,7 +63,10 @@ py::object neworder::df::receive(int rank)
   neworder::mpi::receive(s, rank);
 
   py::object pickle = py::import("pickle");
-
+  // from https://stackoverflow.com/questions/16232520/how-to-expose-raw-byte-buffers-with-boostpython
+  // PyObject* py_buf = PyBuffer_FromReadWriteMemory(buffer, size);
+  // object retval = object(handle<>(py_buf));
+  
   py::object o = pickle.attr("loads")(py::handle<>(PyBytes_FromString(s.c_str())));
   //neworder::log("got %% from %%"_s % s % rank);
   return o;

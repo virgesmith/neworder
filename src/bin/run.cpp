@@ -112,7 +112,7 @@ int run(int rank, int size)
         // taking a const ref here to stay results in an empty string, which is bizarre love triangle
         const std::string name = py::extract<std::string>(initialisations[i][0])();
         env().attr(name.c_str()) = object;
-        neworder::log("calling initialisation %%"_s % name);
+        neworder::log("initialising %%"_s % name);
       }
 
       // Loop with checkpoints

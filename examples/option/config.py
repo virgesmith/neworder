@@ -33,20 +33,23 @@ neworder.checks = { }
 
 # delayed evaluation for initialisations
 get_stock = neworder.lazy_eval("market")
+get_option = neworder.lazy_eval("option")
 
 # initialisation
 neworder.initialisations = {
   "market": { "module": "market", "class_": "Market", "parameters": [spot, rate, divy, vol] },
-  "option": { "module": "option", "class_": "Option", "parameters": [get_stock, callput, strike, expiry] }
+  "option": { "module": "option", "class_": "Option", "parameters": [callput, strike, expiry] },
+  # TODO import module without creating a class instance?
+  "model": { "module": "black_scholes", "class_": "BS", "parameters": [] }
 }
 
 neworder.transitions = { 
   # compute the option price
   #"compute_mc_price": "option.mc(nsims)"
   # use QRNG
-  "compute_mc_price": "option.mc(nsims, quasi=True)" 
+  "compute_mc_price": "pv = model.mc(option, market, nsims, quasi=True)" 
 }
 
 neworder.checkpoints = {
-   "compare_mc_price": "option.check()"
+   "compare_mc_price": "model.compare(pv, nsims, option, market)"
 }
