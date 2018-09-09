@@ -21,19 +21,30 @@ matrix:
       - export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
       - make PYVER=3.5 BOOST_PYTHON_LIB=boost_python35 BOOST_NUMPY_LIB=boost_numpy35 test
 
-    - language: python
-      python: 3.5
-      script:
-      - sudo apt install python3-dev libboost-python-dev
-      - python3 -m pip install -U numpy pandas 
-      - make PYVER=3.5 BOOST_PYTHON_LIB=boost_python35 && make PYVER=3.5 BOOST_PYTHON_LIB=boost_python35 test
+    - name: native_cpp_mpi
+      before_install: 
+      - sudo apt-get update
+      - sudo apt-get -y install build-essential python3 python3-dev python3-pip mpich
+      script: 
+      - python3 -m pip install -U numpy pandas
+      - sudo tools/boost_python.sh
+      - make PYVER=3.5 BOOST_PYTHON_LIB=boost_python35 BOOST_NUMPY_LIB=boost_numpy35 -f MPI.mk
+      - export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+      - make PYVER=3.5 BOOST_PYTHON_LIB=boost_python35 BOOST_NUMPY_LIB=boost_numpy35 -f MPI.mk test
 
-    - language: python
-      python: 3.6
-      script:
-      - sudo apt install python3-dev libboost-python-dev
-      - python3 -m pip install -U numpy pandas 
-      - make && make test
+    # - language: python
+    #   python: 3.5
+    #   script:
+    #   - sudo apt install python3-dev libboost-python-dev
+    #   - python3 -m pip install -U numpy pandas 
+    #   - make PYVER=3.5 BOOST_PYTHON_LIB=boost_python35 && make PYVER=3.5 BOOST_PYTHON_LIB=boost_python35 test
+
+    # - language: python
+    #   python: 3.6
+    #   script:
+    #   - sudo apt install python3-dev libboost-python-dev
+    #   - python3 -m pip install -U numpy pandas 
+    #   - make && make test
 
   allow_failures:
     - python: 3.5
