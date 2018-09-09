@@ -48,11 +48,22 @@ def test():
 
   df = pd.read_csv("../../tests/ssm_E09000001_MSOA11_ppp_2011.csv")
   if neworder.procid == 0:
-    neworder.log("sending df len %d rows from 0" % len(df))
+    neworder.log("sending (as csv) df len %d rows from 0" % len(df))
     neworder.send_csv(df, 1)
   if neworder.procid == 1:
     dfrec = neworder.receive_csv(0)
-    neworder.log("got df len %d rows from 0" % len(dfrec))
+    neworder.log("got (as csv) df len %d rows from 0" % len(dfrec))
+    if not dfrec.equals(df):
+      neworder.log(df.head())
+      neworder.log(dfrec.head())
+      return False
+
+  if neworder.procid == 0:
+    neworder.log("sending (pickle) df len %d rows from 0" % len(df))
+    neworder.send(df, 1)
+  if neworder.procid == 1:
+    dfrec = neworder.receive(0)
+    neworder.log("got (pickle) df len %d rows from 0" % len(dfrec))
     if not dfrec.equals(df):
       neworder.log(df.head())
       neworder.log(dfrec.head())

@@ -1,22 +1,24 @@
 #include "MPISendReceive.h"
 
+// gcc bug (<7) means we have to declare specialisations within namespace rather than qualifying the specialisation
+namespace neworder { namespace mpi {
 
-neworder::mpi::Buffer::Buffer(char* b, int n) : owned(false), buf(b), size(n) { } 
+Buffer::Buffer(char* b, int n) : owned(false), buf(b), size(n) { } 
 
-neworder::mpi::Buffer::Buffer(int n) : owned(true), buf(new char[n]), size(n) { }
+Buffer::Buffer(int n) : owned(true), buf(new char[n]), size(n) { }
 
-neworder::mpi::Buffer::~Buffer() 
+Buffer::~Buffer() 
 {
   free();
 }
 
-void neworder::mpi::Buffer::free()
+void Buffer::free()
 {
   if (owned)
     delete[] buf;
 }
 
-void neworder::mpi::Buffer::alloc(int n)
+void Buffer::alloc(int n)
 {
   free();
   owned = true;
@@ -25,8 +27,6 @@ void neworder::mpi::Buffer::alloc(int n)
 }
 
 #ifdef NEWORDER_MPI
-
-namespace neworder { namespace mpi {
 
 template<>
 void send(const std::string& data, int process)
@@ -72,9 +72,8 @@ void receive(Buffer& data, int process)
   MPI_Recv(data.buf, data.size, mpi_type_trait<Buffer>::type, process, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 }
 
+#endif
+
 }} // neworder::mpi
 
-#else
-
-#endif
 
