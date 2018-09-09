@@ -26,8 +26,10 @@ void neworder::mpi::Buffer::alloc(int n)
 
 #ifdef NEWORDER_MPI
 
+namespace neworder { namespace mpi {
+
 template<>
-void neworder::mpi::send(const std::string& data, int process)
+void send(const std::string& data, int process)
 {
   int size = data.size();
   MPI_Send(&size, 1, mpi_type_trait<int>::type, process, 0, MPI_COMM_WORLD);
@@ -39,7 +41,7 @@ void neworder::mpi::send(const std::string& data, int process)
 
 
 template<>
-void neworder::mpi::send(const Buffer& data, int process)
+void send(const Buffer& data, int process)
 {
   MPI_Send(&data.size, 1, mpi_type_trait<int>::type, process, 0, MPI_COMM_WORLD);
   neworder::log("buf send length %%"_s % data.size);
@@ -49,7 +51,7 @@ void neworder::mpi::send(const Buffer& data, int process)
 }
 
 template<>
-void neworder::mpi::receive(std::string& data, int process)
+void receive(std::string& data, int process)
 {
   int size;
   MPI_Recv(&size, 1, mpi_type_trait<int>::type, process, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
@@ -60,7 +62,7 @@ void neworder::mpi::receive(std::string& data, int process)
 }
 
 template<>
-void neworder::mpi::receive(Buffer& data, int process)
+void receive(Buffer& data, int process)
 {
   int n;
   MPI_Recv(&n, 1, mpi_type_trait<int>::type, process, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
@@ -70,6 +72,7 @@ void neworder::mpi::receive(Buffer& data, int process)
   MPI_Recv(data.buf, data.size, mpi_type_trait<Buffer>::type, process, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 }
 
+}} // neworder::mpi
 
 #else
 
