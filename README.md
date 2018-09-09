@@ -23,7 +23,7 @@ The sections below list minimal requirements that must be met, and those that - 
 ### Requirements
 #### Compulsory
 The framework minimal requirements are that:
-- a timeline and a timestep is defined<sup>*</sup>. The timeline can be partitioned, for example for running a 40-year simulation with 1 year timesteps, but outputting results every 5 years. These are referred to as "checkpoints", and the end of the timeline is always considered to be a checkpoint.
+- a timeline and a timestep is defined<sup>*</sup>. The timeline can be partitioned, for example for running a 40-year simulation with 1 year timesteps, but outputting results every 5 years. The latter are referred to as "checkpoints", and the end of the timeline is always considered to be a checkpoint.
 - python code to be executed at the first timestep, e.g. to load or microsynthesise an initial population, and any data governing the dynamics.
 - python code to evolve to the next timestep, which can (and typically will) involve multiple processes and can be implemented in multiple functions.
 - python code to be executed at each checkpoint, typically writing intermediate results.
@@ -32,7 +32,7 @@ The framework minimal requirements are that:
 
 #### Optional
 And the following are optional:
-- python code to run at each timestep to perform checks
+- python code to run at each timestep to e.g. perform checks
 - an outer sequence: this defines a number of runs of the same simulation whilst ensuring RNG independence.
 
 #### Special Variables
@@ -41,8 +41,6 @@ The neworder python module defines, or requires the model to define, the followi
 name       | type        | default | description
 -----------|-------------|---------|--------------
 `sequence` | int array   | `[0]`   | an array specifying the number of simulations to perform. (Each element is used to seed the RNG stream)
-`procid`   | int         | `0`     | identifies process for parallel runs. (Used to seed the RNG stream)
-`nprocs`   | int         | `1`     | total number of processes in simulation. (Used to seed the RNG stream)
 `timestep` | float       |         | the size of the timestep 
 `timeline` | float array |         | the timeline of the simulation 
 `log_level`| int         |         | currently unused. control verbosity of output 
@@ -51,6 +49,15 @@ name       | type        | default | description
 `transitions`| dict      |         | model evolution functions (per-timestep)  
 `checks`   | dict        | {}      | specify functions to run after each timestep 
 `checkpoints`| dict      |         | perform specified code at each checkpoint 
+
+Additionally, the module creates the following runtime variables:
+
+name       | type        | default | description
+-----------|-------------|---------|--------------
+`time`     | float       |         | time of current timestep
+`procid`   | int         | `0`     | identifies process for parallel runs. (Used to seed the RNG stream)
+`nprocs`   | int         | `1`     | total number of processes in simulation. (Used to seed the RNG stream)
+
 
 # Provision
 The framework provides:
@@ -102,6 +109,19 @@ For Ubuntu 16.04 / python 3.5 you may need to set the make env like so:
 ```bash
 $ make PYVER=3.5 BOOST_PYTHON_LIB=boost_python-py35 && make PYVER=3.5 BOOST_PYTHON_LIB=boost_python-py35 test
 ```
+For MPI-enabled execution, you'll frist need to make sure you have an implementation of MPI (including a compiler), e.g:
+
+```bash
+$ sudo apt install mpich libmipch-dev
+```
+And use the [MPI.mk](MPI.mk) makefile to build the MPI-enabled framework:
+```bash
+$ make -f MPI.mk
+```
+and to test,
+```bash
+$ make -f MPI.mk test
+```
 
 ## HPC installation (ARC3)
 
@@ -125,6 +145,8 @@ $ module switch boost boost/1.65.1
 $ module switch python python/3.6.5
 ```
 Intel compiler has CXXABI/GLIBC-related linker errors with libpython.
+
+If boost.numpy is missing (as it is on ARC3), then see the [boost](#boost) section above to build 
 
 ~~Currently~~Previously experiencing issues running tests:
 ```
