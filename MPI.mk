@@ -6,7 +6,7 @@ BOOST_PYTHON_LIB=boost_python3
 BOOST_NUMPY_LIB=boost_numpy3-py36
 
 # also set (CXXFLAGS below) NEWORDER_MPI to prevent skipping of MPI-specific code
-CXX=mpicxx
+CXX=mpic++
 SUFFIX := _mpi
 MPIEXEC := mpirun -n 2
 
