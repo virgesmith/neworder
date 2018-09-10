@@ -52,38 +52,22 @@ def test():
   le = no.stopping_nhpp(h, 1000)
   no.log(sum(le)/len(le))
 
-  # pass df
+  # modify df passing column 
   df = pd.read_csv("../../tests/df.csv")
   no.transition(df["DC2101EW_C_ETHPUK11"].values)
-  no.log(df.head())
-  no.directmod(df, "DC2101EW_C_ETHPUK11")
-  no.log(df.head())
+  if not np.array_equal(df["DC2101EW_C_ETHPUK11"].values, np.array(range(2, len(df) + 2))):
+    no.log("transition(df) failed")
+    return False
 
-  no.log(len(df))
+  # modify df passing directly
+  no.directmod(df, "DC2101EW_C_ETHPUK11")
+  if not np.array_equal(df["DC2101EW_C_ETHPUK11"].values, np.array(range(3, len(df) + 3))):
+    no.log("directmod(df) failed")
+    return False
+
   df2 = df.copy()
   df3 = no.append(df,df2)
-  no.log(len(df3))
-  no.log(df3.index)
-
-  # 6.3MB file
-  import pickle
-  bigdf = pd.read_csv("../../examples/people/ssm_E09000001_MSOA11_ppp_2011.csv")
-  no.log("data {} len={}".format(type(bigdf), len(bigdf))) # rows in DF
-  pickled = pickle.dumps(bigdf)
-  no.log("pickled {} len={}".format(type(pickled), len(pickled))) # 9.5MB binary serialised
-
-  unpickled = pickle.loads(pickled)
-  no.log("unpickled {} len={}".format(type(unpickled), len(unpickled))) # rows in DF
-
-  #from io import StringIO
-  import io
-  buf = io.StringIO()
-  bigdf.to_csv(buf, index=False)
-  csvbuf = buf.getvalue()
-  no.log("csvbuf {} len={}".format(type(csvbuf), len(csvbuf))) # 6.3MB csv
-
-  buf2 = io.StringIO(csvbuf)
-  unbuffed = pd.read_csv(buf2);
-  no.log("uncsvbuf {} len={}".format(type(unbuffed), len(unbuffed))) # 6.3MB csv
+  if not len(df3) == len(df) + len(df2): 
+    return False
 
   return True

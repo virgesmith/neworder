@@ -35,13 +35,9 @@ void neworder::df::directmod(py::object& df, const std::string& colname)
   }
 }
 
-// TODO remove when its all working
-#include "Log.h"
-
 // append two DFs?
 py::object neworder::df::append(const py::object& df1, const py::object& df2)
 {
-  // TODO kwargs ignore_index
   py::dict kwargs;
   kwargs["ignore_index"] = true;
   py::object result = df1.attr("append")(df2, kwargs);

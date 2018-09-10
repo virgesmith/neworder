@@ -3,8 +3,6 @@
 
 #include <iostream>
 
-// TODO Logger...?
-
 int main(int argc, const char* argv[])
 {
   // Directory containing model (config.py, etc) is specified on the command line
