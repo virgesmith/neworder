@@ -1,22 +1,29 @@
+INTDIR=int$(SUFFIX)
 
 CXXFLAGS += -I../include -I../lib
 
 LDFLAGS += -l$(BOOST_PYTHON_LIB) -l$(BOOST_NUMPY_LIB)
 
-#$(info $(CXXFLAGS))
-#$(info $(LDFLAGS))
-
 src=test1.cpp test_no.cpp test_np.cpp test_errors.cpp test$(SUFFIX).cpp
-obj=$(src:.cpp=.o)
-dep=$(src:.cpp=.d)
+dep=$(patsubst %,$(INTDIR)/%,$(src:.cpp=.d))
+obj=$(patsubst %,$(INTDIR)/%,$(src:.cpp=.o))
+
+#$(info $(dep))
+#$(info $(obj))
+$(shell mkdir -p $(INTDIR))
 
 all: testharness$(SUFFIX)
 
 testharness$(SUFFIX): $(obj)
 	$(CXX) -o $@ $^ $(LDFLAGS) -L ../lib -lneworder$(SUFFIX)
 
-%.d: %.cpp
-	@$(CXX) $(CXXFLAGS) $< -MM -MT $(@:.d=.o) >$@
+DEPFLAGS = -MT $@ -MD -MP -MF $(INTDIR)/$*.d
+
+$(INTDIR)/%.o: %.cpp $(INTDIR/%.d)
+	$(CXX) $(CXXFLAGS) $(DEPFLAGS) -c -o $@ $<
+
+# %.d: %.cpp
+# 	@$(CXX) $(CXXFLAGS) $< -MM -MT $(@:.d=.o) >$@
 
 -include $(dep)
 
