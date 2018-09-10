@@ -7,6 +7,7 @@
 #include "Inspect.h"
 #include "MonteCarlo.h"
 #include "DataFrame.h"
+#include "MPISendReceive.h"
 
 #include "python.h"
 
@@ -112,11 +113,11 @@ BOOST_PYTHON_MODULE(neworder)
   py::def("append", no::df::append, py::return_value_policy<py::return_by_value>());
 
   // MPI
-  py::def("send", no::df::send);
-  py::def("receive", no::df::receive);
+  py::def("send", no::mpi::send);
+  py::def("receive", no::mpi::receive);
   
-  py::def("send_csv", no::df::send_csv);
-  py::def("receive_csv", no::df::receive_csv);
+  py::def("send_csv", no::mpi::send_csv);
+  py::def("receive_csv", no::mpi::receive_csv);
   
   // Deferred eval/exec of Python code
   py::class_<no::Callback>("Callback", py::no_init)

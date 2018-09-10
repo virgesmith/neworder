@@ -31,7 +31,7 @@ void neworder::df::directmod(py::object& df, const std::string& colname)
 
   for (size_t i = 0; i < n; ++i)
   {
-    pycpp::at<int64_t>(arr, i) += (int64_t)i;
+    pycpp::at<int64_t>(arr, i) += 1;
   }
 }
 
@@ -48,59 +48,5 @@ py::object neworder::df::append(const py::object& df1, const py::object& df2)
   return result;
 }
 
-// to the next rank 
-void neworder::df::send(const py::object& o, int rank)
-{
-  py::object pickle = py::import("pickle");
-  py::object serialised = pickle.attr("dumps")(o);
-
-  //you can also write checks here for length, verify the 
-  //buffer is memory-contiguous, etc.
-  mpi::Buffer b(PyBytes_AsString(serialised.ptr()), (int)PyBytes_Size(serialised.ptr()));
-
-  // something along the lines of (see https://docs.python.org/3.6/c-api/buffer.html)
-  //std::string s(PyBytes_AsString(serialised.ptr()), py::len(serialised)); 
-  //neworder::log("sending %% (len %%) to 1"_s % s % s.size());
-  neworder::mpi::send(b, rank);
-}
-
-py::object neworder::df::receive(int rank)
-{
-  mpi::Buffer b(nullptr, 0);
-  neworder::mpi::receive(b, rank); // b is alloc'd in here
-
-  py::object pickle = py::import("pickle");
-
-  py::object o = pickle.attr("loads")(py::handle<>(PyBytes_FromStringAndSize(b.buf, b.size)));
-  //neworder::log("got %% from %%"_s % s % rank);
-  return o;
-}
-
-void neworder::df::send_csv(const py::object& df, int rank)
-{
-  py::object io = py::import("io");
-  py::object buf = io.attr("StringIO")();
-  // kwargs broken?
-  // py::dict kwargs;
-  // kwargs["index"] = false;
-  // to_csv(path_or_buf=None, sep=', ', na_rep='', float_format=None, columns=None, header=True, index=True...
-  df.attr("to_csv")(buf); //, ", ", "", py::object(), py::object(), true, false); 
-  std::string csvbuf = py::extract<std::string>(buf.attr("getvalue")())();
-  neworder::mpi::send(csvbuf, rank);
-}
-
-py::object neworder::df::receive_csv(int rank)
-{
-  std::string buf;
-  neworder::mpi::receive(buf, rank);
-
-  py::object io = py::import("io");
-  py::object pd = py::import("pandas");
-  py::object pybuf = io.attr("StringIO")(buf);
-  py::object df = pd.attr("read_csv")(pybuf);
-  // temp workaround for not being able to pass to_csv index=False arg
-  df = df.attr("drop")("Unnamed: 0", 1);
-  return df;
-}
 
 
