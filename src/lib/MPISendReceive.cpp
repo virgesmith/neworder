@@ -43,22 +43,10 @@ struct Buffer
   int size;
 };
 
+}
 
-template<typename T> 
-struct mpi_type_trait;
-
-template<>
-struct mpi_type_trait<int>
-{
-  static const int type = MPI_INT;
-};
-
-template<>
-struct mpi_type_trait<char>
-{
-  static const int type = MPI_CHAR;
-};
-
+#ifdef NEWORDER_MPI
+// these specialisation must be in global namespace (as per template)
 template<>
 struct mpi_type_trait<Buffer>
 {
@@ -70,13 +58,9 @@ struct mpi_type_trait<std::string>
 {
   static const int type = MPI_CHAR;
 };
+#endif
 
-template<>
-struct mpi_type_trait<unsigned char>
-{
-  static const int type = MPI_UNSIGNED_CHAR;
-};
-
+namespace {
 
 template<typename T>
 void send_impl(const T& data, int process)
@@ -158,7 +142,7 @@ void receive_impl(Buffer& data, int process)
 
 
 // to the next rank 
-void neworder::mpi::send(const py::object& o, int rank)
+void neworder::mpi::send_obj(const py::object& o, int rank)
 {
 #ifdef NEWORDER_MPI
   py::object pickle = py::import("pickle");
@@ -177,7 +161,7 @@ void neworder::mpi::send(const py::object& o, int rank)
 #endif
 }
 
-py::object neworder::mpi::receive(int rank)
+py::object neworder::mpi::receive_obj(int rank)
 {
 #ifdef NEWORDER_MPI
   Buffer b(nullptr, 0);
@@ -227,6 +211,3 @@ py::object neworder::mpi::receive_csv(int rank)
   throw std::runtime_error("cannot recv: MPI not enabled");
 #endif
 }
-
-
-
