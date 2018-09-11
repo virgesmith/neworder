@@ -7,19 +7,19 @@ import neworder as no
 import numpy as np
 import pandas as pd
 
+import test as t
+
 def test():
 
   s = no.ustream(10000)
-  if not isinstance(s, np.ndarray):
-    return False
-  if not len(s) == 10000:
-    return False
-  if not abs(np.mean(s) - 0.5) < 0.02:
-    return False
+  t.check(isinstance(s, np.ndarray))
+
+  t.check(len(s) == 10000)
+
+  t.check(abs(np.mean(s) - 0.5) < 0.02)
 
   f = no.lazy_eval("2 + 2")
-  if not f() == 4: 
-    return False
+  t.check(f() == 4)
 
   # TODO this overlaps/duplicates tests in op.py - reorganise
 
@@ -27,9 +27,7 @@ def test():
   h = np.array([0.014] * 10)
   #l = no.stopping_v(h)
   l = no.stopping_nhpp(h, 10000)
-  if not abs(np.mean(l) * 0.014 - 1.0) < 0.03:
-    no.log("stopping_nhpp test failed %f" % abs(np.mean(l) * 0.014 - 1.0))
-    return False
+  t.check(abs(np.mean(l) * 0.014 - 1.0) < 0.03)
 
   # test a certain(ish) hazard rate
   h = np.array([0.99, 0.99, 0.01])
@@ -55,19 +53,14 @@ def test():
   # modify df passing column 
   df = pd.read_csv("../../tests/df.csv")
   no.transition(df["DC2101EW_C_ETHPUK11"].values)
-  if not np.array_equal(df["DC2101EW_C_ETHPUK11"].values, np.array(range(2, len(df) + 2))):
-    no.log("transition(df) failed")
-    return False
+  t.check(np.array_equal(df["DC2101EW_C_ETHPUK11"].values, np.array(range(2, len(df) + 2))))
 
   # modify df passing directly
   no.directmod(df, "DC2101EW_C_ETHPUK11")
-  if not np.array_equal(df["DC2101EW_C_ETHPUK11"].values, np.array(range(3, len(df) + 3))):
-    no.log("directmod(df) failed")
-    return False
+  t.check(np.array_equal(df["DC2101EW_C_ETHPUK11"].values, np.array(range(3, len(df) + 3))))
 
   df2 = df.copy()
   df3 = no.append(df,df2)
-  if not len(df3) == len(df) + len(df2): 
-    return False
+  t.check(len(df3) == len(df) + len(df2)) 
 
-  return True
+  return not t.any_failed
