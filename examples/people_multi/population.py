@@ -156,6 +156,8 @@ class Population:
       .format(neworder.time, self.size(), self.mean_age(), 100.0 * self.gender_split(), 
       self.in_out[0] - self.in_out[1] + self.in_out[2] - self.in_out[3], 
       self.in_out[0], self.in_out[1], self.in_out[2], self.in_out[3]))
+    # wait for other processes
+    neworder.sync()
     return True # Faith
 
   def write_table(self):

@@ -218,3 +218,10 @@ py::object neworder::mpi::receive_csv(int rank)
   throw std::runtime_error("cannot recv: MPI not enabled");
 #endif
 }
+
+void neworder::mpi::sync()
+{
+#ifdef NEWORDER_MPI
+  MPI_Barrier(MPI_COMM_WORLD);
+#endif
+}

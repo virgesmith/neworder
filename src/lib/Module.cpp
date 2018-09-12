@@ -115,6 +115,7 @@ BOOST_PYTHON_MODULE(neworder)
   // MPI
   py::def("send", no::mpi::send_obj);
   py::def("receive", no::mpi::receive_obj);
+  py::def("sync", no::mpi::sync);
   
   py::def("send_csv", no::mpi::send_csv);
   py::def("receive_csv", no::mpi::receive_csv);

@@ -54,4 +54,9 @@ def test():
     neworder.log("got (pickle) df len %d rows from 0" % len(dfrec))
     t.check(dfrec.equals(df))
 
+  # TODO how to test?
+  neworder.log("process %d syncing..." % neworder.procid)
+  neworder.sync()
+  neworder.log("process %d synced" % neworder.procid)
+
   return not t.any_failed

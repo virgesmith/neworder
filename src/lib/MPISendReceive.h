@@ -59,32 +59,6 @@ void receive(T& data, int process)
 #endif
 }
 
-// template<>
-// void send_impl(const std::string& data, int process);
-
-// template<>
-// void send_impl(const Buffer& data, int process);
-
-// template<>
-// void receive_impl(std::string& data, int process);
-
-// template<>
-// void receive_impl(Buffer& data, int process);
-
-// #else
-
-// // template<typename T>
-// // void send_impl(const T&, int)
-// // {
-// //   throw std::runtime_error("MPI not enabled");
-// // }
-
-// // template<typename T>
-// // void receive_impl(T&, int)
-// // {
-// //   throw std::runtime_error("MPI not enabled");
-// // }
-
-// #endif
+void sync();
 
 }} // neworder::mpi
