@@ -59,4 +59,13 @@ def test():
   neworder.sync()
   neworder.log("process %d synced" % neworder.procid)
 
+  i = neworder.procid
+  root = 0
+  neworder.log("proc %d i=%d" % (neworder.procid, i))
+  #neworder.log("broadcasting %d from %d" % (i, root))
+  neworder.broadcast(i, root)
+
+  t.check(i == 0)
+  neworder.log("proc %d i=%d" % (neworder.procid, i))
+
   return not t.any_failed

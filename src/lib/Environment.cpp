@@ -44,6 +44,18 @@ pycpp::Environment& pycpp::Environment::get()
   return Global::instance<Environment>();
 }
 
+
+int pycpp::Environment::rank() const
+{
+  return m_rank;
+}
+
+// MPI size (1 if serial)
+int pycpp::Environment::size() const
+{
+  return m_size;
+}
+
 std::string pycpp::Environment::context(int ctx) const
 {
   np::ndarray sequence = np::from_object(m_self->attr("sequence"));

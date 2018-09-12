@@ -40,6 +40,12 @@ public:
   // returns the python version
   static std::string version();
 
+  // MPI rank (0 if serial)
+  int rank() const;
+
+  // MPI size (1 if serial)
+  int size() const;
+
   // returns "seq-rank/size"
   std::string context(int ctx = CPP) const;
 

@@ -12,7 +12,19 @@
 void test1(const std::string& modulename, const std::string& functionname, const std::vector<std::string>& args, const py::object& expected);
 void test_no();
 void test_np();
+void test_mpi();
 void test_errors();
+
+void test_py(int nmodules, const char* testmodules[])
+{
+  for (int i = 0; i < nmodules; ++i)
+  {
+    py::object module = py::import(testmodules[i]);
+    py::object testfunc = module.attr("test");
+    neworder::log("running test %%.py"_s % testmodules[i]);
+    CHECK(py::extract<bool>(testfunc())());
+  }
+}
 
 int run(int rank, int size, int nmodules, const char* testmodules[]) 
 {
@@ -23,22 +35,14 @@ int run(int rank, int size, int nmodules, const char* testmodules[])
     test1("op", "mul", {"2", "3"}, py::object(6));
     test1("op", "void", {"2", "3"}, py::object());
 
-    // module
+    // module (C++ tests)
     test_no();
-
-    // boost.Python.numpy
-    test_np();
-
-    // doesnt extract the python error type/msg 
+    test_np(); // boost.Python.numpy
+    test_mpi();
     test_errors();
 
-    for (int i = 0; i < nmodules; ++i)
-    {
-      py::object module = py::import(testmodules[i]);
-      py::object testfunc = module.attr("test");
-      neworder::log("running test %%.py"_s % testmodules[i]);
-      CHECK(py::extract<bool>(testfunc())());
-    }
+    // python tests
+    test_py(nmodules, testmodules);
 
     REPORT()
   }
