@@ -72,22 +72,19 @@ void send_impl(const T& data, int process)
 template<>
 void send_impl(const std::string& data, int process)
 {
-  int size = data.size();
-  MPI_Send(&size, 1, mpi_type_trait<int>::type, process, 0, MPI_COMM_WORLD);
-//  neworder::log("send length %%"_s % size);
+  // neworder::log("send length %%"_s % size);
   MPI_Send(data.data(), data.size(), mpi_type_trait<std::string>::type, process, 0, MPI_COMM_WORLD);
-//  neworder::log("send %%"_s % data.substr(40));
-
+  // neworder::log("send %%"_s % data.substr(40));
 }
 
 
 template<>
 void send_impl(const Buffer& data, int process)
 {
-  MPI_Send(&data.size, 1, mpi_type_trait<int>::type, process, 0, MPI_COMM_WORLD);
-  neworder::log("buf send length %%"_s % data.size);
+  //MPI_Send(&data.size, 1, mpi_type_trait<int>::type, process, 0, MPI_COMM_WORLD);
+  //neworder::log("buf send length %%"_s % data.size);
   MPI_Send(data.buf, data.size, mpi_type_trait<Buffer>::type, process, 0, MPI_COMM_WORLD);
-//  neworder::log("send %%"_s % data.substr(40));
+  // neworder::log("send %%"_s % data.substr(40));
 }
 
 template<typename T>
@@ -99,9 +96,14 @@ void receive_impl(T& data, int process)
 template<>
 void receive_impl(std::string& data, int process)
 {
+  // Probe for an incoming message from process zero
+  MPI_Status status;
+  MPI_Probe(0, 0, MPI_COMM_WORLD, &status);
+
+  // When probe returns, the status object has the size and other attributes of the incoming message. Get the message size
   int size;
-  MPI_Recv(&size, 1, mpi_type_trait<int>::type, process, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-//  neworder::log("recv length %%"_s % size);
+  MPI_Get_count(&status, mpi_type_trait<std::string>::type, &size);
+  neworder::log("str recv length %%"_s % size);
 
   data.resize(size);
   MPI_Recv(&data[0], size, mpi_type_trait<std::string>::type, process, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
@@ -110,11 +112,16 @@ void receive_impl(std::string& data, int process)
 template<>
 void receive_impl(Buffer& data, int process)
 {
-  int n;
-  MPI_Recv(&n, 1, mpi_type_trait<int>::type, process, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-  neworder::log("buf recv length %%"_s % n);
+  // Probe for an incoming message from process zero
+  MPI_Status status;
+  MPI_Probe(0, 0, MPI_COMM_WORLD, &status);
 
-  data.alloc(n);
+  // When probe returns, the status object has the size and other attributes of the incoming message. Get the message size
+  int size;
+  MPI_Get_count(&status, mpi_type_trait<Buffer>::type, &size);
+  //neworder::log("buf recv length %%"_s % size);
+
+  data.alloc(size);
   MPI_Recv(data.buf, data.size, mpi_type_trait<Buffer>::type, process, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 }
 

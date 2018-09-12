@@ -12,7 +12,6 @@
 
 void test1(const std::string& modulename, const std::string& functionname, const std::vector<std::string>& argstrings, const py::object& expected)
 {
-  pycpp::Environment& env = pycpp::Environment::get();
   neworder::log("%%: %% %%"_s % modulename % functionname % argstrings);
 
   py::object module = py::import(modulename.c_str());
