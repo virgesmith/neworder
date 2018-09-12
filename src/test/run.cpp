@@ -1,4 +1,4 @@
-
+#include "run.h"
 #include "test.h"
 #include "Environment.h"
 #include "MPIResource.h"
@@ -32,7 +32,6 @@ int run(int rank, int size, int nmodules, const char* testmodules[])
     // doesnt extract the python error type/msg 
     test_errors();
 
-    neworder::log("Testing python modules");
     for (int i = 0; i < nmodules; ++i)
     {
       py::object module = py::import(testmodules[i]);
@@ -62,9 +61,3 @@ int run(int rank, int size, int nmodules, const char* testmodules[])
 }
 
 
-int main(int argc, const char *argv[])
-{
-  MPIResource mpi(&argc, &argv);
-
-  return run(mpi.rank(), mpi.size(), argc-1, &argv[1]);
-}

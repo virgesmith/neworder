@@ -3,7 +3,7 @@ INTDIR=int$(SUFFIX)
 
 CXXFLAGS += -I../lib -I../include
 
-src=neworder$(SUFFIX).cpp run.cpp
+src=main$(SUFFIX).cpp run.cpp
 dep=$(patsubst %,$(INTDIR)/%,$(src:.cpp=.d))
 obj=$(patsubst %,$(INTDIR)/%,$(src:.cpp=.o))
 

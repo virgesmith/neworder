@@ -28,6 +28,10 @@ bin: lib
 test: bin 
 	+cd src/test && $(MAKE) test
 
+install:
+	cp src/lib/libneworder.so /usr/local/lib
+	cp src/bin/neworder /usr/local/bin
+
 clean:
 	cd src/lib && $(MAKE) clean
 	cd src/bin && $(MAKE) clean
