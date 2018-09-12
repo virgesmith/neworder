@@ -17,6 +17,7 @@ def send_recv(x):
   return True
 
 def test():
+
   if neworder.nprocs == 1:
     neworder.log("Skipping MPI tests")
     return True
@@ -53,4 +54,4 @@ def test():
     neworder.log("got (pickle) df len %d rows from 0" % len(dfrec))
     t.check(dfrec.equals(df))
 
-  return t.any_failed
+  return not t.any_failed
