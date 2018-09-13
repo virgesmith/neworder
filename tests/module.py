@@ -7,10 +7,12 @@ import neworder as no
 import numpy as np
 import pandas as pd
 
-import test as t
+import test as test_
 
 def test():
+  t = test_.Test()
 
+  #t.check(False)
   s = no.ustream(10000)
   t.check(isinstance(s, np.ndarray))
 

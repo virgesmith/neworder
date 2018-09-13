@@ -60,7 +60,7 @@ void send_csv(const py::object& o, int rank);
 py::object receive_csv(int rank);
 
 // Broadcast object from rank to all other procs
-void broadcast_obj(py::object& o, int rank);
+py::object broadcast_obj(py::object& o, int rank);
 
 template<typename T>
 void send(const T& data, int process)

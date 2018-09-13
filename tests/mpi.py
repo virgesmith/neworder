@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import neworder
 
-import test as t
+import test as test_
 
 def send_recv(x):
   if neworder.procid == 0:
@@ -17,6 +17,7 @@ def send_recv(x):
   return True
 
 def test():
+  t = test_.Test()
 
   if neworder.nprocs == 1:
     neworder.log("Skipping MPI tests")
@@ -63,9 +64,10 @@ def test():
   root = 0
   neworder.log("proc %d i=%d" % (neworder.procid, i))
   #neworder.log("broadcasting %d from %d" % (i, root))
-  neworder.broadcast(i, root)
+  i = neworder.broadcast(i, root)
 
   t.check(i == 0)
+  neworder.log(t.any_failed)
   neworder.log("proc %d i=%d" % (neworder.procid, i))
 
   return not t.any_failed

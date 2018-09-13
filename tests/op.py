@@ -3,7 +3,7 @@
 import numpy as np
 import neworder
 
-import test as t
+import test as test_
 
 def add(a,b):
   return a + b
@@ -25,6 +25,7 @@ notafunc = 3
 #neworder.log("callback: %s" % neworder.name())
 
 def test():
+  t = test_.Test()
 
   # Exp.value = p +/- 1/sqrt(N)
   h = neworder.hazard(0.2, 10000)

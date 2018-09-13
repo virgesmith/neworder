@@ -120,7 +120,6 @@ BOOST_PYTHON_MODULE(neworder)
   py::def("sync", no::mpi::sync);
   py::def("broadcast", no::mpi::broadcast_obj);
   
-  
   // Deferred eval/exec of Python code
   py::class_<no::Callback>("Callback", py::no_init)
     .def("__call__", &no::Callback::operator())

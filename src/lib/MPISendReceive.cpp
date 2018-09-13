@@ -214,13 +214,20 @@ void neworder::mpi::sync()
 #endif
 }
 
+
+//#include "Environment.h"
+
 // Broadcast object from rank to all other procs
-void neworder::mpi::broadcast_obj(py::object& o, int rank)
+// Have to return by value as (some) python objects are immutable 
+py::object neworder::mpi::broadcast_obj(py::object& o, int rank)
 {
 #ifdef NEWORDER_MPI
   int n = py::extract<int>(o)();
+//  neworder::log("broadcast (%%) %%"_s % pycpp::Environment::get().rank() % n);
   broadcast(n, rank);
-  o = py::object(n);
+  return py::object(n);
+#else
+  return o;
 #endif
 }
 
