@@ -60,14 +60,25 @@ def test():
   neworder.sync()
   neworder.log("process %d synced" % neworder.procid)
 
-  i = neworder.procid
+  i = "rank " + str(neworder.procid)
   root = 0
-  neworder.log("proc %d i=%d" % (neworder.procid, i))
-  #neworder.log("broadcasting %d from %d" % (i, root))
+  if root == neworder.procid:
+    neworder.log("broadcasting '%s' from %d" % (i, root))
   i = neworder.broadcast(i, root)
+  neworder.log("%d got broadcast: '%s' from %d" % (neworder.procid, i, root))
 
-  t.check(i == 0)
-  neworder.log(t.any_failed)
-  neworder.log("proc %d i=%d" % (neworder.procid, i))
+  t.check(i == "rank 0")
+
+  # a0 will be different for each proc
+  a0 = np.random.rand(2,2)
+  if root == neworder.procid:
+    neworder.log("broadcasting '%s' from %d" % (str(a0), root))
+  a1 = neworder.broadcast(a0, root)
+  # a1 will equal a0 on rank 0 only
+  neworder.log("%d got broadcast: '%s' from %d" % (neworder.procid, str(a1), root))
+  if neworder.procid == 0:
+    t.check(np.array_equal(a0, a1))
+  else:
+    t.check(not np.array_equal(a0, a1))
 
   return not t.any_failed

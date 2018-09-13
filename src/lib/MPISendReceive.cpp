@@ -133,6 +133,18 @@ void receive_impl(Buffer& data, int process)
 
 } // anon
 
+namespace neworder { namespace mpi {
+
+template<>
+void broadcast(Buffer& data, int process)
+{
+#ifdef NEWORDER_MPI
+  MPI_Bcast(data.buf, data.size, mpi_type_trait<Buffer>::type, process, MPI_COMM_WORLD);
+#endif
+}
+
+}}
+
 #endif
 
 
@@ -214,18 +226,16 @@ void neworder::mpi::sync()
 #endif
 }
 
-
-//#include "Environment.h"
-
 // Broadcast object from rank to all other procs
 // Have to return by value as (some) python objects are immutable 
 py::object neworder::mpi::broadcast_obj(py::object& o, int rank)
 {
 #ifdef NEWORDER_MPI
-  int n = py::extract<int>(o)();
-//  neworder::log("broadcast (%%) %%"_s % pycpp::Environment::get().rank() % n);
-  broadcast(n, rank);
-  return py::object(n);
+  py::object pickle = py::import("pickle");
+  py::object serialised = pickle.attr("dumps")(o);
+  Buffer b(PyBytes_AsString(serialised.ptr()), (int)PyBytes_Size(serialised.ptr()));
+  broadcast(b, rank);
+  return pickle.attr("loads")(py::handle<>(PyBytes_FromStringAndSize(b.buf, b.size)));
 #else
   return o;
 #endif
