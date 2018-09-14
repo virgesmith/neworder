@@ -68,7 +68,6 @@ namespace {
 //   MPI_Send(&data, 1, mpi_type_trait<T>::type, process, 0, MPI_COMM_WORLD);
 // }
 
-
 //template<>
 void send_impl(const std::string& data, int process)
 {
@@ -86,18 +85,6 @@ void send_impl(const Buffer& data, int process)
   MPI_Send(data.buf, data.size, mpi_type_trait<Buffer>::type, process, 0, MPI_COMM_WORLD);
   // neworder::log("send %%"_s % data.substr(40));
 }
-
-// template<typename T>
-// void receive_impl(T& data, int process)
-// {
-//   MPI_Status status;
-//   MPI_Probe(0, 0, MPI_COMM_WORLD, &status);
-
-//   // When probe returns, the status object has the size and other attributes of the incoming message. Get the message size
-//   int size;
-//   MPI_Get_count(&status, mpi_type_trait<std::string>::type, &size);
-//   MPI_Recv(&data, size, mpi_type_trait<T>::type, process, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-// }
 
 //template<>
 void receive_impl(std::string& data, int process)
@@ -139,7 +126,15 @@ template<>
 void broadcast(Buffer& data, int process)
 {
 #ifdef NEWORDER_MPI
-  MPI_Bcast(data.buf, data.size, mpi_type_trait<Buffer>::type, process, MPI_COMM_WORLD);
+  MPI_Bcast(data.buf, data.size, MPI_CHAR, process, MPI_COMM_WORLD);
+#endif
+}
+
+template<>
+void broadcast(std::string& data, int process)
+{
+#ifdef NEWORDER_MPI
+  MPI_Bcast(&data[0], data.size(), mpi_type_trait<std::string>::type, process, MPI_COMM_WORLD);
 #endif
 }
 

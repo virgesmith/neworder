@@ -43,8 +43,15 @@ void test_mpi()
   neworder::log("proc %% i=%%"_s % env.rank() % i);
   neworder::mpi::broadcast(i,0);
   neworder::log("proc %% i=%%"_s % env.rank() % i);
-
   CHECK(i == 0);
+
+  std::string s = "env.rank()=%%"_s % env.rank();
+  // will set i to 0 for all procs
+  neworder::log("proc %% i=%%"_s % env.rank() % s);
+  neworder::mpi::broadcast(s,0);
+  neworder::log("proc %% i=%%"_s % env.rank() % s);
+  CHECK(s == "env.rank()=0");
+
 
   neworder::mpi::sync();
 

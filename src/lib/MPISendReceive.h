@@ -86,6 +86,10 @@ void broadcast(T& data, int process)
 #endif
 }
 
+template<>
+void broadcast(std::string& data, int process);
+
+
 void sync();
 
 }} // neworder::mpi
