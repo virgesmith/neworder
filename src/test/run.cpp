@@ -46,19 +46,19 @@ int run(int rank, int size, int nmodules, const char* testmodules[])
 
     REPORT()
   }
-  catch (py::error_already_set&)
+  catch(py::error_already_set&)
   {
-    std::cerr << env.context(pycpp::Environment::PY) << "ERROR:" << env.get_error() << std::endl;
+    std::cerr << "%% ERROR: %%"_s % env.context(pycpp::Environment::PY) % env.get_error() << std::endl;
     return 1;
   }
-  catch (std::exception& e)
+  catch(std::exception& e)
   {
-    std::cerr << env.context() << "ERROR:" << e.what() << std::endl;
+    std::cerr << "%% ERROR: %%"_s % env.context() % e.what() << std::endl;
     return 1;
   }
   catch(...)
   {
-    std::cerr << env.context() << "ERROR: unknown exception" << std::endl;
+    std::cerr << "%% ERROR: unknown exception"_s % env.context() << std::endl;
     return 1;
   }
   RETURN();

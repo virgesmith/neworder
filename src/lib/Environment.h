@@ -99,7 +99,7 @@ private:
   // TODO work out why this segfaults if the dtor is called (even on exit)
   py::object* m_self;
   // thread/process-safe seeding
-  std::unique_ptr<std::mt19937> m_prng;
+  /*std::unique_ptr<*/std::mt19937/*>*/ m_prng;
 };
 
 // syntactic sugar

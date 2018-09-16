@@ -75,7 +75,7 @@ bool pycpp::Environment::next()
     return false;
   ++m_seqno;
 
-  m_prng->seed(compute_seed());
+  m_prng.seed(compute_seed());
   m_self->attr("seq") = pycpp::at<int64_t>(sequence, m_seqno);
 
   neworder::log("seq: %% sync=%% seed=%%"_s % seq() % sync_streams() % compute_seed());
@@ -83,7 +83,7 @@ bool pycpp::Environment::next()
   return true;
 }
 
-  // compute the RNG seed
+// compute the RNG seed
 int64_t pycpp::Environment::compute_seed() const
 {
   np::ndarray sequence = np::from_object(m_self->attr("sequence"));
@@ -102,14 +102,11 @@ void pycpp::Environment::seed(const np::ndarray& seq)
 
 std::mt19937& pycpp::Environment::prng()
 {
-  // move to check?
-  if (!m_prng)
-    throw std::runtime_error("mt not init");
-  return *m_prng;
+  return m_prng;
 }
 
 // Note this does not fully initialise, do not construct directly, use the static init function
-pycpp::Environment::Environment()
+pycpp::Environment::Environment() //: m_sequence(pycpp::zero_1d_array<int64_t>(1))
 {
   // make the neworder module available in embedded python env
   neworder::import_module();
@@ -129,7 +126,7 @@ pycpp::Environment::Environment()
 
   // Init rng (unseeded for now)
   // TODO this doesnt need to be a unique_ptr now?
-  m_prng = std::make_unique<std::mt19937>();
+  //m_prng = std::make_unique<std::mt19937>();
 } 
 
 pycpp::Environment::~Environment() 

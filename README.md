@@ -133,6 +133,18 @@ _So far only tested on Ubuntu 16.04/18.04_
 $ sudo apt install -y build-essential python3 python3-dev python3-pip libboost-python-dev
 $ python3 -m pip install -U numpy pandas
 ```
+
+### Minimum versions
+
+python: 3.5
+- numpy: 1.15
+- pandas: 0.23
+
+C++14: gcc 5.4 
+- boost 1.63
+- MPI ?
+
+
 ### Boost
 
 Boost.numpy was introduced in version 1.63, Boost 1.65.1 or higher is recommended. For platforms that come with older versions, see e.g. [this script](tools/boost_python.sh) which downloads 1.67 and builds only the python modules for python3:
