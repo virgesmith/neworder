@@ -10,6 +10,12 @@
 
 namespace pycpp {
 
+// TODO no duplication of data between python/C++
+// for scalar, either (whichever is the most efficient):
+// - always access the (immutable) python vars via m_self->attr(""), or
+// - define the var in C++ and provide a python accessor function
+// for arrays, C++ and python ref the same data (test this)
+
 struct Environment
 {
 public:

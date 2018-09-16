@@ -36,16 +36,12 @@ int run(int rank, int size)
   pycpp::Environment& env = pycpp::Environment::init(rank, size);
   try
   {
-    neworder::log("init: rank=%% size=%%"_s % env.rank() % env.size());
-
     // Load (and exec) config file
     py::object config = py::import("config");
     // Update the env accordingly
     env.configure();
 
-    neworder::log("config: seq=%% sync=%% seed=%%"_s % env.seq() % env.sync_streams() % env.compute_seed());
-
-    bool do_checks= py ::extract<bool>(env().attr("do_checks"))();
+    bool do_checks= py::extract<bool>(env().attr("do_checks"))();
 
     int log_level = py::extract<int>(env().attr("log_level"))();
     // TODO actually do something with log_level...

@@ -22,12 +22,7 @@ pycpp::Environment& pycpp::Environment::init(int rank, int size)
   env.m_self->attr("procid") = env.m_rank;
   env.m_self->attr("nprocs") = env.m_size;
 
-  // dummy sequence (needs to be read from config.py - which hasnt been loaded yet)
-  env.m_self->attr("sequence") = pycpp::zero_1d_array<int64_t>(1);
-  env.m_self->attr("seq") = 0;
-
-  // neworder::log("embedded python version: %%"_s % version());
-  // neworder::log("env init");
+  neworder::log("env: python %%"_s % version());
 
   return env;
 }
@@ -80,9 +75,10 @@ bool pycpp::Environment::next()
     return false;
   ++m_seqno;
 
-  // ensure stream indepence w.r.t. sequence and MPI rank/size
   m_prng->seed(compute_seed());
   m_self->attr("seq") = pycpp::at<int64_t>(sequence, m_seqno);
+
+  neworder::log("seq: %% sync=%% seed=%%"_s % seq() % sync_streams() % compute_seed());
 
   return true;
 }
@@ -126,6 +122,10 @@ pycpp::Environment::Environment()
 
   m_self = new py::object(py::import("neworder"));
   
+  // dummy sequence (needs to be read from config.py - which hasnt been loaded yet)
+  m_self->attr("sequence") = pycpp::zero_1d_array<int64_t>(1);
+  m_self->attr("seq") = 0;
+  m_seqno = 0;
 
   // Init rng (unseeded for now)
   // TODO this doesnt need to be a unique_ptr now?
