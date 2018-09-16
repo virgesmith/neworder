@@ -36,26 +36,20 @@ int run(int rank, int size)
   pycpp::Environment& env = pycpp::Environment::init(rank, size);
   try
   {
+    neworder::log("init: rank=%% size=%%"_s % env.rank() % env.size());
+
     // Load (and exec) config file
     py::object config = py::import("config");
+    // Update the env accordingly
+    env.configure();
 
-    bool do_checks = py::extract<bool>(env().attr("do_checks"))();
+    neworder::log("config: seq=%% sync=%% seed=%%"_s % env.seq() % env.sync_streams() % env.compute_seed());
+
+    bool do_checks= py ::extract<bool>(env().attr("do_checks"))();
 
     int log_level = py::extract<int>(env().attr("log_level"))();
     // TODO actually do something with log_level...
     (void)log_level;
-
-    if (pycpp::has_attr(env(), "sync_streams"))
-    {
-      env.sync_streams() = py::extract<bool>(env().attr("sync_streams"))();
-      neworder::log("sync attr = %%"_s % env.sync_streams());
-    }
-
-    // TODO python func to set sequence and reset rng
-    if (pycpp::has_attr(env(), "sequence"))
-    {
-      env.seed(np::from_object(env().attr("sequence")));
-    }
 
     const np::ndarray& timespan = np::from_object(env().attr("timespan"));
     double timestep = py::extract<double>(env().attr("timestep"))();
@@ -66,7 +60,7 @@ int run(int rank, int size)
       throw std::runtime_error("Timestep cannot be zero!");
     }
 
-    neworder::log("t=%% init:"_s % pycpp::at<double>(timespan, 0));
+    neworder::log("starting microsimulation t=%%"_s % pycpp::at<double>(timespan, 0));
 
     // execs
     no::CallbackTable transitionTable; 

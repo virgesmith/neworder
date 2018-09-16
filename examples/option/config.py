@@ -8,7 +8,7 @@ import numpy as np
 import neworder
 
 # run 4 times NB contained type is int64
-#neworder.sequence = np.array([0,1,2,3])
+neworder.sequence = np.array([10,11,12,13])
 
 # market data
 spot = 100.0 # underlying spot price

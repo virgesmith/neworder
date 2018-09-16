@@ -27,7 +27,7 @@ bool send_recv(const T& x, pycpp::Environment& env)
 void test_mpi()
 {
 #ifdef NEWORDER_MPI
-  pycpp::Environment& env = pycpp::Environment::get();
+  pycpp::Environment& env = pycpp::getenv();
 
   CHECK(env.size() > 1);
 

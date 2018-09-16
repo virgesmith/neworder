@@ -18,7 +18,7 @@ namespace {
 // not visible to (rest of) C++ - use function declareds in Log.h
 void log_obj(const py::object& msg)
 {
-  std::cout << pycpp::Environment::get().context(pycpp::Environment::PY) << pycpp::as_string(msg.ptr()) << std::endl;
+  std::cout << pycpp::getenv().context(pycpp::Environment::PY) << pycpp::as_string(msg.ptr()) << std::endl;
 }
 
 }
@@ -68,7 +68,7 @@ const char* neworder::module_version()
 
 std::string neworder::python_version()
 {
-  return pycpp::Environment::get().version();
+  return pycpp::getenv().version();
 }
 
 void neworder::shell(/*const py::object& local*/)

@@ -26,13 +26,11 @@ public:
   Environment(const Environment&&) = delete;
   Environment& operator=(const Environment&&) = delete;
 
-  // Use this function to create the environemt
-  // it ensures the PRNG has been seeded independently for parallel jobs
-  // seeds will be a consecutive numbers starting at a (large prime) multiple of the total no of processes
+  // Use this function to create the base environemt
   static Environment& init(int rank, int size);
 
-  // syntactic sugar
-  static Environment& get();
+  // Apply settings from config.py, including sequence and RNG state(s)
+  void configure();
 
   // check for errors in the python env (use after catching py::error_already_set)
   static std::string get_error() noexcept;
@@ -56,6 +54,11 @@ public:
   bool& sync_streams()
   {
     return m_sync_streams;
+  }
+
+  int seq()
+  {
+    return py::extract<int>(m_self->attr("seq"))();
   }
 
   // TODO rename, refactor sequence
@@ -92,5 +95,10 @@ private:
   // thread/process-safe seeding
   std::unique_ptr<std::mt19937> m_prng;
 };
+
+// syntactic sugar
+Environment& getenv();
+
+
 
 }

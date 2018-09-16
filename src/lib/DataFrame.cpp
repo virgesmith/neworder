@@ -7,7 +7,7 @@
 
 void neworder::df::transition(np::ndarray& col)
 {
-  // std::mt19937& prng = pycpp::Environment::get().prng();
+  // std::mt19937& prng = pycpp::getenv().prng();
   // std::uniform_real_distribution<> dist(0.0, 1.0);
 
   size_t n = pycpp::size(col);

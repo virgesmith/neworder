@@ -53,11 +53,11 @@ std::string to_string_impl(const std::string& v)
 // not visible to python
 void neworder::log(const std::string& msg)
 {
-  std::cout << pycpp::Environment::get().context() << msg << std::endl;
+  std::cout << pycpp::getenv().context() << msg << std::endl;
 }
 
 // not visible to python
 void neworder::log(const py::object& msg)
 {
-  std::cout << pycpp::Environment::get().context() << pycpp::as_string(msg.ptr()) << std::endl;
+  std::cout << pycpp::getenv().context() << pycpp::as_string(msg.ptr()) << std::endl;
 }

@@ -20,7 +20,7 @@ void test_no()
   CHECK((neworder::log("neworder module test"), true));
   CHECK((neworder::log("test logging types: %% %% %% %% %% %%"_s % false % 0 % 0.0 % "" % ""_s % std::vector<int>(10)), true));
 
-  /*pycpp::Environment& env =*/ pycpp::Environment::get();
+  /*pycpp::Environment& env =*/ pycpp::getenv();
   py::object module = py::import("neworder");
 
   // Check required (but defaulted) attrs visible from both C++ and python

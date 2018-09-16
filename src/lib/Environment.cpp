@@ -22,18 +22,33 @@ pycpp::Environment& pycpp::Environment::init(int rank, int size)
   env.m_self->attr("procid") = env.m_rank;
   env.m_self->attr("nprocs") = env.m_size;
 
-  // dummy sequence
+  // dummy sequence (needs to be read from config.py - which hasnt been loaded yet)
   env.m_self->attr("sequence") = pycpp::zero_1d_array<int64_t>(1);
   env.m_self->attr("seq") = 0;
 
-  neworder::log("embedded python version: %%"_s % version());
-  neworder::log("env init");
+  // neworder::log("embedded python version: %%"_s % version());
+  // neworder::log("env init");
 
   return env;
 }
 
+void pycpp::Environment::configure()
+{
+  if (pycpp::has_attr(*m_self, "sync_streams"))
+  {
+    m_sync_streams = py::extract<bool>(m_self->attr("sync_streams"))();
+    //neworder::log("sync attr = %%"_s % env.sync_streams());
+  }
+
+  // TODO python func to set sequence and reset rng
+  if (pycpp::has_attr(*m_self, "sequence"))
+  {
+    seed(np::from_object(m_self->attr("sequence")));
+  } 
+}
+
 // syntactic sugar
-pycpp::Environment& pycpp::Environment::get()
+pycpp::Environment& pycpp::getenv()
 {
   return Global::instance<Environment>();
 }
@@ -66,7 +81,7 @@ bool pycpp::Environment::next()
   ++m_seqno;
 
   // ensure stream indepence w.r.t. sequence and MPI rank/size
-  m_prng->seed(77027473 * pycpp::at<int64_t>(sequence, m_seqno) + 19937 * m_size + m_rank);
+  m_prng->seed(compute_seed());
   m_self->attr("seq") = pycpp::at<int64_t>(sequence, m_seqno);
 
   return true;
@@ -78,7 +93,7 @@ int64_t pycpp::Environment::compute_seed() const
   np::ndarray sequence = np::from_object(m_self->attr("sequence"));
 
   // ensure stream (in)dependence w.r.t. sequence and MPI rank/sizes
-  return 77027473 * pycpp::at<int64_t>(sequence, m_seqno) + 19937 * m_size + m_rank * !m_sync_streams;  
+  return 77027473 * pycpp::at<int64_t>(sequence, m_seqno) + 19937 * m_size + (m_rank * !m_sync_streams);  
 }
 
 // Sets a PRNG sequence (and resets sequence counter)
