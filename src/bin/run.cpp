@@ -45,12 +45,18 @@ int run(int rank, int size)
     // TODO actually do something with log_level...
     (void)log_level;
 
+    if (pycpp::has_attr(env(), "sync_streams"))
+    {
+      env.sync_streams() = py::extract<bool>(env().attr("sync_streams"))();
+      neworder::log("sync attr = %%"_s % env.sync_streams());
+    }
+
     // TODO python func to set sequence and reset rng
     if (pycpp::has_attr(env(), "sequence"))
     {
       env.seed(np::from_object(env().attr("sequence")));
     }
-  
+
     const np::ndarray& timespan = np::from_object(env().attr("timespan"));
     double timestep = py::extract<double>(env().attr("timestep"))();
 
@@ -151,12 +157,12 @@ int run(int rank, int size)
   }
   catch (py::error_already_set&)
   {
-    std::cerr << "ERROR: " << env.context(pycpp::Environment::PY) << " " << env.get_error() << std::endl;
+    std::cerr << "ERROR: %% %%"_s % env.context(pycpp::Environment::PY) % env.get_error() << std::endl;
     return 1;
   }
   catch (std::exception& e)
   {
-    std::cerr << "ERROR: " << env.context() << " " << e.what() << std::endl;
+    std::cerr << "ERROR: %% %%"_s % env.context() % e.what() << std::endl;
     return 1;
   }
   catch(...)

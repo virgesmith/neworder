@@ -49,6 +49,16 @@ public:
   // returns "seq-rank/size"
   std::string context(int ctx = CPP) const;
 
+  // compute the RNG seed
+  int64_t compute_seed() const;
+
+  //
+  bool& sync_streams()
+  {
+    return m_sync_streams;
+  }
+
+  // TODO rename, refactor sequence
   // set the RNG stream sequence
   void seed(const np::ndarray& seq);
 
@@ -70,9 +80,13 @@ private:
   // RNG sequence index
   size_t m_seqno;
   //np::ndarray* m_sequence;
+
   // MPI rank/size
   int m_rank;
   int m_size;
+  // set to true to make all processes use the same seed
+  bool m_sync_streams;
+
   // TODO work out why this segfaults if the dtor is called (even on exit)
   py::object* m_self;
   // thread/process-safe seeding

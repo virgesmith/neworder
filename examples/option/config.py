@@ -8,7 +8,7 @@ import numpy as np
 import neworder
 
 # run 4 times NB contained type is int64
-neworder.sequence = np.array([0,1,2,3])
+#neworder.sequence = np.array([0,1,2,3])
 
 # market data
 spot = 100.0 # underlying spot price
@@ -25,6 +25,7 @@ expiry = 0.75
 neworder.timespan = np.array([0, expiry])
 neworder.timestep = expiry
 neworder.nsims = 100000 # number of prices to simulate
+neworder.sync_streams = True # all procs use same RNG stream
 
 neworder.log_level = 1
 neworder.do_checks = False
@@ -45,11 +46,11 @@ neworder.initialisations = {
 
 neworder.transitions = { 
   # compute the option price
-  #"compute_mc_price": "option.mc(nsims)"
-  # use QRNG
-  "compute_mc_price": "pv = model.mc(option, market, nsims, quasi=True)" 
+  # To use QRNG (Sobol), set quasi=True
+  "compute_mc_price": "pv = model.mc(option, market, nsims, quasi=False)",
+  "compute_greeks": "sync() #..."
 }
 
 neworder.checkpoints = {
-   "compare_mc_price": "model.compare(pv, nsims, option, market)"
+   "compare_mc_price": "model.compare(pv, nsims, option, market)",
 }

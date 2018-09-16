@@ -10,7 +10,7 @@ from humanleague import sobolSequence
 
 def nstream(n):
   """ Return a vector of n normally distributed pseudorandom variates (mean zero unity variance) """
-  return scipy.stats.norm.ppf(neworder.ustream_np(n))
+  return scipy.stats.norm.ppf(neworder.ustream(n))
 
 def nstream_q(n):
   """ Return a vector of n normally distributed quasirandom variates (mean zero unity variance) """

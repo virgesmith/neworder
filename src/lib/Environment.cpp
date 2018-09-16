@@ -13,27 +13,21 @@ pycpp::Environment& pycpp::Environment::init(int rank, int size)
 {
   // make our rank/size visible to python
   Environment& env = Global::instance<Environment>();
-  // TODO is it possible to avoid this duplication? probably not
+
+  // Cannot avoid duplicating scalars between C++ and python due to the latter's immutability
   env.m_rank = rank;
   env.m_size = size;
-  // TODO consider using MPI terminology
-  env.m_self->attr("procid") = rank;
-  env.m_self->attr("nprocs") = size;
 
-  // Default sequence is [0]. May be overridden, using the (python) variable neworder.sequence
-  if (!pycpp::has_attr(*env.m_self, "sequence"))
-  {
-    env.m_self->attr("sequence") = pycpp::zero_1d_array<int64_t>(1);
-  }
-  np::ndarray sequence = np::from_object(env.m_self->attr("sequence"));
-  env.m_seqno = 0;
+  // TODO consider using MPI terminology
+  env.m_self->attr("procid") = env.m_rank;
+  env.m_self->attr("nprocs") = env.m_size;
+
+  // dummy sequence
+  env.m_self->attr("sequence") = pycpp::zero_1d_array<int64_t>(1);
   env.m_self->attr("seq") = 0;
 
-  // Init rng
-  env.m_prng.reset(new std::mt19937(77027473 * pycpp::at<int64_t>(sequence, env.m_seqno) + 19937 * size + rank));
-
-  neworder::log("env init");
   neworder::log("embedded python version: %%"_s % version());
+  neworder::log("env init");
 
   return env;
 }
@@ -59,8 +53,7 @@ int pycpp::Environment::size() const
 std::string pycpp::Environment::context(int ctx) const
 {
   np::ndarray sequence = np::from_object(m_self->attr("sequence"));
-  std::string idstring = ctx == 0 ? "[no " : "[py ";
-  idstring += std::to_string(pycpp::at<int64_t>(sequence, m_seqno)) + "-" + std::to_string(m_rank) + "/" + std::to_string(m_size) + "] ";
+  std::string idstring = "[%% %%-%%/%%] "_s % (ctx == 0 ? "no" : "py") % pycpp::at<int64_t>(sequence, m_seqno) % m_rank % m_size;
   return idstring;
 }
 
@@ -79,6 +72,14 @@ bool pycpp::Environment::next()
   return true;
 }
 
+  // compute the RNG seed
+int64_t pycpp::Environment::compute_seed() const
+{
+  np::ndarray sequence = np::from_object(m_self->attr("sequence"));
+
+  // ensure stream (in)dependence w.r.t. sequence and MPI rank/sizes
+  return 77027473 * pycpp::at<int64_t>(sequence, m_seqno) + 19937 * m_size + m_rank * !m_sync_streams;  
+}
 
 // Sets a PRNG sequence (and resets sequence counter)
 void pycpp::Environment::seed(const np::ndarray& seq)
@@ -109,7 +110,11 @@ pycpp::Environment::Environment()
   np::initialize();
 
   m_self = new py::object(py::import("neworder"));
+  
 
+  // Init rng (unseeded for now)
+  // TODO this doesnt need to be a unique_ptr now?
+  m_prng = std::make_unique<std::mt19937>();
 } 
 
 pycpp::Environment::~Environment() 

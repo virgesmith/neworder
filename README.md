@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/virgesmith/neworder.png?branch=master)](https://travis-ci.org/virgesmith/neworder) 
 [![License](https://img.shields.io/github/license/mashape/apistatus.svg)](https://opensource.org/licenses/MIT)
 
-Neworder is a prototype C++ microsimulation package inspired by [openm++](https://ompp.sourceforge.io/) and MODGEN. Models are defined in high-level code (python) and executed in an embedded simulation framework (C++) which exposes a subset of itself as a python module. (In order words the C++ framework can call python _and vice versa_).
+Neworder is a prototype microsimulation package inspired by [openm++](https://ompp.sourceforge.io/) and MODGEN. Models are defined in high-level code (python) and executed within an embedded simulation framework (written in C++) which exposes a subset of itself as a python module. (In order words the C++ framework can call python _and vice versa_).
 
 As python and C++ have very different memory models, it's not possible to directly share data, i.e. safely have a python object and a C++ object both referencing (and potentially modifying) the same memory location. However, there is a crucial exception to this: the numpy ndarray type. This is fundamental to the operation of the framework, as it enables the C++ module to directly access (and modify) pandas data frames (which do not have a native C API).
 
@@ -24,16 +24,30 @@ The sections below list minimal requirements that must be met, and those that - 
 #### Compulsory
 The framework minimal requirements are that:
 - a timeline and a timestep is defined<sup>*</sup>. The timeline can be partitioned, for example for running a 40-year simulation with 1 year timesteps, but outputting results every 5 years. The latter are referred to as "checkpoints", and the end of the timeline is always considered to be a checkpoint.
-- python code to be executed at the first timestep, e.g. to load or microsynthesise an initial population, and any data governing the dynamics.
-- python code to evolve to the next timestep, which can (and typically will) involve multiple processes and can be implemented in multiple functions.
-- python code to be executed at each checkpoint, typically writing intermediate results.
+- python code to be executed at the first timestep, e.g. to load or microsynthesise an initial population, and also load any data governing the dynamics of the microsimulation, e.g. fertility rates.
+- python code to evolve the population to the next timestep, which can (and typically will) involve multiple processes and can be implemented in multiple functions.
+- python code to be executed at each checkpoint, typically outputting results in some form or other.
 
 &ast; case-based simulation support is in progress. In this case the timeline refers not to absolute time but the age of the cohort.
 
 #### Optional
 And the following are optional:
-- python code to run at each timestep to e.g. perform checks
-- an outer sequence: this defines a number of runs of the same simulation whilst ensuring RNG independence.
+- python code to run at each timestep to e.g. perform checks that the population remains plausible.
+- an outer sequence: this defines a number of runs. This could be re-running the entire simulation again with a different random number stream (to check convergence), or running the simulation with perturbed inputs reusing the same random numbers (to check sensitivity).
+
+### Provision
+The framework provides:
+- the main "loop" over sequence (if specified), and timeline. 
+- a parallel execution framework supporting interprocess communication.
+- independent (or identical) deterministic pseudorandom number streams for each process and/or sequence.
+- a library of Monte-Carlo methods.
+- a mechanism to specify lazily evaluated/executed (i.e. deferred) python code.
+- ad-hoc development of fast implementations of slow-running python code, i.e. python code with explicit loops. 
+- a logging framework.
+
+Where possible, the functionality available in existing python libraries should be used. The framework specifically does not provide:
+- arrays: use numpy wherever possible. The framework can access numpy arrays directly.
+- data frames: use pandas wherever possible. Data frames are accessible in the framework via numpy arrays.
 
 #### Special Variables
 The neworder python module defines, or requires the model to define, the following variables:
@@ -49,6 +63,7 @@ name       | type        | default | description
 `transitions`| dict      |         | model evolution functions (per-timestep)  
 `checks`   | dict        | {}      | specify functions to run after each timestep 
 `checkpoints`| dict      |         | perform specified code at each checkpoint 
+`sync_streams`|bool      | `false` | determines whether each process has an identical or independent random stream.
 
 Additionally, the module creates the following runtime variables:
 
@@ -58,27 +73,55 @@ name       | type        | default | description
 `procid`   | int         | `0`     | identifies process for parallel runs. (Used to seed the RNG stream)
 `nprocs`   | int         | `1`     | total number of processes in simulation. (Used to seed the RNG stream)
 
+#### Functions
+The `neworder` module exposes the following functions to python:
 
-# Provision
-The framework provides:
-- the main "loop" over sequence (if specified), and timeline. 
-- a parallel execution framework supporting interprocess communication<sup>*</sup>.
-- independent deterministic pseudorandom number streams for each process and sequence.
-- a library of Monte-Carlo methods.
-- a mechanism to specify lazily evaluated/executed (i.e. deferred) python code.
-- ad-hoc development of fast implementations of slow-running python code, i.e. python code with explicit loops<sup>*</sup>. 
-- a logging framework.
+##### General, Utility and Diagnostics
 
-&ast; asterisk denotes functionality that is planned or under development.
+name                | description
+--------------------|------------------------------------
+`name()`            | returns the module name (`neworder`)
+`version()`         | returns the module version
+`python()`          | returns the embedded python version
+`log(msg)`          | prints `msg`
+`shell()`           | starts an interactive shell
+`lazy_exec(expr)`   | creates a python expression `expr` for later execution
+`lazy_eval(expr)`   | creates a python expression `expr` for later evaluation
+`reset_streams(b)`  | resets the random number stream(s), optionally synchronising them
 
-Where possible, the functionality available in existing python libraries should be used. The framework specifically does not provide:
-- arrays: use numpy wherever possible. The framework can access numpy arrays directly.
-- data frames: use pandas wherever possible. Data frames are accessible in the framework via numpy arrays.
+##### Monte-Carlo
+
+name                | description
+--------------------|------------------------------------
+`ustream(n)`        | returns a numpy 1d array of `n` uniform [0,1) random variables.
+`hazard(r, n)`      | returns a numpy 1d array of `n` Bernoulli trials given a hazard rate `r`.
+`hazard_v()`        | return a numpy 1d array of Bernoulli trials given a hazard rate `r`.
+`stopping(r, n)`    | returns a numpy array of `n` stopping times given a fixed hazard rate `r`. 
+`stopping()`        | returns a vector of stopping times given a fixed hazard rate and a length 
+`stopping_v()`      |  
+`stopping_nhpp()`   | non-homogeneous Poisson process 
+
+##### Data Frames
+py::def("transition", no::df::transition);
+py::def("directmod", no::df::directmod);
+py::def("append", no::df::append
+
+##### Parallel Execution
+name                | description
+--------------------|------------------------------------
+`send(x, n)`        | send object `x` to process `n` 
+`receive(n)`        | accept object from process `n`
+`send_csv(df, n)`   | send pandas DataFrame in csv format to process `n`
+`receive_csv(n)`    | accept pandas DataFrame transmitted in csv format from process `n`
+`broadcast(x, n)`   | send object `x` from process `n` to all other processes
+`sync()`            | suspend execution of the currency process until all processes have reached this point
 
 ## Proof-of-concept 
 A simulation of a population of people by age, gender, ethnicity and location (LAD or MSOA) over a 40-year period. There are two distinct use cases:
 - desktop: a single-threaded simulation of a single local authority (~250k people).
 - cluster: a highly parallel simulation of an entire country (~50M people).
+
+The latter ran on ARC3, over 48 cores, in under 6 minutes. 
 
 # Installation
 

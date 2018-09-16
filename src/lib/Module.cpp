@@ -102,6 +102,7 @@ BOOST_PYTHON_MODULE(neworder)
   py::def("stopping_nhpp", no::stopping_nhpp);
   py::def("hazard_v", no::hazard_v);
   py::def("stopping_v", no::stopping_v);
+  //py::def("reset", no::prng_reset);
 
   py::def("lazy_exec", no::Callback::exec);
   py::def("lazy_eval", no::Callback::eval);
