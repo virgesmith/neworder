@@ -27,20 +27,20 @@ pycpp::Environment& pycpp::Environment::init(int rank, int size)
   return env;
 }
 
-void pycpp::Environment::configure()
-{
-  if (pycpp::has_attr(*m_self, "sync_streams"))
-  {
-    m_sync_streams = py::extract<bool>(m_self->attr("sync_streams"));
-    //neworder::log("sync attr = %%"_s % env.sync_streams());
-  }
+// void pycpp::Environment::configure(const py::object& obj)
+// {
+//   if (pycpp::has_attr(*m_self, "sync_streams"))
+//   {
+//     m_sync_streams = py::extract<bool>(m_self->attr("sync_streams"));
+//     //neworder::log("sync attr = %%"_s % env.sync_streams());
+//   }
 
-  // TODO python func to set sequence and reset rng
-  if (pycpp::has_attr(*m_self, "sequence"))
-  {
-    seed(np::from_object(m_self->attr("sequence")));
-  } 
-}
+//   // TODO python func to set sequence and reset rng
+//   if (pycpp::has_attr(*m_self, "sequence"))
+//   {
+//     seed(np::from_object(m_self->attr("sequence")));
+//   } 
+// }
 
 // syntactic sugar
 pycpp::Environment& pycpp::getenv()

@@ -221,11 +221,11 @@ py::object neworder::mpi::broadcast_obj(py::object& o, int rank)
 void neworder::mpi::sync()
 {
 #ifdef NEWORDER_MPI
-  neworder::log("waiting for other processes...");
+  //neworder::log("waiting for other processes...");
   MPI_Barrier(MPI_COMM_WORLD);
-  neworder::log("...resuming");
-#else
-  throw std::runtime_error("%% not implemented (binary doesn't support MPI)"_s % __FUNCTION__);
+  //neworder::log("...resuming");
+// #else
+//   throw std::runtime_error("%% not implemented (binary doesn't support MPI)"_s % __FUNCTION__);
 #endif
 }
 

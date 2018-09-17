@@ -39,7 +39,8 @@ int run(int rank, int size)
     // Load (and exec) config file
     py::object config = py::import("config");
     // Update the env accordingly
-    env.configure();
+    //env.configure(config);
+    //neworder::shell();
 
     bool do_checks= py::extract<bool>(env().attr("do_checks"))();
 

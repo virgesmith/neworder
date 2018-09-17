@@ -13,6 +13,9 @@ neworder.timespan = np.array([0, 1], dtype=float)
 # We only need one timestep
 neworder.timestep = neworder.timespan[1]
 
+# breaks on second iteration
+#neworder.sequence = np.array([0,0,2])
+
 # Checks to run during the simulation
 neworder.log_level = 1 # this doesnt do anything at the moment
 neworder.do_checks = True
