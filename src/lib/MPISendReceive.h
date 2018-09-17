@@ -70,6 +70,9 @@ void send(const T& data, int process)
 #endif
 }
 
+template<>
+void send(const std::string& data, int process);
+
 template<typename T>
 void receive(T& data, int process)
 {
@@ -77,6 +80,9 @@ void receive(T& data, int process)
   MPI_Recv(&data, 1, mpi_type_trait<T>::type, process, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 #endif
 }
+
+template<>
+void receive(std::string& data, int process);
 
 template<typename T>
 void broadcast(T& data, int process)
@@ -88,7 +94,6 @@ void broadcast(T& data, int process)
 
 template<>
 void broadcast(std::string& data, int process);
-
 
 void sync();
 

@@ -60,25 +60,18 @@ struct mpi_type_trait<std::string>
 };
 #endif
 
-namespace {
+namespace neworder { namespace mpi {
 
-// template<typename T>
-// void send_impl(const T& data, int process)
-// {
-//   MPI_Send(&data, 1, mpi_type_trait<T>::type, process, 0, MPI_COMM_WORLD);
-// }
-
-//template<>
-void send_impl(const std::string& data, int process)
+template<>
+void send(const std::string& data, int process)
 {
   // neworder::log("send length %%"_s % size);
   MPI_Send(data.data(), data.size(), mpi_type_trait<std::string>::type, process, 0, MPI_COMM_WORLD);
   // neworder::log("send %%"_s % data.substr(40));
 }
 
-
-//template<>
-void send_impl(const Buffer& data, int process)
+template<>
+void send(const Buffer& data, int process)
 {
   //MPI_Send(&data.size, 1, mpi_type_trait<int>::type, process, 0, MPI_COMM_WORLD);
   //neworder::log("buf send length %%"_s % data.size);
@@ -86,8 +79,8 @@ void send_impl(const Buffer& data, int process)
   // neworder::log("send %%"_s % data.substr(40));
 }
 
-//template<>
-void receive_impl(std::string& data, int process)
+template<>
+void receive(std::string& data, int process)
 {
   // Probe for an incoming message from process zero
   MPI_Status status;
@@ -102,8 +95,8 @@ void receive_impl(std::string& data, int process)
   MPI_Recv(&data[0], size, mpi_type_trait<std::string>::type, process, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 }
 
-//template<>
-void receive_impl(Buffer& data, int process)
+template<>
+void receive(Buffer& data, int process)
 {
   // Probe for an incoming message from process zero
   MPI_Status status;
@@ -117,10 +110,6 @@ void receive_impl(Buffer& data, int process)
   data.alloc(size);
   MPI_Recv(data.buf, data.size, mpi_type_trait<Buffer>::type, process, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 }
-
-} // anon
-
-namespace neworder { namespace mpi {
 
 template<>
 void broadcast(Buffer& data, int process)
@@ -157,9 +146,9 @@ void neworder::mpi::send_obj(const py::object& o, int rank)
   // something along the lines of (see https://docs.python.org/3.6/c-api/buffer.html)
   //std::string s(PyBytes_AsString(serialised.ptr()), py::len(serialised)); 
   //neworder::log("sending %% (len %%) to 1"_s % s % s.size());
-  send_impl(b, rank);
+  send(b, rank);
 #else
-  throw std::runtime_error("cannot send: MPI not enabled");
+  throw std::runtime_error("%% not implemented (binary doesn't support MPI)"_s % __FUNCTION__);
 #endif
 }
 
@@ -167,7 +156,7 @@ py::object neworder::mpi::receive_obj(int rank)
 {
 #ifdef NEWORDER_MPI
   Buffer b(nullptr, 0);
-  receive_impl(b, rank); // b is alloc'd in here
+  receive(b, rank); // b is alloc'd in here
 
   py::object pickle = py::import("pickle");
 
@@ -175,7 +164,7 @@ py::object neworder::mpi::receive_obj(int rank)
   //neworder::log("got %% from %%"_s % s % rank);
   return o;
 #else
-  throw std::runtime_error("cannot recv: MPI not enabled");
+  throw std::runtime_error("%% not implemented (binary doesn't support MPI)"_s % __FUNCTION__);
 #endif
 }
 
@@ -190,9 +179,9 @@ void neworder::mpi::send_csv(const py::object& df, int rank)
   // to_csv(path_or_buf=None, sep=', ', na_rep='', float_format=None, columns=None, header=True, index=True...
   df.attr("to_csv")(buf); //, ", ", "", py::object(), py::object(), true, false); 
   std::string csvbuf = py::extract<std::string>(buf.attr("getvalue")())();
-  send_impl(csvbuf, rank);
+  send(csvbuf, rank);
 #else
-  throw std::runtime_error("cannot recv: MPI not enabled");
+  throw std::runtime_error("%% not implemented (binary doesn't support MPI)"_s % __FUNCTION__);
 #endif
 }
 
@@ -200,7 +189,7 @@ py::object neworder::mpi::receive_csv(int rank)
 {
 #ifdef NEWORDER_MPI
   std::string buf;
-  receive_impl(buf, rank);
+  receive(buf, rank);
 
   py::object io = py::import("io");
   py::object pd = py::import("pandas");
@@ -210,14 +199,7 @@ py::object neworder::mpi::receive_csv(int rank)
   df = df.attr("drop")("Unnamed: 0", 1);
   return df;
 #else
-  throw std::runtime_error("cannot recv: MPI not enabled");
-#endif
-}
-
-void neworder::mpi::sync()
-{
-#ifdef NEWORDER_MPI
-  MPI_Barrier(MPI_COMM_WORLD);
+  throw std::runtime_error("%% not implemented (binary doesn't support MPI)"_s % __FUNCTION__);
 #endif
 }
 
@@ -232,7 +214,18 @@ py::object neworder::mpi::broadcast_obj(py::object& o, int rank)
   broadcast(b, rank);
   return pickle.attr("loads")(py::handle<>(PyBytes_FromStringAndSize(b.buf, b.size)));
 #else
-  return o;
+  throw std::runtime_error("%% not implemented (binary doesn't support MPI)"_s % __FUNCTION__);
+#endif
+}
+
+void neworder::mpi::sync()
+{
+#ifdef NEWORDER_MPI
+  neworder::log("waiting for other processes...");
+  MPI_Barrier(MPI_COMM_WORLD);
+  neworder::log("...resuming");
+#else
+  throw std::runtime_error("%% not implemented (binary doesn't support MPI)"_s % __FUNCTION__);
 #endif
 }
 

@@ -8,7 +8,7 @@ import numpy as np
 import neworder
 
 # run 4 times NB contained type is int64
-neworder.sequence = np.array([10,11,12,13])
+#neworder.sequence = np.array([10,11,12,13])
 
 # market data
 spot = 100.0 # underlying spot price
@@ -31,10 +31,6 @@ neworder.log_level = 1
 neworder.do_checks = False
 # no per-timestep checks implemented since there is only one timestep
 neworder.checks = { }
-
-# delayed evaluation for initialisations
-get_stock = neworder.lazy_eval("market")
-get_option = neworder.lazy_eval("option")
 
 # initialisation
 neworder.initialisations = {
