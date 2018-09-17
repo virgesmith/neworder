@@ -41,7 +41,7 @@ int run(int rank, int size, int nmodules, const char* testmodules[])
     test_env();
     test_np(); // boost.Python.numpy
     test_mpi();
-    //test_errors();
+    test_errors();
 
     // python tests
     test_py(nmodules, testmodules);

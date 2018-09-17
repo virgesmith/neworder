@@ -15,6 +15,7 @@ pycpp::Environment& pycpp::Environment::init(int rank, int size)
   Environment& env = Global::instance<Environment>();
 
   // Cannot avoid duplicating scalars between C++ and python due to the latter's immutability
+  // py::extract objects?
   env.m_rank = rank;
   env.m_size = size;
 
@@ -22,7 +23,11 @@ pycpp::Environment& pycpp::Environment::init(int rank, int size)
   env.m_self->attr("procid") = env.m_rank;
   env.m_self->attr("nprocs") = env.m_size;
 
-  neworder::log("env: python %%"_s % version());
+  int64_t s = env.compute_seed();
+
+  neworder::log("env: %% python %%"_s % s % version());
+
+  env.m_prng.seed(s);
 
   return env;
 }
@@ -62,81 +67,81 @@ int pycpp::Environment::size() const
 
 std::string pycpp::Environment::context(int ctx) const
 {
-  std::string idstring = "[%% %%-%%/%%] "_s % (ctx == 0 ? "no" : "py") % pycpp::at<int64_t>(sequence(), seq()) % m_rank % m_size;
+  std::string idstring = "[%% %%/%%] "_s % (ctx == 0 ? "no" : "py") % m_rank % m_size;
   return idstring;
 }
 
 // Take next stream
-bool pycpp::Environment::next()
-{
-  if (static_cast<size_t>(seq()) == pycpp::size(sequence()) - 1)
-    return false;
+// bool pycpp::Environment::next()
+// {
+//   if (static_cast<size_t>(seq()) == pycpp::size(sequence()) - 1)
+//     return false;
 
-  neworder::Callback::exec("neworder.seq = neworder.seq + 1")();
+//   neworder::Callback::exec("neworder.seq = neworder.seq + 1")();
 
-  m_prng.seed(compute_seed());
-  int64_t seq_val = pycpp::at<int64_t>(sequence(), seq());
+//   m_prng.seed(compute_seed());
+//   int64_t seq_val = pycpp::at<int64_t>(sequence(), seq());
 
-  neworder::log("seq: %% sync=%% seed=%%"_s % seq_val % sync_streams() % compute_seed());
+//   neworder::log("seq: %% sync=%% seed=%%"_s % seq_val % sync_streams() % compute_seed());
 
-  return true;
-}
+//   return true;
+// }
 
 //
-bool& pycpp::Environment::sync_streams()
+bool& pycpp::Environment::sync_mpi()
 {
-  return m_sync_streams;
+  return m_sync_mpi;
 }
 
-// TODO rename seq_index for clarity 
-int pycpp::Environment::seq() const
-{
-  int s;
-  if (pycpp::has_attr(*m_self, "seq"))
-  {
-    s = py::extract<int>(m_self->attr("seq"));
-  }
-  else
-  {
-    throw std::runtime_error("seq not defined");
-  }
-  np::ndarray a = sequence();
+// // TODO rename seq_index for clarity 
+// int pycpp::Environment::seq() const
+// {
+//   int s;
+//   if (pycpp::has_attr(*m_self, "seq"))
+//   {
+//     s = py::extract<int>(m_self->attr("seq"));
+//   }
+//   else
+//   {
+//     throw std::runtime_error("seq not defined");
+//   }
+//   np::ndarray a = sequence();
 
-  // if (s<0 || s >= (int)pycpp::size(a))
-  // {
-  //   throw std::runtime_error("seq out of bounds: %%"_s % s);
-  // }
-  return s;
-}
+//   // if (s<0 || s >= (int)pycpp::size(a))
+//   // {
+//   //   throw std::runtime_error("seq out of bounds: %%"_s % s);
+//   // }
+//   return s;
+// }
 
-np::ndarray pycpp::Environment::sequence() const
-{
-  if (pycpp::has_attr(*m_self, "sequence"))
-  {
-    return np::from_object(m_self->attr("sequence"));
-  }
-  else 
-  {
-    throw("seq not defined");
-  }
-}
+// np::ndarray pycpp::Environment::sequence() const
+// {
+//   if (pycpp::has_attr(*m_self, "sequence"))
+//   {
+//     return np::from_object(m_self->attr("sequence"));
+//   }
+//   else 
+//   {
+//     throw("seq not defined");
+//   }
+// }
 
 
 // compute the RNG seed
 int64_t pycpp::Environment::compute_seed() const
 {
   // ensure stream (in)dependence w.r.t. sequence and MPI rank/sizes
-  return 77027473 * pycpp::at<int64_t>(sequence(), seq()) + 19937 * m_size + (m_rank * !m_sync_streams);  
+  return 77027473 * 0 + 19937 * m_size + (m_rank * !m_sync_mpi);  
 }
 
-// Sets a PRNG sequence (and resets sequence counter)
-// TODO rename
-void pycpp::Environment::seed(const np::ndarray& seq)
-{
-  m_self->attr("sequence") = seq;
-  m_self->attr("seq") = -1;
-  next();
-}
+// // Sets a PRNG sequence (and resets sequence counter)
+// // TODO rename
+// void pycpp::Environment::seed(const np::ndarray& seq)
+// {
+//   m_self->attr("sequence") = seq;
+//   m_self->attr("seq") = -1;
+//   next();
+// }
 
 std::mt19937& pycpp::Environment::prng()
 {
@@ -144,7 +149,7 @@ std::mt19937& pycpp::Environment::prng()
 }
 
 // Note this does not fully initialise, do not construct directly, use the static init function
-pycpp::Environment::Environment() //: m_sequence(pycpp::zero_1d_array<int64_t>(1))
+pycpp::Environment::Environment() : m_sync_mpi(false) //: m_sequence(pycpp::zero_1d_array<int64_t>(1))
 {
   // make the neworder module available in embedded python env
   neworder::import_module();
@@ -158,8 +163,8 @@ pycpp::Environment::Environment() //: m_sequence(pycpp::zero_1d_array<int64_t>(1
   m_self = new py::object(py::import("neworder"));
   
   // dummy sequence (needs to be read from config.py - which hasnt been loaded yet)
-  m_self->attr("sequence") = pycpp::zero_1d_array<int64_t>(1);
-  m_self->attr("seq") = 0;
+  // m_self->attr("sequence") = pycpp::zero_1d_array<int64_t>(1);
+  // m_self->attr("seq") = 0;
 } 
 
 pycpp::Environment::~Environment() 

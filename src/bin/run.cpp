@@ -124,7 +124,7 @@ int run(int rank, int size)
 
           for (auto it = transitionTable.begin(); it != transitionTable.end(); ++it)
           {
-            neworder::log("timestep %%: %% "_s % t % it->first);
+            neworder::log("t=%%: %% "_s % t % it->first);
             (it->second)();  
           }
           for (auto it = checkTable.begin(); it != checkTable.end(); ++it)
@@ -144,7 +144,7 @@ int run(int rank, int size)
         } 
       }
       neworder::log("SUCCESS");
-    } while (env.next());
+    } while (/*env.next()*/false);
   }
   catch(py::error_already_set&)
   {

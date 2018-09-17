@@ -57,19 +57,19 @@ public:
   int64_t compute_seed() const;
 
   //
-  bool& sync_streams();
+  bool& sync_mpi();
 
   // TODO rename seq_index for clarity 
-  int seq() const;
+//  int seq() const;
 
-  np::ndarray sequence() const;
+//  np::ndarray sequence() const;
 
   // TODO rename, refactor sequence
   // set the RNG stream sequence
-  void seed(const np::ndarray& seq);
+  void seed(int64_t s);
 
   // iterate the RNG stream sequence
-  bool next();
+  bool reset();
 
   // Accress the NRG stream (one per env)
   std::mt19937& prng();
@@ -91,7 +91,7 @@ private:
   int m_rank;
   int m_size;
   // set to true to make all processes use the same seed
-  bool m_sync_streams;
+  bool m_sync_mpi;
 
   // TODO work out why this segfaults if the dtor is called (even on exit)
   py::object* m_self;
