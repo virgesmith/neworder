@@ -36,12 +36,12 @@ int run(int rank, int size, int nmodules, const char* testmodules[])
     test1("op", "mul", {"2", "3"}, py::object(6));
     test1("op", "void", {"2", "3"}, py::object());
 
-    // module (C++ tests)
+    // module (C++) tests
     test_no();
     test_env();
     test_np(); // boost.Python.numpy
     test_mpi();
-    test_errors();
+    //test_errors();
 
     // python tests
     test_py(nmodules, testmodules);

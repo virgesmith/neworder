@@ -56,6 +56,5 @@ void test_env()
 
   neworder::log("neworder env test complete");
 
-
 #endif
 }

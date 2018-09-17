@@ -20,7 +20,7 @@ def div(a,b):
 def void(a,b):
   pass
 
-notafunc = 3
+notafunc = 3.1
 
 #neworder.log("callback: %s" % neworder.name())
 

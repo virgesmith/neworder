@@ -31,7 +31,7 @@ void pycpp::Environment::configure()
 {
   if (pycpp::has_attr(*m_self, "sync_streams"))
   {
-    m_sync_streams = py::extract<bool>(m_self->attr("sync_streams"))();
+    m_sync_streams = py::extract<bool>(m_self->attr("sync_streams"));
     //neworder::log("sync attr = %%"_s % env.sync_streams());
   }
 
@@ -71,6 +71,7 @@ bool pycpp::Environment::next()
 {
   if (static_cast<size_t>(seq()) == pycpp::size(sequence()) - 1)
     return false;
+
   neworder::Callback::exec("neworder.seq = neworder.seq + 1")();
 
   m_prng.seed(compute_seed());
@@ -90,12 +91,34 @@ bool& pycpp::Environment::sync_streams()
 // TODO rename seq_index for clarity 
 int pycpp::Environment::seq() const
 {
-  return py::extract<int>(m_self->attr("seq"))();
+  int s;
+  if (pycpp::has_attr(*m_self, "seq"))
+  {
+    s = py::extract<int>(m_self->attr("seq"));
+  }
+  else
+  {
+    throw std::runtime_error("seq not defined");
+  }
+  np::ndarray a = sequence();
+
+  // if (s<0 || s >= (int)pycpp::size(a))
+  // {
+  //   throw std::runtime_error("seq out of bounds: %%"_s % s);
+  // }
+  return s;
 }
 
 np::ndarray pycpp::Environment::sequence() const
 {
-  return np::from_object(m_self->attr("sequence"));
+  if (pycpp::has_attr(*m_self, "sequence"))
+  {
+    return np::from_object(m_self->attr("sequence"));
+  }
+  else 
+  {
+    throw("seq not defined");
+  }
 }
 
 
@@ -157,11 +180,13 @@ std::string pycpp::Environment::get_error() noexcept
   std::string message;
   if (PyErr_Occurred())
   {
-    PyObject *exc,*val,*tb;
-    PyErr_Fetch(&exc,&val,&tb);
-    PyErr_NormalizeException(&exc,&val,&tb);
+    PyObject *exc, *val, *tb;
+    PyErr_Fetch(&exc, &val, &tb);
+    PyErr_NormalizeException(&exc, &val, &tb);
 
     py::handle<> hexc(exc), hval(py::allow_null(val)), htb(py::allow_null(tb));
+
+    PyErr_Clear();
     if(!hval)
     {
       return py::extract<std::string>(py::str(hexc));
@@ -185,7 +210,7 @@ std::string pycpp::Environment::version()
   if (version_string.empty())
   {
     py::object sys = py::import("sys");
-    version_string = py::extract<std::string>(sys.attr("version"))();
+    version_string = py::extract<std::string>(sys.attr("version"));
     std::replace(version_string.begin(), version_string.end(), '\n', ' ');
   }
   return version_string;
