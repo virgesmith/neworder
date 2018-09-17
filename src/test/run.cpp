@@ -11,6 +11,7 @@
 
 void test1(const std::string& modulename, const std::string& functionname, const std::vector<std::string>& args, const py::object& expected);
 void test_no();
+void test_env();
 void test_np();
 void test_mpi();
 void test_errors();
@@ -37,6 +38,7 @@ int run(int rank, int size, int nmodules, const char* testmodules[])
 
     // module (C++ tests)
     test_no();
+    test_env();
     test_np(); // boost.Python.numpy
     test_mpi();
     test_errors();
@@ -48,12 +50,12 @@ int run(int rank, int size, int nmodules, const char* testmodules[])
   }
   catch(py::error_already_set&)
   {
-    std::cerr << "%% ERROR: %%"_s % env.context(pycpp::Environment::PY) % env.get_error() << std::endl;
+    std::cerr << "%%ERROR (py::error_already_set): %%"_s % env.context(pycpp::Environment::PY) % env.get_error() << std::endl;
     return 1;
   }
   catch(std::exception& e)
   {
-    std::cerr << "%% ERROR: %%"_s % env.context() % e.what() << std::endl;
+    std::cerr << "%%ERROR (std::exception): %%"_s % env.context() % e.what() << std::endl;
     return 1;
   }
   catch(...)

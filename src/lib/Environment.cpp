@@ -62,41 +62,56 @@ int pycpp::Environment::size() const
 
 std::string pycpp::Environment::context(int ctx) const
 {
-  np::ndarray sequence = np::from_object(m_self->attr("sequence"));
-  std::string idstring = "[%% %%-%%/%%] "_s % (ctx == 0 ? "no" : "py") % pycpp::at<int64_t>(sequence, m_seqno) % m_rank % m_size;
+  std::string idstring = "[%% %%-%%/%%] "_s % (ctx == 0 ? "no" : "py") % pycpp::at<int64_t>(sequence(), seq()) % m_rank % m_size;
   return idstring;
 }
 
 // Take next stream
 bool pycpp::Environment::next()
 {
-  np::ndarray sequence = np::from_object(m_self->attr("sequence"));
-  if (m_seqno == pycpp::size(sequence) - 1)
+  if (static_cast<size_t>(seq()) == pycpp::size(sequence()) - 1)
     return false;
-  ++m_seqno;
+  neworder::Callback::exec("neworder.seq = neworder.seq + 1")();
 
   m_prng.seed(compute_seed());
-  m_self->attr("seq") = pycpp::at<int64_t>(sequence, m_seqno);
+  int64_t seq_val = pycpp::at<int64_t>(sequence(), seq());
 
-  neworder::log("seq: %% sync=%% seed=%%"_s % seq() % sync_streams() % compute_seed());
+  neworder::log("seq: %% sync=%% seed=%%"_s % seq_val % sync_streams() % compute_seed());
 
   return true;
 }
 
+//
+bool& pycpp::Environment::sync_streams()
+{
+  return m_sync_streams;
+}
+
+// TODO rename seq_index for clarity 
+int pycpp::Environment::seq() const
+{
+  return py::extract<int>(m_self->attr("seq"))();
+}
+
+np::ndarray pycpp::Environment::sequence() const
+{
+  return np::from_object(m_self->attr("sequence"));
+}
+
+
 // compute the RNG seed
 int64_t pycpp::Environment::compute_seed() const
 {
-  np::ndarray sequence = np::from_object(m_self->attr("sequence"));
-
   // ensure stream (in)dependence w.r.t. sequence and MPI rank/sizes
-  return 77027473 * pycpp::at<int64_t>(sequence, m_seqno) + 19937 * m_size + (m_rank * !m_sync_streams);  
+  return 77027473 * pycpp::at<int64_t>(sequence(), seq()) + 19937 * m_size + (m_rank * !m_sync_streams);  
 }
 
 // Sets a PRNG sequence (and resets sequence counter)
+// TODO rename
 void pycpp::Environment::seed(const np::ndarray& seq)
 {
   m_self->attr("sequence") = seq;
-  m_seqno = -1;
+  m_self->attr("seq") = -1;
   next();
 }
 
@@ -122,11 +137,6 @@ pycpp::Environment::Environment() //: m_sequence(pycpp::zero_1d_array<int64_t>(1
   // dummy sequence (needs to be read from config.py - which hasnt been loaded yet)
   m_self->attr("sequence") = pycpp::zero_1d_array<int64_t>(1);
   m_self->attr("seq") = 0;
-  m_seqno = 0;
-
-  // Init rng (unseeded for now)
-  // TODO this doesnt need to be a unique_ptr now?
-  //m_prng = std::make_unique<std::mt19937>();
 } 
 
 pycpp::Environment::~Environment() 

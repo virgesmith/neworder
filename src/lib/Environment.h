@@ -57,15 +57,12 @@ public:
   int64_t compute_seed() const;
 
   //
-  bool& sync_streams()
-  {
-    return m_sync_streams;
-  }
+  bool& sync_streams();
 
-  int seq()
-  {
-    return py::extract<int>(m_self->attr("seq"))();
-  }
+  // TODO rename seq_index for clarity 
+  int seq() const;
+
+  np::ndarray sequence() const;
 
   // TODO rename, refactor sequence
   // set the RNG stream sequence
@@ -87,8 +84,8 @@ private:
   friend Environment& Global::instance<Environment>();
 
   // RNG sequence index
-  size_t m_seqno;
-  //np::ndarray* m_sequence;
+  //size_t m_seqno; use python version for now
+  //np::ndarray m_sequence;
 
   // MPI rank/size
   int m_rank;
@@ -98,13 +95,11 @@ private:
 
   // TODO work out why this segfaults if the dtor is called (even on exit)
   py::object* m_self;
-  // thread/process-safe seeding
-  /*std::unique_ptr<*/std::mt19937/*>*/ m_prng;
+  // thread/process-safe seeding strategy deferred until config loaded
+  std::mt19937 m_prng;
 };
 
 // syntactic sugar
 Environment& getenv();
-
-
 
 }
