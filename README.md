@@ -65,13 +65,11 @@ name       | type        | default | description
 `checkpoints`| dict      |         | perform specified code at each checkpoint 
 `sync_streams`|bool      | `false` | determines whether each process has an identical or independent random stream.
 
-Additionally, the module creates the following runtime variables:
+Additionally, the module creates the following runtime variable:
 
 name       | type        | default | description
 -----------|-------------|---------|--------------
 `time`     | float       |         | time of current timestep
-`procid`   | int         | `0`     | identifies process for parallel runs. (Used to seed the RNG stream)
-`nprocs`   | int         | `1`     | total number of processes in simulation. (Used to seed the RNG stream)
 
 #### Functions
 The `neworder` module exposes the following functions to python:
@@ -101,6 +99,8 @@ name                | description
 `stopping_v()`      |  
 `stopping_nhpp()`   | non-homogeneous Poisson process 
 
+Each process has its own random number stream (Mersenne Twister), which by default is seeded independently. In most cases this is the preferred configuration. However, for sensitivity analysis, e.g. to gauge the impact perturbing the dynamics of the system in multiple runs, it makes more sense for each run to re-use the same sequence in order to eliminate noise from the Monte-Carlo simulation.  
+
 ##### Data Frames
 py::def("transition", no::df::transition);
 py::def("directmod", no::df::directmod);
@@ -109,12 +109,14 @@ py::def("append", no::df::append
 ##### Parallel Execution
 name                | description
 --------------------|------------------------------------
+`rank()`            | identifies process for parallel runs (0 if serial)
+`size()`            | total number of processes in simulation. (1 if serial)
 `send(x, n)`        | send object `x` to process `n` 
 `receive(n)`        | accept object from process `n`
 `send_csv(df, n)`   | send pandas DataFrame in csv format to process `n`
 `receive_csv(n)`    | accept pandas DataFrame transmitted in csv format from process `n`
 `broadcast(x, n)`   | send object `x` from process `n` to all other processes
-`sync()`            | suspend execution of the currency process until all processes have reached this point
+`sync()`            | suspend execution of the current process until all processes have reached this point
 
 ## Proof-of-concept 
 A simulation of a population of people by age, gender, ethnicity and location (LAD or MSOA) over a 40-year period. There are two distinct use cases:

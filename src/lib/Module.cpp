@@ -114,6 +114,8 @@ BOOST_PYTHON_MODULE(neworder)
   py::def("append", no::df::append, py::return_value_policy<py::return_by_value>());
 
   // MPI
+  py::def("rank", pycpp::Environment::rank);
+  py::def("size", pycpp::Environment::size);
   py::def("send", no::mpi::send_obj);
   py::def("receive", no::mpi::receive_obj);
   py::def("send_csv", no::mpi::send_csv);

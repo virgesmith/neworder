@@ -32,6 +32,6 @@ def python():
 def log(_):
   pass
 
-# Default multiprocess settings
-nprocs = 1
-procid = 0
+# Default multiprocess settings (should be set by env)
+#size = 1
+#rank = 0

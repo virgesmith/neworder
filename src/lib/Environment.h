@@ -15,6 +15,7 @@ namespace pycpp {
 // - always access the (immutable) python vars via m_self->attr(""), or
 // - define the var in C++ and provide a python accessor function
 // for arrays, C++ and python ref the same data (test this)
+// also consider const vs mutable
 
 struct Environment
 {
@@ -45,12 +46,12 @@ public:
   static std::string version();
 
   // MPI rank (0 if serial)
-  int rank() const;
+  static int rank();
 
   // MPI size (1 if serial)
-  int size() const;
+  static int size();
 
-  // returns "seq-rank/size"
+  // returns "py/no rank/size"
   std::string context(int ctx = CPP) const;
 
   // compute the RNG seed
@@ -79,6 +80,10 @@ public:
   py::object& operator()() { return *m_self; }
 
 private:
+
+  // flag to check whether init has been called
+  bool m_init;
+
   // Singletons only
   Environment();
   friend Environment& Global::instance<Environment>();
@@ -92,6 +97,9 @@ private:
   int m_size;
   // set to true to make all processes use the same seed
   bool m_sync_mpi;
+
+  // seed not directly visible to python
+  int64_t m_seed;
 
   // TODO work out why this segfaults if the dtor is called (even on exit)
   py::object* m_self;

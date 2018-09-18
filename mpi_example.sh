@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ "$#" != "2" ]; then
-  echo "usage: $0 example-name nprocs"
+  echo "usage: $0 example-name size"
   exit 1
 fi
 

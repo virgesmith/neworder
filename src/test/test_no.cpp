@@ -24,7 +24,7 @@ void test_no()
   py::object module = py::import("neworder");
 
   // Check required (but defaulted) attrs visible from both C++ and python
-  const char* attrs[] = {"procid", "nprocs"/*, "sequence", "seq"*/}; 
+  const char* attrs[] = {"rank", "size"/*, "sequence", "seq"*/}; 
 
   for (size_t i = 0; i < sizeof(attrs)/sizeof(attrs[0]); ++i)
   {

@@ -62,7 +62,11 @@
     "unordered_set": "cpp",
     "hash_map": "cpp",
     "hash_set": "cpp",
-    "valarray": "cpp"
+    "valarray": "cpp",
+    "csignal": "cpp",
+    "codecvt": "cpp",
+    "future": "cpp",
+    "variant": "cpp"
   },
   "spellright.language": "en_GB",
   "spellright.documentTypes": [

@@ -11,7 +11,7 @@ initial_population = "examples/households/data/ssm_hh_E09000001_OA11_2011.csv"
 # running/debug options
 neworder.log_level = 1
 # this model isnt meant for parallel execution
-assert neworder.nprocs == 1, "This example is configured to be run as a single process only"
+assert neworder.size() == 1, "This example is configured to be run as a single process only"
 
 # define the outer sequence loop (optional)
 # run 4 sims

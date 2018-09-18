@@ -23,14 +23,14 @@ asxr = "examples/shared/NewETHPOP_emig.csv"
 def partition(arr, count):
   return [arr[i::count] for i in range(count)]
 
-initial_populations = partition(initial_populations, neworder.nprocs)
+initial_populations = partition(initial_populations, neworder.size())
 
 # running/debug options
 neworder.log_level = 1
  
 # initialisation
 neworder.initialisations = {
-  "people": { "module": "population", "class_": "Population", "parameters": [initial_populations[neworder.procid], asfr, asmr, asir, asor, ascr, asxr] }
+  "people": { "module": "population", "class_": "Population", "parameters": [initial_populations[neworder.rank()], asfr, asmr, asir, asor, ascr, asxr] }
 }
 
 # define the evolution

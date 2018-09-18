@@ -40,7 +40,7 @@ required_symbols = ["timespan", "timestep", "initialisations", "transitions", "c
 print("checking required", modulename + "...")
 have_required = have_required and check(symbols, required_symbols)
 
-optional_symbols = ["procid", "nprocs", "log_level", "do_checks", "checks"] 
+optional_symbols = ["rank", "size", "log_level", "do_checks", "checks"] 
 
 print("checking optional", modulename + "...")
 check_opt(symbols, optional_symbols)
