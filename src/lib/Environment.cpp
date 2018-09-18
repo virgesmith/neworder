@@ -55,6 +55,7 @@ pycpp::Environment& pycpp::getenv()
   return Global::instance<Environment>();
 }
 
+// MPI rank (0 if serial)
 int pycpp::Environment::rank()
 {
   if (!pycpp::getenv().m_init)
@@ -70,7 +71,7 @@ int pycpp::Environment::size()
   return pycpp::getenv().m_size;
 }
 
-// MPI independence
+// MPI random stream independence (true if serial)
 bool pycpp::Environment::indep()
 {
   if (!pycpp::getenv().m_init)

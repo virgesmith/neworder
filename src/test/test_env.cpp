@@ -28,6 +28,7 @@ void test_env()
 
   CHECK(env.rank() == 0);
   CHECK(env.size() == 1);
+  CHECK(env.indep());
 
   // // Check default sequence is [0]
   // CHECK(pycpp::size(env.sequence()) == 1);

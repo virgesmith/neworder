@@ -82,6 +82,7 @@ def test():
     t.check(not np.array_equal(a0, a1))
 
   # test ustream/sequence
+  t.check(neworder.indep())
   if root == neworder.rank():
     u0 = neworder.ustream(1000)
     u1 = np.zeros(1000)
@@ -93,21 +94,12 @@ def test():
   # proc 0 should have 2 different random arrays
   # proc 1 should have zeros and a random array  
   t.check(not np.array_equal(u0, u1))
+  
+  # check independent streams
+  u = neworder.ustream(1000)
+  v = neworder.broadcast(u, root)
 
-  # neworder.sync_streams = True
-  # # test ustream/sequence
-  # if root == neworder.rank():
-  #   u0 = neworder.ustream(1000)
-  #   u1 = np.zeros(1000)
-  # else:
-  #   u0 = np.zeros(1000)
-  #   u1 = neworder.ustream(1000)
-  # # broadcast u1 from 1
-  # neworder.broadcast(u1,1)
-  # # proc 0 should have 2 identical random arrays
-  # # proc 1 should have zeros and a random array  
-  # t.check(neworder.rank() != 0 ^ np.array_equal(u0, u1))
-
-
+  # u == v on broadcasting process only
+  t.check(np.array_equal(u, v) == (neworder.rank() == root))
 
   return not t.any_failed

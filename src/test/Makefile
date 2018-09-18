@@ -8,8 +8,6 @@ src=$(wildcard test*.cpp) run.cpp main$(SUFFIX).cpp
 dep=$(patsubst %,$(INTDIR)/%,$(src:.cpp=.d))
 obj=$(patsubst %,$(INTDIR)/%,$(src:.cpp=.o))
 
-#$(info $(dep))
-#$(info $(obj))
 $(shell mkdir -p $(INTDIR))
 
 all: testharness$(SUFFIX)
@@ -29,7 +27,8 @@ $(INTDIR)/%.o: %.cpp $(INTDIR/%.d)
 
 #TODO $(shell ls ../../tests/*.py) ... then strip .py
 test: testharness$(SUFFIX)
-	PYTHONPATH=.:../../tests:$(PYTHONPATH) LD_LIBRARY_PATH=../lib:$(LD_LIBRARY_PATH) $(MPIEXEC) ./testharness$(SUFFIX) module op mpi
+	PYTHONPATH=.:../../tests:$(PYTHONPATH) LD_LIBRARY_PATH=../lib:$(LD_LIBRARY_PATH) $(MPIEXEC) ./testharness$(SUFFIX) $(MPI_INDEP) module op mpi
+	PYTHONPATH=.:../../tests:$(PYTHONPATH) LD_LIBRARY_PATH=../lib:$(LD_LIBRARY_PATH) $(MPIEXEC) ./testharness$(SUFFIX) $(MPI_DEP) correlated
 
 clean:
 	rm -rf $(dep) $(obj) testharness$(SUFFIX)

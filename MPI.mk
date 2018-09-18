@@ -9,6 +9,9 @@ BOOST_NUMPY_LIB=boost_numpy3-py36
 CXX=mpic++
 SUFFIX := _mpi
 MPIEXEC := mpirun -n 2
+# test flags for RNG stream (in)dependence in MPI mode
+MPI_INDEP := 1
+MPI_DEP := 0
 
 # Query python env for compile and link settings
 CXXFLAGS = $(shell python$(PYVER)-config --cflags | sed 's/-Wstrict-prototypes//g' | sed 's/-O3//g') -I$(shell python$(PYVER) -c "import numpy;print(numpy.get_include())")

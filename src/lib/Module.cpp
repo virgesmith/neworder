@@ -94,7 +94,8 @@ BOOST_PYTHON_MODULE(neworder)
   py::def("python", no::python_version);
   py::def("log", log_obj);
   py::def("shell", no::shell);
-
+  py::def("reseed", pycpp::Environment::reset);
+  
   // MC
   py::def("ustream", no::ustream);
   py::def("hazard", no::hazard);
@@ -102,7 +103,6 @@ BOOST_PYTHON_MODULE(neworder)
   py::def("stopping_nhpp", no::stopping_nhpp);
   py::def("hazard_v", no::hazard_v);
   py::def("stopping_v", no::stopping_v);
-  //py::def("reset", no::prng_reset);
 
   py::def("lazy_exec", no::Callback::exec);
   py::def("lazy_eval", no::Callback::eval);
@@ -122,7 +122,7 @@ BOOST_PYTHON_MODULE(neworder)
   py::def("receive_csv", no::mpi::receive_csv);
   py::def("broadcast", no::mpi::broadcast_obj);
   py::def("sync", no::mpi::sync);
-  py::def("reseed", pycpp::Environment::reset);
+  py::def("indep", pycpp::Environment::indep);
   
   // Deferred eval/exec of Python code
   py::class_<no::Callback>("Callback", py::no_init)
