@@ -85,7 +85,7 @@ name                | description
 `shell()`           | starts an interactive shell
 `lazy_exec(expr)`   | creates a python expression `expr` for later execution
 `lazy_eval(expr)`   | creates a python expression `expr` for later evaluation
-`reset_streams(b)`  | resets the random number stream(s), optionally synchronising them
+`reseed()`          | resets the random number stream(s), optionally synchronising them
 
 ##### Monte-Carlo
 

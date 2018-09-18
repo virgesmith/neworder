@@ -27,9 +27,9 @@ void test_py(int nmodules, const char* testmodules[])
   }
 }
 
-int run(int rank, int size, int nmodules, const char* testmodules[]) 
+int run(int rank, int size, bool indep, int nmodules, const char* testmodules[]) 
 {
-  pycpp::Environment& env = pycpp::Environment::init(rank, size);
+  pycpp::Environment& env = pycpp::Environment::init(rank, size, indep);
   try
   {
     // load module, call func with args

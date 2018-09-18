@@ -34,7 +34,7 @@ public:
   Environment& operator=(const Environment&&) = delete;
 
   // Use this function to create the base environemt
-  static Environment& init(int rank, int size);
+  static Environment& init(int rank, int size, bool indep = true);
 
   // Apply settings from config.py, including sequence and RNG state(s)
   //void configure(const py::object& obj);
@@ -51,26 +51,19 @@ public:
   // MPI size (1 if serial)
   static int size();
 
+  // independent streams (per rank)? 
+  // TODO could this be modifiable?
+  static bool indep();
+
   // returns "py/no rank/size"
   std::string context(int ctx = CPP) const;
 
-  // compute the RNG seed
-  int64_t compute_seed() const;
-
-  //
-  bool& sync_mpi();
-
   // TODO rename seq_index for clarity 
 //  int seq() const;
-
 //  np::ndarray sequence() const;
 
-  // TODO rename, refactor sequence
-  // set the RNG stream sequence
-  void seed(int64_t s);
-
-  // iterate the RNG stream sequence
-  bool reset();
+  // reset the RNG stream sequence to the original seed 
+  static void reset();
 
   // Accress the NRG stream (one per env)
   std::mt19937& prng();
@@ -80,6 +73,9 @@ public:
   py::object& operator()() { return *m_self; }
 
 private:
+
+  // compute the RNG seed
+  int64_t compute_seed() const;
 
   // flag to check whether init has been called
   bool m_init;
@@ -95,8 +91,8 @@ private:
   // MPI rank/size
   int m_rank;
   int m_size;
-  // set to true to make all processes use the same seed
-  bool m_sync_mpi;
+  // set to false to make all processes use the same seed
+  bool m_indep;
 
   // seed not directly visible to python
   int64_t m_seed;

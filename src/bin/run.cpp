@@ -31,9 +31,9 @@ void append_model_paths(const char* paths[], size_t n)
 }
 
 
-int run(int rank, int size)
+int run(int rank, int size, bool indep)
 {
-  pycpp::Environment& env = pycpp::Environment::init(rank, size);
+  pycpp::Environment& env = pycpp::Environment::init(rank, size, indep);
   try
   {
     // Load (and exec) config file

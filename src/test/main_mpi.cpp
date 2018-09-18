@@ -3,9 +3,13 @@
 #include "run.h"
 #include "MPIResource.h"
 
+#include <cstdlib>
+
 int main(int argc, const char *argv[])
 {
   MPIResource mpi(&argc, &argv);
 
-  return run(mpi.rank(), mpi.size(), argc-1, &argv[1]);
+  bool indep = std::atoi(argv[1]) == 1;
+
+  return run(mpi.rank(), mpi.size(), indep, argc-2, &argv[2]);
 }

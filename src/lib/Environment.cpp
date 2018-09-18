@@ -9,7 +9,7 @@
 
 
 // This function must be used to init the environment
-pycpp::Environment& pycpp::Environment::init(int rank, int size)
+pycpp::Environment& pycpp::Environment::init(int rank, int size, bool indep)
 {
   // make our rank/size visible to python
   Environment& env = pycpp::getenv();
@@ -21,10 +21,11 @@ pycpp::Environment& pycpp::Environment::init(int rank, int size)
   // python access is by function to avoid exposing a modifiable variable
   env.m_rank = rank;
   env.m_size = size;
+  env.m_indep = indep;
 
   env.m_seed = env.compute_seed();
 
-  neworder::log("env: %% python %%"_s % env.m_seed % version());
+  neworder::log("env: seed=%% python %%"_s % env.m_seed % version());
 
   env.m_prng.seed(env.m_seed);
 
@@ -54,7 +55,6 @@ pycpp::Environment& pycpp::getenv()
   return Global::instance<Environment>();
 }
 
-
 int pycpp::Environment::rank()
 {
   if (!pycpp::getenv().m_init)
@@ -69,6 +69,22 @@ int pycpp::Environment::size()
     throw std::runtime_error("accessing %% before init called"_s % __FUNCTION__);
   return pycpp::getenv().m_size;
 }
+
+// MPI independence
+bool pycpp::Environment::indep()
+{
+  if (!pycpp::getenv().m_init)
+    throw std::runtime_error("accessing %% before init called"_s % __FUNCTION__);
+  return pycpp::getenv().m_indep;
+}
+
+void pycpp::Environment::reset()
+{
+  if (!pycpp::getenv().m_init)
+    throw std::runtime_error("accessing %% before init called"_s % __FUNCTION__);
+  pycpp::getenv().m_prng.seed(pycpp::getenv().m_seed);
+}
+
 
 std::string pycpp::Environment::context(int ctx) const
 {
@@ -91,12 +107,6 @@ std::string pycpp::Environment::context(int ctx) const
 
 //   return true;
 // }
-
-//
-bool& pycpp::Environment::sync_mpi()
-{
-  return m_sync_mpi;
-}
 
 // // TODO rename seq_index for clarity 
 // int pycpp::Environment::seq() const
@@ -131,12 +141,11 @@ bool& pycpp::Environment::sync_mpi()
 //   }
 // }
 
-
 // compute the RNG seed
 int64_t pycpp::Environment::compute_seed() const
 {
   // ensure stream (in)dependence w.r.t. sequence and MPI rank/sizes
-  return 77027473 * 0 + 19937 * m_size + m_rank * !m_sync_mpi;  
+  return 77027473 * 0 + 19937 * m_size + m_rank * m_indep;  
 }
 
 // // Sets a PRNG sequence (and resets sequence counter)
@@ -154,7 +163,7 @@ std::mt19937& pycpp::Environment::prng()
 }
 
 // Note this does not fully initialise, do not construct directly, use the static init function
-pycpp::Environment::Environment() : m_init(false), m_sync_mpi(false) //: m_sequence(pycpp::zero_1d_array<int64_t>(1))
+pycpp::Environment::Environment() : m_init(false) //: m_sequence(pycpp::zero_1d_array<int64_t>(1))
 {
   // make the neworder module available in embedded python env
   neworder::import_module();
@@ -166,10 +175,6 @@ pycpp::Environment::Environment() : m_init(false), m_sync_mpi(false) //: m_seque
   np::initialize();
 
   m_self = new py::object(py::import("neworder"));
-
-  // using MPI terminology, sharing the variable via a py::extract<int> object
-  // m_self->attr("rank") = -1;
-  // m_self->attr("size") = 0;
   
   // dummy sequence (needs to be read from config.py - which hasnt been loaded yet)
   // m_self->attr("sequence") = pycpp::zero_1d_array<int64_t>(1);

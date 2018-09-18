@@ -4,5 +4,5 @@
 
 int main(int argc, const char* argv[]) 
 {
-  return run(0, 1, argc-1, &argv[1]);
+  return run(0, 1, true, argc-1, &argv[1]);
 }

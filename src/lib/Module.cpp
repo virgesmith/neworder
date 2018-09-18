@@ -122,6 +122,7 @@ BOOST_PYTHON_MODULE(neworder)
   py::def("receive_csv", no::mpi::receive_csv);
   py::def("broadcast", no::mpi::broadcast_obj);
   py::def("sync", no::mpi::sync);
+  py::def("reseed", pycpp::Environment::reset);
   
   // Deferred eval/exec of Python code
   py::class_<no::Callback>("Callback", py::no_init)
