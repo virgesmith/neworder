@@ -37,6 +37,7 @@ private:
   py::object m_locals;
 };
 
+typedef std::vector<Callback> CallbackArray;
 typedef std::map<std::string, Callback> CallbackTable;
 
 const char* module_name();

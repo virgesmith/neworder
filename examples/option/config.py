@@ -32,6 +32,9 @@ neworder.do_checks = False
 # no per-timestep checks implemented since there is only one timestep
 neworder.checks = { }
 
+# use 4 identical sims with perturbations
+assert neworder.size() == 4 and not neworder.indep()
+
 # initialisation
 neworder.initialisations = {
   "market": { "module": "market", "class_": "Market", "parameters": [spot, rate, divy, vol] },
@@ -40,13 +43,21 @@ neworder.initialisations = {
   "model": { "module": "black_scholes", "class_": "BS", "parameters": [] }
 }
 
+# process-specific modifiers (for sensitivities)
+neworder.modifiers = [
+  "pass", # base valuation
+  "market.spot = market.spot * 1.01", # delta up bump
+  "market.spot = market.spot * 0.99", # delta up bump
+  "market.vol = market.vol + 0.001" # 10bp upward vega
+]
+
 neworder.transitions = { 
   # compute the option price
   # To use QRNG (Sobol), set quasi=True
-  "compute_mc_price": "pv = model.mc(option, market, nsims, quasi=False)",
-  "compute_greeks": "sync() #..."
+  "compute_mc_price": "pv = model.mc(option, market, nsims, quasi=False)"
 }
 
 neworder.checkpoints = {
-   "compare_mc_price": "model.compare(pv, nsims, option, market)",
+  "compare_mc_price": "model.compare(pv, nsims, option, market)",
+  "compute_greeks": "sync() #..."
 }

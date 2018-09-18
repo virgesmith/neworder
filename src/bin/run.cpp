@@ -59,7 +59,17 @@ int run(int rank, int size, bool indep)
 
     neworder::log("starting microsimulation t=%%"_s % pycpp::at<double>(timespan, 0));
 
-    // execs
+    // modifiers (exec)
+    no::CallbackArray modifierArray; 
+    py::list modifiers = py::list(env().attr("modifiers"));
+    int n = py::len(modifiers);
+    modifierArray.reserve(n);
+    for (int i = 0; i < n; ++i)
+    {
+      modifierArray.push_back(no::Callback::exec(py::extract<std::string>(modifiers[i])()));
+    }
+
+    // transiations (exec)
     no::CallbackTable transitionTable; 
     py::list transitions = py::dict(env().attr("transitions")).items();
     for (int i = 0; i < py::len(transitions); ++i)
@@ -68,7 +78,7 @@ int run(int rank, int size, bool indep)
                                             no::Callback::exec(py::extract<std::string>(transitions[i][1])())));
     }
 
-    // evals
+    // checks (eval)
     no::CallbackTable checkTable; 
     if (do_checks)
     {
@@ -88,63 +98,69 @@ int run(int rank, int size, bool indep)
       checkpointTable.insert(std::make_pair(py::extract<std::string>(checkpoints[i][0])(), 
                                             no::Callback::exec(py::extract<std::string>(checkpoints[i][1])())));
     }
-    // Iterate over sequence(s)
-    do {
+    // Iterate over sequence(s) //do {
 
-      // reset stuff...
-      // initialisations...
-      // list of module-class-constructor args -> list of objects
-      py::list initialisations = py::dict(env().attr("initialisations")).items();
-      for (int i = 0; i < py::len(initialisations); ++i)
+    // reset stuff...
+    // initialisations...
+    // list of module-class-constructor args -> list of objects
+    py::list initialisations = py::dict(env().attr("initialisations")).items();
+    for (int i = 0; i < py::len(initialisations); ++i)
+    {
+      py::dict spec = py::dict(initialisations[i][1]);
+      std::string modulename = py::extract<std::string>(spec["module"])();
+      std::string class_name = py::extract<std::string>(spec["class_"])();
+      py::list args = py::list(spec["parameters"]);
+
+      py::object module = py::import(modulename.c_str());
+      py::object class_ = module.attr(class_name.c_str());
+      py::object object = pycpp::Functor(class_, args)();
+
+      // taking a const ref here to stay results in an empty string, which is bizarre love triangle
+      const std::string name = py::extract<std::string>(initialisations[i][0])();
+      env().attr(name.c_str()) = object;
+      neworder::log("initialising %%"_s % name);
+    }
+
+    // Apply any modifiers for this process
+    if (!modifierArray.empty())
+    {
+      neworder::log("applying modifier: %%"_s % modifierArray[env.rank()].code());
+      modifierArray[env.rank()]();
+    }
+
+    // Loop with checkpoints
+    double t = pycpp::at<double>(timespan, 0) + timestep;
+    for (size_t i = 1; i < pycpp::size(timespan); ++i)
+    {
+      double checkpoint = pycpp::at<double>(timespan, i);
+      for (; t <= checkpoint; t += timestep)
       {
-        py::dict spec = py::dict(initialisations[i][1]);
-        std::string modulename = py::extract<std::string>(spec["module"])();
-        std::string class_name = py::extract<std::string>(spec["class_"])();
-        py::list args = py::list(spec["parameters"]);
+        // TODO is there a way to do this in-place? does it really matter?
+        env().attr("time") = py::object(t);
 
-        py::object module = py::import(modulename.c_str());
-        py::object class_ = module.attr(class_name.c_str());
-        py::object object = pycpp::Functor(class_, args)();
-
-        // taking a const ref here to stay results in an empty string, which is bizarre love triangle
-        const std::string name = py::extract<std::string>(initialisations[i][0])();
-        env().attr(name.c_str()) = object;
-        neworder::log("initialising %%"_s % name);
-      }
-
-      // Loop with checkpoints
-      double t = pycpp::at<double>(timespan, 0) + timestep;
-      for (size_t i = 1; i < pycpp::size(timespan); ++i)
-      {
-        double checkpoint = pycpp::at<double>(timespan, i);
-        for (; t <= checkpoint; t += timestep)
+        for (auto it = transitionTable.begin(); it != transitionTable.end(); ++it)
         {
-          // TODO is there a way to do this in-place? does it really matter?
-          env().attr("time") = py::object(t);
-
-          for (auto it = transitionTable.begin(); it != transitionTable.end(); ++it)
-          {
-            neworder::log("t=%%: %% "_s % t % it->first);
-            (it->second)();  
-          }
-          for (auto it = checkTable.begin(); it != checkTable.end(); ++it)
-          {
-            bool ok = py::extract<bool>((it->second)())();
-            if (!ok) 
-            {
-              throw std::runtime_error("check failed");
-            }  
-          }
-        }
-        for (auto it = checkpointTable.begin(); it != checkpointTable.end(); ++it)
-        {
-          neworder::log("checkpoint %%: %%"_s % t % it->first);   
-          // Note: return value is ignored (exec not eval)
+          neworder::log("t=%%: %% "_s % t % it->first);
           (it->second)();  
-        } 
+        }
+        for (auto it = checkTable.begin(); it != checkTable.end(); ++it)
+        {
+          bool ok = py::extract<bool>((it->second)())();
+          if (!ok) 
+          {
+            throw std::runtime_error("check failed");
+          }  
+        }
       }
-      neworder::log("SUCCESS");
-    } while (/*env.next()*/false);
+      for (auto it = checkpointTable.begin(); it != checkpointTable.end(); ++it)
+      {
+        neworder::log("checkpoint %%: %%"_s % t % it->first);   
+        // Note: return value is ignored (exec not eval)
+        (it->second)();  
+      } 
+    }
+    neworder::log("SUCCESS");
+    //} while (/*env.next()*/false);
   }
   catch(py::error_already_set&)
   {
