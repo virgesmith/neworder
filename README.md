@@ -39,15 +39,17 @@ And the following are optional:
 The framework provides:
 - the main "loop" over sequence (if specified), and timeline. 
 - a parallel execution framework supporting interprocess communication.
-- independent (or identical) deterministic pseudorandom number streams for each process and/or sequence.
+- independent (or identical) deterministic pseudorandom number streams for each process.
 - a library of Monte-Carlo methods.
 - a mechanism to specify lazily evaluated/executed (i.e. deferred) python code.
 - ad-hoc development of fast implementations of slow-running python code, i.e. python code with explicit loops. 
 - a logging framework.
 
 Where possible, the functionality available in existing python libraries should be used. The framework specifically does not provide:
-- arrays: use numpy wherever possible. The framework can access numpy arrays directly.
+- arrays: use numpy wherever possible. The framework can access numpy arrays directly. 
 - data frames: use pandas wherever possible. Data frames are accessible in the framework via numpy arrays.
+
+That said, the model developer should avoid loops in python code - its an interpreted language and loops will be executed much more slowly than compiled code.
 
 #### Special Variables
 The neworder python module defines, or requires the model to define, the following variables:
@@ -253,9 +255,9 @@ All of these are entirely user-definable. The checks, transitions and checkpoint
 
 To run an example, type 
 ```bash
-$ ./run_example.sh <name>
+$ ./run_example.sh <name> [size [-c]]
 ```
-which will run the model defined in the directory `./examples/<name>`
+which will run the model defined in the directory `./examples/<name>`, running optionally over `size` processes, which can be set to use identical RNG streams with the `-c` flag.
 
 ## The obligatory "Hello world" example
 
@@ -406,7 +408,7 @@ The file [black_scholes.py](examples/option/black_scholes.py) implements the bot
 The simulation must be run with 4 processes and, to eliminate Monte-Carlo noise from the sensitivities, with each process using identical random number streams (the -c flag): 
 
 ```bash
-$ ./mpi_example.sh option 4 -c
+$ ./run_example.sh option 4 -c
 [no 3/4] env: seed=79748 python 3.6.5 (default, Apr  1 2018, 05:46:30)  [GCC 7.3.0]
 [no 3/4] starting microsimulation t=0.000000
 [no 3/4] initialising market
