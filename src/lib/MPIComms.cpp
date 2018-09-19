@@ -218,6 +218,20 @@ py::object neworder::mpi::broadcast_obj(py::object& o, int rank)
 #endif
 }
 
+np::ndarray neworder::mpi::gather_array(double x, int rank)
+{
+#ifdef NEWORDER_MPI
+  pycpp::Environment& env = pycpp::getenv();
+  np::ndarray ret = pycpp::empty_1d_array<double>(rank == env.rank() ? env.size() : 0);
+  double* p = (rank == env.rank()) ? pycpp::begin<double>(ret) : nullptr;
+  MPI_Gather(&x, 1, mpi_type_trait<double>::type, p, 1, mpi_type_trait<double>::type, rank, MPI_COMM_WORLD);
+  return ret;
+#else
+  throw std::runtime_error("%% not implemented (binary doesn't support MPI)"_s % __FUNCTION__);
+#endif
+}
+
+
 void neworder::mpi::sync()
 {
 #ifdef NEWORDER_MPI

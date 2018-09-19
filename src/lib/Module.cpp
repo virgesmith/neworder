@@ -121,6 +121,7 @@ BOOST_PYTHON_MODULE(neworder)
   py::def("send_csv", no::mpi::send_csv);
   py::def("receive_csv", no::mpi::receive_csv);
   py::def("broadcast", no::mpi::broadcast_obj);
+  py::def("gather", no::mpi::gather_array);
   py::def("sync", no::mpi::sync);
   py::def("indep", pycpp::Environment::indep);
   

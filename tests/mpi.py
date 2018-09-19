@@ -102,4 +102,20 @@ def test():
   # u == v on broadcasting process only
   t.check(np.array_equal(u, v) == (neworder.rank() == root))
 
+  # test gather
+  x = (neworder.rank() + 1) ** 2 / 8
+  a = neworder.gather(x, 0)
+  if neworder.rank() == 0:
+    t.check(np.array_equal(a, [0.125, 0.5]))
+  else:
+    t.check(len(a) == 0)
+  #neworder.log(a)
+
+
+  # this should probably fail (gather not implemented for int)
+  x = neworder.rank() + 100
+  a = neworder.gather(x, 0)
+  #neworder.log(type(x))
+  #neworder.log(type(a))
+
   return not t.any_failed

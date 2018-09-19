@@ -17,7 +17,7 @@ bool send_recv(const T& x, pycpp::Environment& env)
   {
     T y;
     neworder::mpi::receive(y, 0);
-    neworder::log("MPI: 0 sent %%=%% 1 recd %%=%%"_s % x % y);
+    //neworder::log("MPI: 0 sent x=%% 1 recd y=%%"_s % x % y);
     if (y != x)
      return false;
   }

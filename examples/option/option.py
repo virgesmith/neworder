@@ -14,9 +14,9 @@ class Option():
   # TODO move somewhere more appropriate (market?)
   def greeks(self, pv):
     neworder.sync()
+    pvs = neworder.gather(pv, 0)
     if neworder.rank() == 0:
-      neworder.log(pv)
-      neworder.log("PV=%f" % pv[0])
-      neworder.log("delta=%f" % ((pv[1] - pv[2])/200))
-      neworder.log("gamma=%f" % ((pv[1] - 2*pv[0] + pv[2])/10000))
-      neworder.log("vega 10bp=%f" % (pv[3] - pv[0]))
+      neworder.log("PV=%f" % pvs[0])
+      neworder.log("delta=%f" % ((pvs[1] - pvs[2])/2))
+      neworder.log("gamma=%f" % ((pvs[1] - 2*pvs[0] + pvs[2])))
+      neworder.log("vega 10bp=%f" % (pvs[3] - pvs[0]))

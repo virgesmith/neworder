@@ -61,12 +61,15 @@ int run(int rank, int size, bool indep)
 
     // modifiers (exec)
     no::CallbackArray modifierArray; 
-    py::list modifiers = py::list(env().attr("modifiers"));
-    int n = py::len(modifiers);
-    modifierArray.reserve(n);
-    for (int i = 0; i < n; ++i)
+    if (pycpp::has_attr(env(), "modifiers"))
     {
-      modifierArray.push_back(no::Callback::exec(py::extract<std::string>(modifiers[i])()));
+      py::list modifiers = py::list(env().attr("modifiers"));
+      int n = py::len(modifiers);
+      modifierArray.reserve(n);
+      for (int i = 0; i < n; ++i)
+      {
+        modifierArray.push_back(no::Callback::exec(py::extract<std::string>(modifiers[i])()));
+      }
     }
 
     // transiations (exec)

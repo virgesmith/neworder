@@ -63,6 +63,9 @@ py::object receive_csv(int rank);
 // Broadcast object from rank to all other procs
 py::object broadcast_obj(py::object& o, int rank);
 
+// Gather scalars from each process into a numpy array on process rank
+np::ndarray gather_array(double x, int rank);
+
 template<typename T>
 void send(const T& data, int process)
 {
@@ -102,10 +105,17 @@ void gather(const T& source, std::vector<T>& dest, int process)
 {
 #ifdef NEWORDER_MPI
   pycpp::Environment& env = pycpp::getenv();
-  dest.resize(env.size());
-  T* p = env.rank() == process ? dest.data() : nullptr;
-  //T* p = dest.data();
-
+  // If rank=process, return the array, otherwise return an empty array
+  T* p = nullptr;
+  if (env.rank() == process)
+  {
+    dest.resize(env.size());
+    p = dest.data();
+  }
+  else
+  {
+    dest.clear();    
+  }
   MPI_Gather(&source, 1, mpi_type_trait<T>::type, p, 1, mpi_type_trait<T>::type, process, MPI_COMM_WORLD);
 #endif
 }

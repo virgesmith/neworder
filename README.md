@@ -84,7 +84,7 @@ name                | description
 `shell()`           | starts an interactive shell
 `lazy_exec(expr)`   | creates a python expression `expr` for later execution
 `lazy_eval(expr)`   | creates a python expression `expr` for later evaluation
-`reseed()`          | resets the random number stream(s), optionally synchronising them
+`reseed()`          | resets the random number stream
 
 ##### Monte-Carlo
 
@@ -115,6 +115,7 @@ name                | description
 `send_csv(df, n)`   | send pandas DataFrame in csv format to process `n`
 `receive_csv(n)`    | accept pandas DataFrame transmitted in csv format from process `n`
 `broadcast(x, n)`   | send object `x` from process `n` to all other processes
+`gather(x, n)`      | aggregate (numeric) `x` from the current process (i) to the i'th element of a numpy array in process `n`
 `sync()`            | suspend execution of the current process until all processes have reached this point
 
 ## Proof-of-concept 
@@ -366,7 +367,7 @@ The above model has been modified to run in massively parallel mode using [MPI](
 
 The microsimulation has been run on the ARC3 cluster, part of the HPC facilities at the University of Leeds, and took about 3 minutes over 24 cores to simulate the peopulation over a 10 year period.
 
-See the [examples/people_big](examples/people_multi) directory and the script [mpi_job.sh](mpi_job.sh)
+See the [examples/people_multi](examples/people_multi) directory and the script [mpi_job.sh](mpi_job.sh)
 
 ## Derivative Pricing
 
@@ -390,27 +391,50 @@ We can easily frame a derivative derivative pricing problem in terms of a micros
 - compute the option prices for each of the underlyings and take the mean
 - discount the option price back to valuation date (t=0)
 
-For this simple option we can also compute an analytic fair value under the Black-Scholes model, and use this to determine the accuracy of the Monte-Carlo simulation.
+For this simple option we can also compute an analytic fair value under the Black-Scholes model, and use this to determine the accuracy of the Monte-Carlo simulation. We also demonstrate the capabilities neworder has in terms of sensitivity analysis.
 
 The [config.py](examples/option/config.py) file: 
-- sets the parameters for the market and the option
 - defines a simple timeline [0, T] corresponding to [valuation date, expiry date] and a single timestep.
-- describes how to initialise the [market](examples/option/market.py) and [option](examples/option/option.py) objects
-- defines the "transition" which in this case is running the Monte-Carlo simulation
-- finally, checks the Monte-Carlo result against the analytic formula and displays the results.
+- sets the parameters for the market and the option, and describes how to initialise the [market](examples/option/market.py) and [option](examples/option/option.py) objects with these parameters.
+- describes the 'modifiers' for each process: the perturbations applied to the market data in order to calculate the option price sensitivity to that market data
+- defines the "transition", which in this case is simply running the Monte-Carlo simulation from time zero to time T.
+- checks the Monte-Carlo result against the analytic formula and displays the price and the random error.
+- finally, gathers the results from the other processes and computes some sensitivities.
 
-The [helpers.py](examples/option/helpers.py) provides some mathematical formulae.  
+The file [black_scholes.py](examples/option/black_scholes.py) implements the both analytic option formula and the Monte-Carlo simulation, with [helpers.py](examples/option/helpers.py) providing some additional functionality. 
+
+The simulation must be run with 4 processes and, to eliminate Monte-Carlo noise from the sensitivities, with each process using identical random number streams (the -c flag): 
 
 ```bash
-$ ./run_example.sh option
-[C++] setting PYTHONPATH=examples/option
-[C++] process 0 of 1
-[C++] embedded python version: 3.6.5 (default, Apr  1 2018, 05:46:30)  [GCC 7.3.0]
-[C++] 0 init: xmarket option
-[C++] 0.75 exec: compute_mc_price
-[C++] checkpoint: compare_mc_price [py] mc: 7.188980 / ref: 7.201286 err=-0.17%
-
-[C++] SUCCESS
+$ ./mpi_example.sh option 4 -c
+[no 3/4] env: seed=79748 python 3.6.5 (default, Apr  1 2018, 05:46:30)  [GCC 7.3.0]
+[no 3/4] starting microsimulation t=0.000000
+[no 3/4] initialising market
+[no 3/4] initialising option
+[no 1/4] env: seed=79748 python 3.6.5 (default, Apr  1 2018, 05:46:30)  [GCC 7.3.0]
+[no 1/4] starting microsimulation t=0.000000
+[no 1/4] initialising market
+[no 1/4] initialising option
+[no 2/4] env: seed=79748 python 3.6.5 (default, Apr  1 2018, 05:46:30)  [GCC 7.3.0]
+[no 2/4] starting microsimulation t=0.000000
+[no 2/4] initialising market
+[no 2/4] initialising option
+[no 0/4] env: seed=79748 python 3.6.5 (default, Apr  1 2018, 05:46:30)  [GCC 7.3.0]
+[no 0/4] starting microsimulation t=0.000000
+[no 0/4] initialising market
+[no 0/4] initialising option
+[no 3/4] initialising model
+[no 3/4] applying modifier: exec("market.vol = market.vol + 0.001")
+[no 3/4] t=0.750000: compute_mc_price
+...
+[no 2/4] SUCCESS
+[no 3/4] SUCCESS
+[no 1/4] SUCCESS
+[py 0/4] PV=7.213875
+[py 0/4] delta=0.548820
+[py 0/4] gamma=0.022923
+[py 0/4] vega 10bp=0.034061
+[no 0/4] SUCCESS
 ```
 
 ## RiskPaths
