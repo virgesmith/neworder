@@ -7,7 +7,7 @@
 #include "Inspect.h"
 #include "MonteCarlo.h"
 #include "DataFrame.h"
-#include "MPISendReceive.h"
+#include "MPIComms.h"
 
 #include "python.h"
 

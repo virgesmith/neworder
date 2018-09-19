@@ -1,4 +1,4 @@
-#include "MPISendReceive.h"
+#include "MPIComms.h"
 
 #ifdef NEWORDER_MPI
 

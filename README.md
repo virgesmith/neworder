@@ -54,16 +54,15 @@ The neworder python module defines, or requires the model to define, the followi
 
 name       | type        | default | description
 -----------|-------------|---------|--------------
-`sequence` | int array   | `[0]`   | an array specifying the number of simulations to perform. (Each element is used to seed the RNG stream)
 `timestep` | float       |         | the size of the timestep 
 `timeline` | float array |         | the timeline of the simulation 
 `log_level`| int         |         | currently unused. control verbosity of output 
 `do_checks`| bool        |         | run functions specified in `checks` after each timestep 
 `initialisations`| dict  |         | initialisation function(s)/constructors  
+`modifiers`| list        | []      | expressions to modify/perturb input data for each process   
 `transitions`| dict      |         | model evolution functions (per-timestep)  
 `checks`   | dict        | {}      | specify functions to run after each timestep 
 `checkpoints`| dict      |         | perform specified code at each checkpoint 
-`sync_streams`|bool      | `false` | determines whether each process has an identical or independent random stream.
 
 Additionally, the module creates the following runtime variable:
 
@@ -95,8 +94,7 @@ name                | description
 `hazard(r, n)`      | returns a numpy 1d array of `n` Bernoulli trials given a hazard rate `r`.
 `hazard_v()`        | return a numpy 1d array of Bernoulli trials given a hazard rate `r`.
 `stopping(r, n)`    | returns a numpy array of `n` stopping times given a fixed hazard rate `r`. 
-`stopping()`        | returns a vector of stopping times given a fixed hazard rate and a length 
-`stopping_v()`      |  
+`stopping_v()`      | returns a vector of stopping times given a fixed hazard rate and a length     |  
 `stopping_nhpp()`   | non-homogeneous Poisson process 
 
 Each process has its own random number stream (Mersenne Twister), which by default is seeded independently. In most cases this is the preferred configuration. However, for sensitivity analysis, e.g. to gauge the impact perturbing the dynamics of the system in multiple runs, it makes more sense for each run to re-use the same sequence in order to eliminate noise from the Monte-Carlo simulation.  
@@ -111,6 +109,7 @@ name                | description
 --------------------|------------------------------------
 `rank()`            | identifies process for parallel runs (0 if serial)
 `size()`            | total number of processes in simulation. (1 if serial)
+`indep()`           | returns `True` if each process is using an independent same random stream, `False` otherwise
 `send(x, n)`        | send object `x` to process `n` 
 `receive(n)`        | accept object from process `n`
 `send_csv(df, n)`   | send pandas DataFrame in csv format to process `n`

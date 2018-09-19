@@ -3,6 +3,7 @@
 #pragma once 
 
 #include "Log.h"
+#include "Environment.h"
 
 #ifdef NEWORDER_MPI
 #include <mpi.h>
@@ -94,6 +95,20 @@ void broadcast(T& data, int process)
 
 template<>
 void broadcast(std::string& data, int process);
+
+
+template<typename T>
+void gather(const T& source, std::vector<T>& dest, int process)
+{
+#ifdef NEWORDER_MPI
+  pycpp::Environment& env = pycpp::getenv();
+  dest.resize(env.size());
+  T* p = env.rank() == process ? dest.data() : nullptr;
+  //T* p = dest.data();
+
+  MPI_Gather(&source, 1, mpi_type_trait<T>::type, p, 1, mpi_type_trait<T>::type, process, MPI_COMM_WORLD);
+#endif
+}
 
 void sync();
 

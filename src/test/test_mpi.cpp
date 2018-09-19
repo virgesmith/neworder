@@ -3,7 +3,7 @@
 #include "test.h"
 #include "Environment.h"
 #include "MPIResource.h"
-#include "MPISendReceive.h"
+#include "MPIComms.h"
 //#include "Log.h"
 
 template<typename T>
@@ -52,8 +52,15 @@ void test_mpi()
   //neworder::log("proc %% i=%%"_s % env.rank() % s);
   CHECK(s == "env.rank()=0");
 
-
   neworder::mpi::sync();
+
+  double x = 1.0 + (double)env.rank() / 10;
+
+  std::vector<double> g(env.size(), -1.0);
+  neworder::mpi::gather(x, g, 0);
+  if (env.rank() == 0)
+    for (size_t i = 0; i < g.size(); ++i)
+      neworder::log("element %%=%%"_s % i % g[i]);
 
 #endif
 }

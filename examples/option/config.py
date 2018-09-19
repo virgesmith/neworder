@@ -35,6 +35,8 @@ neworder.checks = { }
 # use 4 identical sims with perturbations
 assert neworder.size() == 4 and not neworder.indep()
 
+neworder.pv = np.zeros(neworder.size())
+
 # initialisation
 neworder.initialisations = {
   "market": { "module": "market", "class_": "Market", "parameters": [spot, rate, divy, vol] },
@@ -54,10 +56,10 @@ neworder.modifiers = [
 neworder.transitions = { 
   # compute the option price
   # To use QRNG (Sobol), set quasi=True
-  "compute_mc_price": "pv = model.mc(option, market, nsims, quasi=False)"
+  "compute_mc_price": "pv[rank()] = model.mc(option, market, nsims, quasi=False)"
 }
 
 neworder.checkpoints = {
-  "compare_mc_price": "model.compare(pv, nsims, option, market)",
-  "compute_greeks": "sync() #..."
+  "compare_mc_price": "model.compare(pv[rank()], nsims, option, market)",
+  "compute_greeks": "option.greeks(pv)"
 }
