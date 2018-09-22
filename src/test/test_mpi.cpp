@@ -54,23 +54,41 @@ void test_mpi()
 
   neworder::mpi::sync();
 
-  double x = 1.0 + (double)env.rank() / 10;
+  double x = 10.0 * env.rank() + env.size();
 
   std::vector<double> g(env.size(), -1.0);
   neworder::mpi::gather(x, g, 0);
   if (env.rank() == 0)
+  {
     for (size_t i = 0; i < g.size(); ++i)
-      neworder::log("gather element %%=%%"_s % i % g[i]);
+    {
+      CHECK(g[i] == 10.0 * i + env.size());
+      //neworder::log("gather element %%=%%"_s % i % g[i]);
+    }
+  }
+  else 
+  {
+    CHECK(g.empty());
+  }
 
   std::vector<double> sv(env.size(), -1.0);
   if (env.rank() == 0)
     for (size_t i = 0; i < sv.size(); ++i)
       sv[i] = i * 10.0 + env.size();
   neworder::mpi::scatter(sv, x, 0);
-
   CHECK(x == 10.0 * env.rank() + env.size());
-  neworder::log("scatter rank %% x=%%"_s % env.rank() % x);
+  //neworder::log("scatter rank %% x=%%"_s % env.rank() % x);
 
+  std::vector<double> agv(env.size(), -1.0);
+  // give agv one positive element
+  agv[env.rank()] = 10.0 * env.rank() + env.size();
+  agv = neworder::mpi::allgather(agv);
+  // agv now all positive
+  for (size_t i = 0; i < agv.size(); ++i)
+  {
+    CHECK(agv[i] == 10.0 * i + env.size());
+    //neworder::log("allgather element %%=%%"_s % i % agv[i]);
+  }
 
 #endif
 }

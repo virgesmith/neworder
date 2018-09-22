@@ -111,6 +111,20 @@ def test():
     t.check(len(a) == 0)
   #neworder.log(a)
 
+  # test scatter
+  if neworder.rank() == 0:
+    a = (np.array(range(neworder.size())) + 1) ** 2 / 8
+  else:
+    a = np.zeros(neworder.size())
+  neworder.log(a)
+  x = neworder.scatter(a, 0)
+  t.check(x == (neworder.rank() + 1) ** 2 / 8)
+
+  # test allgather
+  a = np.zeros(neworder.size()) - 1
+  a[neworder.rank()] = (neworder.rank() + 1) ** 2 / 8
+  a = neworder.allgather(a)
+  t.check(np.array_equal(a, np.array([0.125, 0.5])))
 
   # this should probably fail (gather not implemented for int)
   x = neworder.rank() + 100

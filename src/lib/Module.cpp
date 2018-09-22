@@ -9,6 +9,7 @@
 #include "DataFrame.h"
 #include "MPIComms.h"
 
+
 #include "python.h"
 
 #include <iostream>
@@ -122,6 +123,8 @@ BOOST_PYTHON_MODULE(neworder)
   py::def("receive_csv", no::mpi::receive_csv);
   py::def("broadcast", no::mpi::broadcast_obj);
   py::def("gather", no::mpi::gather_array);
+  py::def("scatter", no::mpi::scatter_array);
+  py::def("allgather", no::mpi::allgather_array/*, py::return_value_policy<py::return_by_value>()*/);
   py::def("sync", no::mpi::sync);
   py::def("indep", pycpp::Environment::indep);
   

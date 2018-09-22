@@ -66,6 +66,12 @@ py::object broadcast_obj(py::object& o, int rank);
 // Gather scalars from each process into a numpy array on process rank
 np::ndarray gather_array(double x, int rank);
 
+// Gather scalars from each process into a numpy array on process rank
+double scatter_array(np::ndarray x, int rank);
+
+// TODO more efficient with references?
+np::ndarray allgather_array(np::ndarray source_dest);
+
 template<typename T>
 void send(const T& data, int process)
 {
@@ -101,7 +107,7 @@ void broadcast(std::string& data, int process);
 
 
 template<typename T>
-void gather(const T& source, std::vector<T>& dest, int process)
+std::vector<T>& gather(const T& source, std::vector<T>& dest, int process)
 {
 #ifdef NEWORDER_MPI
   pycpp::Environment& env = pycpp::getenv();
@@ -118,10 +124,11 @@ void gather(const T& source, std::vector<T>& dest, int process)
   }
   MPI_Gather(&source, 1, mpi_type_trait<T>::type, p, 1, mpi_type_trait<T>::type, process, MPI_COMM_WORLD);
 #endif
+  return dest;
 }
 
 template<typename T>
-void scatter(const std::vector<T>& source, T& dest, int process)
+T& scatter(const std::vector<T>& source, T& dest, int process)
 {
 #ifdef NEWORDER_MPI
   pycpp::Environment& env = pycpp::getenv();
@@ -135,7 +142,25 @@ void scatter(const std::vector<T>& source, T& dest, int process)
   }
   MPI_Scatter(p, 1, mpi_type_trait<T>::type, &dest, 1, mpi_type_trait<T>::type, process, MPI_COMM_WORLD);
 #endif
+  return dest;
 }
+
+template<typename T>
+std::vector<T>& allgather(std::vector<T>& source_dest)
+{
+#ifdef NEWORDER_MPI
+  pycpp::Environment& env = pycpp::getenv();
+  // If rank=process, return the array, otherwise return an empty array
+  if (source_dest.size() < (size_t)env.size())
+    throw std::runtime_error("allgather array size %% is smaller than MPI size (%%)"_s % source_dest.size() % env.size());
+  // take a copy of the soruce to avoid runtime error due to aliased buffers
+  T source = source_dest[env.rank()];
+  T* p = source_dest.data();
+  MPI_Allgather(&source, 1, mpi_type_trait<T>::type, p, 1, mpi_type_trait<T>::type, MPI_COMM_WORLD);
+#endif
+  return source_dest;
+}
+
 
 void sync();
 
