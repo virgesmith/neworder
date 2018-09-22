@@ -60,7 +60,17 @@ void test_mpi()
   neworder::mpi::gather(x, g, 0);
   if (env.rank() == 0)
     for (size_t i = 0; i < g.size(); ++i)
-      neworder::log("element %%=%%"_s % i % g[i]);
+      neworder::log("gather element %%=%%"_s % i % g[i]);
+
+  std::vector<double> sv(env.size(), -1.0);
+  if (env.rank() == 0)
+    for (size_t i = 0; i < sv.size(); ++i)
+      sv[i] = i * 10.0 + env.size();
+  neworder::mpi::scatter(sv, x, 0);
+
+  CHECK(x == 10.0 * env.rank() + env.size());
+  neworder::log("scatter rank %% x=%%"_s % env.rank() % x);
+
 
 #endif
 }

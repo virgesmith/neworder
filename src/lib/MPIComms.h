@@ -120,6 +120,23 @@ void gather(const T& source, std::vector<T>& dest, int process)
 #endif
 }
 
+template<typename T>
+void scatter(const std::vector<T>& source, T& dest, int process)
+{
+#ifdef NEWORDER_MPI
+  pycpp::Environment& env = pycpp::getenv();
+  // If rank=process, return the array, otherwise return an empty array
+  T* p = nullptr;
+  if (env.rank() == process)
+  {
+    if (source.size() < (size_t)env.size())
+      throw std::runtime_error("scatter array size %% is smaller than MPI size (%%)"_s % source.size() % env.size());
+    p = const_cast<T*>(source.data());
+  }
+  MPI_Scatter(p, 1, mpi_type_trait<T>::type, &dest, 1, mpi_type_trait<T>::type, process, MPI_COMM_WORLD);
+#endif
+}
+
 void sync();
 
 }} // neworder::mpi
