@@ -5,8 +5,6 @@
 
 Neworder is a prototype microsimulation package inspired by [openm++](https://ompp.sourceforge.io/) and MODGEN. Models are defined in high-level code (python) and executed within an embedded simulation framework (written in C++) which exposes a subset of itself as a python module. (In order words the C++ framework can call python _and vice versa_).
 
-As python and C++ have very different memory models, it's not possible to directly share data, i.e. safely have a python object and a C++ object both referencing (and potentially modifying) the same memory location. However, there is a crucial exception to this: the numpy ndarray type. This is fundamental to the operation of the framework, as it enables the C++ module to directly access (and modify) pandas data frames (which do not have a native C API).
-
 ## Key Features:
 - low barriers to entry: users need only write standard python code, little or no new coding skills required.
 - flexibility: models are defined entirely in user code.
@@ -15,33 +13,38 @@ As python and C++ have very different memory models, it's not possible to direct
 - scalability: can be run on a desktop or a HPC cluster, supporting parallel execution using MPI.
 - data agnosticism: the framework does not impose any constraints on data sources/formats/databases. 
 
-## Framework
-The aim is to provide as flexible and minimal a framework as possible. Being data agnostic means that this framework can be run standalone, or integrated into workflows where e.g. input data is scraped from the web and results are written to a database. Internally, however, pandas dataframes are the obvious choice of data structure for this type of modelling. 
+For detailed information, see:
+- [installation](doc/installation.md)
+- [API reference](doc/reference.md)
 
-The sections below list minimal requirements that must be met, and those that - if specified - will be used:
+## Proof-of-concept 
+A simulation of a population in terms of fertility, mortality and migration by age, gender, ethnicity and location (MSOA<sup>*</sup>) over a 40-year period. There are two distinct use cases:
+- desktop: a single-process simulation of a single local authority (~250k people).
+- cluster: a highly parallel simulation of England & Wales, starting in 2011 (initially ~56M people).
 
-### Requirements
-#### Compulsory
-The framework minimal requirements are that:
-- a timeline and a timestep is defined<sup>*</sup>. The timeline can be partitioned, for example for running a 40-year simulation with 1 year timesteps, but outputting results every 5 years. The latter are referred to as "checkpoints", and the end of the timeline is always considered to be a checkpoint.
-- python code to be executed at the first timestep, e.g. to load or microsynthesise an initial population, and also load any data governing the dynamics of the microsimulation, e.g. fertility rates.
-- python code to evolve the population to the next timestep, which can (and typically will) involve multiple processes and can be implemented in multiple functions.
-- python code to be executed at each checkpoint, typically outputting results in some form or other.
+&ast; after migration an individual's geographic resolution is widened to LAD.
 
-&ast; case-based simulation support is in progress. In this case the timeline refers not to absolute time but the age of the cohort.
+The latter ran on ARC3, over 48 cores, in under 6 minutes.
 
-#### Optional
-And the following are optional:
-- python code to run at each timestep to e.g. perform checks that the population remains plausible.
-- an outer sequence: this defines a number of runs. This could be re-running the entire simulation again with a different random number stream (to check convergence), or running the simulation with perturbed inputs reusing the same random numbers (to check sensitivity).
+## The Framework
+The aim is to provide as flexible and minimal a framework as possible. Being data agnostic means that this framework can be run standalone or integrated into workflows where e.g. input data is scraped from the web and results are written to a database. Internally, however, the pandas `DataFrame` is the obvious choice of data structure for this type of modelling. 
+
+In terms of parallel execution, the following use-cases are supported:
+- splitting a large problem over multiple cores.
+- performing parallel runs with:
+  - perturbations to the model dynamics for sensitivity analysis
+  - independent RNGs for convergence analysis
 
 ### Provision
 The framework provides:
-- the main "loop" over sequence (if specified), and timeline. 
-- a parallel execution framework supporting interprocess communication.
-- independent (or identical) deterministic pseudorandom number streams for each process.
+- the main "loop" over the timeline. 
+- a resettable random number stream per process. (MT19937)
+- a parallel execution framework supporting:
+  - interprocess communication and synchronisation
+  - the ability to modify the inputs/dynamics for each process
+  - the ability to run each process with either independent or identical random number streams.
 - a library of Monte-Carlo methods.
-- a mechanism to specify lazily evaluated/executed (i.e. deferred) python code.
+- a mechanism to specify python code to be run during the course of the simulation (i.e. deferred).
 - ad-hoc development of fast implementations of slow-running python code, i.e. python code with explicit loops. 
 - a logging framework.
 
@@ -51,194 +54,22 @@ Where possible, the functionality available in existing python libraries should 
 
 That said, the model developer should avoid loops in python code - its an interpreted language and loops will be executed much more slowly than compiled code.
 
-#### Special Variables
-The neworder python module defines, or requires the model to define, the following variables:
-
-name       | type        | default | description
------------|-------------|---------|--------------
-`timestep` | float       |         | the size of the timestep 
-`timeline` | float array |         | the timeline of the simulation 
-`log_level`| int         |         | currently unused. control verbosity of output 
-`do_checks`| bool        |         | run functions specified in `checks` after each timestep 
-`initialisations`| dict  |         | initialisation function(s)/constructors  
-`modifiers`| list        | []      | expressions to modify/perturb input data for each process   
-`transitions`| dict      |         | model evolution functions (per-timestep)  
-`checks`   | dict        | {}      | specify functions to run after each timestep 
-`checkpoints`| dict      |         | perform specified code at each checkpoint 
-
-Additionally, the module creates the following runtime variable:
-
-name       | type        | default | description
------------|-------------|---------|--------------
-`time`     | float       |         | time of current timestep
-
-#### Functions
-The `neworder` module exposes the following functions to python:
-
-##### General, Utility and Diagnostics
-
-name                | description
---------------------|------------------------------------
-`name()`            | returns the module name (`neworder`)
-`version()`         | returns the module version
-`python()`          | returns the embedded python version
-`log(msg)`          | prints `msg`
-`shell()`           | starts an interactive shell
-`lazy_exec(expr)`   | creates a python expression `expr` for later execution
-`lazy_eval(expr)`   | creates a python expression `expr` for later evaluation
-`reseed()`          | resets the random number stream
-
-##### Monte-Carlo
-
-name                | description
---------------------|------------------------------------
-`ustream(n)`        | returns a numpy 1d array of `n` uniform [0,1) random variables.
-`hazard(r, n)`      | returns a numpy 1d array of `n` Bernoulli trials given a hazard rate `r`.
-`hazard_v()`        | return a numpy 1d array of Bernoulli trials given a hazard rate `r`.
-`stopping(r, n)`    | returns a numpy array of `n` stopping times given a fixed hazard rate `r`. 
-`stopping_v()`      | returns a vector of stopping times given a fixed hazard rate and a length     |  
-`stopping_nhpp()`   | non-homogeneous Poisson process 
-
-Each process has its own random number stream (Mersenne Twister), which by default is seeded independently. In most cases this is the preferred configuration. However, for sensitivity analysis, e.g. to gauge the impact perturbing the dynamics of the system in multiple runs, it makes more sense for each run to re-use the same sequence in order to eliminate noise from the Monte-Carlo simulation.  
-
-##### Data Frames
-py::def("transition", no::df::transition);
-py::def("directmod", no::df::directmod);
-py::def("append", no::df::append
-
-##### Parallel Execution
-name                | description
---------------------|------------------------------------
-`rank()`            | identifies process for parallel runs (0 if serial)
-`size()`            | total number of processes in simulation. (1 if serial)
-`indep()`           | returns `True` if each process is using an independent same random stream, `False` otherwise
-`send(x, n)`        | send object `x` to process `n` 
-`receive(n)`        | accept object from process `n`
-`send_csv(df, n)`   | send pandas DataFrame in csv format to process `n`
-`receive_csv(n)`    | accept pandas DataFrame transmitted in csv format from process `n`
-`broadcast(x, n)`   | send object `x` from process `n` to all other processes
-`gather(x, n)`      | aggregate (numeric) `x` from the current process (i) to the i'th element of a numpy array in process `n`
-`sync()`            | suspend execution of the current process until all processes have reached this point
-
-## Proof-of-concept 
-A simulation of a population of people by age, gender, ethnicity and location (LAD or MSOA) over a 40-year period. There are two distinct use cases:
-- desktop: a single-threaded simulation of a single local authority (~250k people).
-- cluster: a highly parallel simulation of an entire country (~50M people).
-
-The latter ran on ARC3, over 48 cores, in under 6 minutes. 
-
-# Installation
-
-_So far only tested on Ubuntu 16.04/18.04_
+The section below lists minimal requirements that must be met, and those that - if specified - will be used:
 
 ## Requirements
+### Compulsory
+The framework minimal requirements are that:
+- a timeline and a timestep is defined<sup>*</sup>. The timeline can be partitioned, for example for running a 40-year simulation with 1 year timesteps, but outputting results every 5 years. The latter are referred to as "checkpoints", and the end of the timeline is always considered to be a checkpoint.
+- python code to be executed at the first timestep, e.g. to load or microsynthesise an initial population, and also load any data governing the dynamics of the microsimulation, e.g. fertility rates.
+- python code to evolve the population to the next timestep, which can (and typically will) involve multiple processes and can be implemented in multiple functions.
+- python code to be executed at each checkpoint, typically outputting results in some form or other.
 
-```bash
-$ sudo apt install -y build-essential python3 python3-dev python3-pip libboost-python-dev
-$ python3 -m pip install -U numpy pandas
-```
+&ast; case-based simulation support is in progress. In this case the timeline refers not to absolute time but the age of the cohort.
 
-### Minimum versions
-
-python: 3.5
-- numpy: 1.15
-- pandas: 0.23
-
-C++14: gcc 5.4 
-- boost 1.63
-- MPI ?
-
-
-### Boost
-
-Boost.numpy was introduced in version 1.63, Boost 1.65.1 or higher is recommended. For platforms that come with older versions, see e.g. [this script](tools/boost_python.sh) which downloads 1.67 and builds only the python modules for python3:
-
-```bash
-./bootstrap.sh --prefix=/usr/local --with-libraries=python --with-python=$(which python3)
-./b2 cxxflags=-DBOOST_NO_AUTO_PTR install
-```
-
-## Clone, build and test
-```
-$ git clone https://github.com/virgesmith/neworder
-$ cd neworder
-$ make && make test
-```
-For Ubuntu 16.04 / python 3.5 you may need to set the make env like so:
-```bash
-$ make PYVER=3.5 BOOST_PYTHON_LIB=boost_python-py35 && make PYVER=3.5 BOOST_PYTHON_LIB=boost_python-py35 test
-```
-For MPI-enabled execution, you'll frist need to make sure you have an implementation of MPI (including a compiler), e.g:
-
-```bash
-$ sudo apt install mpich libmipch-dev
-```
-And use the [MPI.mk](MPI.mk) makefile to build the MPI-enabled framework:
-```bash
-$ make -f MPI.mk
-```
-and to test,
-```bash
-$ make -f MPI.mk test
-```
-
-## HPC installation (ARC3)
-
-[These instructions are specific to ARC3 but may be of some use on other clusters - YMMV]
-
-Switch to gnu toolchain and add python and boost libraries:
-```bash
-$ module switch intel gnu
-$ module load python/3.6.5
-$ module load boost python-libs
-$ module list
-Currently Loaded Modulefiles:
-  1) licenses            4) openmpi/2.0.2       7) python-libs/3.1.0
-  2) sge                 5) user                8) boost/1.67.0
-  3) gnu/6.3.0           6) python/3.6.5
-```
-Optionally use different g++ or boost versions:
-```
-$ module switch gnu gnu/7.2.0
-$ module switch boost boost/1.65.1
-$ module switch python python/3.6.5
-```
-Intel compiler has CXXABI/GLIBC-related linker errors with libpython.
-
-If boost.numpy is missing (as it is on ARC3), then see the [boost](#boost) section above to build 
-
-~~Currently~~Previously experiencing issues running tests:
-```
-ImportError: numpy.core.multiarray failed to import
-...
-ERROR: [python] unable to determine error
-make[1]: *** [test] Error 1
-make[1]: Leaving directory `/nobackup/geoaps/dev/neworder/src/test'
-make: *** [test] Error 2
-```
-which was down to PYTHONPATH being obilterated. looks the same as the travis python build issue, and running examples/people ~~fails~~failed with:
-
-```bash
-$ ./run.sh 
-[C++] setting PYTHONPATH=example
-[C++] process 0 of 1
-ImportError: numpy.core.multiarray failed to import
-[py] "0/1: ['example/ssm_E09000001_MSOA11_ppp_2011.csv']"
-[C++] 2011.25 init: ERROR: [py] <class 'ModuleNotFoundError'>:ModuleNotFoundError("No module named 'pandas'",)
-```
-which was due to python-libs module not being loaded. 
-
-### Conda
-`neworder` may not be compatible at all with conda - it seems that their conda python binary statically links to libpython. Further investigation required.
-
-### Non-Conda
-- Global python packages are old and the code isn't compatible. This can be resolved by updating at user-level, e.g.:
-```
-$ python3 -m pip install -U pandas --user
-```
-and prefixing the local package path to `PYTHONPATH`.
-
-- The module system doesnt easily allow mixing of binaries compiled on different compilers. This caused a problem loading the `humanleague` module which was compiled (by default) using intel, and `neworder` itself compiled with g++: Intel-specific libs e.g. libimf.so weren't found. Might be able to hack `LD_LIBRARY_PATH` to fix this?
+### Optional
+The following are optional :
+- code to modify the input data for different processes in a parallel run, for sensitivity analysis.
+- functions to call at each timestep to e.g. perform checks that the population remains plausible.
 
 # Examples
 
