@@ -54,7 +54,9 @@ def test():
 
   # modify df passing column 
   df = pd.read_csv("../../tests/df.csv")
-  no.transition(df["DC2101EW_C_ETHPUK11"].values)
+  cats = np.array([0])
+  transitions = np.identity(len(cats))
+  no.transition(cats, transitions, df["DC2101EW_C_ETHPUK11"].values)
   t.check(np.array_equal(df["DC2101EW_C_ETHPUK11"].values, np.array(range(2, len(df) + 2))))
 
   # modify df passing directly

@@ -7,7 +7,7 @@
 namespace neworder {
 namespace df {
 
-void transition(np::ndarray& col);
+void transition(np::ndarray categories, np::ndarray matrix, np::ndarray& col);
 
 void directmod(py::object& df, const std::string& colname);
 
