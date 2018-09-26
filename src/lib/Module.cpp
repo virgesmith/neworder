@@ -74,6 +74,11 @@ std::string neworder::python_version()
 
 void neworder::shell(/*const py::object& local*/)
 {
+  if (pycpp::getenv().size() != 1) 
+  {
+    neworder::log("WARNING: shell disabled in parallel mode, ignoring");
+    return;
+  }
   py::dict kwargs;
   kwargs["banner"] = py::str("[starting neworder debug shell]");
   kwargs["exitmsg"] = py::str("[exiting neworder debug shell]");

@@ -17,7 +17,7 @@ python: 3.5
 
 C++14: gcc 5.4 
 - boost 1.63
-- MPI ?
+- MPI (mpich 3.3a2)
 
 
 ### Boost

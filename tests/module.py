@@ -61,9 +61,9 @@ def test():
 
   df = pd.read_csv("../../tests/df.csv")
   cats = np.array(range(4))
-  transitions = np.cumsum(np.identity(len(cats)) * 0 + 0.25, axis=1)
+  transitions = np.identity(len(cats)) * 0 + 0.25
   #no.log(transitions)
-  no.transition(cats, transitions, df["DC2101EW_C_ETHPUK11"].values)
+  no.transition(cats, transitions, df, "DC2101EW_C_ETHPUK11")
   # it's possible this could fail depending on random draw
   t.check(np.array_equal(np.sort(df["DC2101EW_C_ETHPUK11"].unique()), np.array(range(4))))
 

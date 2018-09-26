@@ -6,7 +6,7 @@ import numpy as np
 import neworder
 
 # define some global variables describing where the starting population and the parameters of the dynamics come from
-initial_population = "examples/people/ssm_E09000001_MSOA11_ppp_2011.csv"
+initial_population = "examples/people/ssm_E08000021_MSOA11_ppp_2011.csv"
 asfr = "examples/shared/NewETHPOP_fertility.csv"
 asmr = "examples/shared/NewETHPOP_mortality.csv"
 # internal in-migration
@@ -27,7 +27,7 @@ assert neworder.size() == 1, "This example is configured to be run as a single p
 # run 4 sims
 neworder.sequence = np.array([3,1,2,0])
 # define the evolution
-neworder.timespan = np.array([2011.25, 2020.25])
+neworder.timespan = np.array([2011.25, 2050.25])
 neworder.timestep = 1.0 # TODO beware rounding errors 
 
 # initialisation

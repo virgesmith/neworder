@@ -37,10 +37,10 @@ name                | description
 `version()`         | returns the module version
 `python()`          | returns the embedded python version
 `log(msg)`          | prints `msg`
-`shell()`           | starts an interactive shell
-`lazy_exec(expr)`   | creates a python expression `expr` for later execution
-`lazy_eval(expr)`   | creates a python expression `expr` for later evaluation
-`reseed()`          | resets the random number stream
+`shell()`           | starts an interactive shell (serial mode only)
+`lazy_exec(expr)`   | creates a python expression `expr` for later execution via the `()` operator
+`lazy_eval(expr)`   | creates a python expression `expr` for later evaluation via the `()` operator
+`reseed()`          | resets the random number stream for the current process
 
 ### Monte-Carlo
 
@@ -51,14 +51,14 @@ name                | description
 `hazard_v()`        | return a numpy 1d array of Bernoulli trials given a hazard rate `r`.
 `stopping(r, n)`    | returns a numpy array of `n` stopping times given a fixed hazard rate `r`. 
 `stopping_v()`      | returns a vector of stopping times given a fixed hazard rate and a length     |  
-`stopping_nhpp()`   | non-homogeneous Poisson process 
+`stopping_nhpp()`   | returns stopping times from a non-homogeneous Poisson process 
 
 Each process has its own random number stream (Mersenne Twister), which by default is seeded independently. In most cases this is the preferred configuration. However, for sensitivity analysis, e.g. to gauge the impact perturbing the dynamics of the system in multiple runs, it makes more sense for each run to re-use the same sequence in order to eliminate noise from the Monte-Carlo simulation.  
 
 ### Data Frames
-py::def("transition", no::df::transition);
-py::def("directmod", no::df::directmod);
-py::def("append", no::df::append
+name                           | description
+-------------------------------|------------------------------------
+`transition(c, t, df, colname)`| Modifies the values in `df.colname` according to a set of possible states `c` and a matrix `t` that specifies the transition probabilities between the states.
 
 ### Parallel Execution
 name                | description

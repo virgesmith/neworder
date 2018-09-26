@@ -40,7 +40,6 @@ int run(int rank, int size, bool indep)
     py::object config = py::import("config");
     // Update the env accordingly
     //env.configure(config);
-    //neworder::shell();
 
     bool do_checks= py::extract<bool>(env().attr("do_checks"))();
 
@@ -57,7 +56,7 @@ int run(int rank, int size, bool indep)
       throw std::runtime_error("Timestep cannot be zero!");
     }
 
-    neworder::log("starting microsimulation t=%%"_s % pycpp::at<double>(timespan, 0));
+    neworder::log("starting microsimulation...");
 
     // modifiers (exec)
     no::CallbackArray modifierArray; 
@@ -121,13 +120,13 @@ int run(int rank, int size, bool indep)
       // taking a const ref here to stay results in an empty string, which is bizarre love triangle
       const std::string name = py::extract<std::string>(initialisations[i][0])();
       env().attr(name.c_str()) = object;
-      neworder::log("initialising %%"_s % name);
+      neworder::log("t=%% initialise: %%"_s % pycpp::at<double>(timespan, 0) % name);
     }
 
     // Apply any modifiers for this process
     if (!modifierArray.empty())
     {
-      neworder::log("applying modifier: %%"_s % modifierArray[env.rank()].code());
+      neworder::log("t=%% modifier: %%"_s % pycpp::at<double>(timespan, 0) % modifierArray[env.rank()].code());
       modifierArray[env.rank()]();
     }
 
@@ -143,11 +142,12 @@ int run(int rank, int size, bool indep)
 
         for (auto it = transitionTable.begin(); it != transitionTable.end(); ++it)
         {
-          neworder::log("t=%%: %% "_s % t % it->first);
+          neworder::log("t=%% transition: %% "_s % t % it->first);
           (it->second)();  
         }
         for (auto it = checkTable.begin(); it != checkTable.end(); ++it)
         {
+          neworder::log("t=%% check: %% "_s % t % it->first);
           bool ok = py::extract<bool>((it->second)())();
           if (!ok) 
           {
@@ -158,7 +158,7 @@ int run(int rank, int size, bool indep)
       t -= timestep; // temporary fix
       for (auto it = checkpointTable.begin(); it != checkpointTable.end(); ++it)
       {
-        neworder::log("checkpoint %%: %%"_s % t % it->first);   
+        neworder::log("t=%% checkpoint: %%"_s % t % it->first);   
         // Note: return value is ignored (exec not eval)
         (it->second)();  
       } 

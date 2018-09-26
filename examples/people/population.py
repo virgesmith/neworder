@@ -36,8 +36,8 @@ class Population:
     # Force flat rates for testing purposes
     #self.in_migration.Rate = 0.05
     #self.out_migration.Rate = 0.05
-    #self.immigration.Rate = 0.01
-    #self.emigration.Rate = 0.01
+    self.immigration.Rate = 0.01
+    self.emigration.Rate = 0.005
  
     # use this to identify people (uniquely only within this table)
     self.counter = len(self.data)
