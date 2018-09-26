@@ -20,13 +20,16 @@ For detailed information, see:
 - [API reference](doc/reference.md)
 
 ## Proof-of-concept 
-A simulation of a population in terms of fertility, mortality and migration by age, gender, ethnicity and location (MSOA<sup>*</sup>) over a 40-year period. There are two distinct use cases:
-- desktop: a single-process simulation of a single local authority (~250k people).
+
+The proofs of concept are two variants of a simulation of a population in terms of fertility, mortality and migration by age, gender, ethnicity and location (MSOA<sup>*</sup>) over a 40-year period (2011-2050). The two distinct use cases are:
+- desktop: a single-process simulation of a single local authority (initially ~280k people).
 - cluster: a highly parallel simulation of England & Wales, starting in 2011 (initially ~56M people).
 
 &ast; after migration an individual's geographic resolution is widened to LAD.
 
-The latter ran on ARC3, over 48 cores, in under 6 minutes.
+The single local authority case ran in about 25 seconds on a desktop PC. The larger simulation ran on ARC3<sup>*</sup>, using 48 cores, in under 6 minutes.
+
+&ast; ARC3 forms part of the High Performance Computing facilities at the University of Leeds, UK.
 
 ## The Framework
 The aim is to provide as flexible and minimal a framework as possible. Being data agnostic means that this framework can be run standalone or integrated into workflows where e.g. input data is scraped from the web and results are written to a database. Internally, however, the pandas `DataFrame` is the obvious choice of data structure for this type of modelling. 
@@ -78,6 +81,8 @@ The following are optional :
 
 __NB the following are works-in-progress and subject to change, the documentation may not reflect the current code__
 
+__NB note also some of the examples are getting quite complex as they evolve closer to real models - they will be separated in due course__
+
 The microsimulation framework expects a directory containing some python modules. There must be a module called [config.py] that, minimally:
 - describes how to initialise model object(s), defined in the other module(s).
 - defines a timeline and a timestep. The timeline can be broken into multiple chunks, the end of each of which is considered a _checkpoint_.
@@ -95,7 +100,7 @@ which will run the model defined in the directory `./examples/<name>`, running o
 
 ## The obligatory "Hello world" example
 
-This example is an ultra-simple illustration of the structure required, and all the files are extensively commented. It can be used as a skeleton for new project. 
+This example is a simple illustration of the structure required, and all the files are extensively commented. It can be used as a skeleton for new project. 
 
 ```bash
 $ ./run_example.sh hello_world
@@ -287,7 +292,7 @@ This 40 year simulation of a population of about 280,000 more than doubling (no 
 
 The above model has been modified to run in massively parallel mode using [MPI](https://en.wikipedia.org/wiki/Message_Passing_Interface), for the entire population of England & Wales (approx 56 million people as of 2011 census). The input data is not under source control due to its size, but the 348 input files (one per local authority) are divided roughly equally over the MPI processes. This particular example, with its simple in-out migration model, lends itself easily to parallel execution as no interprocess communication is required. Future development of this package will enable interprocess communication, for e.g. moving people from one region to another.  
 
-The microsimulation has been run on the ARC3 cluster, part of the HPC facilities at the University of Leeds, and took about 3 minutes over 24 cores to simulate the peopulation over a 10 year period.
+The microsimulation has been run on the ARC3 cluster, part of the HPC facilities at the University of Leeds, and took about 6 minutes on 48 cores to simulate the population over a 40 year period.
 
 See the [examples/people_multi](examples/people_multi) directory and the script [mpi_job.sh](mpi_job.sh)
 
