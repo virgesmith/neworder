@@ -5,8 +5,11 @@ Microsimulation config
 import numpy as np
 import neworder
 
+# THIS could be very, very useful
+#https://stackoverflow.com/questions/47297585/building-a-transition-matrix-using-words-in-python-numpy
+
 # define some global variables describing where the starting population and the parameters of the dynamics come from
-initial_population = "examples/households/data/ssm_hh_E09000001_OA11_2011.csv"
+initial_population = "examples/households/data/ssm_hh_E08000021_OA11_2011.csv"
 
 # running/debug options
 neworder.log_level = 1

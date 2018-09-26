@@ -54,14 +54,18 @@ def test():
 
   # modify df passing column 
   df = pd.read_csv("../../tests/df.csv")
-  cats = np.array([0])
-  transitions = np.identity(len(cats))
-  no.transition(cats, transitions, df["DC2101EW_C_ETHPUK11"].values)
-  t.check(np.array_equal(df["DC2101EW_C_ETHPUK11"].values, np.array(range(2, len(df) + 2))))
 
   # modify df passing directly
   no.directmod(df, "DC2101EW_C_ETHPUK11")
-  t.check(np.array_equal(df["DC2101EW_C_ETHPUK11"].values, np.array(range(3, len(df) + 3))))
+  t.check(np.array_equal(df["DC2101EW_C_ETHPUK11"].values, np.zeros(len(df)) + 3))
+
+  df = pd.read_csv("../../tests/df.csv")
+  cats = np.array(range(4))
+  transitions = np.cumsum(np.identity(len(cats)) * 0 + 0.25, axis=1)
+  #no.log(transitions)
+  no.transition(cats, transitions, df["DC2101EW_C_ETHPUK11"].values)
+  # it's possible this could fail depending on random draw
+  t.check(np.array_equal(np.sort(df["DC2101EW_C_ETHPUK11"].unique()), np.array(range(4))))
 
   df2 = df.copy()
   df3 = no.append(df,df2)

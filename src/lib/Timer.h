@@ -24,7 +24,7 @@ public:
 
   double elapsed_s()
   {
-    return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - m_start).count() / 1'000'000;
+    return (double)std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - m_start).count() / 1'000'000;
   }
 
 private:

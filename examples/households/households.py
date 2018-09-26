@@ -10,8 +10,15 @@ class Households:
     #no.log(self.pop.columns.values)
     no.log(self.pop.LC4408_C_AHTHUK11.unique())
     c = self.pop.LC4408_C_AHTHUK11.unique()
-    m = np.identity(len(c))
+    t = np.array([[0.9,  0.05, 0.05, 0.0,  0.0,  0.0], 
+                  [0.05, 0.9,  0.04, 0.01, 0.0,  0.0], 
+                  [0.0,  0.05, 0.9,  0.05, 0.0,  0.0], 
+                  [0.0,  0.0,  0.05, 0.9,  0.05, 0.0], 
+                  [0.1,  0.1,  0.1,  0.1,  0.5,  0.1], 
+                  [0.0,  0.0,  0.00, 0.0,  0.0,  1.0]])
+    #t = np.identity(len(c))
     
+    no.transition(c, np.cumsum(t, axis=1), self.pop.LC4408_C_AHTHUK11.values)
 
   def age(self, dt):
 
