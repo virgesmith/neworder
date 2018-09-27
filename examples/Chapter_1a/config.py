@@ -27,11 +27,11 @@ neworder.initialisations = {
 }
 
 # use a large positive number to denote an infinite timespan (better than say -1 as it just works in inequalities)
-TIME_INFINITY = 1e9
-MAX_AGE = 100.0
+neworder.TIME_INFINITY = 1e9
+neworder.MAX_AGE = 100.0
 
 # This is case-based model - only a dummy timeline is required?
-neworder.timespan = np.array([0.0, MAX_AGE])
+neworder.timespan = np.array([0.0, neworder.MAX_AGE])
 neworder.timestep = 1.0
 
 # transitions: simply samples time of death for each individual

@@ -1,8 +1,5 @@
 
 import neworder
-# for TIME_INFINITY (could be passed as an)
-import config
-#from config import TIME_INFINITY
 
 class Person():
 
@@ -12,7 +9,7 @@ class Person():
     self.age = 0.0
     #self.time = 0.0
     self.mortality_hazard = mortality_hazard
-    self.time_mortality = config.TIME_INFINITY
+    self.time_mortality = neworder.TIME_INFINITY
 
   def __del__(self):
     """ Person::Finish() """
@@ -28,7 +25,7 @@ class Person():
 
   def time_mortality_event(self):
     """ TIME Person::timeMortalityEvent() """
-    t = neworder.stopping(config.mortality_hazard, 1)[0]
+    t = neworder.stopping(self.mortality_hazard, 1)[0]
     if t < neworder.timestep or self.age >= neworder.timespan[-2]:
       self.mortality_event(t)
     #neworder.log("TOD=%f" % self.time_mortality)

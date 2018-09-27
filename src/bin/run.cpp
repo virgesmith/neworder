@@ -5,6 +5,7 @@
 #include "Environment.h"
 #include "Module.h"
 #include "Log.h"
+#include "Timer.h"
 
 #include "python.h"
 
@@ -34,6 +35,7 @@ void append_model_paths(const char* paths[], size_t n)
 int run(int rank, int size, bool indep)
 {
   pycpp::Environment& env = pycpp::Environment::init(rank, size, indep);
+  Timer timer;
   try
   {
     // Load (and exec) config file
@@ -163,8 +165,7 @@ int run(int rank, int size, bool indep)
         (it->second)();  
       } 
     }
-    neworder::log("SUCCESS");
-    //} while (/*env.next()*/false);
+    neworder::log("SUCCESS exec time=%%s"_s % timer.elapsed_s());
   }
   catch(py::error_already_set&)
   {
