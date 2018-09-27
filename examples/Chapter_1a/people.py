@@ -1,6 +1,7 @@
 
 import numpy as np
 import pandas as pd 
+import matplotlib.pyplot
 import neworder
 
 # A more "pythonic" approach using pandas DataFrames
@@ -19,7 +20,9 @@ class People():
 
   def dump(self, filename):
     # dump the population out
-    self.population.to_csv(filename, index=False)
+    #self.population.to_csv(filename, index=False)
+    matplotlib.pyplot.hist(self.population.TimeOfDeath, 100)
+    matplotlib.pyplot.show()
 
   def die(self):
     # using indexes to subset data as cannot store a reference to a subset of the dataframe (it just copies)
@@ -50,7 +53,7 @@ class People():
 
   def calc_life_expectancy(self):  
     # ensure all people have died 
-    self.dump("./population.csv")
+    #self.dump("./population.csv")
 
     assert np.sum(self.population.Alive) == 0
     return np.mean(self.population.TimeOfDeath)
