@@ -25,6 +25,7 @@ Additionally, the module creates the following runtime variable:
 name       | type        | default | description
 -----------|-------------|---------|--------------
 `time`     | float       |         | time of current timestep
+`timeindex`| int         |         | index of current timestep
 
 ## Functions
 The `neworder` module exposes the following functions to python:

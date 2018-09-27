@@ -9,11 +9,17 @@ class People():
   """ A simple aggregration of Person """
   def __init__(self, mortality_hazard, n):
     # initialise cohort      
-    self.population = pd.DataFrame(data={"MortalityRate": np.full(n, mortality_hazard), 
-                                         "Alive": np.full(n, True),
+    # neworder.log(len(mortality_hazard))
+    # assert False
+    self.mortality_hazard = mortality_hazard
+    self.population = pd.DataFrame(data={"Alive": np.full(n, True),
                                          "Age": np.zeros(n), 
                                          "TimeOfDeath": np.zeros(n)})
     neworder.log(self.population.head())
+
+  def dump(self, filename):
+    # dump the population out
+    self.population.to_csv(filename, index=False)
 
   def die(self):
     # using indexes to subset data as cannot store a reference to a subset of the dataframe (it just copies)
@@ -21,7 +27,7 @@ class People():
     # first filter out the already dead
     alive = self.population.loc[self.population.Alive].index
     # sample time of death
-    r = neworder.stopping_v(self.population.ix[alive, "MortalityRate"].values)
+    r = neworder.stopping(self.mortality_hazard[neworder.timeindex-1], len(alive))
     # select if death happens before next timestep...
     dt = neworder.timestep
     # at final timestep everybody dies (at some later time) so dt is infinite
@@ -44,6 +50,8 @@ class People():
 
   def calc_life_expectancy(self):  
     # ensure all people have died 
+    self.dump("./population.csv")
+
     assert np.sum(self.population.Alive) == 0
     return np.mean(self.population.TimeOfDeath)
 

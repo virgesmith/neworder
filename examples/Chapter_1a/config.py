@@ -7,8 +7,17 @@ import numpy as np
 import neworder
 import person
 
-# "An arbitrarily selected value, chosen to produce a life expectancy of about 70 years." (1/0.014 ~= 71.4285)
-mortality_hazard = 0.014
+
+# use a large positive number to denote an infinite timespan (better than say -1 as it just works in inequalities)
+neworder.TIME_INFINITY = 1e9
+neworder.MAX_AGE = 100.0
+
+# This is case-based model - only a dummy timeline is required?
+neworder.timespan = np.array([0.0, neworder.MAX_AGE])
+neworder.timestep = 1.0
+
+# Choose a simple linearly increasing mortality rate: 0.1% aged 0 to 2.5% aged 100
+mortality_hazard = np.linspace(0.001, 0.025, neworder.MAX_AGE)
 population_size = 100000
 
 # running/debug options
@@ -22,17 +31,9 @@ neworder.checks = {
 neworder.initialisations = {
   # the MODGEN-like implementation
   #"people": { "module": "person", "class_": "People", "parameters": [mortality_hazard, population_size] }
-  # a more efficient expression of the problem
+  # a more efficient expression of the problem using pandas, runs about 6 times faster
   "people": { "module": "people", "class_": "People", "parameters": [mortality_hazard, population_size] }
 }
-
-# use a large positive number to denote an infinite timespan (better than say -1 as it just works in inequalities)
-neworder.TIME_INFINITY = 1e9
-neworder.MAX_AGE = 100.0
-
-# This is case-based model - only a dummy timeline is required?
-neworder.timespan = np.array([0.0, neworder.MAX_AGE])
-neworder.timestep = 1.0
 
 # transitions: simply samples time of death for each individual
 neworder.transitions = {

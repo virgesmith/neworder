@@ -134,22 +134,24 @@ int run(int rank, int size, bool indep)
 
     // Loop with checkpoints
     double t = pycpp::at<double>(timespan, 0) + timestep;
+    int timeindex = 1;
     for (size_t i = 1; i < pycpp::size(timespan); ++i)
     {
       double checkpoint = pycpp::at<double>(timespan, i);
-      for (; t <= checkpoint; t += timestep)
+      for (; t <= checkpoint; t += timestep, ++timeindex)
       {
         // TODO is there a way to do this in-place? does it really matter?
-        env().attr("time") = py::object(t);
+        env().attr("time") = t;
+        env().attr("timeindex") = timeindex;
 
         for (auto it = transitionTable.begin(); it != transitionTable.end(); ++it)
         {
-          neworder::log("t=%% transition: %% "_s % t % it->first);
+          neworder::log("t=%%(%%) transition: %% "_s % t % timeindex % it->first);
           (it->second)();  
         }
         for (auto it = checkTable.begin(); it != checkTable.end(); ++it)
         {
-          neworder::log("t=%% check: %% "_s % t % it->first);
+          neworder::log("t=%%(%%) check: %% "_s % t % timeindex % it->first);
           bool ok = py::extract<bool>((it->second)())();
           if (!ok) 
           {
@@ -160,7 +162,7 @@ int run(int rank, int size, bool indep)
       t -= timestep; // temporary fix
       for (auto it = checkpointTable.begin(); it != checkpointTable.end(); ++it)
       {
-        neworder::log("t=%% checkpoint: %%"_s % t % it->first);   
+        neworder::log("t=%%(%%) checkpoint: %%"_s % t % timeindex % it->first);   
         // Note: return value is ignored (exec not eval)
         (it->second)();  
       } 
