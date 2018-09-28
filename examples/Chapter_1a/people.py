@@ -9,7 +9,7 @@ import animation
 # A more "pythonic" approach using pandas DataFrames
 
 class People():
-  """ A simple aggregration of Person """
+  """ A simple aggregration of Persons each represented as a row in a data frame """
   def __init__(self, mortality_hazard_file, n):
     # initialise cohort      
     # assert False
@@ -23,22 +23,13 @@ class People():
     self.population = pd.DataFrame(data={"Alive": np.full(n, True),
                                          "Age": np.zeros(n), 
                                          "TimeOfDeath": np.zeros(n)})
-    #neworder.log(self.population.head())
-    #plt.ion() # interactive on stops blocking
 
 
-  def plot(self, hold=False):
+  def plot(self, filename=None):
     # dump the population out
     #self.population.to_csv(filename, index=False)
-    # if hold:
-    #   plt.ioff()
-    # else:
-    #   plt.cla()
-    y,_,_ = plt.hist(self.population[self.population.Alive == False].TimeOfDeath, 100)
-    # neworder.log(y)
-    a = animation.Animation(np.array(range(len(y))), y)
-    # plt.show()
-    # plt.pause(0.1)
+
+    animation.Hist(self.population.TimeOfDeath, int(max(self.population.Age)), filename)
 
   def die(self):
     # using indexes to subset data as cannot store a reference to a subset of the dataframe (it just copies)

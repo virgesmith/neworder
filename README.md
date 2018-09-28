@@ -364,8 +364,16 @@ $ ./run_example.sh option 4 -c
 [no 0/4] SUCCESS
 ```
 
-## RiskPaths
+## MODGEN models
+
+- [Chapter 1](doc/examples/Chapter1.md): Example taken from *Microsimulation and Population Dynamics* [1]
+
+### RiskPaths
 
 RiskPaths is a well-known MODGEN model that is primarily used for teaching purposes.
 
 TODO neworder implementation...
+
+# References
+
+[1]: Microsimulation and Population Dynamics: An Introduction to Modgen 12, Belanger, A & Sabourin, P, Springer Series on Demographic Methods and Population Analysis 43, 2017

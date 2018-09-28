@@ -1,30 +1,36 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
+import matplotlib.animation as animation
 
 
-class Animation:
+class Hist:
+  def __init__(self, data, numbins, filename=None):
 
-  def __init__(self, x, y):
-    fig, self.ax = plt.subplots()
-    self.xdata, self.ydata = [], []
-    self.ln, = plt.plot([], [], 'ro', animated=True)
-    self.y = y
-    ani = FuncAnimation(fig, self.__update, frames=x, init_func=self.__init, blit=True)
+    fig, ax = plt.subplots()
+    # TODO histtype='barstacked'
+    # see https://matplotlib.org/api/_as_gen/matplotlib.pyplot.hist.html
+    self.n, bins, self.patches = plt.hist(data, numbins, facecolor='black')
+
+    ax.set_title("Case-based mortality microsim (%d people)" % len(data))
+    ax.set_xlabel("Age at Death")
+    ax.set_ylabel("Persons")
+
+    frames = numbins+1
+    anim = animation.FuncAnimation(fig, self.__animate, interval=100, frames=numbins, repeat=True, repeat_delay=3000)
+
     plt.show()
+    if filename is not None:
+      anim.save(filename, dpi=80, writer='imagemagick') 
 
-  def __init(self):
-    self.ax.set_xlim(0, len(self.y))
-    self.ax.set_ylim(0, 1000)
-    return self.ln,
+  def __animate(self, frameno):
+    i = 0
+    for rect, h in zip(self.patches, self.n):
+      rect.set_height(h if i <= frameno else 0)
+      i = i + 1
+    return self.patches
 
-  def __update(self, frame):
-    self.xdata.append(frame)
-    self.ydata.append(self.y[frame])
-    self.ln.set_data(self.xdata, self.ydata)
-    return self.ln,
+# N, mu, sigma = 10000, 100, 15
+# x = mu + sigma * np.random.randn(N) 
+# # y,x = np.histogram(x, bins=100)
+# Hist(x, 100)#, "hist.gif")
 
-# x = np.array(range(101))
-# y = (x + 1) * x / 10
-
-# a = Animation(x, y)
