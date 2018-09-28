@@ -3,8 +3,6 @@
 
 #include <iostream>
 
-// TODO Logger...?
-
 int main(int argc, const char* argv[])
 {
   // Directory containing model (config.py, etc) is specified on the command line
@@ -19,6 +17,6 @@ int main(int argc, const char* argv[])
   append_model_paths(&argv[1], argc-1);
   
   // single-process
-  return run(0, 1);
+  return run(0, 1, true);
 }
 

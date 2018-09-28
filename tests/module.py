@@ -5,20 +5,23 @@ Test framework expects modules with a function called test that
 """
 import neworder as no
 import numpy as np
+import pandas as pd
+
+import test as test_
 
 def test():
+  t = test_.Test()
 
+  #t.check(False)
   s = no.ustream(10000)
-  if not isinstance(s, np.ndarray):
-    return False
-  if not len(s) == 10000:
-    return False
-  if not abs(np.mean(s) - 0.5) < 0.01:
-    return False
+  t.check(isinstance(s, np.ndarray))
+
+  t.check(len(s) == 10000)
+
+  t.check(abs(np.mean(s) - 0.5) < 0.02)
 
   f = no.lazy_eval("2 + 2")
-  if not f() == 4: 
-    return False
+  t.check(f() == 4)
 
   # TODO this overlaps/duplicates tests in op.py - reorganise
 
@@ -26,8 +29,7 @@ def test():
   h = np.array([0.014] * 10)
   #l = no.stopping_v(h)
   l = no.stopping_nhpp(h, 10000)
-  if not abs(np.mean(l) * 0.014 - 1.0) < 0.01:
-    return False
+  t.check(abs(np.mean(l) * 0.014 - 1.0) < 0.03)
 
   # test a certain(ish) hazard rate
   h = np.array([0.99, 0.99, 0.01])
@@ -50,4 +52,23 @@ def test():
   le = no.stopping_nhpp(h, 1000)
   no.log(sum(le)/len(le))
 
-  return True
+  # modify df passing column 
+  df = pd.read_csv("../../tests/df.csv")
+
+  # modify df passing directly
+  no.directmod(df, "DC2101EW_C_ETHPUK11")
+  t.check(np.array_equal(df["DC2101EW_C_ETHPUK11"].values, np.zeros(len(df)) + 3))
+
+  df = pd.read_csv("../../tests/df.csv")
+  cats = np.array(range(4))
+  transitions = np.identity(len(cats)) * 0 + 0.25
+  #no.log(transitions)
+  no.transition(cats, transitions, df, "DC2101EW_C_ETHPUK11")
+  # it's possible this could fail depending on random draw
+  t.check(np.array_equal(np.sort(df["DC2101EW_C_ETHPUK11"].unique()), np.array(range(4))))
+
+  df2 = df.copy()
+  df3 = no.append(df,df2)
+  t.check(len(df3) == len(df) + len(df2)) 
+
+  return not t.any_failed

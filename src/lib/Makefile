@@ -1,23 +1,38 @@
 
+INTDIR=int$(SUFFIX)
+
 src=$(wildcard *.cpp)
-obj=$(src:.cpp=.o)
-dep=$(src:.cpp=.d)
+dep=$(patsubst %,$(INTDIR)/%,$(src:.cpp=.d))
+obj=$(patsubst %,$(INTDIR)/%,$(src:.cpp=.o))
+
+#$(info $(dep))
+#$(info $(obj))
+$(shell mkdir -p $(INTDIR))
 
 CXXFLAGS += -I../include
 
 LDFLAGS += -l$(BOOST_PYTHON_LIB) -l$(BOOST_NUMPY_LIB)
 
-all: libneworder.so
+all: libneworder$(SUFFIX).so
 
-libneworder.so: $(obj)
+libneworder$(SUFFIX).so: $(obj)
 	$(CXX) -shared -o $@ $^ $(LDFLAGS)
 
-%.d: %.cpp
-	@$(CXX) $(CXXFLAGS) $< -MM -MT $(@:.d=.o) >$@
+DEPFLAGS = -MT $@ -MD -MP -MF $(INTDIR)/$*.d
+
+$(INTDIR)/%.o: %.cpp $(INTDIR/%.d)
+	$(CXX) $(CXXFLAGS) $(DEPFLAGS) -c -o $@ $<
+#-c -o $@ $^
+
+#$(INTDIR)/%.d: %.cpp
+#	$(CXX) $(CXXFLAGS) $< -MM -MT $(INTDIR)/$(@:.d=.o) >$@
+
+# .PRECIOUS = $(INTDIR)/%.d
+# $(INTDIR)/%.d: ;
 
 -include $(dep)
 
 clean:
-	rm -rf $(dep) $(obj) libneworder.so	
+	rm -rf $(dep) $(obj) libneworder$(SUFFIX).so	
 
 .PHONY: clean test

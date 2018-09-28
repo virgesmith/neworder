@@ -36,8 +36,8 @@ class Population:
     # Force flat rates for testing purposes
     #self.in_migration.Rate = 0.05
     #self.out_migration.Rate = 0.05
-    #self.immigration.Rate = 0.01
-    #self.emigration.Rate = 0.01
+    self.immigration.Rate = 0.01
+    self.emigration.Rate = 0.005
  
     # use this to identify people (uniquely only within this table)
     self.counter = len(self.data)
@@ -163,6 +163,6 @@ class Population:
     return True # Faith
 
   def write_table(self):
-    filename = "./examples/people/dm{}_{}_{:.3f}.csv".format(neworder.seq, self.lad, neworder.time)
+    filename = "./examples/people/dm_{}_{:.3f}.csv".format(self.lad, neworder.time)
     neworder.log("writing %s" % filename)
     return self.data.to_csv(filename, index=False)

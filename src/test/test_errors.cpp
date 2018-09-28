@@ -3,6 +3,7 @@
 #include "test.h"
 
 #include "Environment.h"
+#include "Module.h"
 
 #include "python.h"
 

@@ -1,30 +1,36 @@
+INTDIR=int$(SUFFIX)
 
 CXXFLAGS += -I../include -I../lib
 
 LDFLAGS += -l$(BOOST_PYTHON_LIB) -l$(BOOST_NUMPY_LIB)
 
-#$(info $(CXXFLAGS))
-#$(info $(LDFLAGS))
+src=$(wildcard test*.cpp) run.cpp main$(SUFFIX).cpp
+dep=$(patsubst %,$(INTDIR)/%,$(src:.cpp=.d))
+obj=$(patsubst %,$(INTDIR)/%,$(src:.cpp=.o))
 
-src=$(wildcard *.cpp)
-obj=$(src:.cpp=.o)
-dep=$(src:.cpp=.d)
+$(shell mkdir -p $(INTDIR))
 
-all: testharness
+all: testharness$(SUFFIX)
 
-testharness: $(obj)
-	$(CXX) -o $@ $^ $(LDFLAGS) -L ../lib -lneworder
+testharness$(SUFFIX): $(obj)
+	$(CXX) -o $@ $^ $(LDFLAGS) -L ../lib -lneworder$(SUFFIX)
 
-%.d: %.cpp
-	@$(CXX) $(CXXFLAGS) $< -MM -MT $(@:.d=.o) >$@
+DEPFLAGS = -MT $@ -MD -MP -MF $(INTDIR)/$*.d
+
+$(INTDIR)/%.o: %.cpp $(INTDIR/%.d)
+	$(CXX) $(CXXFLAGS) $(DEPFLAGS) -c -o $@ $<
+
+# %.d: %.cpp
+# 	@$(CXX) $(CXXFLAGS) $< -MM -MT $(@:.d=.o) >$@
 
 -include $(dep)
 
 #TODO $(shell ls ../../tests/*.py) ... then strip .py
-test: testharness
-	PYTHONPATH=.:../../tests:$(PYTHONPATH) LD_LIBRARY_PATH=../lib:$(LD_LIBRARY_PATH) ./testharness module op
+test: testharness$(SUFFIX)
+	PYTHONPATH=.:../../tests:$(PYTHONPATH) LD_LIBRARY_PATH=../lib:$(LD_LIBRARY_PATH) $(MPIEXEC) ./testharness$(SUFFIX) $(MPI_INDEP) module op mpi trans
+	PYTHONPATH=.:../../tests:$(PYTHONPATH) LD_LIBRARY_PATH=../lib:$(LD_LIBRARY_PATH) $(MPIEXEC) ./testharness$(SUFFIX) $(MPI_DEP) correlated
 
 clean:
-	rm -rf $(dep) $(obj) testharness
+	rm -rf $(dep) $(obj) testharness$(SUFFIX)
 
 .PHONY: clean test

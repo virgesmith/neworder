@@ -4,6 +4,8 @@
 #include "Functor.h"
 #include "Environment.h"
 #include "Module.h"
+#include "Log.h"
+#include "Timer.h"
 
 #include "python.h"
 
@@ -27,30 +29,26 @@ void append_model_paths(const char* paths[], size_t n)
   if (current)
     pythonpath = pythonpath + ":" + current;
   setenv("PYTHONPATH", pythonpath.c_str(), 1);
-//  std::cout << "[pre-env] PYTHONPATH=" << pythonpath << std::endl;
 }
 
 
-int run(int rank, int size)
+int run(int rank, int size, bool indep)
 {
-  pycpp::Environment& env = pycpp::Environment::init(rank, size);
+  pycpp::Environment& env = pycpp::Environment::init(rank, size, indep);
+  Timer timer;
   try
   {
     // Load (and exec) config file
     py::object config = py::import("config");
+    // Update the env accordingly
+    //env.configure(config);
 
-    bool do_checks = py::extract<bool>(env().attr("do_checks"))();
+    bool do_checks= py::extract<bool>(env().attr("do_checks"))();
 
     int log_level = py::extract<int>(env().attr("log_level"))();
     // TODO actually do something with log_level...
     (void)log_level;
 
-    // TODO python func to set sequence and reset rng
-    if (pycpp::has_attr(env(), "sequence"))
-    {
-      env.seed(np::from_object(env().attr("sequence")));
-    }
-  
     const np::ndarray& timespan = np::from_object(env().attr("timespan"));
     double timestep = py::extract<double>(env().attr("timestep"))();
 
@@ -60,9 +58,22 @@ int run(int rank, int size)
       throw std::runtime_error("Timestep cannot be zero!");
     }
 
-    std::cout << env.context() << "t=" << pycpp::at<double>(timespan, 0) << " init: ";
+    neworder::log("starting microsimulation...");
 
-    // execs
+    // modifiers (exec)
+    no::CallbackArray modifierArray; 
+    if (pycpp::has_attr(env(), "modifiers"))
+    {
+      py::list modifiers = py::list(env().attr("modifiers"));
+      int n = py::len(modifiers);
+      modifierArray.reserve(n);
+      for (int i = 0; i < n; ++i)
+      {
+        modifierArray.push_back(no::Callback::exec(py::extract<std::string>(modifiers[i])()));
+      }
+    }
+
+    // transiations (exec)
     no::CallbackTable transitionTable; 
     py::list transitions = py::dict(env().attr("transitions")).items();
     for (int i = 0; i < py::len(transitions); ++i)
@@ -71,7 +82,7 @@ int run(int rank, int size)
                                             no::Callback::exec(py::extract<std::string>(transitions[i][1])())));
     }
 
-    // evals
+    // checks (eval)
     no::CallbackTable checkTable; 
     if (do_checks)
     {
@@ -91,84 +102,86 @@ int run(int rank, int size)
       checkpointTable.insert(std::make_pair(py::extract<std::string>(checkpoints[i][0])(), 
                                             no::Callback::exec(py::extract<std::string>(checkpoints[i][1])())));
     }
-    // Iterate over sequence(s)
-    do {
+    // Iterate over sequence(s) //do {
 
-      // reset stuff...
-      // initialisations...
-      // list of module-class-constructor args -> list of objects
-      py::list initialisations = py::dict(env().attr("initialisations")).items();
-      for (int i = 0; i < py::len(initialisations); ++i)
+    // reset stuff...
+    // initialisations...
+    // list of module-class-constructor args -> list of objects
+    py::list initialisations = py::dict(env().attr("initialisations")).items();
+    for (int i = 0; i < py::len(initialisations); ++i)
+    {
+      py::dict spec = py::dict(initialisations[i][1]);
+      std::string modulename = py::extract<std::string>(spec["module"])();
+      std::string class_name = py::extract<std::string>(spec["class_"])();
+      py::list args = py::list(spec["parameters"]);
+
+      py::object module = py::import(modulename.c_str());
+      py::object class_ = module.attr(class_name.c_str());
+      py::object object = pycpp::Functor(class_, args)();
+
+      // taking a const ref here to stay results in an empty string, which is bizarre love triangle
+      const std::string name = py::extract<std::string>(initialisations[i][0])();
+      env().attr(name.c_str()) = object;
+      neworder::log("t=%% initialise: %%"_s % pycpp::at<double>(timespan, 0) % name);
+    }
+
+    // Apply any modifiers for this process
+    if (!modifierArray.empty())
+    {
+      neworder::log("t=%% modifier: %%"_s % pycpp::at<double>(timespan, 0) % modifierArray[env.rank()].code());
+      modifierArray[env.rank()]();
+    }
+
+    // Loop with checkpoints
+    double t = pycpp::at<double>(timespan, 0) + timestep;
+    int timeindex = 1;
+    for (size_t i = 1; i < pycpp::size(timespan); ++i)
+    {
+      double checkpoint = pycpp::at<double>(timespan, i);
+      for (; t <= checkpoint; t += timestep, ++timeindex)
       {
-        py::dict spec = py::dict(initialisations[i][1]);
-        //std::cout << pycpp::as_string(spec) << std::endl;
-        std::string modulename = py::extract<std::string>(spec["module"])();
-        std::string class_name = py::extract<std::string>(spec["class_"])();
-        py::list args = py::list(spec["parameters"]);
+        // TODO is there a way to do this in-place? does it really matter?
+        env().attr("time") = t;
+        env().attr("timeindex") = timeindex;
 
-        py::object module = py::import(modulename.c_str());
-        py::object class_ = module.attr(class_name.c_str());
-        //std::cout << pycpp::as_string(args) << std::endl;
-        py::object object = pycpp::Functor(class_, args)();
-
-        // taking a const ref here to stay results in an empty string, which is bizarre love triangle
-        const std::string name = py::extract<std::string>(initialisations[i][0])();
-        env().attr(name.c_str()) = object;
-        std::cout << name << " ";
-      }
-      std::cout << std::endl;
-
-      // Loop with checkpoints
-      double t = pycpp::at<double>(timespan, 0) + timestep;
-      for (size_t i = 1; i < pycpp::size(timespan); ++i)
-      {
-        double checkpoint = pycpp::at<double>(timespan, i);
-        for (; t <= checkpoint; t += timestep)
+        for (auto it = transitionTable.begin(); it != transitionTable.end(); ++it)
         {
-          std::cout << env.context() << "t=" << t << " exec: ";
-          // TODO is there a way to do this in-place? does it really matter?
-          env().attr("time") = py::object(t);
-
-          for (auto it = transitionTable.begin(); it != transitionTable.end(); ++it)
-          {
-            std::cout << it->first << " ";   
-            (it->second)();  
-          }
-          std::cout << std::endl;
-          for (auto it = checkTable.begin(); it != checkTable.end(); ++it)
-          {
-            bool ok = py::extract<bool>((it->second)())();
-            if (!ok) 
-            {
-              throw std::runtime_error("check failed");
-            }  
-          }
-        }
-        std::cout << env.context() << "checkpoint: ";
-        for (auto it = checkpointTable.begin(); it != checkpointTable.end(); ++it)
-        {
-          std::cout << it->first << ": ";   
-          // Note: return value is ignored (exec not eval)
+          neworder::log("t=%%(%%) transition: %% "_s % t % timeindex % it->first);
           (it->second)();  
-        } 
-        std::cout << std::endl;
+        }
+        for (auto it = checkTable.begin(); it != checkTable.end(); ++it)
+        {
+          neworder::log("t=%%(%%) check: %% "_s % t % timeindex % it->first);
+          bool ok = py::extract<bool>((it->second)())();
+          if (!ok) 
+          {
+            throw std::runtime_error("check failed");
+          }  
+        }
       }
-      std::cout << env.context() << "SUCCESS" << std::endl;
-    } while (env.next());
+      t -= timestep; // temporary fix
+      for (auto it = checkpointTable.begin(); it != checkpointTable.end(); ++it)
+      {
+        neworder::log("t=%%(%%) checkpoint: %%"_s % t % timeindex % it->first);   
+        // Note: return value is ignored (exec not eval)
+        (it->second)();  
+      } 
+    }
+    neworder::log("SUCCESS exec time=%%s"_s % timer.elapsed_s());
   }
-  catch (py::error_already_set&)
+  catch(py::error_already_set&)
   {
-    std::cerr << "ERROR: " << env.context(pycpp::Environment::PY) << " " << env.get_error() << std::endl;
+    std::cerr << "%% ERROR: %%"_s % env.context(pycpp::Environment::PY) % env.get_error() << std::endl;
     return 1;
   }
-  catch (std::exception& e)
+  catch(std::exception& e)
   {
-    std::cerr << "ERROR: " << env.context() << " " << e.what() << std::endl;
+    std::cerr << "%% ERROR: %%"_s % env.context() % e.what() << std::endl;
     return 1;
   }
   catch(...)
   {
-    std::cerr << "ERROR: unknown exception" << std::endl;
+    std::cerr << "%% ERROR: unknown exception"_s % env.context() << std::endl;
     return 1;
   }
   return 0;

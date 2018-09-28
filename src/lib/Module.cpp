@@ -6,16 +6,20 @@
 #include "Environment.h"
 #include "Inspect.h"
 #include "MonteCarlo.h"
+#include "DataFrame.h"
+#include "MPIComms.h"
+
 
 #include "python.h"
 
 #include <iostream>
 
 namespace {
-// not visible to (rest of) C++
+
+// not visible to (rest of) C++ - use function declareds in Log.h
 void log_obj(const py::object& msg)
 {
-  std::cout << pycpp::Environment::get().context(pycpp::Environment::PY) << pycpp::as_string(msg.ptr()) << std::endl;
+  std::cout << pycpp::getenv().context(pycpp::Environment::PY) << pycpp::as_string(msg.ptr()) << std::endl;
 }
 
 }
@@ -65,11 +69,16 @@ const char* neworder::module_version()
 
 std::string neworder::python_version()
 {
-  return pycpp::Environment::get().version();
+  return pycpp::getenv().version();
 }
 
 void neworder::shell(/*const py::object& local*/)
 {
+  if (pycpp::getenv().size() != 1) 
+  {
+    neworder::log("WARNING: shell disabled in parallel mode, ignoring");
+    return;
+  }
   py::dict kwargs;
   kwargs["banner"] = py::str("[starting neworder debug shell]");
   kwargs["exitmsg"] = py::str("[exiting neworder debug shell]");
@@ -80,17 +89,6 @@ void neworder::shell(/*const py::object& local*/)
 
 // python-visible log function defined above
 
-// not visible to python
-void neworder::log(const std::string& msg)
-{
-  std::cout << pycpp::Environment::get().context() << msg << std::endl;
-}
-
-// not visible to python
-void neworder::log(const py::object& msg)
-{
-  std::cout << pycpp::Environment::get().context() << pycpp::as_string(msg.ptr()) << std::endl;
-}
 
 BOOST_PYTHON_MODULE(neworder)
 {
@@ -102,7 +100,8 @@ BOOST_PYTHON_MODULE(neworder)
   py::def("python", no::python_version);
   py::def("log", log_obj);
   py::def("shell", no::shell);
-
+  py::def("reseed", pycpp::Environment::reset);
+  
   // MC
   py::def("ustream", no::ustream);
   py::def("hazard", no::hazard);
@@ -115,6 +114,25 @@ BOOST_PYTHON_MODULE(neworder)
   py::def("lazy_eval", no::Callback::eval);
   // TODO env?
 
+  // working on pandas df manipulation  
+  py::def("transition", no::df::transition);
+  py::def("directmod", no::df::directmod);
+  py::def("append", no::df::append, py::return_value_policy<py::return_by_value>());
+
+  // MPI
+  py::def("rank", pycpp::Environment::rank);
+  py::def("size", pycpp::Environment::size);
+  py::def("send", no::mpi::send_obj);
+  py::def("receive", no::mpi::receive_obj);
+  py::def("send_csv", no::mpi::send_csv);
+  py::def("receive_csv", no::mpi::receive_csv);
+  py::def("broadcast", no::mpi::broadcast_obj);
+  py::def("gather", no::mpi::gather_array);
+  py::def("scatter", no::mpi::scatter_array);
+  py::def("allgather", no::mpi::allgather_array/*, py::return_value_policy<py::return_by_value>()*/);
+  py::def("sync", no::mpi::sync);
+  py::def("indep", pycpp::Environment::indep);
+  
   // Deferred eval/exec of Python code
   py::class_<no::Callback>("Callback", py::no_init)
     .def("__call__", &no::Callback::operator())

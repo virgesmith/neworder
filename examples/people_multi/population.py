@@ -14,7 +14,7 @@ class Population:
 
     # guard for no input data (if more MPI processes than input files)
     if not len(inputdata):
-      raise ValueError("proc {}/{}: no input data".format(neworder.procid, neworder.nprocs))
+      raise ValueError("proc {}/{}: no input data".format(neworder.rank(), neworder.size()))
 
     self.lads = [file.split("_")[2] for file in inputdata]
 
@@ -37,7 +37,6 @@ class Population:
     # self.out_migration.Rate = 0.05
     # self.immigration.Rate = 0.01
     # self.emigration.Rate = 0.01
-
 
     # use this to identify people (uniquely only within this table)
     self.counter = len(self.data)
@@ -157,10 +156,12 @@ class Population:
       .format(neworder.time, self.size(), self.mean_age(), 100.0 * self.gender_split(), 
       self.in_out[0] - self.in_out[1] + self.in_out[2] - self.in_out[3], 
       self.in_out[0], self.in_out[1], self.in_out[2], self.in_out[3]))
+    # wait for other processes
+    neworder.sync()
     return True # Faith
 
   def write_table(self):
     # TODO define path in config
-    filename = "./examples/people_multi/data/dm_{:.3f}_{}-{}.csv".format(neworder.time, neworder.procid, neworder.nprocs)
+    filename = "./examples/people_multi/data/dm_{:.3f}_{}-{}.csv".format(neworder.time, neworder.rank(), neworder.size())
     neworder.log("writing %s" % filename)
     return self.data.to_csv(filename, index=False)

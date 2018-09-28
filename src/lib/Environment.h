@@ -10,6 +10,13 @@
 
 namespace pycpp {
 
+// TODO no duplication of data between python/C++
+// for scalar, either (whichever is the most efficient):
+// - always access the (immutable) python vars via m_self->attr(""), or
+// - define the var in C++ and provide a python accessor function
+// for arrays, C++ and python ref the same data (test this)
+// also consider const vs mutable
+
 struct Environment
 {
 public:
@@ -26,13 +33,11 @@ public:
   Environment(const Environment&&) = delete;
   Environment& operator=(const Environment&&) = delete;
 
-  // Use this function to create the environemt
-  // it ensures the PRNG has been seeded independently for parallel jobs
-  // seeds will be a consecutive numbers starting at a (large prime) multiple of the total no of processes
-  static Environment& init(int rank, int size);
+  // Use this function to create the base environemt
+  static Environment& init(int rank, int size, bool indep = true);
 
-  // syntactic sugar
-  static Environment& get();
+  // Apply settings from config.py, including sequence and RNG state(s)
+  //void configure(const py::object& obj);
 
   // check for errors in the python env (use after catching py::error_already_set)
   static std::string get_error() noexcept;
@@ -40,14 +45,25 @@ public:
   // returns the python version
   static std::string version();
 
-  // returns "seq-rank/size"
+  // MPI rank (0 if serial)
+  static int rank();
+
+  // MPI size (1 if serial)
+  static int size();
+
+  // independent streams (per rank)? 
+  // TODO could this be modifiable?
+  static bool indep();
+
+  // returns "py/no rank/size"
   std::string context(int ctx = CPP) const;
 
-  // set the RNG stream sequence
-  void seed(const np::ndarray& seq);
+  // TODO rename seq_index for clarity 
+//  int seq() const;
+//  np::ndarray sequence() const;
 
-  // iterate the RNG stream sequence
-  bool next();
+  // reset the RNG stream sequence to the original seed 
+  static void reset();
 
   // Accress the NRG stream (one per env)
   std::mt19937& prng();
@@ -57,20 +73,37 @@ public:
   py::object& operator()() { return *m_self; }
 
 private:
+
+  // compute the RNG seed
+  int64_t compute_seed() const;
+
+  // flag to check whether init has been called
+  bool m_init;
+
   // Singletons only
   Environment();
   friend Environment& Global::instance<Environment>();
 
   // RNG sequence index
-  size_t m_seqno;
-  //np::ndarray* m_sequence;
+  //size_t m_seqno; use python version for now
+  //np::ndarray m_sequence;
+
   // MPI rank/size
   int m_rank;
   int m_size;
+  // set to false to make all processes use the same seed
+  bool m_indep;
+
+  // seed not directly visible to python
+  int64_t m_seed;
+
   // TODO work out why this segfaults if the dtor is called (even on exit)
   py::object* m_self;
-  // thread/process-safe seeding
-  std::unique_ptr<std::mt19937> m_prng;
+  // thread/process-safe seeding strategy deferred until config loaded
+  std::mt19937 m_prng;
 };
+
+// syntactic sugar
+Environment& getenv();
 
 }

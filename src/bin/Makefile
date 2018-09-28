@@ -1,32 +1,34 @@
 
+INTDIR=int$(SUFFIX)
+
 CXXFLAGS += -I../lib -I../include
 
-src=neworder.cpp run.cpp
-obj=$(src:.cpp=.o)
-dep=$(src:.cpp=.d)
+src=main$(SUFFIX).cpp run.cpp
+dep=$(patsubst %,$(INTDIR)/%,$(src:.cpp=.d))
+obj=$(patsubst %,$(INTDIR)/%,$(src:.cpp=.o))
 
-mpi_src=neworder_mpi.cpp run.cpp MPIResource.cpp
-
-#$(info $(CXXFLAGS))
-#$(info $(LDFLAGS))
-MPICXX=mpicxx
+$(info $(dep))
+$(info $(obj))
+$(shell mkdir -p $(INTDIR))
 
 LDFLAGS += -l$(BOOST_PYTHON_LIB) -l$(BOOST_NUMPY_LIB)
 
-all: neworder
+all: neworder$(SUFFIX)
 
-neworder: $(obj)
-	$(CXX) -o $@ $^ $(LDFLAGS) -L ../lib -lneworder
+neworder$(SUFFIX): $(obj)
+	$(CXX) -o $@ $^ $(LDFLAGS) -L ../lib -lneworder$(SUFFIX)
 
-neworder_mpi: $(mpi_src)
-	$(MPICXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS) -L ../lib -lneworder
+DEPFLAGS = -MT $@ -MD -MP -MF $(INTDIR)/$*.d
 
-%.d: %.cpp
-	@$(CXX) $(CXXFLAGS) $< -MM -MT $(@:.d=.o) >$@
+$(INTDIR)/%.o: %.cpp $(INTDIR/%.d)
+	$(CXX) $(CXXFLAGS) $(DEPFLAGS) -c -o $@ $<
+
+# %.d: %.cpp
+# 	@$(CXX) $(CXXFLAGS) $< -MM -MT $(@:.d=.o) >$@
 
 -include $(dep)
 
 clean:
-	rm -rf $(dep) $(obj) neworder neworder_mpi
+	rm -rf $(dep) $(obj) neworder$(SUFFIX)
 
 .PHONY: clean

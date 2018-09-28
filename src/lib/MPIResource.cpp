@@ -1,8 +1,10 @@
 
+#ifdef NEWORDER_MPI
 
 #include "MPIResource.h"
+#include "Log.h"
 
-#include <string>
+//#include <string>
 #include <stdexcept>
 
 //using namespace MPI;
@@ -13,20 +15,20 @@ MPIResource::MPIResource(int* pargc, const char*** pargv)
   int status = MPI_Init(pargc, const_cast<char***>(pargv));
   if (status != MPI_SUCCESS)
   {
-    throw std::runtime_error("MPI init failed, error: " + std::to_string(status));
+    throw std::runtime_error("MPI init failed, error: %%"_s % status);
   }
   
   status = MPI_Comm_size(MPI_COMM_WORLD, &m_worldSize);
   if (status != MPI_SUCCESS)
   {
-    throw std::runtime_error("MPI size failed, error: " + std::to_string(status));
+    throw std::runtime_error("MPI size failed, error: %%"_s % status);
   }
 
   // Get the rank of the process
   status = MPI_Comm_rank(MPI_COMM_WORLD, &m_worldRank);
   if (status != MPI_SUCCESS)
   {
-    throw std::runtime_error("MPI rank failed, error: " + std::to_string(status));
+    throw std::runtime_error("MPI rank failed, error: "_s % status);
   }
 
   // Get the name of the processor
@@ -34,7 +36,7 @@ MPIResource::MPIResource(int* pargc, const char*** pargv)
   status = MPI_Get_processor_name(m_processorName, &name_len);		
   if (status != MPI_SUCCESS)
   {
-    throw std::runtime_error("MPI name failed, error: " + std::to_string(status));
+    throw std::runtime_error("MPI name failed, error: %%"_s % status);
   }
 }
 
@@ -50,4 +52,4 @@ int MPIResource::size() const { return m_worldSize; }
 
 const char* MPIResource::name() const { return m_processorName; }
 	
-
+#endif

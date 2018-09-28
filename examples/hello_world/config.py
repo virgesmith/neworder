@@ -9,9 +9,12 @@ import numpy as np
 import neworder
 
 # Timeline is compulsory, and must be float type - define a dummy timeline
-neworder.timespan = np.array([0, 1], dtype=float)
+neworder.timespan = np.array([0.0, 1.0])
 # We only need one timestep
 neworder.timestep = neworder.timespan[1]
+
+# breaks on second iteration
+#neworder.sequence = np.array([0,0,2])
 
 # Checks to run during the simulation
 neworder.log_level = 1 # this doesnt do anything at the moment
@@ -39,8 +42,8 @@ neworder.initialisations = {
 # The "transition" in this case fetches the current username from the os
 # Note that the code is exec'd not eval'd: any return value is discarded
 neworder.transitions = { 
-  "who": "greeter.get_name()",
-  "exec": "a=1" # won't fail. a is in neworder namespace
+  "who": "greeter.get_name()"
+  #"exec": "a=1" # won't fail. a is in neworder namespace
 }
 
 # Say hello when the empty simulation is done
@@ -50,7 +53,7 @@ neworder.transitions = {
 # neworder.greeter()
 # TODO control over order of execution...
 neworder.checkpoints = {
-  "exec": "b=a+1", # exec - shouldn't fail. a, b are in neworder namespace, and already initialised
-  "print": "print(b)",
+  #"exec": "b=a+1", # exec - shouldn't fail. a, b are in neworder namespace, and already initialised
+  #"print": "print(b)",
   "say_hello" : "greeter()",
 }
