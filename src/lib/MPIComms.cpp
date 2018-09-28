@@ -50,13 +50,13 @@ struct Buffer
 template<>
 struct mpi_type_trait<Buffer>
 {
-  static const int type = MPI_CHAR;
+  static constexpr const auto type = MPI_CHAR;
 };
 
 template<>
 struct mpi_type_trait<std::string>
 {
-  static const int type = MPI_CHAR;
+  static constexpr const auto type = MPI_CHAR;
 };
 #endif
 

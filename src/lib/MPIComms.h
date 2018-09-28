@@ -8,43 +8,44 @@
 #ifdef NEWORDER_MPI
 #include <mpi.h>
 
+// The type of e.g. MPI_INT differs between implementations
 template<typename T> 
 struct mpi_type_trait;
 
 template<>
 struct mpi_type_trait<bool>
 {
-  static const auto type = MPI_INT;
+  static constexpr const auto type = MPI_INT;
 };
 
 template<>
 struct mpi_type_trait<int>
 {
-  static const auto type = MPI_INT;
+  static constexpr const auto type = MPI_INT;
 };
 
 template<>
 struct mpi_type_trait<int64_t>
 {
-  static const auto type = MPI_LONG_LONG_INT;
+  static constexpr const auto type = MPI_LONG_LONG_INT;
 };
 
 template<>
 struct mpi_type_trait<char>
 {
-  static const auto type = MPI_CHAR;
+  static constexpr const auto type = MPI_CHAR;
 };
 
 template<>
 struct mpi_type_trait<unsigned char>
 {
-  static const auto type = MPI_UNSIGNED_CHAR;
+  static constexpr const auto type = MPI_UNSIGNED_CHAR;
 };
 
 template<>
 struct mpi_type_trait<double>
 {
-  static const auto type = MPI_DOUBLE;
+  static constexpr const auto type = MPI_DOUBLE;
 };
 
 #endif
