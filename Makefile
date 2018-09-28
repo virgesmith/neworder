@@ -2,8 +2,10 @@
 PYVER=3
 
 # override for 16.04/python3.5: 
-BOOST_PYTHON_LIB=boost_python36
-BOOST_NUMPY_LIB=boost_numpy36
+BOOST_PYTHON_LIB=boost_python3
+BOOST_NUMPY_LIB=boost_numpy3-py36
+#BOOST_PYTHON_LIB=boost_python36
+#BOOST_NUMPY_LIB=boost_numpy36
 
 # Query python env for compile and link settings
 CXXFLAGS = $(shell python$(PYVER)-config --cflags | sed 's/-Wstrict-prototypes//g' | sed 's/-O3//g') -I$(shell python$(PYVER) -c "import numpy;print(numpy.get_include())")

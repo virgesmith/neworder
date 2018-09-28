@@ -14,37 +14,37 @@ struct mpi_type_trait;
 template<>
 struct mpi_type_trait<bool>
 {
-  static const int type = MPI_INT;
+  static const auto type = MPI_INT;
 };
 
 template<>
 struct mpi_type_trait<int>
 {
-  static const int type = MPI_INT;
+  static const auto type = MPI_INT;
 };
 
 template<>
 struct mpi_type_trait<int64_t>
 {
-  static const int type = MPI_LONG_LONG_INT;
+  static const auto type = MPI_LONG_LONG_INT;
 };
 
 template<>
 struct mpi_type_trait<char>
 {
-  static const int type = MPI_CHAR;
+  static const auto type = MPI_CHAR;
 };
 
 template<>
 struct mpi_type_trait<unsigned char>
 {
-  static const int type = MPI_UNSIGNED_CHAR;
+  static const auto type = MPI_UNSIGNED_CHAR;
 };
 
 template<>
 struct mpi_type_trait<double>
 {
-  static const int type = MPI_DOUBLE;
+  static const auto type = MPI_DOUBLE;
 };
 
 #endif
