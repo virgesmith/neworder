@@ -17,8 +17,8 @@ neworder.timespan = np.array([0.0, neworder.MAX_AGE])
 neworder.timestep = 1.0
 
 # Choose a simple linearly increasing mortality rate: 0.1% aged 0 to 2.5% aged 100
-mortality_hazard = np.linspace(0.001, 0.025, neworder.MAX_AGE)
-population_size = 100000
+mortality_hazard_file = "examples/shared/NewETHPOP_mortality.csv"
+population_size = 10000
 
 # running/debug options
 neworder.log_level = 1
@@ -32,15 +32,16 @@ neworder.initialisations = {
   # the MODGEN-like implementation
   #"people": { "module": "person", "class_": "People", "parameters": [mortality_hazard, population_size] }
   # a more efficient expression of the problem using pandas, runs about 6 times faster
-  "people": { "module": "people", "class_": "People", "parameters": [mortality_hazard, population_size] }
+  "people": { "module": "people", "class_": "People", "parameters": [mortality_hazard_file, population_size] }
 }
 
 # transitions: simply samples time of death for each individual
 neworder.transitions = {
-  "age" : "people.age()"
+  "age" : "people.age()",
 }
 
 neworder.checkpoints = {
   "life_expectancy": "log(people.calc_life_expectancy())",
+  "plot": "people.plot()"
   #"shell": "shell()" # uncomment for debugging
 }
