@@ -3,7 +3,7 @@
 # Memory
 #$ -l h_vmem=2G
 # Request runtime 
-#$ -l h_rt=1:00:00 
+#$ -l h_rt=2:00:00 
 # Request CPU cores 
 #$ -pe ib 48 
 
@@ -11,8 +11,10 @@
 ##$ -l nodes=2 
 # gives me 2 CPUs = 48 cores, & all their memory
 
-#$ -m e
+#$ -m be
 #$ -M a.p.smith@leeds.ac.uk
+#$ -o logs/
+#$ -e logs/
 
 # for ARC3 non-conda env
 export PYTHONPATH=~/.local/lib/python3.6/site-packages:$PYTHONPATH
