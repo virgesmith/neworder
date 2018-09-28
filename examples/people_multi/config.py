@@ -34,7 +34,7 @@ neworder.initialisations = {
 }
 
 # define the evolution
-neworder.timespan = np.array([2011.25, 2015.25, 2020.25])
+neworder.timespan = np.array([2011.25, 2050.25])
 neworder.timestep = 1.0 # TODO beware rounding errors 
 
 # timestep must be defined in neworder
