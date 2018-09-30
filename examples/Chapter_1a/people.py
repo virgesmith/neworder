@@ -62,6 +62,10 @@ class People():
     # ensure all people have died 
     #self.dump("./population.csv")
 
+    # in this case we can just compute the mortality directly by modelling a non-homogeneuou Poisson process and 
+    # using the Lewis-Shedler algorithm
+    self.population["TimeOfDeath"] = neworder.stopping_nhpp(self.mortality_hazard.Rate.values, neworder.timestep, len(self.population))
+
     assert np.sum(self.population.Alive) == 0
     return np.mean(self.population.TimeOfDeath)
 

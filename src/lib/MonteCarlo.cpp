@@ -92,13 +92,20 @@ np::ndarray neworder::stopping_v(const np::ndarray& prob)
 // a piecewise-constant hazard rate with spacing dt=1
 // uses the thinning algorithm described in: 
 // Lewis, Peter A., and Gerald S. Shedler. "Simulation of nonhomogeneous Poisson processes by thinning." Naval Research Logistics (NRL) 26.3 (1979): 403-413.
-np::ndarray neworder::stopping_nhpp(const np::ndarray& lambda_t, size_t n)
+// See explanation in Glasserman, Monte-Carlo Methods in Financial Engineering ?ed pp140-141
+np::ndarray neworder::stopping_nhpp(const np::ndarray& lambda_t, double dt, size_t n)
 {
   std::mt19937& prng = pycpp::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
   double* pl = reinterpret_cast<double*>(lambda_t.get_data());
   size_t nl = pycpp::size(lambda_t);
+  // validate lambdas - but what exactl is valid?
+  // for (size_t i = 0; i < nl; ++i)
+  // {
+  //   if (pl[i] <= 0.0 || pl[i] >= 1.0)
+  //     throw std::runtime_error("Lewis-Shedler algorithm requires probabilities in (0,1): element %% is %%"_s % i % pl[i]);
+  // }
 
   // What is the optimal lambda_u? For now largest value
   double lambda_u = *std::max_element(pl, pl + nl);
@@ -107,37 +114,16 @@ np::ndarray neworder::stopping_nhpp(const np::ndarray& lambda_t, size_t n)
   np::ndarray times = pycpp::empty_1d_array<double>(n);
   double* pt = reinterpret_cast<double*>(times.get_data());
 
-// def generate_times_opt(rate_function,max_t,delta):
-//     t = numpy.arange(delta,max_t, delta)
-//     avg_rate = (rate_function(t) + rate_function(t + delta)) / 2.0
-//     avg_prob = 1 - numpy.exp(-avg_rate * delta / 1000.0)
-//     rand_throws = numpy.random.uniform(size=t.shape[0])
-
-//     return t[avg_prob >= rand_throws].tolist()
-
-  // for (size_t i = 0; i < n; ++i)
-  // {
-  //   do 
-  //   {
-  //     times[i] -= log(dist(prng)) / lambda_u;
-  //     lambda_i = lambda_t[ std::min((size_t)times[i], lambda_t.size()-1) ];
-  //   } while (dist(prng) > lambda_i / lambda_u);
-  // }
-
-  for(size_t i = 0; i < n; ++i)
+  for (size_t i = 0; i < n; ++i)
   {
-    double t = 0;
-    for (;;)
+    // rejection sampling
+    pt[i] = 0.0;
+    do 
     {
-      t = t - ::log(dist(prng)) / lambda_u;
-      lambda_i = pl[ std::min((size_t)t, nl-1) ];
-      if (dist(prng) <= lambda_i / lambda_u)
-      {
-        pt[i] = t;
-        break;
-      }
-    }
+      pt[i] += -::log(dist(prng)) / lambda_u;
+      // final entry in lambda_t is flat extrapolated...
+      lambda_i = pl[ std::min((size_t)(pt[i] / dt), nl-1) ];
+    } while (dist(prng) > lambda_i / lambda_u);
   }
-
   return times;
 }

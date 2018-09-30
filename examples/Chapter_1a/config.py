@@ -31,7 +31,7 @@ neworder.checks = {
 neworder.initialisations = {
   # the MODGEN-like implementation
   #"people": { "module": "person", "class_": "People", "parameters": [mortality_hazard, population_size] }
-  # a more efficient expression of the problem using pandas, runs about 6 times faster
+  # a more efficient expression of the problem usin g pandas, runs about 6 times faster
   "people": { "module": "people", "class_": "People", "parameters": [mortality_hazard_file, population_size] }
 }
 

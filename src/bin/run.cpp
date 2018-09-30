@@ -160,6 +160,7 @@ int run(int rank, int size, bool indep)
         }
       }
       t -= timestep; // temporary fix
+      --timeindex; // temporary fix
       for (auto it = checkpointTable.begin(); it != checkpointTable.end(); ++it)
       {
         neworder::log("t=%%(%%) checkpoint: %%"_s % t % timeindex % it->first);   
