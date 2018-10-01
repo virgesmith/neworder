@@ -14,10 +14,14 @@ class People():
     # initialise cohort      
     # assert False
     # filter by location, ethnicity and gender
-    self.mortality_hazard = ethpop.create(pd.read_csv(mortality_hazard_file), "E09000030").reset_index()
+    self.mortality_hazard = ethpop.create(pd.read_csv(mortality_hazard_file), "E09000030", truncate85=False).reset_index()
 
     self.mortality_hazard = self.mortality_hazard[(self.mortality_hazard.NewEthpop_ETH=="WBI") 
                                                 & (self.mortality_hazard.DC1117EW_C_SEX==1)]
+
+    # store the largest age we have a rate for 
+    self.max_rate_age = max(self.mortality_hazard.DC1117EW_C_AGE) - 1
+
     #neworder.log(self.mortality_hazard.head())
     self.population = pd.DataFrame(data={"Alive": np.full(n, True),
                                          "Age": np.zeros(n), 
@@ -27,13 +31,11 @@ class People():
     # dump the population out
     #self.population.to_csv(filename, index=False)
 
-    y1, x1 = np.histogram(self.population.TimeOfDeathNHPP, int(max(self.population.Age)))
-    plt.plot(x1[1:], y1)
-    y2, x2 = np.histogram(self.population.TimeOfDeath, int(max(self.population.Age)))
-    plt.plot(x2[1:], y2)
-    #animation.Hist(self.population.TimeOfDeath, int(max(self.population.Age)), filename)
-
-    plt.show()
+    # y1, x1 = np.histogram(self.population.TimeOfDeathNHPP, int(max(self.population.Age)))
+    # plt.plot(x1[1:], y1)
+    # y2, x2 = np.histogram(self.population.TimeOfDeath, int(max(self.population.Age)))
+    # plt.plot(x2[1:], y2)
+    animation.Hist(self.population.TimeOfDeathNHPP, int(max(self.population.Age)), filename)
 
   def die(self):
     # using indexes to subset data as cannot store a reference to a subset of the dataframe (it just copies)
@@ -41,7 +43,7 @@ class People():
     # first filter out the already dead
     alive = self.population.loc[self.population.Alive].index
     # sample time of death
-    r = neworder.stopping(self.mortality_hazard.Rate.values[min(neworder.timeindex-1, 85)], len(alive))
+    r = neworder.stopping(self.mortality_hazard.Rate.values[min(neworder.timeindex-1, self.max_rate_age)], len(alive))
     # select if death happens before next timestep...
     dt = neworder.timestep
     # at final timestep everybody dies (at some later time) so dt is infinite

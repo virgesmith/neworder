@@ -1,18 +1,26 @@
 
+import pandas as pd
+
 import neworder
+import ethpop
 
 class Person():
 
-  def __init__(self, mortality_hazard):
+  def __init__(self, mortality_hazard_file):
     """ Person::Start() """
     self.alive = True
     self.age = 0.0
     #self.time = 0.0
-    self.mortality_hazard = mortality_hazard
+    self.mortality_hazard = ethpop.create(pd.read_csv(mortality_hazard_file), "E09000030").reset_index()
+
+    self.mortality_hazard = self.mortality_hazard[(self.mortality_hazard.NewEthpop_ETH=="WBI") 
+                                                & (self.mortality_hazard.DC1117EW_C_SEX==1)]
+
     self.time_mortality = neworder.TIME_INFINITY
 
-  def __del__(self):
+  def finish(self):
     """ Person::Finish() """
+    pass
 
   def state(self, t):
     """ Returns the person's state (alive/dead) at age t """
@@ -25,7 +33,7 @@ class Person():
 
   def time_mortality_event(self):
     """ TIME Person::timeMortalityEvent() """
-    t = neworder.stopping(self.mortality_hazard, 1)[0]
+    t = neworder.stopping(self.mortality_hazard.Rate.values[min(neworder.timeindex-1, 85)], 1)[0]
     if t < neworder.timestep or self.age >= neworder.timespan[-2]:
       self.mortality_event(t)
     #neworder.log("TOD=%f" % self.time_mortality)
@@ -33,7 +41,7 @@ class Person():
   def mortality_event(self, t):
     self.alive = False
     self.time_mortality = self.age + t 
-    # Person.__del__(self)
+    self.finish()
 
 class People():
   """ A simple aggregration of Person """

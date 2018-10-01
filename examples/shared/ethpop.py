@@ -114,18 +114,22 @@ def local_rates_from_absolute(data, pop):
 
   return data  
 
-def create(raw_data, lad):
+def create(raw_data, lad, truncate85=True):
   """ Processes raw NewETHPOP in/out migration data into a LAD-specific table that can be used efficiently """
 
+  # Truncate to census (2011) max age of 85+
+  if truncate85:
   # As it's nonsensical to aggregate rates, we simply use the 85+ rate for everybody over 84
   # A population-weighted mean would perhaps be more accurate but unlikely to significantly affect the results 
-  remove = ['M85.86', 'M86.87', 'M87.88', 'M88.89', 'M89.90', 'M90.91',
-  'M91.92', 'M92.93', 'M93.94', 'M94.95', 'M95.96', 'M96.97', 'M97.98', 'M98.99',
-  'M99.100', 'M100.101p', 'F85.86', 'F86.87',
-  'F87.88', 'F88.89', 'F89.90', 'F90.91', 'F91.92', 'F92.93', 'F93.94', 'F94.95',
-  'F95.96', 'F96.97', 'F97.98', 'F98.99', 'F99.100', 'F100.101p']
-
-  data = update_lad_codes(raw_data.drop(remove, axis=1))
+    remove = ['M85.86', 'M86.87', 'M87.88', 'M88.89', 'M89.90', 'M90.91',
+    'M91.92', 'M92.93', 'M93.94', 'M94.95', 'M95.96', 'M96.97', 'M97.98', 'M98.99',
+    'M99.100', 'M100.101p', 'F85.86', 'F86.87',
+    'F87.88', 'F88.89', 'F89.90', 'F90.91', 'F91.92', 'F92.93', 'F93.94', 'F94.95',
+    'F95.96', 'F96.97', 'F97.98', 'F98.99', 'F99.100', 'F100.101p']
+    data = update_lad_codes(raw_data.drop(remove, axis=1))
+  else:
+    rename = {'M100.101p': 'M100.101', 'F100.101p': 'F100.101'}
+    data = update_lad_codes(raw_data.rename(columns=rename))
 
   # Filter by our location and remove other unwanted columns
   # partial match so works with census-merged LADs 

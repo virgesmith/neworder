@@ -18,9 +18,10 @@ class Hist:
     frames = numbins+1
     anim = animation.FuncAnimation(fig, self.__animate, interval=100, frames=numbins, repeat=True, repeat_delay=3000)
 
-    plt.show()
     if filename is not None:
       anim.save(filename, dpi=80, writer='imagemagick') 
+
+    plt.show()
 
   def __animate(self, frameno):
     i = 0

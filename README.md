@@ -304,7 +304,7 @@ Perhaps (or not) surprisingly, calculating the fair value of a financial derivat
 
 ### [Microsimulation and Population Dynamics](doc/examples/Modgen_book.md)
 
-![Mortality histogram](./doc/examples/img/mortality_hist.gif)
+![Mortality histogram](./doc/examples/img/mortality_hist_100k.gif)
 
 We implement some example MODGEN models in *Microsimulation and Population Dynamics* [3], and adapt them to run more efficiently in the `neworder` framework.
 

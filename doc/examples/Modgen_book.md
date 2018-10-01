@@ -26,7 +26,8 @@ This is based on the example in the second chapter of the book - *The Life Table
 
 [Mortality](../../examples/mortality/config.py). 
 
-![Mortality histogram](./img/mortality_hist.gif)
+![Mortality histogram - 10000 people](./img/mortality_hist_10k.gif) ![Mortality histogram - 100000 people](./img/mortality_hist_100k.gif)
+
 
 The mortality data is sourced from the NewETHPOP project (TODO ref) and represents the mortality rate for white British males in one of the London Boroughs.
 
