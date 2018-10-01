@@ -115,14 +115,14 @@ int run(int rank, int size, bool indep)
       std::string class_name = py::extract<std::string>(spec["class_"])();
       py::list args = py::list(spec["parameters"]);
 
+      const std::string name = py::extract<std::string>(initialisations[i][0])();
+      neworder::log("t=%% initialise: %%"_s % pycpp::at<double>(timespan, 0) % name);
       py::object module = py::import(modulename.c_str());
       py::object class_ = module.attr(class_name.c_str());
       py::object object = pycpp::Functor(class_, args)();
 
       // taking a const ref here to stay results in an empty string, which is bizarre love triangle
-      const std::string name = py::extract<std::string>(initialisations[i][0])();
       env().attr(name.c_str()) = object;
-      neworder::log("t=%% initialise: %%"_s % pycpp::at<double>(timespan, 0) % name);
     }
 
     // Apply any modifiers for this process

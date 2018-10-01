@@ -298,11 +298,15 @@ See the [examples/people_multi](examples/people_multi) directory and the script 
 
 # More Examples
 
-Perhaps surprisingly, calculating the fair value of a financial derivative can be framed as a microsimulation problem, see [here](doc/examples/Option.md).
+Perhaps (or not) surprisingly, calculating the fair value of a financial derivative can be framed as a microsimulation problem, see [here](doc/examples/Option.md).
 
-## MODGEN models
+## MODGEN-based models
 
-- [Chapter 1](doc/examples/Chapter1.md): Example taken from *Microsimulation and Population Dynamics* [3]
+### [Microsimulation and Population Dynamics](doc/examples/Modgen_book.md)
+
+![Mortality histogram](./doc/examples/img/mortality_hist.gif)
+
+We implement some example MODGEN models in *Microsimulation and Population Dynamics* [3], and adapt them to run more efficiently in the `neworder` framework.
 
 ### RiskPaths
 

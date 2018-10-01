@@ -24,15 +24,15 @@ We can easily frame a derivative derivative pricing problem in terms of a micros
 
 For this simple option we can also compute an analytic fair value under the Black-Scholes model, and use this to determine the accuracy of the Monte-Carlo simulation. We also demonstrate the capabilities neworder has in terms of sensitivity analysis.
 
-The [config.py](examples/option/config.py) file: 
+The [config.py](../../examples/option/config.py) file: 
 - defines a simple timeline [0, T] corresponding to [valuation date, expiry date] and a single timestep.
-- sets the parameters for the market and the option, and describes how to initialise the [market](examples/option/market.py) and [option](examples/option/option.py) objects with these parameters.
+- sets the parameters for the market and the option, and describes how to initialise the [market](../../examples/option/market.py) and [option](../../examples/option/option.py) objects with these parameters.
 - describes the 'modifiers' for each process: the perturbations applied to the market data in order to calculate the option price sensitivity to that market data
 - defines the "transition", which in this case is simply running the Monte-Carlo simulation from time zero to time T.
 - checks the Monte-Carlo result against the analytic formula and displays the price and the random error.
 - finally, gathers the results from the other processes and computes some sensitivities.
 
-The file [black_scholes.py](examples/option/black_scholes.py) implements the both analytic option formula and the Monte-Carlo simulation, with [helpers.py](examples/option/helpers.py) providing some additional functionality. 
+The file [black_scholes.py](../../examples/option/black_scholes.py) implements the both analytic option formula and the Monte-Carlo simulation, with [helpers.py](../../examples/option/helpers.py) providing some additional functionality. 
 
 The simulation must be run with 4 processes and, to eliminate Monte-Carlo noise from the sensitivities, with each process using identical random number streams (the -c flag): 
 
