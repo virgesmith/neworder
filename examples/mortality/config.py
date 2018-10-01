@@ -29,9 +29,9 @@ neworder.checks = {
  
 # initialisation, this creates the population but doesnt assign a time of death
 neworder.initialisations = {
-  # the MODGEN-like implementation
-  #"people": { "module": "person", "class_": "People", "parameters": [mortality_hazard_file, population_size] }
-  # a more efficient expression of the problem usin g pandas, runs about 6 times faster
+  # the MODGEN-style implementation
+  #"people": { "module": "person", "class_": "People", "parameters": [mortality_hazard_file, population_size] },
+  # a more efficient expression of the problem usin g pandas, runs about 5 times faster
   "people": { "module": "people", "class_": "People", "parameters": [mortality_hazard_file, population_size] }
 }
 
@@ -42,6 +42,6 @@ neworder.transitions = {
 
 neworder.checkpoints = {
   "life_expectancy": "log(people.calc_life_expectancy())",
-  "plot": "people.plot('mortality100000.gif')"
+  "plot": "people.plot()"
   #"shell": "shell()" # uncomment for debugging
 }

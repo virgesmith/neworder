@@ -31,11 +31,12 @@ class People():
     # dump the population out
     #self.population.to_csv(filename, index=False)
 
-    # y1, x1 = np.histogram(self.population.TimeOfDeathNHPP, int(max(self.population.Age)))
-    # plt.plot(x1[1:], y1)
-    # y2, x2 = np.histogram(self.population.TimeOfDeath, int(max(self.population.Age)))
-    # plt.plot(x2[1:], y2)
-    animation.Hist(self.population.TimeOfDeathNHPP, int(max(self.population.Age)), filename)
+    y1, x1 = np.histogram(self.population.TimeOfDeathNHPP, int(max(self.population.Age)))
+    plt.plot(x1[1:], y1)
+    y2, x2 = np.histogram(self.population.TimeOfDeath, int(max(self.population.Age)))
+    plt.plot(x2[1:], y2)
+    plt.show()
+    #animation.Hist(self.population.TimeOfDeathNHPP, int(max(self.population.Age)), filename)
 
   def die(self):
     # using indexes to subset data as cannot store a reference to a subset of the dataframe (it just copies)
@@ -54,7 +55,7 @@ class People():
 
     # kill off those who die before next timestep
     self.population.ix[newly_dead, "Alive"] = False
-    self.population.ix[newly_dead, "TimeOfDeath"] = self.population.ix[newly_dead, "Age"] + np.clip(r[r<dt], 0.0, 15.0)
+    self.population.ix[newly_dead, "TimeOfDeath"] = self.population.ix[newly_dead, "Age"] + r[r<dt]
 
   def age(self):
     # kill off some people
@@ -68,12 +69,9 @@ class People():
     # ensure all people have died 
     #self.dump("./population.csv")
 
-    # in this case we can just compute the mortality directly by modelling a non-homogeneuou Poisson process and 
+    # in this case we can just compute the mortality directly by modelling a non-homogeneous Poisson process and 
     # using the Lewis-Shedler algorithm
-    self.population["TimeOfDeathNHPP"] = np.clip(
-      neworder.stopping_nhpp(self.mortality_hazard.Rate.values, neworder.timestep, len(self.population)), 0, 114)
-
-    #neworder.log(np.histogram(self.population.TimeOfDeathNHPP, 100)[0] - np.histogram(self.population.TimeOfDeath, 100)[0])
+    self.population["TimeOfDeathNHPP"] = neworder.stopping_nhpp(self.mortality_hazard.Rate.values, neworder.timestep, len(self.population))
 
     assert np.sum(self.population.Alive) == 0
     neworder.log("%f vs %f" % (np.mean(self.population.TimeOfDeath), np.mean(self.population.TimeOfDeathNHPP)))
