@@ -55,9 +55,7 @@ void neworder::df::transition(np::ndarray categories, np::ndarray matrix, py::ob
       throw std::runtime_error("probabilities don't sum to unity in transition matrix row %%"_s % i);
   }
 
-  // TODO check each row is monotonic 0->1
-
-  // catgory lookup
+  // reverse catgory lookup
   std::map<int64_t, int> lookup;
   for (int i = 0; i < m; ++i)
   {
@@ -88,12 +86,12 @@ void neworder::df::transition(np::ndarray categories, np::ndarray matrix, py::ob
   neworder::log("transition %% elapsed: %%"_s % n % t.elapsed_s());
 }
 
-// directly modify DF?
+// example of directly modifying a DF?
 void neworder::df::directmod(py::object& df, const std::string& colname)
 {
   py::object col = df.attr(colname.c_str());
   // .values? pd.Series -> np.array?
-  np::ndarray arr = np::from_object(col);
+  np::ndarray arr = np::from_object(col); // this is a reference 
   size_t n = pycpp::size(arr);
 
   for (size_t i = 0; i < n; ++i)

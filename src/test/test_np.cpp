@@ -36,23 +36,28 @@ void test_np()
   // check C++ sees its been modified
   CHECK(pycpp::at<double>(a,4) == 6.25);
 
-  // // TODO what's going wrong here? ++p happening twice per loop?
-  // // modify it in C++
-  // size_t i = 0;
-  // for (double* p = pycpp::begin<double>(a); p != pycpp::end<double>(a); ++i, ++p)
-  // { 
-  //   p[i] = (double)i / 8;
-  // }
-  for (size_t i = 0; i < pycpp::size(a); ++i)
-  {
-    pycpp::at<double>(a, i) = (double)i / 10;
+  // modify the array in C++ using "iterators"
+  size_t i = 0;
+  for (double* p = pycpp::begin<double>(a); p != pycpp::end<double>(a); ++i, ++p)
+  { 
+    *p = (double)i / 10;
   }
-
   CHECK(neworder::Callback::eval("a[0,0] == 0.0")());  
   CHECK(neworder::Callback::eval("a[0,1] == 0.1")());  
   CHECK(neworder::Callback::eval("a[1,1] == 0.4")());  
   CHECK(neworder::Callback::eval("a[2,1] == 0.7")());  
   CHECK(neworder::Callback::eval("a[2,2] == 0.8")());  
+
+  // modifying usibg index
+  for (size_t i = 0; i < pycpp::size(a); ++i)
+  {
+    pycpp::at<double>(a, i) = (double)i / 100;
+  }
+  CHECK(neworder::Callback::eval("a[0,0] == 0.00")());  
+  CHECK(neworder::Callback::eval("a[0,1] == 0.01")());  
+  CHECK(neworder::Callback::eval("a[1,1] == 0.04")());  
+  CHECK(neworder::Callback::eval("a[2,1] == 0.07")());  
+  CHECK(neworder::Callback::eval("a[2,2] == 0.08")());  
 
   // load a DF and try to extract/modify...
   neworder::Callback::exec("import pandas as pd;import neworder;neworder.df=pd.read_csv('../../tests/df.csv')")();

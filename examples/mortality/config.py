@@ -18,7 +18,7 @@ neworder.timestep = 1.0
 
 # Choose a simple linearly increasing mortality rate: 0.1% aged 0 to 2.5% aged 100
 mortality_hazard_file = "examples/shared/NewETHPOP_mortality.csv"
-population_size = 10000
+population_size = 100000
 
 # running/debug options
 neworder.log_level = 1

@@ -37,7 +37,7 @@ neworder::Callback neworder::Callback::exec(const std::string& code)
 
 neworder::Callback::Callback(const std::string& code, bool exec/*, const std::string& locals*/) : m_exec(exec), m_code(code)
 {
-  // TODO (assuming they ref current env)
+  // assuming they ref current env
   m_globals = py::import("__main__").attr("__dict__");
   m_locals = py::import("neworder").attr("__dict__");
 }
@@ -112,7 +112,6 @@ BOOST_PYTHON_MODULE(neworder)
 
   py::def("lazy_exec", no::Callback::exec);
   py::def("lazy_eval", no::Callback::eval);
-  // TODO env?
 
   // working on pandas df manipulation  
   py::def("transition", no::df::transition);
