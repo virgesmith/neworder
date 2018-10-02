@@ -34,7 +34,7 @@ void append_model_paths(const char* paths[], size_t n)
 
 int run(int rank, int size, bool indep)
 {
-  pycpp::Environment& env = pycpp::Environment::init(rank, size, indep);
+  neworder::Environment& env = neworder::Environment::init(rank, size, indep);
   Timer timer;
   try
   {
@@ -171,7 +171,7 @@ int run(int rank, int size, bool indep)
   }
   catch(py::error_already_set&)
   {
-    std::cerr << "%% ERROR: %%"_s % env.context(pycpp::Environment::PY) % env.get_error() << std::endl;
+    std::cerr << "%% ERROR: %%"_s % env.context(neworder::Environment::PY) % env.get_error() << std::endl;
     return 1;
   }
   catch(std::exception& e)

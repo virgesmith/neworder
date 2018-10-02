@@ -10,7 +10,7 @@
 // Realised random outcomes based on vector of hazard rates
 struct Hazard : pycpp::UnaryArrayOp<int, double>
 {
-  Hazard() : m_prng(pycpp::getenv().prng()), m_dist(0.0, 1.0) { }      
+  Hazard() : m_prng(neworder::getenv().prng()), m_dist(0.0, 1.0) { }      
 
   int operator()(double p)
   {
@@ -31,7 +31,7 @@ private:
 // Turns vector of hazard rates into random stopping times
 struct Stopping : pycpp::UnaryArrayOp<double, double>
 {
-  Stopping() : m_prng(pycpp::getenv().prng()), m_dist(0.0, 1.0) { }      
+  Stopping() : m_prng(neworder::getenv().prng()), m_dist(0.0, 1.0) { }      
 
   double operator()(double p)
   {
@@ -50,7 +50,7 @@ private:
 
 np::ndarray neworder::ustream(size_t n)
 {
-  std::mt19937& prng = pycpp::getenv().prng();
+  std::mt19937& prng = neworder::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
   return pycpp::make_array<double>(n, [&](){ return dist(prng); });
@@ -59,7 +59,7 @@ np::ndarray neworder::ustream(size_t n)
 // simple hazard constant probability 
 np::ndarray neworder::hazard(double prob, size_t n)
 {
-  std::mt19937& prng = pycpp::getenv().prng();
+  std::mt19937& prng = neworder::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
   return pycpp::make_array<int>(n, [&]() { return (dist(prng) < prob) ? 1 : 0; });
@@ -75,7 +75,7 @@ np::ndarray neworder::hazard_v(const np::ndarray& prob)
 // computes stopping times 
 np::ndarray neworder::stopping(double prob, size_t n)
 {
-  std::mt19937& prng = pycpp::getenv().prng();
+  std::mt19937& prng = neworder::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
   double rprob = 1.0 / prob;
 
@@ -95,7 +95,7 @@ np::ndarray neworder::stopping_v(const np::ndarray& prob)
 // See explanation in Glasserman, Monte-Carlo Methods in Financial Engineering ?ed pp140-141
 np::ndarray neworder::stopping_nhpp(const np::ndarray& lambda_t, double dt, size_t n)
 {
-  std::mt19937& prng = pycpp::getenv().prng();
+  std::mt19937& prng = neworder::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
   double* pl = reinterpret_cast<double*>(lambda_t.get_data());

@@ -221,7 +221,7 @@ py::object neworder::mpi::broadcast_obj(py::object& o, int rank)
 np::ndarray neworder::mpi::gather_array(double x, int rank)
 {
 #ifdef NEWORDER_MPI
-  pycpp::Environment& env = pycpp::getenv();
+  neworder::Environment& env = neworder::getenv();
   np::ndarray ret = pycpp::empty_1d_array<double>(rank == env.rank() ? env.size() : 0);
   double* p = (rank == env.rank()) ? pycpp::begin<double>(ret) : nullptr;
   MPI_Gather(&x, 1, mpi_type_trait<double>::type, p, 1, mpi_type_trait<double>::type, rank, MPI_COMM_WORLD);
@@ -234,7 +234,7 @@ np::ndarray neworder::mpi::gather_array(double x, int rank)
 double neworder::mpi::scatter_array(np::ndarray x, int rank)
 {
 #ifdef NEWORDER_MPI
-  pycpp::Environment& env = pycpp::getenv();
+  neworder::Environment& env = neworder::getenv();
   // If rank=process, return the array, otherwise return an empty array
   double dest;
   double* p = nullptr;
@@ -254,7 +254,7 @@ double neworder::mpi::scatter_array(np::ndarray x, int rank)
 np::ndarray neworder::mpi::allgather_array(np::ndarray source_dest)
 {
 #ifdef NEWORDER_MPI
-  pycpp::Environment& env = pycpp::getenv();
+  neworder::Environment& env = neworder::getenv();
   // If rank=process, return the array, otherwise return an empty array
   if (pycpp::size(source_dest) < (size_t)env.size())
     throw std::runtime_error("allgather array size %% is smaller than MPI size (%%)"_s % pycpp::size(source_dest) % env.size());

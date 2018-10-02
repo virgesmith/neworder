@@ -21,8 +21,8 @@ void test_env()
   // test logging - use (,) operator combo to make it look like one arg returning bool. If a problem, there will be an exception or worse
   CHECK((neworder::log("neworder env test"), true));
 
-  pycpp::Environment& env = pycpp::Environment::init(0, 1);
-  //pycpp::Environment& env = pycpp::getenv();
+  neworder::Environment& env = neworder::Environment::init(0, 1);
+  //neworder::Environment& env = neworder::getenv();
 
   py::object module = py::import("neworder");
 

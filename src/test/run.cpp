@@ -29,7 +29,7 @@ void test_py(int nmodules, const char* testmodules[])
 
 int run(int rank, int size, bool indep, int nmodules, const char* testmodules[]) 
 {
-  pycpp::Environment& env = pycpp::Environment::init(rank, size, indep);
+  neworder::Environment& env = neworder::Environment::init(rank, size, indep);
   try
   {
     // load module, call func with args
@@ -50,7 +50,7 @@ int run(int rank, int size, bool indep, int nmodules, const char* testmodules[])
   }
   catch(py::error_already_set&)
   {
-    std::cerr << "%%ERROR (py::error_already_set): %%"_s % env.context(pycpp::Environment::PY) % env.get_error() << std::endl;
+    std::cerr << "%%ERROR (py::error_already_set): %%"_s % env.context(neworder::Environment::PY) % env.get_error() << std::endl;
     return 1;
   }
   catch(std::exception& e)

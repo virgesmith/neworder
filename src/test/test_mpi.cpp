@@ -7,7 +7,7 @@
 //#include "Log.h"
 
 template<typename T>
-bool send_recv(const T& x, pycpp::Environment& env)
+bool send_recv(const T& x, neworder::Environment& env)
 {
   if (env.rank() == 0)
   {
@@ -27,7 +27,7 @@ bool send_recv(const T& x, pycpp::Environment& env)
 void test_mpi()
 {
 #ifdef NEWORDER_MPI
-  pycpp::Environment& env = pycpp::getenv();
+  neworder::Environment& env = neworder::getenv();
 
   CHECK(env.size() > 1);
 

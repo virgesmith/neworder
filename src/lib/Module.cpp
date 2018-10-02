@@ -19,11 +19,10 @@ namespace {
 // not visible to (rest of) C++ - use function declareds in Log.h
 void log_obj(const py::object& msg)
 {
-  std::cout << pycpp::getenv().context(pycpp::Environment::PY) << pycpp::as_string(msg.ptr()) << std::endl;
+  std::cout << neworder::getenv().context(neworder::Environment::PY) << pycpp::as_string(msg.ptr()) << std::endl;
 }
 
 }
-
 
 neworder::Callback neworder::Callback::eval(const std::string& code)
 {
@@ -69,12 +68,12 @@ const char* neworder::module_version()
 
 std::string neworder::python_version()
 {
-  return pycpp::getenv().version();
+  return neworder::getenv().version();
 }
 
 void neworder::shell(/*const py::object& local*/)
 {
-  if (pycpp::getenv().size() != 1) 
+  if (neworder::getenv().size() != 1) 
   {
     neworder::log("WARNING: shell disabled in parallel mode, ignoring");
     return;
@@ -99,7 +98,7 @@ BOOST_PYTHON_MODULE(neworder)
   py::def("python", no::python_version);
   py::def("log", log_obj);
   py::def("shell", no::shell);
-  py::def("reseed", pycpp::Environment::reset);
+  py::def("reseed", neworder::Environment::reset);
 
   // time-related
   //py::def("set_timeline", no::set_timeline);
@@ -123,8 +122,8 @@ BOOST_PYTHON_MODULE(neworder)
   py::def("append", no::df::append, py::return_value_policy<py::return_by_value>());
 
   // MPI
-  py::def("rank", pycpp::Environment::rank);
-  py::def("size", pycpp::Environment::size);
+  py::def("rank", neworder::Environment::rank);
+  py::def("size", neworder::Environment::size);
   py::def("send", no::mpi::send_obj);
   py::def("receive", no::mpi::receive_obj);
   py::def("send_csv", no::mpi::send_csv);
@@ -134,7 +133,7 @@ BOOST_PYTHON_MODULE(neworder)
   py::def("scatter", no::mpi::scatter_array);
   py::def("allgather", no::mpi::allgather_array/*, py::return_value_policy<py::return_by_value>()*/);
   py::def("sync", no::mpi::sync);
-  py::def("indep", pycpp::Environment::indep);
+  py::def("indep", neworder::Environment::indep);
   
   // Deferred eval/exec of Python code
   py::class_<no::Callback>("Callback", py::no_init)

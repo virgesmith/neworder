@@ -66,7 +66,7 @@ void neworder::df::transition(np::ndarray categories, np::ndarray matrix, py::ob
   // neworder::log("row %% %% %% %%..."_s % p[0] % p[1] % p[2] % p[3]);
   // neworder::log("col %% %% %% %%..."_s % p[0] % p[m] % p[2*m] % p[3*m]);
 
-  std::mt19937& prng = pycpp::getenv().prng();
+  std::mt19937& prng = neworder::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
   size_t n = pycpp::size(col);

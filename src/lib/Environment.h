@@ -9,15 +9,13 @@
 #include <random>
 #include <string>
 
-// TODO move to neworder namespace
-namespace pycpp {
+namespace neworder {
 
-// TODO no duplication of data between python/C++
+// duplication of data between python/C++
 // for scalar, either (whichever is the most efficient):
-// - always access the (immutable) python vars via m_self->attr(""), or
+// - access the (immutable?) python vars via m_self->attr(""), or
 // - define the var in C++ and provide a python accessor function
-// for arrays, C++ and python ref the same data (test this)
-// also consider const vs mutable
+// for numpy arrays (and pandas DataFrames), C++ and python ref the same data
 
 struct Environment
 {
@@ -60,10 +58,6 @@ public:
   // returns "py/no rank/size"
   std::string context(int ctx = CPP) const;
 
-  // TODO rename seq_index for clarity 
-//  int seq() const;
-//  np::ndarray sequence() const;
-
   // reset the RNG stream sequence to the original seed 
   static void reset();
 
@@ -74,10 +68,7 @@ public:
   //operator py::object&() { return m_self; } doesnt implicitly cast
   py::object& operator()() { return *m_self; }
 
-  neworder::Timeline& timeline() 
-  { 
-    return m_timeline;
-  }
+  neworder::Timeline& timeline() { return m_timeline; }
 
 private:
 
