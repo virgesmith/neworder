@@ -1,7 +1,7 @@
 """ RiskPaths model """
 
 from enum import Enum
-
+import pandas as pd
 import neworder
 from helpers import *
 
@@ -42,6 +42,7 @@ class Person():
     self.parity = Parity.CHILDLESS
     #self.time_of_first_pregnancy = neworder.stopping(neworder.mortality_rate, 1)[0]
     self.unions = 0
+    self.union_status = Union.NEVER_IN_UNION
     self.union_period2_change = TIME_INFINITE
 
     #print(self.time_of_death)
@@ -105,14 +106,26 @@ class Person():
 class RiskPaths():
   def __init__(self, n):
 
+    # TODO fertility and mortality
+
     # initialise population
-    self.population = [ Person() for _ in range(n) ]
+    self.population = pd.DataFrame(data={"Alive": np.full(n, True),
+                                         "Age": np.zeros(n, dtype=float), 
+                                         "TimeOfDeath": np.zeros(n),
+                                         "Parity": np.full(n, Parity.CHILDLESS),
+                                         "Unions": np.zeros(n),
+                                         "UnionStatus": np.full(n, UnionState.NEVER_IN_UNION),
+                                         "UnionPeriod2Change": np.full(n, TIME_INFINITE)
+                                        })
+    neworder.log("RiskPaths init")
+
+  def age_int(self):
+    return self.population.Age.values.astype(int)
     
   def alive(self):
-    # refactor
-    ret = 0.0
-    for i in range(len(self.population)):
-      ret = ret + self.population[i].status(neworder.time)
-    neworder.log("{} {:.2f}%".format(neworder.time, 100.0 * ret / len(self.population)))
+    neworder.log("pct alive = %f" % (100.0 * np.mean(self.population.Alive)))
+    return True
 
-
+  def check(self):
+    self.age_int()
+    return True

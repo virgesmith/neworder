@@ -25,12 +25,17 @@ fertility_rate = 0.01
 
 population_size = 100
 
+# This timeline represents persons age
+# range LIFE
+neworder.timespan = np.array([0.0, 100.0])
+neworder.timestep = 1.0
+
 # running/debug options
 neworder.log_level = 1
 neworder.do_checks = True # Faith
 # assumed to be methods of class_ returning True if checks pass
 neworder.checks = {
-  #"check": "people.check()"
+  "check": "people.check()"
 }
  
 # initialisation
@@ -38,16 +43,9 @@ neworder.initialisations = {
   "people": { "module": "riskpaths", "class_": "RiskPaths", "parameters": [population_size] }
 }
 
-# This timeline represents persons age
-# range LIFE
-neworder.timespan = np.array([0, 100])
-neworder.timestep = 1
-
-
 neworder.transitions = {
   "status": "people.alive()"
 }
-
 
 # Finalisation 
 neworder.checkpoints = {

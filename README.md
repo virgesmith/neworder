@@ -70,7 +70,7 @@ The framework minimal requirements are that:
 - python code to evolve the population to the next timestep, which can (and typically will) involve multiple processes and can be implemented in multiple functions.
 - python code to be executed at each checkpoint, typically outputting results in some form or other.
 
-&ast; case-based simulation support is in progress. In this case the timeline refers not to absolute time but the age of the cohort.
+&ast; Like MODGEN, both time-based and case-based models are supported. In the latter, the timeline refers not to absolute time but the age of the cohort.
 
 ### Optional
 The following are optional :

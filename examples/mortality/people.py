@@ -67,13 +67,13 @@ class People():
 
   def calc_life_expectancy(self):  
     # ensure all people have died 
+    assert np.sum(self.population.Alive) == 0
     #self.dump("./population.csv")
 
     # in this case we can just compute the mortality directly by modelling a non-homogeneous Poisson process and 
     # using the Lewis-Shedler algorithm
     self.population["TimeOfDeathNHPP"] = neworder.stopping_nhpp(self.mortality_hazard.Rate.values, neworder.timestep, len(self.population))
 
-    assert np.sum(self.population.Alive) == 0
     neworder.log("%f vs %f" % (np.mean(self.population.TimeOfDeath), np.mean(self.population.TimeOfDeathNHPP)))
     return np.mean(self.population.TimeOfDeath)
 
