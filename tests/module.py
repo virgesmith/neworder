@@ -12,6 +12,13 @@ import test as test_
 def test():
   t = test_.Test()
 
+  x = -1e10
+  t.check(no.distant_past() < x)
+  t.check(no.far_future() > x)
+  x = 1e10
+  t.check(no.distant_past() < x)
+  t.check(no.far_future() > x)
+
   #t.check(False)
   s = no.ustream(10000)
   t.check(isinstance(s, np.ndarray))

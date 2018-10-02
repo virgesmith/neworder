@@ -100,7 +100,7 @@ np::ndarray neworder::stopping_nhpp(const np::ndarray& lambda_t, double dt, size
 
   double* pl = reinterpret_cast<double*>(lambda_t.get_data());
   size_t nl = pycpp::size(lambda_t);
-  // validate lambdas - but what exactl is valid?
+  // validate lambdas - but what exactly is valid?
   // for (size_t i = 0; i < nl; ++i)
   // {
   //   if (pl[i] <= 0.0 || pl[i] >= 1.0)
@@ -112,7 +112,7 @@ np::ndarray neworder::stopping_nhpp(const np::ndarray& lambda_t, double dt, size
   double lambda_i;
 
   np::ndarray times = pycpp::empty_1d_array<double>(n);
-  double* pt = reinterpret_cast<double*>(times.get_data());
+  double* pt = pycpp::begin<double>(times);
 
   for (size_t i = 0; i < n; ++i)
   {

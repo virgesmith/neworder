@@ -49,7 +49,7 @@ class People():
     dt = neworder.timestep
     # at final timestep everybody dies (at some later time) so dt is infinite
     if neworder.time == neworder.MAX_AGE:
-      dt = neworder.TIME_INFINITY
+      dt = neworder.far_future()
     # 
     newly_dead = alive[r<dt]
 

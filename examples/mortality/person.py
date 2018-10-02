@@ -12,7 +12,7 @@ class Person():
     self.age = 0.0
     #self.time = 0.0
 
-    self.time_mortality = neworder.TIME_INFINITY
+    self.time_mortality = neworder.far_future()
 
   def finish(self):
     """ Person::Finish() """

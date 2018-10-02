@@ -9,7 +9,6 @@ import person
 
 
 # use a large positive number to denote an infinite timespan (better than say -1 as it just works in inequalities)
-neworder.TIME_INFINITY = 1e9
 neworder.MAX_AGE = 100.0
 
 # This is case-based model - only a dummy timeline is required?

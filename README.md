@@ -27,9 +27,7 @@ The proofs of concept are two variants of a simulation of a population in terms 
 
 &ast; after migration an individual's geographic resolution is widened to LAD.
 
-The single local authority case ran in about 25 seconds on a desktop PC. The larger simulation ran on ARC3<sup>*</sup>, using 48 cores, in under 6 minutes.
-
-&ast; ARC3 forms part of the High Performance Computing facilities at the University of Leeds, UK.
+The single local authority case ran in about 25 seconds on a desktop PC. The larger simulation ran on the ARC3 [[2]](#References) HPC cluster, using 48 cores, in under 6 minutes.
 
 ## The Framework
 The aim is to provide as flexible and minimal a framework as possible. Being data agnostic means that this framework can be run standalone or integrated into workflows where e.g. input data is scraped from the web and results are written to a database. Internally, however, the pandas `DataFrame` is the obvious choice of data structure for this type of modelling. 
@@ -211,6 +209,8 @@ array([30.43439191, 13.88102712,  1.69985666, 13.28639123,  1.75969325])
 [no 0/1] SUCCESS
 ```
 
+[You can use numbers for reference-style link definitions][4]
+
 See [examples/diagnostics/config.py](examples/diagnostics/config.py)
 
 ## Microsimulation of People (single area)
@@ -219,7 +219,7 @@ In this example, the input data is a csv file containing a microsynthesised 2011
 
 Ageing simply increments individual's ages according to the timestep. 
 
-Births, deaths and migrations are are modelled using Monte-Carlo sampling (modelling a Poisson process) of distributions parameterised by age, sex and ethnicity-specific fertility, mortality and migration rates respectively, which are drawn from the [NewETHPOP][1] project.
+Births, deaths and migrations are are modelled using Monte-Carlo sampling (modelling a Poisson process) of distributions parameterised by age, sex and ethnicity-specific fertility, mortality and migration rates respectively, which are drawn from the NewETHPOP[[1]](#references) project.
 
 For the fertility model newborns simply inherit their mother's location and ethnicity, are born aged zero, and have a randomly selected gender (even probability). The migration model is an 'in-out' model, i.e. it is not a full origin-destination model. Flows are either inward from 'elsewhere' or outward to 'elsewhere'.
 
@@ -292,7 +292,7 @@ This 40 year simulation of a population of about 280,000 more than doubling (no 
 
 The above model has been modified to run in massively parallel mode using [MPI](https://en.wikipedia.org/wiki/Message_Passing_Interface), for the entire population of England & Wales (approx 56 million people as of 2011 census). The input data is not under source control due to its size, but the 348 input files (one per local authority) are divided roughly equally over the MPI processes. This particular example, with its simple in-out migration model, lends itself easily to parallel execution as no interprocess communication is required. Future development of this package will enable interprocess communication, for e.g. moving people from one region to another.  
 
-The microsimulation has been run on the [ARC3][2] cluster and took about 6 minutes on 48 cores to simulate the population over a 40 year period.
+The microsimulation has been run on the ARC3[[2]](#references) cluster and took about 6 minutes on 48 cores to simulate the population over a 40 year period.
 
 See the [examples/people_multi](examples/people_multi) directory and the script [mpi_job.sh](mpi_job.sh)
 
@@ -306,7 +306,7 @@ Perhaps (or not) surprisingly, calculating the fair value of a financial derivat
 
 ![Mortality histogram](./doc/examples/img/mortality_hist_100k.gif)
 
-We implement some example MODGEN models in *Microsimulation and Population Dynamics* [3], and adapt them to run more efficiently in the `neworder` framework.
+We implement some example MODGEN models in *Microsimulation and Population Dynamics* [[3]](#references), and adapt them to run more efficiently in the `neworder` framework.
 
 ### RiskPaths
 
@@ -316,8 +316,8 @@ TODO neworder implementation...
 
 # References
 
-[1]: NewETHPOP: [link](http://www.ethpop.org/)
+[1] [NewETHPOP](http://www.ethpop.org/)
 
-[2]: ARC3 forms part of the HPC facilities at the University of Leeds.
+[2] ARC3 forms part of the HPC facilities at the University of Leeds.
 
-[3]: Microsimulation and Population Dynamics: An Introduction to Modgen 12, Belanger, A & Sabourin, P, Springer Series on Demographic Methods and Population Analysis 43, 2017
+[3] Microsimulation and Population Dynamics: An Introduction to Modgen 12, Belanger, A & Sabourin, P, Springer Series on Demographic Methods and Population Analysis 43, 2017, [https://www.microsimulationandpopulationdynamics.com/](https://www.microsimulationandpopulationdynamics.com/)

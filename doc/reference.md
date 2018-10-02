@@ -43,6 +43,14 @@ name                | description
 `lazy_eval(expr)`   | creates a python expression `expr` for later evaluation via the `()` operator
 `reseed()`          | resets the random number stream for the current process
 
+### Time-related
+
+name                | description
+--------------------|------------------------------------
+`distant_past()`    | returns a floating-point number that compares less than any other floating point number (i.e. always before)
+`far_future()`      | returns a floating-point number that compares greater than any other floating point number (i.e. always after)
+
+
 ### Monte-Carlo
 
 name                | description

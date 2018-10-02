@@ -87,8 +87,20 @@ void neworder::shell(/*const py::object& local*/)
   py::object interpreter = py::import("code").attr("interact")(*py::tuple(), **kwargs);
 }
 
-// python-visible log function defined above
+// returns a floating point number that compares less than any other number
+double neworder::distant_past()
+{
+  return -std::numeric_limits<double>::max();
+}
 
+// returns a floating point number that compares greater than any other number
+double neworder::far_future()
+{
+  return std::numeric_limits<double>::max();
+}
+
+
+// python-visible log function defined above
 
 BOOST_PYTHON_MODULE(neworder)
 {
@@ -101,6 +113,10 @@ BOOST_PYTHON_MODULE(neworder)
   py::def("log", log_obj);
   py::def("shell", no::shell);
   py::def("reseed", pycpp::Environment::reset);
+
+  // time-related
+  py::def("distant_past", no::distant_past);
+  py::def("far_future", no::far_future);
   
   // MC
   py::def("ustream", no::ustream);

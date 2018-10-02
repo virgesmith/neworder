@@ -36,4 +36,11 @@ void test_no()
   CHECK(py::extract<bool>(neworder::Callback::eval("name() == '%%'"_s % neworder::module_name())()));
   CHECK(py::extract<bool>(neworder::Callback::eval("version() == '%%'"_s % neworder::module_version())()));
   CHECK(py::extract<bool>(neworder::Callback::eval("python() == '%%'"_s % neworder::python_version()/*.c_str()*/)()));
+
+  double x = -1e10;
+  CHECK(neworder::distant_past() < x);
+  CHECK(neworder::far_future() > x);
+  x = 1e10;
+  CHECK(neworder::distant_past() < x);
+  CHECK(neworder::far_future() > x);
 }
