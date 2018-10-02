@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Global.h"
+#include "Timeline.h"
 
 #include "python.h"
 #include "numpy.h"
@@ -72,6 +73,11 @@ public:
   //operator py::object&() { return m_self; } doesnt implicitly cast
   py::object& operator()() { return *m_self; }
 
+  Timeline& timeline() 
+  { 
+    return m_timeline;
+  }
+
 private:
 
   // compute the RNG seed
@@ -101,6 +107,8 @@ private:
   py::object* m_self;
   // thread/process-safe seeding strategy deferred until config loaded
   std::mt19937 m_prng;
+
+  Timeline m_timeline;
 };
 
 // syntactic sugar

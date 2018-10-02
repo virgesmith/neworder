@@ -49,14 +49,22 @@ int run(int rank, int size, bool indep)
     // TODO actually do something with log_level...
     (void)log_level;
 
-    const np::ndarray& timespan = np::from_object(env().attr("timespan"));
-    double timestep = py::extract<double>(env().attr("timestep"))();
-
-    // Do not allow a zero timestep as this will result in an infinite loop
-    if (timestep == 0.0)
+    // timeline comes in as a (double, double, int) tuple: (begin, end, n)
+    if (pycpp::has_attr(env(), "timeline"))
     {
-      throw std::runtime_error("Timestep cannot be zero!");
+      py::tuple t = py::extract<py::tuple>(env().attr("timeline"));
+      env.timeline() = Timeline(py::extract<double>(t[0]), py::extract<double>(t[1]), py::extract<int>(t[2]));
     }
+    // const np::ndarray& timespan = np::from_object(env().attr("timespan"));
+    // double timestep = py::extract<double>(env().attr("timestep"))();
+    double timestep = env.timeline().dt();
+    env().attr("timestep") = timestep;
+
+    // // Do not allow a zero timestep as this will result in an infinite loop
+    // if (timestep == 0.0)
+    // {
+    //   throw std::runtime_error("Timestep cannot be zero!");
+    // }
 
     neworder::log("starting microsimulation...");
 
@@ -116,7 +124,7 @@ int run(int rank, int size, bool indep)
       py::list args = py::list(spec["parameters"]);
 
       const std::string name = py::extract<std::string>(initialisations[i][0])();
-      neworder::log("t=%% initialise: %%"_s % pycpp::at<double>(timespan, 0) % name);
+      neworder::log("t=%%(%%) initialise: %%"_s % env.timeline().time() % env.timeline().index() % name);
       py::object module = py::import(modulename.c_str());
       py::object class_ = module.attr(class_name.c_str());
       py::object object = pycpp::Functor(class_, args)();
@@ -128,44 +136,41 @@ int run(int rank, int size, bool indep)
     // Apply any modifiers for this process
     if (!modifierArray.empty())
     {
-      neworder::log("t=%% modifier: %%"_s % pycpp::at<double>(timespan, 0) % modifierArray[env.rank()].code());
+      neworder::log("t=%%(%%) modifier: %%"_s % env.timeline().time() % env.timeline().index() % modifierArray[env.rank()].code());
       modifierArray[env.rank()]();
     }
 
     // Loop with checkpoints
-    double t = pycpp::at<double>(timespan, 0) + timestep;
-    int timeindex = 1;
-    for (size_t i = 1; i < pycpp::size(timespan); ++i)
+    for (; !env.timeline().end(); env.timeline().step())
     {
-      double checkpoint = pycpp::at<double>(timespan, i);
-      for (; t <= checkpoint; t += timestep, ++timeindex)
-      {
-        // TODO is there a way to do this in-place? does it really matter?
-        env().attr("time") = t;
-        env().attr("timeindex") = timeindex;
+      // TODO is there a way to do this in-place? does it really matter?
+      double t = env.timeline().time();
+      int timeindex = env.timeline().index();
+      env().attr("time") = t;
+      env().attr("timeindex") = timeindex;
 
-        for (auto it = transitionTable.begin(); it != transitionTable.end(); ++it)
+      for (auto it = transitionTable.begin(); it != transitionTable.end(); ++it)
+      {
+        neworder::log("t=%%(%%) transition: %% "_s % t % timeindex % it->first);
+        (it->second)();  
+      }
+      for (auto it = checkTable.begin(); it != checkTable.end(); ++it)
+      {
+        neworder::log("t=%%(%%) check: %% "_s % t % timeindex % it->first);
+        bool ok = py::extract<bool>((it->second)())();
+        if (!ok) 
         {
-          neworder::log("t=%%(%%) transition: %% "_s % t % timeindex % it->first);
+          throw std::runtime_error("check failed");
+        }  
+      }
+      if (env.timeline().checkpoint())
+      {
+        for (auto it = checkpointTable.begin(); it != checkpointTable.end(); ++it)
+        {
+          neworder::log("t=%%(%%) checkpoint: %%"_s % t % timeindex % it->first);   
+          // Note: return value is ignored (exec not eval)
           (it->second)();  
         }
-        for (auto it = checkTable.begin(); it != checkTable.end(); ++it)
-        {
-          neworder::log("t=%%(%%) check: %% "_s % t % timeindex % it->first);
-          bool ok = py::extract<bool>((it->second)())();
-          if (!ok) 
-          {
-            throw std::runtime_error("check failed");
-          }  
-        }
-      }
-      t -= timestep; // temporary fix
-      --timeindex; // temporary fix
-      for (auto it = checkpointTable.begin(); it != checkpointTable.end(); ++it)
-      {
-        neworder::log("t=%%(%%) checkpoint: %%"_s % t % timeindex % it->first);   
-        // Note: return value is ignored (exec not eval)
-        (it->second)();  
       } 
     }
     neworder::log("SUCCESS exec time=%%s"_s % timer.elapsed_s());

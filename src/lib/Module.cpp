@@ -115,6 +115,7 @@ BOOST_PYTHON_MODULE(neworder)
   py::def("reseed", pycpp::Environment::reset);
 
   // time-related
+  //py::def("set_timeline", no::set_timeline);
   py::def("distant_past", no::distant_past);
   py::def("far_future", no::far_future);
   
@@ -168,7 +169,8 @@ BOOST_PYTHON_MODULE(neworder)
   //   .def(double() + py::self)
   //   .def(py::self * double())
   //   .def(double() * py::self)
-  //   ;    
+  //   ;  
+
 }
 
 void neworder::import_module()
