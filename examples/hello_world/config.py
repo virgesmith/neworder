@@ -8,10 +8,7 @@ import numpy as np
 # Expose the enviroment to python
 import neworder
 
-# Timeline is compulsory, and must be float type - define a dummy timeline
-neworder.timespan = np.array([0.0, 1.0])
-# We only need one timestep
-neworder.timestep = neworder.timespan[1]
+# no timeline is defined
 
 # breaks on second iteration
 #neworder.sequence = np.array([0,0,2])

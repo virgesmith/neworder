@@ -63,17 +63,19 @@ The section below lists minimal requirements that must be met, and those that - 
 ## Requirements
 ### Compulsory
 The framework minimal requirements are that:
-- a timeline and a timestep is defined<sup>*</sup>. The timeline can be partitioned, for example for running a 40-year simulation with 1 year timesteps, but outputting results every 5 years. The latter are referred to as "checkpoints", and the end of the timeline is always considered to be a checkpoint.
-- python code to be executed at the first timestep, e.g. to load or microsynthesise an initial population, and also load any data governing the dynamics of the microsimulation, e.g. fertility rates.
-- python code to evolve the population to the next timestep, which can (and typically will) involve multiple processes and can be implemented in multiple functions.
-- python code to be executed at each checkpoint, typically outputting results in some form or other.
-
-&ast; Like MODGEN, both time-based and case-based models are supported. In the latter, the timeline refers not to absolute time but the age of the cohort.
+- python code to be executed at initialisation, e.g. to load or microsynthesise an initial population, and also load any data governing the dynamics of the microsimulation, e.g. fertility rates.
+- python code to evolve the population to the next state, which can (and typically will) involve multiple processes and can be implemented in multiple functions.
+- python code to be executed at each checkpoint, typically outputting the evolved population in some form or other.
 
 ### Optional
-The following are optional :
+The following are optional:
+- a timeline: a start, and end, and a number of steps. (TODO) The timeline can be partitioned, for example for running a 40-year simulation with 1 year timesteps, but outputting results every 5 years. The latter are referred to as "checkpoints", and the end of the timeline is always considered to be a checkpoint.
 - code to modify the input data for different processes in a parallel run, for sensitivity analysis.
 - functions to call at each timestep to e.g. perform checks that the population remains plausible.
+
+Like MODGEN, both time-based and case-based models are supported. In the latter, the timeline refers not to absolute time but the age of the cohort.
+
+If a timeline is not defined, a single set of transitions is executed.
 
 # Examples
 
@@ -114,18 +116,13 @@ $ ./run_example.sh hello_world
 ### Understanding the workflow and the output
 
 Defining a timeline for the model is compulsory. This example doesn't really require one, so [config.py](examples/hello_world/config.py) specfies the simplest possible:
-```python
-neworder.timespan = np.array([0.0, 1.0])
-neworder.timestep = neworder.timespan[1]
-```
-so we have a timeline with a single timestep and a single checkpoint (the end).
 
 The environment initialises, indicating the random seed and the python version used:
 ```
 [no 0/1] env: seed=19937 python 3.6.6 (default, Sep 12 2018, 18:26:19)  [GCC 8.0.1 20180414 (experimental) [trunk revision 259383]]
 [no 0/1] starting microsimulation...
 ```
-The model is initialised:
+As no timeline has been specified, we just have single timestep and a single checkpoint (the end). The model is initialised:
 ```
 [no 0/1] t=0.000000 initialise: greeter
 ```

@@ -2,7 +2,7 @@
 #include "Module.h"
 
 #include "Version.h"
-//#include "Array.h"
+#include "Timeline.h"
 #include "Environment.h"
 #include "Inspect.h"
 #include "MonteCarlo.h"
@@ -87,19 +87,6 @@ void neworder::shell(/*const py::object& local*/)
   py::object interpreter = py::import("code").attr("interact")(*py::tuple(), **kwargs);
 }
 
-// returns a floating point number that compares less than any other number
-double neworder::distant_past()
-{
-  return -std::numeric_limits<double>::max();
-}
-
-// returns a floating point number that compares greater than any other number
-double neworder::far_future()
-{
-  return std::numeric_limits<double>::max();
-}
-
-
 // python-visible log function defined above
 
 BOOST_PYTHON_MODULE(neworder)
@@ -116,8 +103,8 @@ BOOST_PYTHON_MODULE(neworder)
 
   // time-related
   //py::def("set_timeline", no::set_timeline);
-  py::def("distant_past", no::distant_past);
-  py::def("far_future", no::far_future);
+  py::def("distant_past", no::Timeline::distant_past);
+  py::def("far_future", no::Timeline::far_future);
   
   // MC
   py::def("ustream", no::ustream);

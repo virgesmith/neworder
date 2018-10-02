@@ -9,6 +9,7 @@
 #include <random>
 #include <string>
 
+// TODO move to neworder namespace
 namespace pycpp {
 
 // TODO no duplication of data between python/C++
@@ -73,7 +74,7 @@ public:
   //operator py::object&() { return m_self; } doesnt implicitly cast
   py::object& operator()() { return *m_self; }
 
-  Timeline& timeline() 
+  neworder::Timeline& timeline() 
   { 
     return m_timeline;
   }
@@ -108,7 +109,7 @@ private:
   // thread/process-safe seeding strategy deferred until config loaded
   std::mt19937 m_prng;
 
-  Timeline m_timeline;
+  neworder::Timeline m_timeline;
 };
 
 // syntactic sugar

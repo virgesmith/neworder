@@ -53,20 +53,12 @@ int run(int rank, int size, bool indep)
     if (pycpp::has_attr(env(), "timeline"))
     {
       py::tuple t = py::extract<py::tuple>(env().attr("timeline"));
-      env.timeline() = Timeline(py::extract<double>(t[0]), py::extract<double>(t[1]), py::extract<int>(t[2]));
+      env.timeline() = neworder::Timeline(py::extract<double>(t[0]), py::extract<double>(t[1]), py::extract<int>(t[2]));
     }
-    // const np::ndarray& timespan = np::from_object(env().attr("timespan"));
-    // double timestep = py::extract<double>(env().attr("timestep"))();
     double timestep = env.timeline().dt();
     env().attr("timestep") = timestep;
 
-    // // Do not allow a zero timestep as this will result in an infinite loop
-    // if (timestep == 0.0)
-    // {
-    //   throw std::runtime_error("Timestep cannot be zero!");
-    // }
-
-    neworder::log("starting microsimulation...");
+    neworder::log("starting microsimulation, timestep=%%..."_s % timestep);
 
     // modifiers (exec)
     no::CallbackArray modifierArray; 
@@ -141,8 +133,9 @@ int run(int rank, int size, bool indep)
     }
 
     // Loop with checkpoints
-    for (; !env.timeline().end(); env.timeline().step())
+    do
     {
+      env.timeline().step(); 
       // TODO is there a way to do this in-place? does it really matter?
       double t = env.timeline().time();
       int timeindex = env.timeline().index();
@@ -173,6 +166,7 @@ int run(int rank, int size, bool indep)
         }
       } 
     }
+    while (!env.timeline().end());
     neworder::log("SUCCESS exec time=%%s"_s % timer.elapsed_s());
   }
   catch(py::error_already_set&)

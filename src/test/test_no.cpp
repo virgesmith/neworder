@@ -38,9 +38,9 @@ void test_no()
   CHECK(py::extract<bool>(neworder::Callback::eval("python() == '%%'"_s % neworder::python_version()/*.c_str()*/)()));
 
   double x = -1e10;
-  CHECK(neworder::distant_past() < x);
-  CHECK(neworder::far_future() > x);
+  CHECK(neworder::Timeline::distant_past() < x);
+  CHECK(neworder::Timeline::far_future() > x);
   x = 1e10;
-  CHECK(neworder::distant_past() < x);
-  CHECK(neworder::far_future() > x);
+  CHECK(neworder::Timeline::distant_past() < x);
+  CHECK(neworder::Timeline::far_future() > x);
 }

@@ -27,8 +27,7 @@ population_size = 100
 
 # This timeline represents persons age
 # range LIFE
-neworder.timespan = np.array([0.0, 100.0])
-neworder.timestep = 1.0
+neworder.timeline = (0.0, 100.0, 100)
 
 # running/debug options
 neworder.log_level = 1

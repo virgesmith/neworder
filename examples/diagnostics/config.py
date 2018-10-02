@@ -22,9 +22,8 @@ neworder.log("PYTHONPATH=" + os.environ["PYTHONPATH"] if "PYTHONPATH" in os.envi
 # TODO more sophisitcated impl of the log level/checking 
 neworder.log_level = 1 
 neworder.do_checks = False 
-# note timeline must be represented by floats
-neworder.timespan = np.array([0,1], dtype=float)
-neworder.timestep = neworder.timespan[1]
+
+# no timeline is defined
 
 neworder.initialisations = {}
 neworder.transitions = {}

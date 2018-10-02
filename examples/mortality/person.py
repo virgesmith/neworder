@@ -30,7 +30,8 @@ class Person():
   def time_mortality_event(self, mortality_hazard):
     """ TIME Person::timeMortalityEvent() """
     t = neworder.stopping(mortality_hazard.Rate.values[min(neworder.timeindex-1, 101)], 1)[0]
-    if t < neworder.timestep or self.age >= neworder.timespan[-1] - neworder.timestep:
+    # TODO fix
+    if t < neworder.timestep or self.age >= neworder.time() - span[-1] - neworder.timestep:
       self.mortality_event(t)
     #neworder.log("TOD=%f" % self.time_mortality)
 

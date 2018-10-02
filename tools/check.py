@@ -35,7 +35,9 @@ spec.loader.exec_module(module)
 
 symbols = dir(neworder)
 
-required_symbols = ["timespan", "timestep", "initialisations", "transitions", "checkpoints"]
+#TODO review this its way out of date
+
+required_symbols = ["initialisations", "transitions", "checkpoints"]
 
 print("checking required", modulename + "...")
 have_required = have_required and check(symbols, required_symbols)

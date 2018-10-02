@@ -27,8 +27,7 @@ assert neworder.size() == 1, "This example is configured to be run as a single p
 # run 4 sims
 neworder.sequence = np.array([3,1,2,0])
 # define the evolution
-neworder.timespan = np.array([2011.25, 2050.25])
-neworder.timestep = 1.0 # TODO beware rounding errors 
+neworder.timeline = (2011.25, 2050.25, 39)
 
 # initialisation
 neworder.initialisations = {

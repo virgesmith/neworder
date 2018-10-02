@@ -20,9 +20,8 @@ neworder.initialisations = {
   "people": { "module": "person", "class_": "People", "parameters": [mortality_hazard, population_size] }
 }
 
-# This is case-based model with no explicit time evolution so just have one dummy timestep
-neworder.timespan = np.array([0.0, 1.0])
-neworder.timestep = neworder.timespan[1]
+# This is case-based model with no explicit time evolution 
+# no need to set a timeline: internally this means we just have one dummy timestep
 
 # transitions: simply samples time of death for each individual
 neworder.transitions = {

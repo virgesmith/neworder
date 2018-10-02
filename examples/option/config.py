@@ -22,8 +22,8 @@ strike = 100.0
 expiry = 0.75   
 
 # Using exact MC calc of GBM requires only 1 timestep 
-neworder.timespan = np.array([0, expiry])
-neworder.timestep = expiry
+neworder.timeline = (0, expiry, 1)
+
 neworder.nsims = 100000 # number of prices to simulate
 neworder.sync_streams = True # all procs use same RNG stream
 

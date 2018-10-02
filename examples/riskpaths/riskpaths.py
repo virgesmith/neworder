@@ -68,7 +68,7 @@ class Person():
     if p >= 1.0:
       return 0.0
     else:
-      return min(neworder.stopping(p, 1)[0], neworder.timespan[1])
+      return min(neworder.stopping(p, 1)[0], neworder.timestep()))
 
   def death(self):
     """ equivalent of Person::DeathEvent() """
