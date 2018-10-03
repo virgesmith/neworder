@@ -49,16 +49,14 @@ int run(int rank, int size, bool indep)
     // TODO actually do something with log_level...
     (void)log_level;
 
-    // timeline comes in as a (double, double, int) tuple: (begin, end, n)
+    // timeline comes in as a (double, double..., int) tuple: (begin, [checkpoint, [checkpoint,]]... end, n)
     if (pycpp::has_attr(env(), "timeline"))
     {
       py::tuple t = py::extract<py::tuple>(env().attr("timeline"));
-      env.timeline() = neworder::Timeline(py::extract<double>(t[0]), py::extract<double>(t[1]), py::extract<int>(t[2]));
+      neworder::set_timeline(t);
     }
-    double timestep = env.timeline().dt();
-    env().attr("timestep") = timestep;
-
-    neworder::log("starting microsimulation, timestep=%%..."_s % timestep);
+    env().attr("timestep") = env.timeline().dt();
+    neworder::log("starting microsimulation. timestep=%%, checkpoint(s) at %%"_s % env.timeline().dt() % env.timeline().checkpoints());
 
     // modifiers (exec)
     no::CallbackArray modifierArray; 

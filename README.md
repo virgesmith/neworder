@@ -27,7 +27,7 @@ The proofs of concept are two variants of a simulation of a population in terms 
 
 &ast; after migration an individual's geographic resolution is widened to LAD.
 
-The single local authority case ran in about 25 seconds on a desktop PC. The larger simulation ran on the ARC3 [[2]](#References) HPC cluster, using 48 cores, in under 6 minutes.
+The single local authority case ran in about 25 seconds on a desktop PC. The larger simulation ran on the ARC3 [[2]](#references) HPC cluster, using 48 cores, in under 5 minutes.
 
 ## The Framework
 The aim is to provide as flexible and minimal a framework as possible. Being data agnostic means that this framework can be run standalone or integrated into workflows where e.g. input data is scraped from the web and results are written to a database. Internally, however, the pandas `DataFrame` is the obvious choice of data structure for this type of modelling. 
@@ -254,19 +254,7 @@ $ time ./run_example.sh people
 [no 0/1] t=2012.250000 transition: mortality
 [no 0/1] t=2012.250000 check: check
 [py 0/1] check OK: time=2012.250 size=281728 mean_age=37.47, pct_female=49.84 net_migration=1409 (23626-23765+2927-1379)
-[no 0/1] t=2013.250000 transition: age
-[no 0/1] t=2013.250000 transition: fertility
-[no 0/1] t=2013.250000 transition: migration
-[no 0/1] t=2013.250000 transition: mortality
-[no 0/1] t=2013.250000 check: check
-[py 0/1] check OK: time=2013.250 size=283776 mean_age=37.54, pct_female=49.71 net_migration=726 (23784-24558+2945-1445)
 ...
-[no 0/1] t=2048.250000 transition: age
-[no 0/1] t=2048.250000 transition: fertility
-[no 0/1] t=2048.250000 transition: migration
-[no 0/1] t=2048.250000 transition: mortality
-[no 0/1] t=2048.250000 check: check
-[py 0/1] check OK: time=2048.250 size=541041 mean_age=39.95, pct_female=49.45 net_migration=24619 (66832-45072+5592-2733)
 [no 0/1] t=2049.250000 transition: age
 [no 0/1] t=2049.250000 transition: fertility
 [no 0/1] t=2049.250000 transition: migration
@@ -289,7 +277,7 @@ This 40 year simulation of a population of about 280,000 more than doubling (no 
 
 The above model has been modified to run in massively parallel mode using [MPI](https://en.wikipedia.org/wiki/Message_Passing_Interface), for the entire population of England & Wales (approx 56 million people as of 2011 census). The input data is not under source control due to its size, but the 348 input files (one per local authority) are divided roughly equally over the MPI processes. This particular example, with its simple in-out migration model, lends itself easily to parallel execution as no interprocess communication is required. Future development of this package will enable interprocess communication, for e.g. moving people from one region to another.  
 
-The microsimulation has been run on the ARC3[[2]](#references) cluster and took about 6 minutes on 48 cores to simulate the population over a 40 year period.
+The microsimulation has been run on the ARC3[[2]](#references) cluster and took a little over 4 minutes on 48 cores to simulate the population over a 40 year period.
 
 See the [examples/people_multi](examples/people_multi) directory and the script [mpi_job.sh](mpi_job.sh)
 

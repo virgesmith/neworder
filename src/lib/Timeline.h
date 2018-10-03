@@ -16,9 +16,11 @@ public:
   // Default "null" timeline is just one step of arbitrary size
   Timeline();
 
-  Timeline(double begin, double end, int n);
+  Timeline(const std::vector<double>& checkpoint_times, size_t nsteps);
 
-  Timeline(const py/*boost::python*/::tuple& spec);
+  // Timeline(double begin, double end, int n);
+
+  // Timeline(const py/*boost::python*/::tuple& spec);
 
   ~Timeline() = default;
 

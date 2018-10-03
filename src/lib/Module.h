@@ -49,11 +49,7 @@ std::string python_version();
 // interactive shell mk2 - uses the code module
 void shell(/*const py::object& local*/);
 
-// returns a floating point number that compares less than any other floating point number
-double distant_past();
-
-// returns a floating point number that compares greater than any other floating point number
-double far_future();
+void set_timeline(const py::tuple& spec);
 
 void import_module();
 

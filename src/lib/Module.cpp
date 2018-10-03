@@ -86,6 +86,23 @@ void neworder::shell(/*const py::object& local*/)
   py::object interpreter = py::import("code").attr("interact")(*py::tuple(), **kwargs);
 }
 
+
+// TODO move out of class?
+void neworder::set_timeline(const py::tuple& spec) 
+{
+  size_t n = py::len(spec);
+  std::vector<double> checkpoint_times(n - 1);
+  for (size_t i = 0; i < n - 1; ++i)
+  {
+    checkpoint_times[i] = py::extract<double>(spec[i]);
+  }
+
+  size_t nsteps = py::extract<int>(spec[n-1]);
+
+  getenv().timeline() = Timeline(checkpoint_times, nsteps);
+}
+
+
 // python-visible log function defined above
 
 BOOST_PYTHON_MODULE(neworder)
