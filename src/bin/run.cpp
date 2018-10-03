@@ -156,7 +156,7 @@ int run(int rank, int size, bool indep)
           throw std::runtime_error("check failed");
         }  
       }
-      if (env.timeline().checkpoint())
+      if (env.timeline().is_checkpoint())
       {
         for (auto it = checkpointTable.begin(); it != checkpointTable.end(); ++it)
         {
