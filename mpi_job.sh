@@ -20,5 +20,5 @@
 export PYTHONPATH=~/.local/lib/python3.6/site-packages:$PYTHONPATH
 export LD_LIBRARY_PATH=src/lib:$LD_LIBRARY_PATH 
 
-mpirun src/bin/neworder_mpi examples/people_multi examples/shared
+mpirun src/bin/neworder_mpi 48 1 examples/people_multi examples/shared
 

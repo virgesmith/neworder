@@ -33,10 +33,11 @@ class Population:
     self.emigration = ethpop.local_rates_from_absolute(ethpop.create_multi(pd.read_csv(asxr), self.lads), self.data)
 
     # Force flat rates for testing purposes
-    # self.in_migration.Rate = 0.05
-    # self.out_migration.Rate = 0.05
-    # self.immigration.Rate = 0.01
-    # self.emigration.Rate = 0.01
+    self.in_migration.Rate = 0.05
+    self.out_migration.Rate = 0.05
+    # The actual rates cause exponential growth
+    self.immigration.Rate = 0.01
+    self.emigration.Rate = 0.005
 
     # use this to identify people (uniquely only within this table)
     self.counter = len(self.data)
