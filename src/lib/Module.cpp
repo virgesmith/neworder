@@ -94,7 +94,16 @@ void neworder::set_timeline(const py::tuple& spec)
   std::vector<double> checkpoint_times(n - 1);
   for (size_t i = 0; i < n - 1; ++i)
   {
-    checkpoint_times[i] = py::extract<double>(spec[i]);
+    // allow integer (or float) values
+    py::extract<int> intval(spec[i]);
+    if (intval.check())
+    {
+      checkpoint_times[i] = intval();
+    }
+    else
+    {
+      checkpoint_times[i] = py::extract<double>(spec[i]);
+    }
   }
 
   size_t nsteps = py::extract<int>(spec[n-1]);
