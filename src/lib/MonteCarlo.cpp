@@ -1,7 +1,7 @@
 
 #include "MonteCarlo.h"
 #include "Environment.h"
-#include "Log.h"
+//#include "Log.h"
 
 #include "numpy.h"
 
@@ -162,7 +162,6 @@ np::ndarray neworder::stopping_nhpp_multi(const np::ndarray& lambda_t, double dt
   double lambda_i;
 
   std::vector<std::vector<double>> times(n);
-  //double* pt = pycpp::begin<double>(times);
 
   double tmax = (nl - 1) * dt;
   size_t imax = 0;
@@ -186,8 +185,7 @@ np::ndarray neworder::stopping_nhpp_multi(const np::ndarray& lambda_t, double dt
     //neworder::log("%%: %%"_s % i % times[i]);
   }
 
-  // ;
-  np::ndarray nptimes = np::empty(py::make_tuple(n, imax - 1), np::dtype::get_builtin<double>());
+  np::ndarray nptimes = np::empty(py::make_tuple(n, imax- 1), np::dtype::get_builtin<double>());
   pycpp::fill(nptimes, neworder::Timeline::never());
   double* pa = pycpp::begin<double>(nptimes);
 

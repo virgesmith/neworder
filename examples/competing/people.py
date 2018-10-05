@@ -10,18 +10,18 @@ import animation
 
 class People():
   """ A simple aggregration of Persons each represented as a row in a data frame """
-  def __init__(self, fertility_hazard_file, mortality_hazard_file, n):
+  def __init__(self, fertility_hazard_file, mortality_hazard_file, ethnicity, n):
     # initialise cohort      
     # assert False
     # filter by location, ethnicity and gender
     self.fertility_hazard = ethpop.create(pd.read_csv(fertility_hazard_file), "E09000030", truncate85=False).reset_index()
 
-    self.fertility_hazard = self.fertility_hazard[(self.fertility_hazard.NewEthpop_ETH=="WBI") 
+    self.fertility_hazard = self.fertility_hazard[(self.fertility_hazard.NewEthpop_ETH==ethnicity) 
                                                 & (self.fertility_hazard.DC1117EW_C_SEX==2)]
 
     self.mortality_hazard = ethpop.create(pd.read_csv(mortality_hazard_file), "E09000030", truncate85=False).reset_index()
 
-    self.mortality_hazard = self.mortality_hazard[(self.mortality_hazard.NewEthpop_ETH=="WBI") 
+    self.mortality_hazard = self.mortality_hazard[(self.mortality_hazard.NewEthpop_ETH==ethnicity) 
                                                 & (self.mortality_hazard.DC1117EW_C_SEX==2)]
 
     # store the largest age we have a rate for 
@@ -42,12 +42,13 @@ class People():
     # plt.plot(x1[1:], y1)
     #y2, x2 = np.histogram(self.population.TimeOfDeath, self.max_rate_age)
     #plt.plot(x2[1:], y2)
-    #animation.Hist(self.population.TimeOfDeath, self.max_rate_age, filename)
-    plt.hist(self.population.TimeOfDeath, self.max_rate_age)
-    plt.hist(self.population.TimeOfBaby1, self.max_rate_age)
-    plt.hist(self.population.TimeOfBaby2, self.max_rate_age)
-    plt.hist(self.population.TimeOfBaby3, self.max_rate_age)
-    plt.hist(self.population.TimeOfBaby4, self.max_rate_age)
+    #animation.Hist(self.population.TimeOfDeath, self.max_rsate_age, filename)
+    plt.hist(self.population.TimeOfDeath, range(self.max_rate_age), color='black')
+    b = [ self.population.TimeOfBaby1[~np.isnan(self.population.TimeOfBaby1)], 
+          self.population.TimeOfBaby2[~np.isnan(self.population.TimeOfBaby2)],
+          self.population.TimeOfBaby3[~np.isnan(self.population.TimeOfBaby3)],
+          self.population.TimeOfBaby4[~np.isnan(self.population.TimeOfBaby4)] ]
+    plt.hist(b, range(self.max_rate_age), stacked=True)
     plt.show()
 
   def age(self):
@@ -62,19 +63,18 @@ class People():
 
     births = neworder.stopping_nhpp_multi(self.fertility_hazard.Rate.values, neworder.timestep, 0.75, len(self.population))
     
-    #neworder.log(births[:,0])
-    for i in range(births.shape[1]): 
-      self.population["TimeOfBaby" + str(i+1)] = births[:,i]
+    #neworder.log(births)
+    for i in range(births.shape[1]):
+      col = "TimeOfBaby" + str(i+1)
+      self.population[col] = births[:,i]
+      # remove births that would have occured after death
+      self.population.loc[self.population[col] > self.population.TimeOfDeath, col] = neworder.never() 
+      self.population.Parity = self.population.Parity + ~np.isnan(self.population[col])
 
-    
-    #self.population.Parity = int(self.population.TimeOfBaby1 != neworder.never())# & (self.population.TimeOfBaby1 < self.population.TimeOfDeath))
 
-  def calc_life_expectancy(self):  
-
-    #neworder.log("%f vs %f" % (np.mean(self.population.TimeOfDeath), np.mean(self.population.TimeOfDeath)))
-    return np.mean(self.population.TimeOfDeath)
-
-  def prop_mother(self):  
+  def stats(self):  
     # # compute mean
-    #neworder.log("pct mother = %f" % (100.0 * np.mean(self.population.Parity > 0)))
-    return True
+    neworder.log("birth rate = %f" % np.mean(self.population.Parity))
+    neworder.log("pct mother = %f" % (100.0 * np.mean(self.population.Parity > 0)))
+    neworder.log("life exp. = %f" % np.mean(self.population.TimeOfDeath))
+    #return True
