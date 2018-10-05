@@ -27,7 +27,7 @@ assert neworder.size() == 1, "This example is configured to be run as a single p
 # run 4 sims
 neworder.sequence = np.array([3,1,2,0])
 # define the evolution
-neworder.timeline = (2011.25, 2018, 2021.25, 10)
+neworder.timeline = (2011, 2018, 2021, 10)
 
 # initialisation
 neworder.initialisations = {
@@ -36,10 +36,10 @@ neworder.initialisations = {
 
 # timestep must be defined in neworder
 neworder.transitions = { 
-  "fertility": "people.births(timestep)", 
-  "mortality": "people.deaths(timestep)", 
-  "migration": "people.migrations(timestep)", 
-  "age": "people.age(timestep)" 
+  "2fertility": "people.births(timestep)", 
+  "1mortality": "people.deaths(timestep)", 
+  "3migration": "people.migrations(timestep)", 
+  "4age": "people.age(timestep)" 
 }
 
 # checks to perform after each timestep. Assumed to return a boolean 

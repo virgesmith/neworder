@@ -43,4 +43,12 @@ void test_no()
   x = 1e10;
   CHECK(neworder::Timeline::distant_past() < x);
   CHECK(neworder::Timeline::far_future() > x);
+
+  // dreams never end
+  CHECK(neworder::Timeline::never() != neworder::Timeline::never());
+  CHECK(neworder::Timeline::never() != x);
+  CHECK(!(neworder::Timeline::never() < x));
+  CHECK(!(neworder::Timeline::never() == x));
+  CHECK(!(neworder::Timeline::never() >= x));
+  
 }

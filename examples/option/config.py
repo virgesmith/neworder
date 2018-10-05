@@ -1,6 +1,6 @@
 """ Example - pricing a simple option
   
-The main point of this example is to illustrate how different objects can interact within the model. In this case the objects
+The main vanishing point of this example is to illustrate how different objects can interact within the model. In this case the objects
 are the option itself, and the underlying stock (essentially the market) that governs its price.
 """
 

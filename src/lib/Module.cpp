@@ -55,7 +55,6 @@ py::object neworder::Callback::operator()() const
   }
 }
 
-
 const char* neworder::module_name()
 {
   return "neworder";
@@ -87,7 +86,7 @@ void neworder::shell(/*const py::object& local*/)
 }
 
 
-// TODO move out of class?
+// TODO move? (this is called from run.cpp but not exposed to python) 
 void neworder::set_timeline(const py::tuple& spec) 
 {
   size_t n = py::len(spec);
@@ -130,12 +129,14 @@ BOOST_PYTHON_MODULE(neworder)
   //py::def("set_timeline", no::set_timeline);
   py::def("distant_past", no::Timeline::distant_past);
   py::def("far_future", no::Timeline::far_future);
+  py::def("never", no::Timeline::never);
   
   // MC
   py::def("ustream", no::ustream);
   py::def("hazard", no::hazard);
   py::def("stopping", no::stopping);
   py::def("stopping_nhpp", no::stopping_nhpp);
+  py::def("stopping_nhpp_multi", no::stopping_nhpp_multi);
   py::def("hazard_v", no::hazard_v);
   py::def("stopping_v", no::stopping_v);
 

@@ -70,6 +70,15 @@ np::ndarray make_array(size_t n, const std::function<T()>& f)
   return a;
 }
 
+template<typename T>
+np::ndarray& fill(np::ndarray& a, T val)
+{
+  T* p = reinterpret_cast<T*>(a.get_data());
+  size_t n = pycpp::size(a);
+  std::fill(p, p + n, val);
+  return a;
+}
+
 template<typename R, typename A>
 struct UnaryArrayOp
 {

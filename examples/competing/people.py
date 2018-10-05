@@ -45,15 +45,29 @@ class People():
     #animation.Hist(self.population.TimeOfDeath, self.max_rate_age, filename)
     plt.hist(self.population.TimeOfDeath, self.max_rate_age)
     plt.hist(self.population.TimeOfBaby1, self.max_rate_age)
+    plt.hist(self.population.TimeOfBaby2, self.max_rate_age)
+    plt.hist(self.population.TimeOfBaby3, self.max_rate_age)
+    plt.hist(self.population.TimeOfBaby4, self.max_rate_age)
     plt.show()
 
   def age(self):
     # sample times
-    self.population["TimeOfDeath"] = neworder.stopping_nhpp(self.mortality_hazard.Rate.values, neworder.timestep, len(self.population))
-    self.fertility_hazard.Rate.values[-1] = 1.0
-    self.population["TimeOfBaby1"] = neworder.stopping_nhpp(self.fertility_hazard.Rate.values, neworder.timestep, len(self.population))
 
-    self.population.Parity = int((self.population.TimeOfBaby1 < 100.0) & (self.population.TimeOfBaby1 < self.population.TimeOfDeath))
+    self.population["TimeOfDeath"] = neworder.stopping_nhpp(self.mortality_hazard.Rate.values, neworder.timestep, len(self.population))
+    # hack to account for possibility of childlessness
+    self.fertility_hazard.Rate.values[-1] = 1.0
+    #self.population["TimeOfBaby1"] = neworder.stopping_nhpp(self.fertility_hazard.Rate.values, neworder.timestep, len(self.population))
+    #neworder.log(neworder.never())
+    #self.population.loc[self.population["TimeOfBaby1"] >= 100.0, "TimeOfBaby1"] = neworder.never()
+
+    births = neworder.stopping_nhpp_multi(self.fertility_hazard.Rate.values, neworder.timestep, 0.75, len(self.population))
+    
+    #neworder.log(births[:,0])
+    for i in range(births.shape[1]): 
+      self.population["TimeOfBaby" + str(i+1)] = births[:,i]
+
+    
+    #self.population.Parity = int(self.population.TimeOfBaby1 != neworder.never())# & (self.population.TimeOfBaby1 < self.population.TimeOfDeath))
 
   def calc_life_expectancy(self):  
 

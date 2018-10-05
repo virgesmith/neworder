@@ -19,6 +19,13 @@ def test():
   t.check(no.distant_past() < x)
   t.check(no.far_future() > x)
 
+  # dreams never end
+  t.check(no.never() != no.never())
+  t.check(not no.never() == x)
+  t.check(no.never() != x)
+  t.check(not x < no.never())
+  t.check(not x >= no.never())
+
   #t.check(False)
   s = no.ustream(10000)
   t.check(isinstance(s, np.ndarray))

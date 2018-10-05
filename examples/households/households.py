@@ -18,7 +18,7 @@ class Households:
                   [0.0,  0.0,  0.00, 0.0,  0.0,  1.0]])
     #t = np.identity(len(c))
     
-    no.transition(c, np.cumsum(t, axis=1), self.pop.LC4408_C_AHTHUK11.values)
+    no.transition(c, t, self.pop, "LC4408_C_AHTHUK11")
 
   def age(self, dt):
 

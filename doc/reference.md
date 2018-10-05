@@ -4,28 +4,29 @@
 
 ### User defined
 
-The neworder python module defines, or requires the model to define, the following variables withing the neworder namespace:
+The neworder python module defines, or requires the model to define, the following variables within the `neworder` namespace:
 
-name       | type        | default | description
------------|-------------|---------|--------------
-`timestep` | float       |         | the size of the timestep 
-`timeline` | float array |         | the timeline of the simulation 
-`log_level`| int         |         | currently unused. control verbosity of output 
-`do_checks`| bool        |         | run functions specified in `checks` after each timestep 
-`initialisations`| dict  |         | initialisation function(s)/constructors  
-`modifiers`| list        | []      | expressions to modify/perturb input data for each process   
-`transitions`| dict      |         | model evolution functions (per-timestep)  
-`checks`   | dict        | {}      | specify functions to run after each timestep 
-`checkpoints`| dict      |         | perform specified code at each checkpoint 
+name             | type        | default | description
+-----------------|-------------|---------|--------------
+`timeline`       | tuple       | ()      | an (optional) n-step timeline given by a tuple `t` of the form `(begin, [checkpoint, [checkpoint...]], end, n)`
+`timestep`       | float       | 0.0     | the timestep, if a timeline is specified it's set to (end-begin) / n, but it can be overridden
+`log_level`      | int         |         | [currently unused.] control verbosity of output 
+`do_checks`      | bool        |         | run functions specified in `checks` after each timestep 
+`initialisations`| dict        |         | initialisation function(s)/constructors  
+`modifiers`      | list        | []      | expressions to modify/perturb input data for each process   
+`transitions`    | dict        |         | model evolution functions (per-timestep)  
+`checks`         | dict        | {}      | specify functions to run after each timestep 
+`checkpoints`    | dict        |         | perform specified code at each checkpoint 
 
 ### Runtime
 
-Additionally, the module creates the following runtime variable:
+Additionally, the module creates the following runtime variables in the `neworder` namespace:
 
 name       | type        | default | description
 -----------|-------------|---------|--------------
 `time`     | float       |         | time of current timestep
 `timeindex`| int         |         | index of current timestep
+
 
 ## Functions
 The `neworder` module exposes the following functions to python:
@@ -45,11 +46,12 @@ name                | description
 
 ### Time-related
 
-name                | description
---------------------|------------------------------------
-`distant_past()`    | returns a floating-point number that compares less than any other floating point number (i.e. always before)
-`far_future()`      | returns a floating-point number that compares greater than any other floating point number (i.e. always after)
-
+name                  | description
+----------------------|------------------------------------
+`distant_past()`      | returns a floating-point number that compares less than any other floating point number (i.e. always before)
+`far_future()`        | returns a floating-point number that compares greater than any other floating point number (i.e. always after)
+`never()`             | returns a floating point number that compares unequal to (and unordered w.r.t) any other number
+ 
 
 ### Monte-Carlo
 

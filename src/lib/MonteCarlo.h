@@ -28,4 +28,7 @@ np::ndarray stopping_v(const np::ndarray& prob);
 // vector stopping for non-homogeneous poisson process (i.e. time-dependent hazard rate)
 np::ndarray stopping_nhpp(const np::ndarray& lambda_t, double dt, size_t n);
 
+// multiple-arrival (0+) process (requires that final hazard rate is zero)
+np::ndarray stopping_nhpp_multi(const np::ndarray& lambda_t, double dt, double gap, size_t n);
+
 }

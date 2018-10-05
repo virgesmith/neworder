@@ -96,3 +96,9 @@ double neworder::Timeline::far_future()
   return std::numeric_limits<double>::max();
 }
 
+// returns a floating point number that compares unequal to (and unordered w.r.t) any other number
+// thus the following all evaluate to true: never() != never(), !(x < never()), !(x >= never()) (so be careful!)
+double neworder::Timeline::never()
+{
+  return std::numeric_limits<double>::quiet_NaN();
+}

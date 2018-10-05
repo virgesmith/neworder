@@ -12,7 +12,7 @@ neworder.MAX_AGE = 100.0
 # Choose a simple linearly increasing mortality rate: 0.1% aged 0 to 2.5% aged 100
 fertility_hazard_file = "examples/shared/NewETHPOP_fertility.csv"
 mortality_hazard_file = "examples/shared/NewETHPOP_mortality.csv"
-population_size = 1000
+population_size = 100000
 
 # delta-t between entries in fertility/mortality data
 neworder.timestep = 1.0

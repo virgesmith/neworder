@@ -39,6 +39,10 @@ public:
 
   bool end() const;
 
+  // returns a floating point number that compares unequal (and unordered) to any other number
+  // thus the following all evaluate to true: never() != never(), !(x < never()), !(x >= never()) (so be careful!)
+  static double never();
+
   // returns a floating point number that compares less than any other number
   static double distant_past();
 

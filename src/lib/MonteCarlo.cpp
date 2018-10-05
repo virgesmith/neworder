@@ -1,6 +1,9 @@
 
 #include "MonteCarlo.h"
 #include "Environment.h"
+#include "Log.h"
+
+#include "numpy.h"
 
 #include <vector>
 #include <random>
@@ -92,7 +95,7 @@ np::ndarray neworder::stopping_v(const np::ndarray& prob)
 // a piecewise-constant hazard rate with spacing dt=1
 // uses the thinning algorithm described in: 
 // Lewis, Peter A., and Gerald S. Shedler. "Simulation of nonhomogeneous Poisson processes by thinning." Naval Research Logistics (NRL) 26.3 (1979): 403-413.
-// See explanation in Glasserman, Monte-Carlo Methods in Financial Engineering ?ed pp140-141
+// See also explanation in Glasserman, Monte-Carlo Methods in Financial Engineering, 2003, pp140-141
 np::ndarray neworder::stopping_nhpp(const np::ndarray& lambda_t, double dt, size_t n)
 {
   std::mt19937& prng = neworder::getenv().prng();
@@ -100,7 +103,12 @@ np::ndarray neworder::stopping_nhpp(const np::ndarray& lambda_t, double dt, size
 
   double* pl = reinterpret_cast<double*>(lambda_t.get_data());
   size_t nl = pycpp::size(lambda_t);
+
   // validate lambdas - but what exactly is valid?
+  if (pl[nl-1] == 0.0)
+  {
+    throw std::runtime_error("Non-homogeneous Poisson process requires a nonzero final hazard rate");
+  }
   // for (size_t i = 0; i < nl; ++i)
   // {
   //   if (pl[i] <= 0.0 || pl[i] >= 1.0)
@@ -126,4 +134,71 @@ np::ndarray neworder::stopping_nhpp(const np::ndarray& lambda_t, double dt, size
     } while (dist(prng) > lambda_i / lambda_u);
   }
   return times;
+}
+
+
+// multiple-arrival (0+) process (requires that final hazard rate is zero)
+np::ndarray neworder::stopping_nhpp_multi(const np::ndarray& lambda_t, double dt, double gap, size_t n)
+{
+  std::mt19937& prng = neworder::getenv().prng();
+  std::uniform_real_distribution<> dist(0.0, 1.0);
+
+  double* pl = reinterpret_cast<double*>(lambda_t.get_data());
+  size_t nl = pycpp::size(lambda_t);
+
+  // validate lambdas - but what exactly is valid?
+  // if (pl[nl-1] != 0.0)
+  // {
+  //   throw std::runtime_error("Multiple-arrival Non-homogeneous Poisson process requires a zero final hazard rate");
+  // }
+  // for (size_t i = 0; i < nl; ++i)
+  // {
+  //   if (pl[i] <= 0.0 || pl[i] >= 1.0)
+  //     throw std::runtime_error("Lewis-Shedler algorithm requires probabilities in (0,1): element %% is %%"_s % i % pl[i]);
+  // }
+
+  // What is the optimal lambda_u? For now largest value
+  double lambda_u = *std::max_element(pl, pl + nl);
+  double lambda_i;
+
+  std::vector<std::vector<double>> times(n);
+  //double* pt = pycpp::begin<double>(times);
+
+  double tmax = (nl - 1) * dt;
+  size_t imax = 0;
+
+  for (size_t i = 0; i < n; ++i)
+  {
+    // rejection sampling
+    double pt = 0.0;
+    do 
+    {
+      do 
+      {
+        pt += -::log(dist(prng)) / lambda_u;
+        // final entry in lambda_t is flat extrapolated...
+        lambda_i = pl[ std::min((size_t)(pt / dt), nl-1) ];
+      } while (dist(prng) > lambda_i / lambda_u);
+      times[i].push_back(pt);
+      pt += gap;
+    } while (pt < tmax);
+    imax = std::max(times[i].size(), imax);
+    //neworder::log("%%: %%"_s % i % times[i]);
+  }
+
+  // ;
+  np::ndarray nptimes = np::empty(py::make_tuple(n, imax - 1), np::dtype::get_builtin<double>());
+  pycpp::fill(nptimes, neworder::Timeline::never());
+  double* pa = pycpp::begin<double>(nptimes);
+
+  for (size_t i = 0; i < times.size(); ++i)
+  {
+    for (size_t j = 0; j < times[i].size() - 1; ++j)
+    {
+      pa[j] = times[i][j];
+    }
+    pa += imax - 1;
+  }
+
+  return nptimes;
 }
