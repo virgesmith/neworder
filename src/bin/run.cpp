@@ -54,9 +54,17 @@ int run(int rank, int size, bool indep)
     {
       py::tuple t = py::extract<py::tuple>(env().attr("timeline"));
       neworder::set_timeline(t);
+      // set (possibly override) timestep if timeline specified
+      env().attr("timestep") = env.timeline().dt();
     }
-    env().attr("timestep") = env.timeline().dt();
-    neworder::log("starting microsimulation. timestep=%%, checkpoint(s) at %%"_s % env.timeline().dt() % env.timeline().checkpoints());
+    // if timestep hasnt been explicitly specified, use the default setting
+    if (!pycpp::has_attr(env(), "timestep"))
+    {
+      env().attr("timestep") = env.timeline().dt();
+    }
+    // TODO more info re defaulted timeline and overridden timestep
+    double dt = py::extract<double>(env().attr("timestep")); 
+    neworder::log("starting microsimulation. timestep=%%, checkpoint(s) at %%"_s % dt % env.timeline().checkpoints());
 
     // modifiers (exec)
     no::CallbackArray modifierArray; 

@@ -5,7 +5,7 @@
 #include "python.h"
 
 // Default "null" timeline is just one step of arbitrary size
-neworder::Timeline::Timeline() : m_checkpoints{1}, m_steps(1), m_begin(0.0), m_index(0), m_time(0.0) 
+neworder::Timeline::Timeline() : m_checkpoints{1}, m_steps(1), m_begin(0.0), m_dt(0.0), m_index(0), m_time(0.0) 
 { 
 
 }
