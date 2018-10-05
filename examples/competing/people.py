@@ -49,6 +49,7 @@ class People():
           self.population.TimeOfBaby3[~np.isnan(self.population.TimeOfBaby3)],
           self.population.TimeOfBaby4[~np.isnan(self.population.TimeOfBaby4)] ]
     plt.hist(b, range(self.max_rate_age), stacked=True)
+    #plt.savefig("./doc/examples/img/competing_hist_100k.png")
     plt.show()
 
   def age(self):
