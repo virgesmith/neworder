@@ -137,8 +137,8 @@ np::ndarray neworder::stopping_nhpp(const np::ndarray& lambda_t, double dt, size
 }
 
 
-// multiple-arrival (0+) process (requires that final hazard rate is zero)
-np::ndarray neworder::stopping_nhpp_multi(const np::ndarray& lambda_t, double dt, double gap, size_t n)
+// multiple-arrival (0+) process 
+np::ndarray neworder::arrivals(const np::ndarray& lambda_t, double dt, double gap, size_t n)
 {
   std::mt19937& prng = neworder::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
@@ -147,10 +147,10 @@ np::ndarray neworder::stopping_nhpp_multi(const np::ndarray& lambda_t, double dt
   size_t nl = pycpp::size(lambda_t);
 
   // validate lambdas - but what exactly is valid?
-  // if (pl[nl-1] != 0.0)
-  // {
-  //   throw std::runtime_error("Multiple-arrival Non-homogeneous Poisson process requires a zero final hazard rate");
-  // }
+  if (pl[nl-1] != 0.0)
+  {
+    throw std::runtime_error("Multiple-arrival Non-homogeneous Poisson process requires a zero final hazard rate");
+  }
   // for (size_t i = 0; i < nl; ++i)
   // {
   //   if (pl[i] <= 0.0 || pl[i] >= 1.0)
@@ -177,6 +177,11 @@ np::ndarray neworder::stopping_nhpp_multi(const np::ndarray& lambda_t, double dt
         pt += -::log(dist(prng)) / lambda_u;
         // final entry in lambda_t is flat extrapolated...
         lambda_i = pl[ std::min((size_t)(pt / dt), nl-1) ];
+        if (pt > tmax)
+        {
+          pt = neworder::Timeline::never();
+          break;
+        }
       } while (dist(prng) > lambda_i / lambda_u);
       times[i].push_back(pt);
       pt += gap;

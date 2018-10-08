@@ -10,16 +10,16 @@ import animation
 
 class People():
   """ A simple aggregration of Persons each represented as a row in a data frame """
-  def __init__(self, fertility_hazard_file, mortality_hazard_file, ethnicity, n):
+  def __init__(self, fertility_hazard_file, mortality_hazard_file, lad, ethnicity, n):
     # initialise cohort      
     # assert False
     # filter by location, ethnicity and gender
-    self.fertility_hazard = ethpop.create(pd.read_csv(fertility_hazard_file), "E09000030", truncate85=False).reset_index()
+    self.fertility_hazard = ethpop.create(pd.read_csv(fertility_hazard_file), lad, truncate85=False).reset_index()
 
     self.fertility_hazard = self.fertility_hazard[(self.fertility_hazard.NewEthpop_ETH==ethnicity) 
                                                 & (self.fertility_hazard.DC1117EW_C_SEX==2)]
 
-    self.mortality_hazard = ethpop.create(pd.read_csv(mortality_hazard_file), "E09000030", truncate85=False).reset_index()
+    self.mortality_hazard = ethpop.create(pd.read_csv(mortality_hazard_file), lad, truncate85=False).reset_index()
 
     self.mortality_hazard = self.mortality_hazard[(self.mortality_hazard.NewEthpop_ETH==ethnicity) 
                                                 & (self.mortality_hazard.DC1117EW_C_SEX==2)]
@@ -56,13 +56,11 @@ class People():
     # sample times
 
     self.population["TimeOfDeath"] = neworder.stopping_nhpp(self.mortality_hazard.Rate.values, neworder.timestep, len(self.population))
-    # hack to account for possibility of childlessness
-    self.fertility_hazard.Rate.values[-1] = 1.0
     #self.population["TimeOfBaby1"] = neworder.stopping_nhpp(self.fertility_hazard.Rate.values, neworder.timestep, len(self.population))
     #neworder.log(neworder.never())
     #self.population.loc[self.population["TimeOfBaby1"] >= 100.0, "TimeOfBaby1"] = neworder.never()
 
-    births = neworder.stopping_nhpp_multi(self.fertility_hazard.Rate.values, neworder.timestep, 0.75, len(self.population))
+    births = neworder.arrivals(self.fertility_hazard.Rate.values, neworder.timestep, 0.75, len(self.population))
     
     #neworder.log(births)
     for i in range(births.shape[1]):

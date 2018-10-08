@@ -134,11 +134,11 @@ BOOST_PYTHON_MODULE(neworder)
   // MC
   py::def("ustream", no::ustream);
   py::def("hazard", no::hazard);
-  py::def("stopping", no::stopping);
-  py::def("stopping_nhpp", no::stopping_nhpp);
-  py::def("stopping_nhpp_multi", no::stopping_nhpp_multi);
   py::def("hazard_v", no::hazard_v);
+  py::def("stopping", no::stopping);
   py::def("stopping_v", no::stopping_v);
+  py::def("stopping_nhpp", no::stopping_nhpp);
+  py::def("arrivals", no::arrivals);
 
   py::def("lazy_exec", no::Callback::exec);
   py::def("lazy_eval", no::Callback::eval);

@@ -13,6 +13,7 @@ neworder.MAX_AGE = 100.0
 fertility_hazard_file = "examples/shared/NewETHPOP_fertility.csv"
 mortality_hazard_file = "examples/shared/NewETHPOP_mortality.csv"
 population_size = 100000
+lad = "E09000030"
 ethnicity = "WBI"
 
 # delta-t between entries in fertility/mortality data
@@ -25,7 +26,7 @@ neworder.do_checks = False
 # initialisation, this creates the population but doesnt assign a time of death
 neworder.initialisations = {
   # a more efficient expression of the problem usin g pandas, runs about 5 times faster
-  "people": { "module": "people", "class_": "People", "parameters": [fertility_hazard_file, mortality_hazard_file, ethnicity, population_size] }
+  "people": { "module": "people", "class_": "People", "parameters": [fertility_hazard_file, mortality_hazard_file, lad, ethnicity, population_size] }
 }
 
 # transitions: simply samples time of death for each individual

@@ -29,6 +29,6 @@ np::ndarray stopping_v(const np::ndarray& prob);
 np::ndarray stopping_nhpp(const np::ndarray& lambda_t, double dt, size_t n);
 
 // multiple-arrival (0+) process (requires that final hazard rate is zero)
-np::ndarray stopping_nhpp_multi(const np::ndarray& lambda_t, double dt, double gap, size_t n);
+np::ndarray arrivals(const np::ndarray& lambda_t, double dt, double gap, size_t n);
 
 }
