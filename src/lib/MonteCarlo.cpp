@@ -177,7 +177,7 @@ np::ndarray neworder::arrivals(const np::ndarray& lambda_t, double dt, double ga
         pt += -::log(dist(prng)) / lambda_u;
         // final entry in lambda_t is flat extrapolated...
         lambda_i = pl[ std::min((size_t)(pt / dt), nl-1) ];
-        if (pt > tmax)
+        if (pt > tmax && lambda_i == 0.0)
         {
           pt = neworder::Timeline::never();
           break;
@@ -204,4 +204,50 @@ np::ndarray neworder::arrivals(const np::ndarray& lambda_t, double dt, double ga
   }
 
   return nptimes;
+}
+
+// next-arrival process - times of transition from a state arrived at at startingpoints to a subsequent state, with an optional deterministic time gap
+// if the state hasn't been arrived at (neworder::never())
+np::ndarray neworder::next_arrival(const np::ndarray& startingpoints, const np::ndarray& lambda_t, double dt, double gap)
+{
+  size_t n = pycpp::size(startingpoints);
+
+  std::mt19937& prng = neworder::getenv().prng();
+  std::uniform_real_distribution<> dist(0.0, 1.0);
+
+  double* pl = reinterpret_cast<double*>(lambda_t.get_data());
+  size_t nl = pycpp::size(lambda_t);
+  double tmax = (nl - 1) * dt;
+
+  // What is the optimal lambda_u? For now largest value
+  double lambda_u = *std::max_element(pl, pl + nl);
+  double lambda_i;
+
+  np::ndarray times = pycpp::empty_1d_array<double>(n);
+  double* pt = pycpp::begin<double>(times);
+
+  for (size_t i = 0; i < n; ++i)
+  {
+    // rejection sampling 
+    pt[i] = pycpp::at<double>(startingpoints, i);
+    // skip if we haven't actually arrived at the state to transition from
+    if (pt[i] == neworder::Timeline::never())
+    {
+      continue;
+    }
+    // account for any deterministic time lag (e.g. 9 months between births)
+    pt[i] += gap;
+    do 
+    {
+      pt[i] += -::log(dist(prng)) / lambda_u;
+      // final entry in lambda_t is flat extrapolated...
+      lambda_i = pl[ std::min((size_t)(pt[i] / dt), nl-1) ];
+      if (pt[i] > tmax && lambda_i == 0.0)
+      {
+        pt[i] = neworder::Timeline::never();
+        break;
+      }
+    } while (dist(prng) > lambda_i / lambda_u);
+  }
+  return times;
 }

@@ -31,80 +31,80 @@ class Union(Enum):
 
 UnionDuration = [1, 3, 5, 9, 13]
 
-# TODO this would be so much more efficient as a struct-of-arrays rather than an array-of-structs
-class Person():
-  """ actor Person """
-  def __init__(self):
-    """ equivalent to Person::Start() """
-    self.age = 0
-    self.time = 0
-    self.alive = True # using boolean as opposed to LIFE_STATE classification
-    self.parity = Parity.CHILDLESS
-    #self.time_of_first_pregnancy = neworder.stopping(neworder.mortality_rate, 1)[0]
-    self.unions = 0
-    self.union_status = Union.NEVER_IN_UNION
-    self.union_period2_change = TIME_INFINITE
+# # TODO this would be so much more efficient as a struct-of-arrays rather than an array-of-structs
+# class Person():
+#   """ actor Person """
+#   def __init__(self):
+#     """ equivalent to Person::Start() """
+#     self.age = 0
+#     self.time = 0
+#     self.alive = True # using boolean as opposed to LIFE_STATE classification
+#     self.parity = Parity.CHILDLESS
+#     #self.time_of_first_pregnancy = neworder.stopping(neworder.mortality_rate, 1)[0]
+#     self.unions = 0
+#     self.union_status = Union.NEVER_IN_UNION
+#     self.union_period2_change = TIME_INFINITE
 
-    #print(self.time_of_death)
+#     #print(self.time_of_death)
 
-  def __del__(self):
-    """ equivalent to Person::Finish() """
-    pass
+#   def __del__(self):
+#     """ equivalent to Person::Finish() """
+#     pass
 
-  def age_int(self):
-    """ rough equivalent of self-scheduling int age """
-    return int(self.age)
+#   def age_int(self):
+#     """ rough equivalent of self-scheduling int age """
+#     return int(self.age)
 
-  def age_status(self):
-    # interpolate 
-    pass
+#   def age_status(self):
+#     # interpolate 
+#     pass
 
-  def status(self, t):
-    return self.time_death() > t
+#   def status(self, t):
+#     return self.time_death() > t
 
-  # Events
-  def time_death(self):
-    p = neworder.mortality_rate
-    if p >= 1.0:
-      return 0.0
-    else:
-      return min(neworder.stopping(p, 1)[0], neworder.timestep())
+#   # Events
+#   def time_death(self):
+#     p = neworder.mortality_rate
+#     if p >= 1.0:
+#       return 0.0
+#     else:
+#       return min(neworder.stopping(p, 1)[0], neworder.timestep())
 
-  def death(self):
-    """ equivalent of Person::DeathEvent() """
-    self.alive = False
+#   def death(self):
+#     """ equivalent of Person::DeathEvent() """
+#     self.alive = False
 
-  def time_first_pregnancy():
-    """ Equivalent to Person::timeFirstPregEvent() """
-    t = TIME_INFINITE
-    if self.parity == Parity.CHILDLESS:
-      p = AgeBaselinePreg1[self.age_status()] * UnionStatusPreg1[self.union_status()]
-      t = neworder.stopping(p, 1)[0]
-    return t
+#   def time_first_pregnancy():
+#     """ Equivalent to Person::timeFirstPregEvent() """
+#     t = TIME_INFINITE
+#     if self.parity == Parity.CHILDLESS:
+#       p = AgeBaselinePreg1[self.age_status()] * UnionStatusPreg1[self.union_status()]
+#       t = neworder.stopping(p, 1)[0]
+#     return t
 
-  def first_pregnancy(self):
-    """ Equivalent of Person::FirstPregEvent() """
-    self.parity = Parity.PREGNANT
+#   def first_pregnancy(self):
+#     """ Equivalent of Person::FirstPregEvent() """
+#     self.parity = Parity.PREGNANT
 
-  def union1_formation(self):
-    """ Equivalent of Person::Union1FormationEvent() """
-    self.unions = self.unions + 1
-    self.union_status = Union.FIRST
-    self.union_period2_change = 3.0
+#   def union1_formation(self):
+#     """ Equivalent of Person::Union1FormationEvent() """
+#     self.unions = self.unions + 1
+#     self.union_status = Union.FIRST
+#     self.union_period2_change = 3.0
 
-  def time_union_period2(self):
-    """ Person::timeUnionPeriod2Event() """
-    return self.union_period2_change
+#   def time_union_period2(self):
+#     """ Person::timeUnionPeriod2Event() """
+#     return self.union_period2_change
   
-  def union_period2(self):
-    """ Person::UnionPeriod2Event() """
-    if self.union_status == UnionState.FIRST_UNION_PERIOD1:
-      self.union_status = UnionState.FIRST_UNION_PERIOD2
-    self.union_period2_change = TIME_INFINITE
+#   def union_period2(self):
+#     """ Person::UnionPeriod2Event() """
+#     if self.union_status == UnionState.FIRST_UNION_PERIOD1:
+#       self.union_status = UnionState.FIRST_UNION_PERIOD2
+#     self.union_period2_change = TIME_INFINITE
 
 
 class RiskPaths():
-  def __init__(self, n):
+  def __init__(self, n, p_u1f, p_u1d):
 
     # TODO fertility and mortality
 
@@ -117,7 +117,12 @@ class RiskPaths():
                                          "UnionStatus": np.full(n, UnionState.NEVER_IN_UNION),
                                          "UnionPeriod2Change": np.full(n, TIME_INFINITE)
                                         })
+    # minimum age for marriage is 15 (this was soviet-era data)
+    self.population["T_Union1Start"] = neworder.next_arrival(self.population.Age.values, p_u1f, neworder.timestep, 15.0)
+    # TODO why inf loop... 
+    #self.population["T_Union1End"] = neworder.next_arrival(self.population["T_Union1Start"].values, p_u1d, neworder.timestep, 3.0) 
     neworder.log("RiskPaths init")
+    neworder.log(self.population)
 
   def age_int(self):
     return self.population.Age.values.astype(int)

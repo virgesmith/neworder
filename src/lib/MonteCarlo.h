@@ -31,4 +31,8 @@ np::ndarray stopping_nhpp(const np::ndarray& lambda_t, double dt, size_t n);
 // multiple-arrival (0+) process (requires that final hazard rate is zero)
 np::ndarray arrivals(const np::ndarray& lambda_t, double dt, double gap, size_t n);
 
+// given an array of arrival times at one state, sample times of arrival of subsequent event
+// TODO flag to mark lambda_t as abs/rel to startingpoint
+np::ndarray next_arrival(const np::ndarray& startingpoints, const np::ndarray& lambda_t, double dt, double gap);
+
 }

@@ -22,16 +22,25 @@ import neworder
 # TODO parameterise
 mortality_rate = 0.01
 fertility_rate = 0.01
+p_u1f = np.ones(50) * 0.05
+# if not wed by 50 will never happen (won't be fertile anyway)
+p_u1f[-1] = 0.0
+p_u1d = p_u1f # for now
+p_u2f = np.array([0.05])
+p_u2d = np.array([0.05])
 
 population_size = 100
 
+# there is no timeline - this is the spacing the time-dep hazard rates
+neworder.timestep = 1.0
+
 # This timeline represents persons age
 # range LIFE
-neworder.timeline = (0.0, 100.0, 100)
+#neworder.timeline = (0.0, 100.0, 1)
 
 # running/debug options
 neworder.log_level = 1
-neworder.do_checks = True # Faith
+neworder.do_checks = False
 # assumed to be methods of class_ returning True if checks pass
 neworder.checks = {
   "check": "people.check()"
@@ -39,7 +48,7 @@ neworder.checks = {
  
 # initialisation
 neworder.initialisations = {
-  "people": { "module": "riskpaths", "class_": "RiskPaths", "parameters": [population_size] }
+  "people": { "module": "riskpaths", "class_": "RiskPaths", "parameters": [population_size, p_u1f, p_u1d] }
 }
 
 neworder.transitions = {
