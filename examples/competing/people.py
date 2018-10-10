@@ -36,14 +36,8 @@ class People():
     # dump the population out
     self.population.to_csv(filename, index=False)
 
-    #plt.plot(self.mortality_hazard.DC1117EW_C_AGE, self.mortality_hazard.Rate)                                            
-
-    # y1, x1 = np.histogram(self.population.TimeOfDeathNHPP, int(max(self.population.Age)))
-    # plt.plot(x1[1:], y1)
-    #y2, x2 = np.histogram(self.population.TimeOfDeath, self.max_rate_age)
-    #plt.plot(x2[1:], y2)
-    #animation.Hist(self.population.TimeOfDeath, self.max_rsate_age, filename)
-    plt.hist(self.population.TimeOfDeath, range(self.max_rate_age), color='black')
+    # add some time on the end to capture (most of) those who die over the max simulation age
+    plt.hist(self.population.TimeOfDeath, range(self.max_rate_age + 10), color='black')
     b = [ self.population.TimeOfBaby1[~np.isnan(self.population.TimeOfBaby1)], 
           self.population.TimeOfBaby2[~np.isnan(self.population.TimeOfBaby2)],
           self.population.TimeOfBaby3[~np.isnan(self.population.TimeOfBaby3)],

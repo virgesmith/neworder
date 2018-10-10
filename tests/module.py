@@ -25,6 +25,10 @@ def test():
   t.check(no.never() != x)
   t.check(not x < no.never())
   t.check(not x >= no.never())
+  # no nay never: 
+  t.check(not no.isnever(x))
+  # no nay never no more:
+  t.check(no.isnever(no.never()))
 
   #t.check(False)
   s = no.ustream(10000)

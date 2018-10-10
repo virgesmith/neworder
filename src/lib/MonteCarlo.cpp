@@ -231,7 +231,7 @@ np::ndarray neworder::next_arrival(const np::ndarray& startingpoints, const np::
     // rejection sampling 
     pt[i] = pycpp::at<double>(startingpoints, i);
     // skip if we haven't actually arrived at the state to transition from
-    if (pt[i] == neworder::Timeline::never())
+    if (neworder::Timeline::isnever(pt[i]))
     {
       continue;
     }

@@ -50,5 +50,8 @@ void test_no()
   CHECK(!(neworder::Timeline::never() < x));
   CHECK(!(neworder::Timeline::never() == x));
   CHECK(!(neworder::Timeline::never() >= x));
-  
+  // no nay never
+  CHECK(!neworder::Timeline::isnever(x))
+  // no nay never no more
+  CHECK(neworder::Timeline::isnever(neworder::Timeline::never()))  
 }

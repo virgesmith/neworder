@@ -102,3 +102,9 @@ double neworder::Timeline::never()
 {
   return std::numeric_limits<double>::quiet_NaN();
 }
+
+// use this rather than direct comparison to never, as NaN != NaN (as above) 
+bool neworder::Timeline::isnever(double t)
+{
+  return std::isnan(t);
+}

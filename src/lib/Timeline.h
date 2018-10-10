@@ -43,6 +43,9 @@ public:
   // thus the following all evaluate to true: never() != never(), !(x < never()), !(x >= never()) (so be careful!)
   static double never();
 
+  // this MUST be used to correctly compare against never since NaN != NaN
+  static bool isnever(double t);
+
   // returns a floating point number that compares less than any other number
   static double distant_past();
 

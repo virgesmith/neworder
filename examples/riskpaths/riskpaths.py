@@ -113,14 +113,16 @@ class RiskPaths():
                                          "Age": np.zeros(n, dtype=float), 
                                          "TimeOfDeath": np.zeros(n),
                                          "Parity": np.full(n, Parity.CHILDLESS),
-                                         "Unions": np.zeros(n),
+                                         "Unions": np.zeros(n, dtype=int),
                                          "UnionStatus": np.full(n, UnionState.NEVER_IN_UNION),
                                          "UnionPeriod2Change": np.full(n, TIME_INFINITE)
                                         })
     # minimum age for marriage is 15 (this was soviet-era data)
     self.population["T_Union1Start"] = neworder.next_arrival(self.population.Age.values, p_u1f, neworder.timestep, 15.0)
+    self.population.Unions = (self.population["T_Union1Start"] < 100.0).astype(int) # NaN < 100 being false...
+
     # TODO why inf loop... 
-    #self.population["T_Union1End"] = neworder.next_arrival(self.population["T_Union1Start"].values, p_u1d, neworder.timestep, 3.0) 
+    self.population["T_Union1End"] = neworder.next_arrival(self.population["T_Union1Start"].values, p_u1d, neworder.timestep, 3.0) 
     neworder.log("RiskPaths init")
     neworder.log(self.population)
 

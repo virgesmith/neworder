@@ -130,6 +130,7 @@ BOOST_PYTHON_MODULE(neworder)
   py::def("distant_past", no::Timeline::distant_past);
   py::def("far_future", no::Timeline::far_future);
   py::def("never", no::Timeline::never);
+  py::def("isnever", no::Timeline::isnever);
   
   // MC
   py::def("ustream", no::ustream);
