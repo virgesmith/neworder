@@ -137,24 +137,24 @@ class RiskPaths():
     self.population.loc[self.population["T_Union1Start"] > self.population["TimeOfDeath"], "T_Union1Start"] = neworder.never()
     self.population.loc[self.population["T_Union1End"] > self.population["TimeOfDeath"], "T_Union1End"] = neworder.never()
     self.population.loc[self.population["T_Union2Start"] > self.population["TimeOfDeath"], "T_Union2Start"] = neworder.never()
+    self.population.loc[self.population["T_Union2End"] > self.population["TimeOfDeath"], "T_Union2End"] = neworder.never()
 
-    # count unions entered in
-    # TODO vectorised isnever()
-    self.population.Unions = (self.population["T_Union1Start"] < 100.0).astype(int) \
-                           + (self.population["T_Union2Start"] < 100.0).astype(int) # NaN < 100 being false...
+    # count unions entered into
+    self.population.Unions = (~neworder.isnever(self.population["T_Union1Start"].values)).astype(int) \
+                           + (~neworder.isnever(self.population["T_Union2Start"].values)).astype(int)
 
     neworder.log("RiskPaths init")
-    #neworder.log(self.population)
-
+  
   def plot(self):
-    plt.hist(self.population.TimeOfDeath, range(101), color='black')
-    b = [ self.population.T_Union1Start[~np.isnan(self.population.T_Union1Start)], 
-          self.population.T_Union1End[~np.isnan(self.population.T_Union1End)],
-          self.population.T_Union2Start[~np.isnan(self.population.T_Union2Start)],
-          self.population.T_Union2End[~np.isnan(self.population.T_Union2End)] ]
-    plt.hist(b, range(101), stacked=True)
-    #plt.savefig("./doc/examples/img/competing_hist_100k.png")
-    plt.show()
+    # plt.hist(self.population.TimeOfDeath, range(101), color='black')
+    # b = [ self.population.T_Union1Start[~np.isnan(self.population.T_Union1Start)], 
+    #       self.population.T_Union1End[~np.isnan(self.population.T_Union1End)],
+    #       self.population.T_Union2Start[~np.isnan(self.population.T_Union2Start)],
+    #       self.population.T_Union2End[~np.isnan(self.population.T_Union2End)] ]
+    # plt.hist(b, range(101), stacked=True)
+    # #plt.savefig("./doc/examples/img/competing_hist_100k.png")
+    # plt.show()
+    neworder.log(self.population)
 
   def age_int(self):
     return self.population.Age.values.astype(int)

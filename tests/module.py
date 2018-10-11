@@ -68,10 +68,19 @@ def test():
   le = no.stopping_nhpp(h, 1.0, 10000)
   no.log(sum(le)/len(le))
 
-  # not convinced this is working correctly
+  # y
   h = np.array([0.999, 0.1])
   le = no.stopping_nhpp(h, 1.0, 1000)
   no.log(sum(le)/len(le))
+
+  sometime = no.isnever(np.full(10, 1.0))
+  t.check(np.all(~sometime))
+  never = no.isnever(np.full(10, no.never()))
+  no.log(never)
+  t.check(np.all(never))
+
+
+  # DataFrame ops
 
   # modify df passing column 
   df = pd.read_csv("../../tests/df.csv")

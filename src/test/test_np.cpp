@@ -1,10 +1,11 @@
 
-// test boost.numpy
+// test boost.numpy and neworder::nparray functions
 #include "test.h"
 
 #include "Inspect.h"
 #include "Module.h"
 #include "Environment.h"
+#include "NPArray.h"
 
 #include "python.h"
 #include "numpy.h"
@@ -160,5 +161,8 @@ void test_np()
   // now see if it works with vector * scalar
   py::object scalar(1.0);
   CHECK(DotFunc(v1, scalar) == 20.0);
+
+  np::ndarray n1 = neworder::nparray::isnever(v1);
+  CHECK(!n1[0]);
 
 }
