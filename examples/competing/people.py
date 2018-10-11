@@ -34,15 +34,17 @@ class People():
 
   def plot(self, filename=None):
     # dump the population out
-    self.population.to_csv(filename, index=False)
+    #self.population.to_csv(filename, index=False)
+
+    buckets = range(self.max_rate_age + 10)
 
     # add some time on the end to capture (most of) those who die over the max simulation age
-    plt.hist(self.population.TimeOfDeath, range(self.max_rate_age + 10), color='black')
+    plt.hist(self.population.TimeOfDeath, buckets, color='black')
     b = [ self.population.TimeOfBaby1[~np.isnan(self.population.TimeOfBaby1)], 
           self.population.TimeOfBaby2[~np.isnan(self.population.TimeOfBaby2)],
           self.population.TimeOfBaby3[~np.isnan(self.population.TimeOfBaby3)],
           self.population.TimeOfBaby4[~np.isnan(self.population.TimeOfBaby4)] ]
-    plt.hist(b, range(self.max_rate_age), stacked=True)
+    plt.hist(b, buckets, stacked=True)
     #plt.savefig("./doc/examples/img/competing_hist_100k.png")
     plt.show()
 

@@ -4,6 +4,7 @@ from enum import Enum
 import pandas as pd
 import neworder
 from helpers import *
+from matplotlib import pyplot as plt
 
 AgeintState = partition(15, 40, 2.5)
 
@@ -104,33 +105,62 @@ UnionDuration = [1, 3, 5, 9, 13]
 
 
 class RiskPaths():
-  def __init__(self, n, p_u1f, p_u1d):
+  def __init__(self, n, mortality_rate, p_u1f, p_u1d, p_u2f, p_u2d):
 
     # TODO fertility and mortality
 
     # initialise population
-    self.population = pd.DataFrame(data={"Alive": np.full(n, True),
+    self.population = pd.DataFrame(data={#"Alive": np.full(n, True),
                                          "Age": np.zeros(n, dtype=float), 
                                          "TimeOfDeath": np.zeros(n),
                                          "Parity": np.full(n, Parity.CHILDLESS),
                                          "Unions": np.zeros(n, dtype=int),
-                                         "UnionStatus": np.full(n, UnionState.NEVER_IN_UNION),
-                                         "UnionPeriod2Change": np.full(n, TIME_INFINITE)
+                                         #"UnionStatus": np.full(n, UnionState.NEVER_IN_UNION),
+                                         #"UnionPeriod2Change": np.full(n, TIME_INFINITE)
                                         })
-    # minimum age for marriage is 15 (this was soviet-era data)
-    self.population["T_Union1Start"] = neworder.next_arrival(self.population.Age.values, p_u1f, neworder.timestep, 15.0)
-    self.population.Unions = (self.population["T_Union1Start"] < 100.0).astype(int) # NaN < 100 being false...
 
-    # TODO why inf loop... 
+    # Construct a timeline of unions for each person
+
+    # minimum age for marriage is 15 (this was soviet-era data)
+    # first union
+    self.population["T_Union1Start"] = neworder.next_arrival(self.population.Age.values, p_u1f, neworder.timestep, 15.0)
     self.population["T_Union1End"] = neworder.next_arrival(self.population["T_Union1Start"].values, p_u1d, neworder.timestep, 3.0) 
+
+    # second union
+    self.population["T_Union2Start"] = neworder.next_arrival(self.population["T_Union1End"].values, p_u2f, neworder.timestep, 0.0) 
+    # no mimimum time of 2nd union (?)
+    self.population["T_Union2End"] = neworder.next_arrival(self.population["T_Union2Start"].values, p_u2d, neworder.timestep, 0.0) 
+
+    # overlay mortality
+    self.population["TimeOfDeath"] = neworder.stopping_nhpp(mortality_rate, neworder.timestep, len(self.population))
+    # and discard events happening after death
+    self.population.loc[self.population["T_Union1Start"] > self.population["TimeOfDeath"], "T_Union1Start"] = neworder.never()
+    self.population.loc[self.population["T_Union1End"] > self.population["TimeOfDeath"], "T_Union1End"] = neworder.never()
+    self.population.loc[self.population["T_Union2Start"] > self.population["TimeOfDeath"], "T_Union2Start"] = neworder.never()
+
+    # count unions entered in
+    # TODO vectorised isnever()
+    self.population.Unions = (self.population["T_Union1Start"] < 100.0).astype(int) \
+                           + (self.population["T_Union2Start"] < 100.0).astype(int) # NaN < 100 being false...
+
     neworder.log("RiskPaths init")
-    neworder.log(self.population)
+    #neworder.log(self.population)
+
+  def plot(self):
+    plt.hist(self.population.TimeOfDeath, range(101), color='black')
+    b = [ self.population.T_Union1Start[~np.isnan(self.population.T_Union1Start)], 
+          self.population.T_Union1End[~np.isnan(self.population.T_Union1End)],
+          self.population.T_Union2Start[~np.isnan(self.population.T_Union2Start)],
+          self.population.T_Union2End[~np.isnan(self.population.T_Union2End)] ]
+    plt.hist(b, range(101), stacked=True)
+    #plt.savefig("./doc/examples/img/competing_hist_100k.png")
+    plt.show()
 
   def age_int(self):
     return self.population.Age.values.astype(int)
     
-  def alive(self):
-    neworder.log("pct alive = %f" % (100.0 * np.mean(self.population.Alive)))
+  def alive(self): # add t param
+    #neworder.log("pct alive = %f" % (100.0 * np.mean(self.population.Alive)))
     return True
 
   def check(self):
