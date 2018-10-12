@@ -14,6 +14,9 @@ import numpy as np
 mortality_rate = np.full(100, 0.01)
 mortality_rate[-1] = 1.0
 
+# Age of Consent at which the rates begin 
+min_age = 15.0
+
 # 	 // Age baseline for first pregnancy
 # 	double	AgeBaselinePreg1[AGEINT_STATE] = {
 # 		0, 0.2869, 0.7591, 0.8458, 0.8167, 0.6727, 0.5105, 0.4882, 0.2562, 0.2597, 0.1542, 0, 
@@ -29,6 +32,9 @@ p_preg = np.array([0.0, 0.2869, 0.7591, 0.8458, 0.8167, 0.6727, 0.5105, 0.4882, 
 
 delta_t = 2.5
 p_u1f = np.array([0.0, 0.030898, 0.134066, 0.167197, 0.165551, 0.147390, 0.108470, 0.080378, 0.033944, 0.045454, 0.040038, 0.0])
+
+# union1 lasts at least 3 years
+min_u1 = 3.0
 
 # 	 // Relative risks of union status on first pregnancy
 # 	double	UnionStatusPreg1[UNION_STATE] = {

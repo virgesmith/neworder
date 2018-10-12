@@ -37,8 +37,8 @@ np::ndarray arrivals(const np::ndarray& lambda_t, double dt, double gap, size_t 
 // compute arrival times given a nonhomogeneous Poisson process specified by lambd
 np::ndarray first_arrival(const np::ndarray& lambda_t, double dt, size_t n, double minval = 0.0);
 
-// given an array of arrival times at one state, sample times of arrival of subsequent event
-// TODO flag to mark lambda_t as abs/rel to startingpoint
-np::ndarray next_arrival(const np::ndarray& startingpoints, const np::ndarray& lambda_t, double dt, double gap);
+// given an array of arrival times at one state, sample times of arrival of subsequent event optionally with a minumum separation minsep
+// relative = true means lambda_t is relative to the stating point *plus minsep*
+np::ndarray next_arrival(const np::ndarray& startingpoints, const np::ndarray& lambda_t, double dt, bool relative = false, double minsep = 0.0);
 
 }

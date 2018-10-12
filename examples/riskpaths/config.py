@@ -30,10 +30,10 @@ neworder.timestep = 1.0
 
 # running/debug options
 neworder.log_level = 1
-neworder.do_checks = False
+neworder.do_checks = True
 # assumed to be methods of class_ returning True if checks pass
 neworder.checks = {
-  "check": "people.check()"
+  "check": "people.stats()"
 }
  
 # initialisation
@@ -42,7 +42,7 @@ neworder.initialisations = {
 }
 
 neworder.transitions = {
-  "status": "people.alive()"
+  "status": "people.pregnancy()"
 }
 
 # Finalisation 

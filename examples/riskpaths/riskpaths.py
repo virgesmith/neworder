@@ -124,13 +124,13 @@ class RiskPaths():
 
     # minimum age for marriage is 15 (this was soviet-era data)
     # first union - probabilities start at 15, so we add this on afterwards
-    self.population["T_Union1Start"] = neworder.first_arrival(data.p_u1f, data.delta_t, len(self.population)) + 15.0
-    self.population["T_Union1End"] = neworder.next_arrival(self.population["T_Union1Start"].values, data.r_diss2[0], data.delta_t_u, 3.0) 
+    self.population["T_Union1Start"] = neworder.first_arrival(data.p_u1f, data.delta_t, len(self.population)) + data.min_age
+    self.population["T_Union1End"] = neworder.next_arrival(self.population["T_Union1Start"].values, data.r_diss2[0], data.delta_t_u, True, data.min_u1) 
 
     # second union
-    self.population["T_Union2Start"] = neworder.next_arrival(self.population["T_Union1End"].values, data.r_u2f, data.delta_t, 0.0) 
+    self.population["T_Union2Start"] = neworder.next_arrival(self.population["T_Union1End"].values, data.r_u2f, data.delta_t, True) 
     # no mimimum time of 2nd union (?)
-    self.population["T_Union2End"] = neworder.next_arrival(self.population["T_Union2Start"].values, data.r_diss2[1], data.delta_t_u, 0.0) 
+    self.population["T_Union2End"] = neworder.next_arrival(self.population["T_Union2Start"].values, data.r_diss2[1], data.delta_t_u, True) 
 
     # and discard events happening after death
     self.population.loc[self.population["T_Union1Start"] > self.population["TimeOfDeath"], "T_Union1Start"] = neworder.never()
@@ -145,22 +145,33 @@ class RiskPaths():
     neworder.log("RiskPaths init")
   
   def plot(self):
-    plt.hist(self.population.TimeOfDeath, range(101), color='black')
-    b = [ self.population.T_Union1Start[~np.isnan(self.population.T_Union1Start)], 
-          self.population.T_Union1End[~np.isnan(self.population.T_Union1End)],
-          self.population.T_Union2Start[~np.isnan(self.population.T_Union2Start)],
-          self.population.T_Union2End[~np.isnan(self.population.T_Union2End)] ]
-    plt.hist(b, range(101), stacked=True)
+    # plt.hist(self.population.TimeOfDeath, range(100), color='black')
+    # b = [ self.population.T_Union1Start[~np.isnan(self.population.T_Union1Start)], 
+    #       self.population.T_Union1End[~np.isnan(self.population.T_Union1End)],
+    #       self.population.T_Union2Start[~np.isnan(self.population.T_Union2Start)],
+    #       self.population.T_Union2End[~np.isnan(self.population.T_Union2End)] ]
+    # plt.hist(b, range(100), stacked=True)
     #plt.savefig("./doc/examples/img/competing_hist_100k.png")
     plt.show()
     neworder.log(self.population)
 
-  def age_int(self):
-    return self.population.Age.values.astype(int)
-    
-  def alive(self): # add t param
-    #neworder.log("pct alive = %f" % (100.0 * np.mean(self.population.Alive)))
+  def stats(self):
+    neworder.log("mean unions = %f" % np.mean(self.population.Unions))
     return True
+    
+  def pregnancy(self): # add t param
+    # pre-union1 pregnancy
+    p_preg = data.p_preg * data.r_preg[0] #UnionState.NEVER_IN_UNION]
+    self.population["TimeOfChildbirth"] = neworder.first_arrival(p_preg, data.delta_t, len(self.population)) + data.min_age
+    self.population.loc[self.population["TimeOfChildbirth"] > self.population["T_Union1Start"], "TimeOfChildbirth"] = neworder.never()
+    self.population.loc[~neworder.isnever(self.population["TimeOfChildbirth"].values), "Parity"] = Parity.PREGNANT
+
+    # union1 phase1 pregnancy
+    p_preg = data.p_preg * data.r_preg[1] #UnionState.FIRST_UNION_PERIOD1]
+    # NaNs break this - minimum is always first
+    #self.population["TimeOfChildbirth"] = np.minimum(self.population["TimeOfChildbirth"], neworder.first_arrival(p_preg, data.delta_t, len(self.population)) + data.min_age)
+    self.population["TimeOfChildbirth"] = neworder.first_arrival(p_preg, data.delta_t, len(self.population)) + data.min_age
+    self.population.loc[~neworder.isnever(self.population["TimeOfChildbirth"].values), "Parity"] = Parity.PREGNANT
 
   def check(self):
     self.age_int()

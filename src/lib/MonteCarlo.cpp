@@ -243,9 +243,9 @@ np::ndarray neworder::first_arrival(const np::ndarray& lambda_t, double dt, size
   return times;
 }
 
-// next-arrival process - times of transition from a state arrived at at startingpoints to a subsequent state, with an optional deterministic time gap
+// next-arrival process - times of transition from a state arrived at at startingpoints to a subsequent state, with an optional deterministic minimum separation
 // if the state hasn't been arrived at (neworder::never())
-np::ndarray neworder::next_arrival(const np::ndarray& startingpoints, const np::ndarray& lambda_t, double dt, double gap)
+np::ndarray neworder::next_arrival(const np::ndarray& startingpoints, const np::ndarray& lambda_t, double dt, bool relative, double minsep)
 {
   size_t n = pycpp::size(startingpoints);
 
@@ -265,15 +265,15 @@ np::ndarray neworder::next_arrival(const np::ndarray& startingpoints, const np::
 
   for (size_t i = 0; i < n; ++i)
   {
-    // rejection sampling 
-    pt[i] = pycpp::at<double>(startingpoints, i);
+    // account for any deterministic time lag (e.g. 9 months between births)
+    double offset = pycpp::at<double>(startingpoints, i) + minsep;
     // skip if we haven't actually arrived at the state to transition from
-    if (neworder::Timeline::isnever(pt[i]))
+    if (neworder::Timeline::isnever(offset))
     {
       continue;
     }
-    // account for any deterministic time lag (e.g. 9 months between births)
-    pt[i] += gap;
+    // offset if lambdas in absolute time (not relaitve to start point)
+    pt[i] = relative ? 0.0 : offset;
     do 
     {
       pt[i] += -::log(dist(prng)) / lambda_u;
@@ -285,6 +285,8 @@ np::ndarray neworder::next_arrival(const np::ndarray& startingpoints, const np::
         break;
       }
     } while (dist(prng) > lambda_i / lambda_u);
+    // restore offset if required
+    pt[i] += relative ? offset : 0.0;
   }
   return times;
 }

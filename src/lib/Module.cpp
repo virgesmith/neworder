@@ -114,8 +114,10 @@ void neworder::set_timeline(const py::tuple& spec)
 // Deal with defaulted arguments for certain functions
 // see https://stackoverflow.com/questions/35886682/passing-specific-arguments-to-boost-python-function-with-default-arguments
 
-// np::ndarray first_arrival(const np::ndarray& lambda_t, double dt, size_t n, double minval = 0.0);
+// np::ndarray first_arrival(const np::ndarray&, double, size_t, double = 0.0);
 BOOST_PYTHON_FUNCTION_OVERLOADS(first_arrival_default, neworder::first_arrival, 3, 4)
+// np::ndarray next_arrival(const np::ndarray&, const np::ndarray&, double, bool = false, double = 0.0);
+BOOST_PYTHON_FUNCTION_OVERLOADS(next_arrival_default, neworder::next_arrival, 3, 5)
 
 
 // python-visible log function defined above
@@ -151,7 +153,7 @@ BOOST_PYTHON_MODULE(neworder)
   py::def("arrivals", no::arrivals);
   // deal with default minval arg - see above
   py::def("first_arrival", no::first_arrival, first_arrival_default(py::args("lambda_t", "dt", "n", "minval")));
-  py::def("next_arrival", no::next_arrival);
+  py::def("next_arrival", no::next_arrival, next_arrival_default(py::args("startingpoints", "lambda_t", "delta_t", "relative", "minsep")));
 
   py::def("lazy_exec", no::Callback::exec);
   py::def("lazy_eval", no::Callback::eval);
