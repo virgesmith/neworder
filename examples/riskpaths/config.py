@@ -19,18 +19,7 @@ https://www.statcan.gc.ca/eng/microsimulation/modgen/new/chap4/chap4
 import numpy as np
 import neworder
 
-# TODO parameterise
-mortality_rate = np.full(100, 0.002)
-mortality_rate[-30:] = mortality_rate[-30:] * 50
-fertility_rate = 0.014
-p_u1f = np.full(50, 0.1) 
-# if not wed by 50 will never happen (won't be fertile anyway)
-p_u1f[-1] = 0.0
-p_u1d = p_u1f # for now
-p_u2f = p_u1f * 0.5 # 2nd union less likely
-p_u2d = p_u2f 
-
-population_size = 10000
+population_size = 100
 
 # there is no timeline - this is the spacing the time-dep hazard rates
 neworder.timestep = 1.0
@@ -49,7 +38,7 @@ neworder.checks = {
  
 # initialisation
 neworder.initialisations = {
-  "people": { "module": "riskpaths", "class_": "RiskPaths", "parameters": [population_size, mortality_rate, p_u1f, p_u1d, p_u2f, p_u2d] }
+  "people": { "module": "riskpaths", "class_": "RiskPaths", "parameters": [population_size] }
 }
 
 neworder.transitions = {
