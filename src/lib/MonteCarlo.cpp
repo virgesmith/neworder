@@ -91,6 +91,7 @@ np::ndarray neworder::stopping(const np::ndarray& prob)
   return f(prob);
 }
 
+// DEPRECATED - NO LONGER EXPOSED TO PYTHON (use first_arrival)
 // MC stopping time for a non-homogeneous poisson process, given
 // a piecewise-constant hazard rate with spacing dt=1
 // uses the thinning algorithm described in: 

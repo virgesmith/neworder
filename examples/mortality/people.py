@@ -72,7 +72,7 @@ class People():
 
     # in this case we can just compute the mortality directly by modelling a non-homogeneous Poisson process and 
     # using the Lewis-Shedler algorithm
-    self.population["TimeOfDeathNHPP"] = neworder.stopping_nhpp(self.mortality_hazard.Rate.values, neworder.timestep, len(self.population))
+    self.population["TimeOfDeathNHPP"] = neworder.first_arrival(self.mortality_hazard.Rate.values, neworder.timestep, len(self.population))
 
     neworder.log("%f vs %f" % (np.mean(self.population.TimeOfDeath), np.mean(self.population.TimeOfDeathNHPP)))
     return np.mean(self.population.TimeOfDeath)

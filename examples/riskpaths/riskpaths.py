@@ -6,6 +6,9 @@ import neworder
 from helpers import *
 from matplotlib import pyplot as plt
 
+# dynamics data
+import data
+
 AgeintState = partition(15, 40, 2.5)
 
 TIME_INFINITE = -1.0
@@ -105,14 +108,14 @@ UnionDuration = [1, 3, 5, 9, 13]
 
 
 class RiskPaths():
-  def __init__(self, n, mortality_rate, p_u1f, p_u1d, p_u2f, p_u2d):
+  def __init__(self, n, p_u1f, p_u1d, p_u2f, p_u2d):
 
     # TODO fertility and mortality
 
     # initialise population - time of death only 
     self.population = pd.DataFrame(data={#"Alive": np.full(n, True),
                                          #"Age": np.zeros(n, dtype=float), 
-                                         "TimeOfDeath": neworder.first_arrival(mortality_rate, neworder.timestep, n, 0.0),
+                                         "TimeOfDeath": neworder.first_arrival(data.mortality_rate, neworder.timestep, n, 0.0),
                                          "Parity": np.full(n, Parity.CHILDLESS),
                                          "Unions": np.zeros(n, dtype=int),
                                          #"UnionStatus": np.full(n, UnionState.NEVER_IN_UNION),

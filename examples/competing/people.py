@@ -51,10 +51,7 @@ class People():
   def age(self):
     # sample times
 
-    self.population["TimeOfDeath"] = neworder.stopping_nhpp(self.mortality_hazard.Rate.values, neworder.timestep, len(self.population))
-    #self.population["TimeOfBaby1"] = neworder.stopping_nhpp(self.fertility_hazard.Rate.values, neworder.timestep, len(self.population))
-    #neworder.log(neworder.never())
-    #self.population.loc[self.population["TimeOfBaby1"] >= 100.0, "TimeOfBaby1"] = neworder.never()
+    self.population["TimeOfDeath"] = neworder.first_arrival(self.mortality_hazard.Rate.values, neworder.timestep, len(self.population))
 
     births = neworder.arrivals(self.fertility_hazard.Rate.values, neworder.timestep, 0.75, len(self.population))
     

@@ -48,7 +48,7 @@ def test():
   t.check(len(sv) == 5)
 
   # Non-homogeneous Poisson process (time-dependent hazard) 
-  nhpp = neworder.stopping_nhpp(np.array([0.1, 0.2, 0.3, 0.4, 0.5]), 1.0, 10)
+  nhpp = neworder.first_arrival(np.array([0.1, 0.2, 0.3, 0.4, 0.5]), 1.0, 10)
   t.check(isinstance(nhpp, np.ndarray))
   t.check(len(nhpp) == 10)
 

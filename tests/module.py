@@ -46,31 +46,31 @@ def test():
   # test thinning algorithm for non-homogeneous Poisson process
   h = np.array([0.014] * 10)
   #l = no.stopping(h)
-  l = no.stopping_nhpp(h, 1.0, 10000)
+  l = no.first_arrival(h, 1.0, 10000)
   t.check(abs(np.mean(l) * 0.014 - 1.0) < 0.03)
   # varying timestep should make no difference
-  l = no.stopping_nhpp(h, 0.1, 10000)
+  l = no.first_arrival(h, 0.1, 10000)
   t.check(abs(np.mean(l) * 0.014 - 1.0) < 0.03)
 
   # test a certain(ish) hazard rate
   h = np.array([0.99, 0.99, 0.01])
-  l = no.stopping_nhpp(h, 1.0, 10000)
+  l = no.first_arrival(h, 1.0, 10000)
   no.log("TODO NHPP appears broken: %f" % np.mean(l))
 
   # test a zero(ish) hazard rate
   h = np.array([1e-30, 1e-30, 1e-30, .9999])
-  l = no.stopping_nhpp(h, 1.0, 10000)
+  l = no.first_arrival(h, 1.0, 10000)
   no.log("TODO NHPP appears broken: %f" % np.mean(l))
 
   # this also tests a zero hazard rate 
   h = np.array([i/3000 for i in range(100)])
   #no.log(h)
-  le = no.stopping_nhpp(h, 1.0, 10000)
+  le = no.first_arrival(h, 1.0, 10000)
   no.log(sum(le)/len(le))
 
   # y
   h = np.array([0.999, 0.1])
-  le = no.stopping_nhpp(h, 1.0, 1000)
+  le = no.first_arrival(h, 1.0, 1000)
   no.log(sum(le)/len(le))
 
   sometime = no.isnever(np.full(10, 1.0))
