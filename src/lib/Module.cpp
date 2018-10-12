@@ -142,6 +142,7 @@ BOOST_PYTHON_MODULE(neworder)
   py::def("stopping_v", no::stopping_v);
   py::def("stopping_nhpp", no::stopping_nhpp);
   py::def("arrivals", no::arrivals);
+  py::def("first_arrival", no::first_arrival);
   py::def("next_arrival", no::next_arrival);
 
   py::def("lazy_exec", no::Callback::exec);

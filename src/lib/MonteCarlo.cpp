@@ -206,6 +206,42 @@ np::ndarray neworder::arrivals(const np::ndarray& lambda_t, double dt, double ga
   return nptimes;
 }
 
+np::ndarray neworder::first_arrival(const np::ndarray& lambda_t, double dt, size_t n, double minval)
+{
+  std::mt19937& prng = neworder::getenv().prng();
+  std::uniform_real_distribution<> dist(0.0, 1.0);
+
+  double* pl = reinterpret_cast<double*>(lambda_t.get_data());
+  size_t nl = pycpp::size(lambda_t);
+
+  // What is the optimal lambda_u? For now largest value
+  double lambda_u = *std::max_element(pl, pl + nl);
+  double lambda_i;
+
+  np::ndarray times = pycpp::empty_1d_array<double>(n);
+  double* pt = pycpp::begin<double>(times);
+  double tmax = (nl - 1) * dt;
+
+  for (size_t i = 0; i < n; ++i)
+  {
+    // rejection sampling
+    pt[i] = minval;
+    do 
+    {
+      pt[i] += -::log(dist(prng)) / lambda_u;
+      // final entry in lambda_t is flat extrapolated...
+      lambda_i = pl[ std::min((size_t)(pt[i] / dt), nl-1) ];
+      // deal with open case (event not certain to happen)
+      if (pt[i] > tmax && lambda_i == 0.0)
+      {
+        pt[i] = neworder::Timeline::never();
+        break;
+      }
+    } while (dist(prng) > lambda_i / lambda_u);
+  }
+  return times;
+}
+
 // next-arrival process - times of transition from a state arrived at at startingpoints to a subsequent state, with an optional deterministic time gap
 // if the state hasn't been arrived at (neworder::never())
 np::ndarray neworder::next_arrival(const np::ndarray& startingpoints, const np::ndarray& lambda_t, double dt, double gap)

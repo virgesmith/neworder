@@ -109,10 +109,10 @@ class RiskPaths():
 
     # TODO fertility and mortality
 
-    # initialise population
+    # initialise population - time of death only 
     self.population = pd.DataFrame(data={#"Alive": np.full(n, True),
-                                         "Age": np.zeros(n, dtype=float), 
-                                         "TimeOfDeath": np.zeros(n),
+                                         #"Age": np.zeros(n, dtype=float), 
+                                         "TimeOfDeath": neworder.first_arrival(mortality_rate, neworder.timestep, n, 0.0),
                                          "Parity": np.full(n, Parity.CHILDLESS),
                                          "Unions": np.zeros(n, dtype=int),
                                          #"UnionStatus": np.full(n, UnionState.NEVER_IN_UNION),
@@ -123,7 +123,7 @@ class RiskPaths():
 
     # minimum age for marriage is 15 (this was soviet-era data)
     # first union
-    self.population["T_Union1Start"] = neworder.next_arrival(self.population.Age.values, p_u1f, neworder.timestep, 15.0)
+    self.population["T_Union1Start"] = neworder.first_arrival(p_u1f, neworder.timestep, len(self.population), 15.0)
     self.population["T_Union1End"] = neworder.next_arrival(self.population["T_Union1Start"].values, p_u1d, neworder.timestep, 3.0) 
 
     # second union
@@ -131,8 +131,6 @@ class RiskPaths():
     # no mimimum time of 2nd union (?)
     self.population["T_Union2End"] = neworder.next_arrival(self.population["T_Union2Start"].values, p_u2d, neworder.timestep, 0.0) 
 
-    # overlay mortality
-    self.population["TimeOfDeath"] = neworder.stopping_nhpp(mortality_rate, neworder.timestep, len(self.population))
     # and discard events happening after death
     self.population.loc[self.population["T_Union1Start"] > self.population["TimeOfDeath"], "T_Union1Start"] = neworder.never()
     self.population.loc[self.population["T_Union1End"] > self.population["TimeOfDeath"], "T_Union1End"] = neworder.never()
@@ -146,15 +144,15 @@ class RiskPaths():
     neworder.log("RiskPaths init")
   
   def plot(self):
-    # plt.hist(self.population.TimeOfDeath, range(101), color='black')
-    # b = [ self.population.T_Union1Start[~np.isnan(self.population.T_Union1Start)], 
-    #       self.population.T_Union1End[~np.isnan(self.population.T_Union1End)],
-    #       self.population.T_Union2Start[~np.isnan(self.population.T_Union2Start)],
-    #       self.population.T_Union2End[~np.isnan(self.population.T_Union2End)] ]
-    # plt.hist(b, range(101), stacked=True)
-    # #plt.savefig("./doc/examples/img/competing_hist_100k.png")
-    # plt.show()
-    neworder.log(self.population)
+    plt.hist(self.population.TimeOfDeath, range(101), color='black')
+    b = [ self.population.T_Union1Start[~np.isnan(self.population.T_Union1Start)], 
+          self.population.T_Union1End[~np.isnan(self.population.T_Union1End)],
+          self.population.T_Union2Start[~np.isnan(self.population.T_Union2Start)],
+          self.population.T_Union2End[~np.isnan(self.population.T_Union2End)] ]
+    plt.hist(b, range(101), stacked=True)
+    #plt.savefig("./doc/examples/img/competing_hist_100k.png")
+    plt.show()
+    #neworder.log(self.population)
 
   def age_int(self):
     return self.population.Age.values.astype(int)
