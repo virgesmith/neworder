@@ -45,7 +45,7 @@ def test():
 
   # test thinning algorithm for non-homogeneous Poisson process
   h = np.array([0.014] * 10)
-  #l = no.stopping_v(h)
+  #l = no.stopping(h)
   l = no.stopping_nhpp(h, 1.0, 10000)
   t.check(abs(np.mean(l) * 0.014 - 1.0) < 0.03)
   # varying timestep should make no difference

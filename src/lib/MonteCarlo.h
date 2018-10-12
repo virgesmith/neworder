@@ -19,13 +19,13 @@ np::ndarray ustream(size_t n);
 np::ndarray hazard(double prob, size_t n);
 
 // vector hazard 
-np::ndarray hazard_v(const np::ndarray& prob);
+np::ndarray hazard(const np::ndarray& prob);
 
 // compute stopping times 
 np::ndarray stopping(double prob, size_t n);
 
 // vector stopping 
-np::ndarray stopping_v(const np::ndarray& prob);
+np::ndarray stopping(const np::ndarray& prob);
 
 // vector stopping for non-homogeneous poisson process (i.e. time-dependent hazard rate)
 np::ndarray stopping_nhpp(const np::ndarray& lambda_t, double dt, size_t n);

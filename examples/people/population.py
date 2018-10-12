@@ -62,7 +62,7 @@ class Population:
     # might be a more efficient way of generating this array
     rates = females.join(self.fertility, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].values
     # Then randomly determine if a birth occurred (neworder callback)
-    h = neworder.hazard_v(rates * deltat)
+    h = neworder.hazard(rates * deltat)
 
     # The babies are a clone of the new mothers, with with changed PID, reset age and randomised gender (keeping location and ethnicity)
     newborns = females[h == 1].copy()
@@ -84,7 +84,7 @@ class Population:
     rates = self.data.join(self.mortality, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"]
 
     # Then randomly determine if a birth occurred
-    h = neworder.hazard_v(rates.values * deltat)
+    h = neworder.hazard(rates.values * deltat)
 
     # Finally remove deceased from table
     self.data = self.data[h!=1]
@@ -98,7 +98,7 @@ class Population:
 
     # in-migration should be sampling from the whole population ex-LAD, instead do an approximation by scaling up the LAD population
     # NOTE this is wrong for a number of reasons esp. as it cannot sample category combinations that don't already exist in the LAD
-    h_in = neworder.hazard_v(in_rates * deltat)
+    h_in = neworder.hazard(in_rates * deltat)
     
     incoming = self.data[h_in == 1].copy()
 
@@ -113,14 +113,14 @@ class Population:
 
     # internal emigration: 
     out_rates = self.data.join(self.out_migration, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].values
-    h_out = neworder.hazard_v(out_rates * deltat)
+    h_out = neworder.hazard(out_rates * deltat)
     # remove outgoing migrants
     self.data = self.data[h_out!=1]
 
     # international immigration
     # Sampling from local population is not ideal
     intl_in_rates = self.data.join(self.immigration, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].values
-    h_intl_in = neworder.hazard_v(intl_in_rates * deltat)
+    h_intl_in = neworder.hazard(intl_in_rates * deltat)
 
     intl_incoming = self.data[h_intl_in == 1].copy()
     intl_incoming.PID = range(self.counter, self.counter + len(intl_incoming))
@@ -132,7 +132,7 @@ class Population:
 
     # international emigrtion
     intl_out_rates = self.data.join(self.emigration, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].values
-    h_intl_out = neworder.hazard_v(intl_out_rates * deltat)
+    h_intl_out = neworder.hazard(intl_out_rates * deltat)
     # remove outgoing migrants
     self.data = self.data[h_intl_out!=1]
 

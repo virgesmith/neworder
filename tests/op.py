@@ -33,7 +33,7 @@ def test():
   t.check(len(h) == 10000)
   t.check(abs(np.mean(h) - 0.2) < 0.01)
 
-  hv = neworder.hazard_v(np.array([0.1, 0.2, 0.3, 0.4, 0.5]))
+  hv = neworder.hazard(np.array([0.1, 0.2, 0.3, 0.4, 0.5]))
   t.check(isinstance(hv, np.ndarray))
   t.check(len(hv) == 5)
 
@@ -43,7 +43,7 @@ def test():
   t.check(len(s) == 10000)
   t.check(abs(np.mean(s)/10 - 1.0) < 0.02)
 
-  sv = neworder.stopping_v(np.array([0.1, 0.2, 0.3, 0.4, 0.5]))
+  sv = neworder.stopping(np.array([0.1, 0.2, 0.3, 0.4, 0.5]))
   t.check(isinstance(sv, np.ndarray))
   t.check(len(sv) == 5)
 

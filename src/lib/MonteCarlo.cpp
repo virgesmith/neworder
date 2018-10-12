@@ -69,7 +69,7 @@ np::ndarray neworder::hazard(double prob, size_t n)
 }
 
 // hazard with varying probablities 
-np::ndarray neworder::hazard_v(const np::ndarray& prob)
+np::ndarray neworder::hazard(const np::ndarray& prob)
 {
   Hazard f;
   return f(prob);
@@ -85,7 +85,7 @@ np::ndarray neworder::stopping(double prob, size_t n)
   return pycpp::make_array<double>(n, [&]() { return -::log(dist(prng)) * rprob; });
 }
 
-np::ndarray neworder::stopping_v(const np::ndarray& prob)
+np::ndarray neworder::stopping(const np::ndarray& prob)
 {
   Stopping f;
   return f(prob);

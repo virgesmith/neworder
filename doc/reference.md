@@ -58,13 +58,14 @@ name                  | description
 name                | description
 --------------------|------------------------------------
 `ustream(n)`        | returns a numpy 1d array of `n` uniform [0,1) random variables.
-`hazard(r, n)`      | returns a numpy 1d array of `n` Bernoulli trials given a hazard rate `r`.
-`hazard_v()`        | return a numpy 1d array of Bernoulli trials given a hazard rate `r`.
+`hazard(r, n)`      | returns a numpy 1d array of `n` Bernoulli trials given a scalar hazard rate `r`.
+`hazard(r)`         | return a numpy 1d array of Bernoulli trials given a vector of hazard rates `r`.
 `stopping(r, n)`    | returns a numpy array of `n` stopping times given a flat hazard rate `r`. 
-`stopping_v()`      | returns a vector of stopping times given a fixed hazard rate and a length   
+`stopping(r)`       | returns a numpy array of stopping times given a vector of hazard rates `r`.   
 `stopping_nhpp(...)`| returns sampled stopping times from a "closed" non-homogeneous Poisson process (i.e. the event will happen, eventually) 
 `arrivals(...)`     | returns sampled arrival times from an "open" non-homogeneous Poisson process (i.e. 0 or more events per input) 
-`next_arrival(...)` | returns sampled arrival times from an "open" non-homogeneous Poisson process (i.e. 0 or 1 events per input)
+`first_arrival(...)`| returns sampled arrival times from an "open" non-homogeneous Poisson process (i.e. 0 or 1 events per input)
+`next_arrival(...)` | returns subsequent sampled arrival times from an "open" non-homogeneous Poisson process (i.e. 0 or 1 events per input)
 
 Each process has its own random number stream (Mersenne Twister), which by default is seeded independently. In most cases this is the preferred configuration. However, for sensitivity analysis, e.g. to gauge the impact perturbing the dynamics of the system in multiple runs, it makes more sense for each run to re-use the same sequence in order to eliminate noise from the Monte-Carlo simulation.  
 

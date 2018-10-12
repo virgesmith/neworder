@@ -136,10 +136,11 @@ BOOST_PYTHON_MODULE(neworder)
   
   // MC
   py::def("ustream", no::ustream);
-  py::def("hazard", no::hazard);
-  py::def("hazard_v", no::hazard_v);
-  py::def("stopping", no::stopping);
-  py::def("stopping_v", no::stopping_v);
+  // explicitly give function type for overloads 
+  py::def<np::ndarray (*)(double, size_t)>("hazard", no::hazard);
+  py::def<np::ndarray (*)(const np::ndarray&)>("hazard", no::hazard);
+  py::def<np::ndarray (*)(double, size_t)>("stopping", no::stopping);
+  py::def<np::ndarray (*)(const np::ndarray&)>("stopping", no::stopping);
   py::def("stopping_nhpp", no::stopping_nhpp);
   py::def("arrivals", no::arrivals);
   py::def("first_arrival", no::first_arrival);
