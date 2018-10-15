@@ -22,8 +22,9 @@ std::string to_string_impl(T v)
 template<typename T>
 std::string to_string_impl(T* p)
 {
-  // TODO would be nicer to use hex  - sprintf 0x%x
-  return std::to_string(reinterpret_cast<size_t>(p));
+  char buf[20];
+  std::sprintf(buf, "0x%016zx", reinterpret_cast<size_t>(p));
+  return std::string(buf);
 }
 
 template<>

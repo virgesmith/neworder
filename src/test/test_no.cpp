@@ -18,7 +18,7 @@ void test_no()
 {
   // test logging - use (,) operator combo to make it look like one arg returning bool. If a problem, there will be an exception or worse
   CHECK((neworder::log("neworder module test"), true));
-  CHECK((neworder::log("test logging types: %% %% %% %% %% %%"_s % false % 0 % 0.0 % "" % ""_s % std::vector<int>(10)), true));
+  CHECK((neworder::log("test logging types: %% %% %% %% %% %% %%"_s % false % 0 % 0.0 % "" % ""_s % std::vector<int>(10) % (void*)nullptr), true));
 
   /*neworder::Environment& env =*/ neworder::getenv();
   py::object module = py::import("neworder");
