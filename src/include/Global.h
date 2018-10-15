@@ -1,7 +1,4 @@
 
-// TODO work out how to create a shared C++-only lib (with e.g. humanleague)
-// even if it has to be header-only (which probably isnt a bad thing)
-
 #pragma once
 
 #include <memory>

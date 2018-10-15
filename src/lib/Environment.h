@@ -36,9 +36,6 @@ public:
   // Use this function to create the base environemt
   static Environment& init(int rank, int size, bool indep = true);
 
-  // Apply settings from config.py, including sequence and RNG state(s)
-  //void configure(const py::object& obj);
-
   // check for errors in the python env (use after catching py::error_already_set)
   static std::string get_error() noexcept;
 
@@ -52,7 +49,6 @@ public:
   static int size();
 
   // independent streams (per rank)? 
-  // TODO could this be modifiable?
   static bool indep();
 
   // returns "py/no rank/size"

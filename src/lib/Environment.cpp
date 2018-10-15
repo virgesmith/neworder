@@ -34,20 +34,6 @@ neworder::Environment& neworder::Environment::init(int rank, int size, bool inde
   return env;
 }
 
-// void neworder::Environment::configure(const py::object& obj)
-// {
-//   if (neworder::has_attr(*m_self, "sync_streams"))
-//   {
-//     m_sync_streams = py::extract<bool>(m_self->attr("sync_streams"));
-//     //neworder::log("sync attr = %%"_s % env.sync_streams());
-//   }
-
-//   // TODO python func to set sequence and reset rng
-//   if (neworder::has_attr(*m_self, "sequence"))
-//   {
-//     seed(np::from_object(m_self->attr("sequence")));
-//   } 
-// }
 
 // syntactic sugar
 neworder::Environment& neworder::getenv()
@@ -93,70 +79,12 @@ std::string neworder::Environment::context(int ctx) const
   return idstring;
 }
 
-// Take next stream
-// bool neworder::Environment::next()
-// {
-//   if (static_cast<size_t>(seq()) == neworder::size(sequence()) - 1)
-//     return false;
-
-//   neworder::Callback::exec("neworder.seq = neworder.seq + 1")();
-
-//   m_prng.seed(compute_seed());
-//   int64_t seq_val = neworder::at<int64_t>(sequence(), seq());
-
-//   neworder::log("seq: %% sync=%% seed=%%"_s % seq_val % sync_streams() % compute_seed());
-
-//   return true;
-// }
-
-// // TODO rename seq_index for clarity 
-// int neworder::Environment::seq() const
-// {
-//   int s;
-//   if (neworder::has_attr(*m_self, "seq"))
-//   {
-//     s = py::extract<int>(m_self->attr("seq"));
-//   }
-//   else
-//   {
-//     throw std::runtime_error("seq not defined");
-//   }
-//   np::ndarray a = sequence();
-
-//   // if (s<0 || s >= (int)neworder::size(a))
-//   // {
-//   //   throw std::runtime_error("seq out of bounds: %%"_s % s);
-//   // }
-//   return s;
-// }
-
-// np::ndarray neworder::Environment::sequence() const
-// {
-//   if (neworder::has_attr(*m_self, "sequence"))
-//   {
-//     return np::from_object(m_self->attr("sequence"));
-//   }
-//   else 
-//   {
-//     throw("seq not defined");
-//   }
-// }
-
 // compute the RNG seed
 int64_t neworder::Environment::compute_seed() const
 {
   // ensure stream (in)dependence w.r.t. sequence and MPI rank/sizes
   return 77027473 * 0 + 19937 * m_size + m_rank * m_indep;  
 }
-
-// // Sets a PRNG sequence (and resets sequence counter)
-// // TODO rename
-// void neworder::Environment::seed(const np::ndarray& seq)
-// {
-//   m_self->attr("sequence") = seq;
-//   m_self->attr("seq") = -1;
-//   next();
-// }
 
 std::mt19937& neworder::Environment::prng()
 {

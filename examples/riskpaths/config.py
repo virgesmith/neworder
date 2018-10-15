@@ -30,11 +30,7 @@ neworder.timestep = 1.0
 
 # running/debug options
 neworder.log_level = 1
-neworder.do_checks = True
-# assumed to be methods of class_ returning True if checks pass
-neworder.checks = {
-  "check": "people.stats()"
-}
+neworder.do_checks = False
  
 # initialisation
 neworder.initialisations = {
@@ -47,5 +43,7 @@ neworder.transitions = {
 
 # Finalisation 
 neworder.checkpoints = {
-  "hist": "people.plot()"
+  "hist": "people.plot()",
+  "check": "people.check()",
+  "stats": "people.stats()"
 }
