@@ -102,7 +102,7 @@ np::ndarray neworder::stopping_nhpp(const np::ndarray& lambda_t, double dt, size
   std::mt19937& prng = neworder::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
-  double* pl = reinterpret_cast<double*>(lambda_t.get_data());
+  double* pl = pycpp::begin<double>(lambda_t);
   size_t nl = pycpp::size(lambda_t);
 
   // validate lambdas - but what exactly is valid?
@@ -144,7 +144,7 @@ np::ndarray neworder::arrivals(const np::ndarray& lambda_t, double dt, double ga
   std::mt19937& prng = neworder::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
-  double* pl = reinterpret_cast<double*>(lambda_t.get_data());
+  double* pl = pycpp::begin<double>(lambda_t);
   size_t nl = pycpp::size(lambda_t);
 
   // validate lambdas - but what exactly is valid?
@@ -212,7 +212,7 @@ np::ndarray neworder::first_arrival(const np::ndarray& lambda_t, double dt, size
   std::mt19937& prng = neworder::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
-  double* pl = reinterpret_cast<double*>(lambda_t.get_data());
+  double* pl = pycpp::begin<double>(lambda_t);
   size_t nl = pycpp::size(lambda_t);
 
   // What is the optimal lambda_u? For now largest value
@@ -252,7 +252,7 @@ np::ndarray neworder::next_arrival(const np::ndarray& startingpoints, const np::
   std::mt19937& prng = neworder::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
-  double* pl = reinterpret_cast<double*>(lambda_t.get_data());
+  double* pl = pycpp::begin<double>(lambda_t);
   size_t nl = pycpp::size(lambda_t);
   double tmax = (nl - 1) * dt;
 
@@ -261,6 +261,7 @@ np::ndarray neworder::next_arrival(const np::ndarray& startingpoints, const np::
   double lambda_i;
 
   np::ndarray times = pycpp::empty_1d_array<double>(n);
+  //np::ndarray times = pycpp::zero_1d_array<double>(n);
   double* pt = pycpp::begin<double>(times);
 
   for (size_t i = 0; i < n; ++i)
@@ -270,9 +271,10 @@ np::ndarray neworder::next_arrival(const np::ndarray& startingpoints, const np::
     // skip if we haven't actually arrived at the state to transition from
     if (neworder::Timeline::isnever(offset))
     {
+      pt[i] = neworder::Timeline::never();
       continue;
     }
-    // offset if lambdas in absolute time (not relaitve to start point)
+    // offset if lambdas in absolute time (not relative to start point)
     pt[i] = relative ? 0.0 : offset;
     do 
     {

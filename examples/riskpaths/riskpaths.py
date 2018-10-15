@@ -162,6 +162,7 @@ class RiskPaths():
     
   def pregnancy(self):
     # pre-union1 pregnancy
+    neworder.log("NEVER_IN_UNION")
     p_preg = data.p_preg * data.r_preg[0] #UnionState.NEVER_IN_UNION]
     self.population["TimeOfPregnancy"] = neworder.first_arrival(p_preg, data.delta_t, len(self.population)) + data.min_age
     self.population.loc[self.population["TimeOfPregnancy"] > self.population["T_Union1Start"], "TimeOfPregnancy"] = neworder.never()
@@ -169,31 +170,36 @@ class RiskPaths():
     #self.population.loc[~neworder.isnever(self.population["TimeOfPregnancy"].values), "Parity"] = Parity.PREGNANT
 
     # union1 phase1 pregnancy
+    neworder.log("FIRST_UNION_PERIOD1")
     p_preg = data.p_preg * data.r_preg[1] #UnionState.FIRST_UNION_PERIOD1]
     # # NaNs break this - minimum is always first
     self.population["TimeOfPregnancyU1a"] = neworder.next_arrival(self.population["T_Union1Start"].values, p_preg, data.delta_t)
     self.population.loc[self.population["TimeOfPregnancyU1a"] > self.population["T_Union1Start"] + data.min_u1, "TimeOfPregnancyU1a"] = neworder.never()                    
 
     # union1 phase2 pregnancy
+    neworder.log("FIRST_UNION_PERIOD2")
     p_preg = data.p_preg * data.r_preg[2] #UnionState.FIRST_UNION_PERIOD2]
     self.population["TimeOfPregnancyU1b"] = neworder.next_arrival(self.population["T_Union1Start"].values + data.min_u1, p_preg, data.delta_t)
     self.population.loc[self.population["TimeOfPregnancyU1b"] > self.population["T_Union1End"], "TimeOfPregnancyU1b"] = neworder.never()                    
 
     # # post union1 pregnancy
+    neworder.log("AFTER_FIRST_UNION")
     p_preg = data.p_preg * data.r_preg[3] #UnionState.AFTER_FIRST_UNION]
-    print(neworder.next_arrival(self.population["T_Union1End"].values, p_preg, data.delta_t))
-    print(neworder.next_arrival(self.population["T_Union1End"].values, p_preg, data.delta_t))
+    #print(neworder.next_arrival(self.population["T_Union1End"].values, p_preg, data.delta_t))
+    #print(neworder.next_arrival(self.population["T_Union1End"].values, p_preg, data.delta_t))
     self.population["TimeOfPregnancyPostU1"] = neworder.next_arrival(self.population["T_Union1End"].values, p_preg, data.delta_t)
-    # #self.population.loc[self.population["TimeOfPregnancyPostU1"] > self.population["T_Union2Start"], "TimeOfPregnancyPostU1"] = neworder.never()                    
+    self.population.loc[self.population["TimeOfPregnancyPostU1"] > self.population["T_Union2Start"], "TimeOfPregnancyPostU1"] = neworder.never()                    
 
     # # union2 pregnancy
-    # p_preg = data.p_preg * data.r_preg[4] #UnionState.SECOND_UNION]
-    # self.population["TimeOfPregnancyU2"] = neworder.next_arrival(self.population["T_Union2Start"].values, p_preg, data.delta_t)
-    # #self.population.loc[self.population["TimeOfPregnancyU2"] > self.population["T_Union2Start"], "TimeOfPregnancyU2"] = neworder.never()                    
+    neworder.log("SECOND_UNION")
+    p_preg = data.p_preg * data.r_preg[4] #UnionState.SECOND_UNION]
+    self.population["TimeOfPregnancyU2"] = neworder.next_arrival(self.population["T_Union2Start"].values, p_preg, data.delta_t)
+    self.population.loc[self.population["TimeOfPregnancyU2"] > self.population["T_Union2Start"], "TimeOfPregnancyU2"] = neworder.never()                    
 
     # # post union2 pregnancy
-    # p_preg = data.p_preg * data.r_preg[5] #UnionState.AFTER_SECOND_UNION]
-    # self.population["TimeOfPregnancyPostU2"] = neworder.next_arrival(self.population["T_Union2End"].values, p_preg, data.delta_t)
+    neworder.log("AFTER_SECOND_UNION")
+    p_preg = data.p_preg * data.r_preg[5] #UnionState.AFTER_SECOND_UNION]
+    self.population["TimeOfPregnancyPostU2"] = neworder.next_arrival(self.population["T_Union2End"].values, p_preg, data.delta_t)
 
     self.population.to_csv("./population.csv", index=False)
 

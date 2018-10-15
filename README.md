@@ -9,9 +9,15 @@ Neworder is a prototype microsimulation package inspired by [openm++](https://om
 - low barriers to entry: users need only write standard python code, little or no new coding skills required.
 - flexibility: models are defined entirely in user code.
 - reusability: leverage python modules like numpy, pandas.
-- speed: embedded C++ framework and module are compiled and optimised code<sup>*</sup>.
+- speed: embedded C++ framework and module are compiled and optimised code.
 - scalability: can be run on a desktop or a HPC cluster, supporting parallel execution using MPI.
 - data agnosticism: the framework does not impose any constraints on data sources/formats/databases. 
+
+### Data and Performance
+
+As python and C++ have very different memory models, it's generally not advisable to directly share data, i.e. to safely have a python object and a C++ object both referencing (and potentially modifying) the same memory location. However, there is a crucial exception to this: the numpy ndarray type. This is fundamental to the operation of the framework, as it enables the C++ module to directly access (and modify) pandas data frames, facilitiating:
+- very fast implementation of algorithms operating directly on pandas DataFrames<sup>*</sup>;
+- inter-process communication of any Python object, including DataFrame, over MPI. 
 
 &ast; For instance, a common requirement in microsimulation is to randomly amend a state (given in a column in a data frame) according to a specified transition matrix. This algorithm requires a loop (i.e. each case dealt with separately) and a python implementation was benchmarked at about 1,500 cases per second. The same algorithm implemented in (compiled) C++ runs some 20,000 times faster, processing the entire test dataset (~120k rows) in under 4 milliseconds.
 

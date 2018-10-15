@@ -89,6 +89,3 @@ name                | description
 `allgather(a)`      | assemble `a` using elements from each process (rank is index). 
 `sync()`            | suspend execution of the current process until all processes have reached this point
 
-## Implementation Detail
-
-As python and C++ have very different memory models, it's not possible to directly share data, i.e. safely have a python object and a C++ object both referencing (and potentially modifying) the same memory location. However, there is a crucial exception to this: the numpy ndarray type. This is fundamental to the operation of the framework, as it enables the C++ module to directly access (and modify) pandas data frames (which do not have a native C API).

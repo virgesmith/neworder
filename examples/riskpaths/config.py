@@ -19,7 +19,7 @@ https://www.statcan.gc.ca/eng/microsimulation/modgen/new/chap4/chap4
 import numpy as np
 import neworder
 
-population_size = 100
+population_size = 10000
 
 # there is no timeline - this is the spacing the time-dep hazard rates
 neworder.timestep = 1.0
