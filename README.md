@@ -318,7 +318,7 @@ Counts of transitions by age: first pregnancy (purple), beginning of first union
 
 See also:
 - the [model configuration](examples/riskpaths/config.py)
-- the [model implementation](examples/people/population.py), and 
+- the [model implementation](examples/riskpaths/riskpaths.py), and 
 - the [input data](examples/riskpaths/data.py)
 
 Note: the mortality rate used in this model does not have a realistic age structure - events that take place in later years have little bearing on the outcome, which is time of first pregnancy. 

@@ -8,6 +8,7 @@ import neworder
 
 from helpers import *
 import ethpop
+import pyramid
 
 
 # TODO only support single LAD...? (LAD-specific dynamics)
@@ -166,3 +167,13 @@ class Population:
     filename = "./examples/people/dm_{}_{:.3f}.csv".format(self.lad, neworder.time)
     neworder.log("writing %s" % filename)
     return self.data.to_csv(filename, index=False)
+
+  def plot_pyramid(self):
+    s = self.data.groupby(by=["DC1117EW_C_SEX", "DC1117EW_C_AGE"])["PID"].agg("count").reset_index()
+    a = range(86) #s.DC1117EW_C_AGE.unique() - 1
+    m = s[s.DC1117EW_C_SEX == 1].PID
+    f = s[s.DC1117EW_C_SEX == 2].PID
+
+    pyramid.plot(a, m, f)
+
+    pass

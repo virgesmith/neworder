@@ -36,10 +36,10 @@ neworder.initialisations = {
 
 # timestep must be defined in neworder
 neworder.transitions = { 
-  "2fertility": "people.births(timestep)", 
-  "1mortality": "people.deaths(timestep)", 
-  "3migration": "people.migrations(timestep)", 
-  "4age": "people.age(timestep)" 
+  "3fertility": "people.births(timestep)", 
+  "2mortality": "people.deaths(timestep)", 
+  "4migration": "people.migrations(timestep)", 
+  "1age": "people.age(timestep)" 
 }
 
 # checks to perform after each timestep. Assumed to return a boolean 
@@ -52,5 +52,6 @@ neworder.checks = {
 # Generate output at each checkpoint  
 neworder.checkpoints = {
 #  "check_data" : "people.check()",
-  "write_table" : "people.write_table()" 
+  "write_table" : "people.write_table()",
+  "show_pyramid" : "people.plot_pyramid()" 
 }
