@@ -1,5 +1,20 @@
 
 import numpy as np
+from enum import Enum
+from helpers import *
+
+# classification UNION_STATE
+class UnionState(Enum):
+  NEVER_IN_UNION = 0
+  FIRST_UNION_PERIOD1 = 1
+  FIRST_UNION_PERIOD2 = 2
+  AFTER_FIRST_UNION = 3
+  SECOND_UNION = 4
+  AFTER_SECOND_UNION = 5
+
+class Parity(Enum):
+  CHILDLESS = 0
+  PREGNANT = 1
 
 # Dynamics parameters from https://github.com/virgesmith/ompp/blob/master/models/RiskPaths/parameters/Default/RiskPaths.dat
 # //LABEL(RiskPaths) RiskPaths
@@ -11,13 +26,16 @@ import numpy as np
 # 		(100) .01, 1, 
 # 	};
 
+# Age of Consent at which the fertility rates begin 
+min_age = 15.0
 max_age = 100.0
 
 mortality_rate = np.full(int(max_age), 0.01)
 mortality_rate[-1] = 1.0
 
-# Age of Consent at which the rates begin 
-min_age = 15.0
+# fertility rates given in 2.5y chunks from 15 to 40 incl
+delta_t = 2.5
+AgeintState = partition(min_age, 40, delta_t)
 
 # 	 // Age baseline for first pregnancy
 # 	double	AgeBaselinePreg1[AGEINT_STATE] = {
@@ -32,7 +50,6 @@ p_preg = np.array([0.0, 0.2869, 0.7591, 0.8458, 0.8167, 0.6727, 0.5105, 0.4882, 
 # 		0, 0.030898, 0.134066, 0.167197, 0.165551, 0.147390, 0.108470, 0.080378, 0.033944, 0.045454, 0.040038, 0, 
 # 	};
 
-delta_t = 2.5
 p_u1f = np.array([0.0, 0.030898, 0.134066, 0.167197, 0.165551, 0.147390, 0.108470, 0.080378, 0.033944, 0.045454, 0.040038, 0.0])
 
 # union1 lasts at least 3 years
@@ -53,10 +70,10 @@ r_preg = np.array([0.0648, 1.0000, 0.2523, 0.0648, 0.8048, 0.0648])
 # 	};
 
 
-# UNION_DURATION is defined as 1,3,5,9,13
-# currently need to modify to have equal spacing
-
+# UnionDuration = [1, 3, 5, 9, 13]
+# currently need to modify above to have equal spacing
 delta_t_u = 2.0
+#                         1          3          5          7          9         11         13 
 r_u2f = np.array([0.1995702, 0.1353028, 0.1099149, 0.1099149, 0.0261186, 0.0261186, 0.0456905])
 
 # Something wrong here: more data than dims
