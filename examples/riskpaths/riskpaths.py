@@ -142,7 +142,68 @@ class RiskPaths():
                            + (~neworder.isnever(self.population["T_Union2Start"].values)).astype(int)
 
     neworder.log("RiskPaths init")
-  
+      
+  def pregnancy(self):
+    # We're interested in the first pregnancy that occurs for each individual
+    # fmin ignores nan (np.minimum is a problem as it doesnt deal with nan well)
+
+    # pre-union1 pregnancy
+    p_preg = data.p_preg * data.r_preg[UnionState.NEVER_IN_UNION.value]
+    # sample  
+    t_pregnancy1 = neworder.first_arrival(p_preg, data.delta_t, len(self.population)) + data.min_age
+    # remove pregnancies that happen after union1 formation
+    t_pregnancy1[t_pregnancy1 > self.population["T_Union1Start"]] = neworder.never()
+
+    # union1 phase1 pregnancy
+    p_preg = data.p_preg * data.r_preg[UnionState.FIRST_UNION_PERIOD1.value]
+    # sample 
+    t_pregnancy1_u1a = neworder.next_arrival(self.population["T_Union1Start"].values, p_preg, data.delta_t)
+    # discard those that happen after union1 transition
+    t_pregnancy1_u1a[t_pregnancy1_u1a > self.population["T_Union1Start"] + data.min_u1] = neworder.never()                    
+    t_pregnancy1 = np.fmin(t_pregnancy1, t_pregnancy1_u1a)
+
+    # union1 phase2 pregnancy
+    p_preg = data.p_preg * data.r_preg[UnionState.FIRST_UNION_PERIOD2.value]
+    # sample
+    t_pregnancy1_u1b = neworder.next_arrival(self.population["T_Union1Start"].values + data.min_u1, p_preg, data.delta_t)
+    # discard those that happen after union1 
+    t_pregnancy1_u1b[t_pregnancy1_u1b > self.population["T_Union1End"]] = neworder.never()                    
+    t_pregnancy1 = np.fmin(t_pregnancy1, t_pregnancy1_u1b)
+
+    # post union1 pregnancy
+    p_preg = data.p_preg * data.r_preg[UnionState.AFTER_FIRST_UNION.value]
+    # sample
+    t_pregnancy1_postu1 = neworder.next_arrival(self.population["T_Union1End"].values, p_preg, data.delta_t)
+    # discard those that happen after union2 formation
+    t_pregnancy1_postu1[t_pregnancy1_postu1 > self.population["T_Union2Start"]] = neworder.never()                    
+    t_pregnancy1 = np.fmin(t_pregnancy1, t_pregnancy1_postu1)
+
+    # union2 pregnancy
+    p_preg = data.p_preg * data.r_preg[UnionState.SECOND_UNION.value]
+    # sample
+    t_pregnancy1_u2 = neworder.next_arrival(self.population["T_Union2Start"].values, p_preg, data.delta_t)
+    # discard those that happen after union2 dissolution
+    t_pregnancy1_u2[t_pregnancy1_u2 > self.population["T_Union2End"]] = neworder.never()                    
+    t_pregnancy1 = np.fmin(t_pregnancy1, t_pregnancy1_u2)
+
+    # # post union2 pregnancy
+    p_preg = data.p_preg * data.r_preg[UnionState.AFTER_SECOND_UNION.value]
+    t_pregnancy1_postu2 = neworder.next_arrival(self.population["T_Union2End"].values, p_preg, data.delta_t)
+    t_pregnancy1 = np.fmin(t_pregnancy1, t_pregnancy1_postu2)
+
+    # add the times to pregnancy1 to the population, removing those pregnancies that occur after death
+    self.population["TimeOfPregnancy"] = t_pregnancy1
+    self.population.loc[self.population["TimeOfPregnancy"] > self.population["TimeOfDeath"], "TimeOfPregnancy"] = neworder.never()
+    # and update parity column
+    self.population.loc[~neworder.isnever(self.population["TimeOfPregnancy"].values), "Parity"] = Parity.PREGNANT
+
+    # save population
+    self.population.to_csv("./population.csv", index=False)
+
+  def stats(self):
+    neworder.log("mean unions = %f" % np.mean(self.population.Unions))
+    neworder.log("pregnancy ratio = %f" % np.mean(self.population.Parity == Parity.PREGNANT))
+
   def plot(self):
     b = [ self.population.T_Union1Start[~neworder.isnever(self.population.T_Union1Start.values)], 
           self.population.T_Union1End[~neworder.isnever(self.population.T_Union1End.values)],
@@ -154,64 +215,3 @@ class RiskPaths():
     plt.show()
     #neworder.log(self.population)
     pass
-
-  def stats(self):
-    neworder.log("mean unions = %f" % np.mean(self.population.Unions))
-    
-  def pregnancy(self):
-    # pre-union1 pregnancy
-    p_preg = data.p_preg * data.r_preg[0] #UnionState.NEVER_IN_UNION]
-    # sample pregnancies 
-    self.population["TimeOfPregnancy"] = neworder.first_arrival(p_preg, data.delta_t, len(self.population)) + data.min_age
-    # remove pregnancies that happen after union1 formation
-    self.population.loc[self.population["TimeOfPregnancy"] > self.population["T_Union1Start"], "TimeOfPregnancy"] = neworder.never()
-
-    # union1 phase1 pregnancy
-    p_preg = data.p_preg * data.r_preg[1] #UnionState.FIRST_UNION_PERIOD1]
-    # sample 
-    self.population["TimeOfPregnancyU1a"] = neworder.next_arrival(self.population["T_Union1Start"].values, p_preg, data.delta_t)
-    # discard those that happen after union1 transition
-    self.population.loc[self.population["TimeOfPregnancyU1a"] > self.population["T_Union1Start"] + data.min_u1, "TimeOfPregnancyU1a"] = neworder.never()                    
-
-    # union1 phase2 pregnancy
-    p_preg = data.p_preg * data.r_preg[2] #UnionState.FIRST_UNION_PERIOD2]
-    # sample
-    self.population["TimeOfPregnancyU1b"] = neworder.next_arrival(self.population["T_Union1Start"].values + data.min_u1, p_preg, data.delta_t)
-    # discard those that happen after union1 
-    self.population.loc[self.population["TimeOfPregnancyU1b"] > self.population["T_Union1End"], "TimeOfPregnancyU1b"] = neworder.never()                    
-
-    # post union1 pregnancy
-    p_preg = data.p_preg * data.r_preg[3] #UnionState.AFTER_FIRST_UNION]
-    # sample
-    self.population["TimeOfPregnancyPostU1"] = neworder.next_arrival(self.population["T_Union1End"].values, p_preg, data.delta_t)
-    # discard those that happen after union2 formation
-    self.population.loc[self.population["TimeOfPregnancyPostU1"] > self.population["T_Union2Start"], "TimeOfPregnancyPostU1"] = neworder.never()                    
-
-    # union2 pregnancy
-    p_preg = data.p_preg * data.r_preg[4] #UnionState.SECOND_UNION]
-    # sample
-    self.population["TimeOfPregnancyU2"] = neworder.next_arrival(self.population["T_Union2Start"].values, p_preg, data.delta_t)
-    # discard those that happen after union2 dissolution
-    self.population.loc[self.population["TimeOfPregnancyU2"] > self.population["T_Union2End"], "TimeOfPregnancyU2"] = neworder.never()                    
-
-    # # post union2 pregnancy
-    p_preg = data.p_preg * data.r_preg[5] #UnionState.AFTER_SECOND_UNION]
-    self.population["TimeOfPregnancyPostU2"] = neworder.next_arrival(self.population["T_Union2End"].values, p_preg, data.delta_t)
-
-    # Take the first pregnancy that occurs for each individual
-    # fmin ignores nan (np.minimum is a problem as it doesnt deal with nan well)
-    self.population["TimeOfPregnancy"] = np.fmin(self.population["TimeOfPregnancy"], self.population["TimeOfPregnancyU1a"])
-    self.population["TimeOfPregnancy"] = np.fmin(self.population["TimeOfPregnancy"], self.population["TimeOfPregnancyU1b"])
-    self.population["TimeOfPregnancy"] = np.fmin(self.population["TimeOfPregnancy"], self.population["TimeOfPregnancyPostU1"])
-    self.population["TimeOfPregnancy"] = np.fmin(self.population["TimeOfPregnancy"], self.population["TimeOfPregnancyU2"])
-    self.population["TimeOfPregnancy"] = np.fmin(self.population["TimeOfPregnancy"], self.population["TimeOfPregnancyPostU2"])
-    # remove those that occur after death
-    self.population.loc[self.population["TimeOfPregnancy"] > self.population["TimeOfDeath"], "TimeOfPregnancy"] = neworder.never()
-    # update parity columns
-    self.population.loc[~neworder.isnever(self.population["TimeOfPregnancy"].values), "Parity"] = Parity.PREGNANT
-
-    self.population.to_csv("./population.csv", index=False)
-
-  def check(self):
-    #print (self.population[self.population["TimeOfPregnancy"] > self.population["TimeOfDeath"]])
-    return True

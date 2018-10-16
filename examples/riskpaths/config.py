@@ -21,13 +21,6 @@ import neworder
 
 population_size = 10000
 
-# there is no timeline - this is the spacing the time-dep hazard rates
-neworder.timestep = 1.0
-
-# This timeline represents persons age
-# range LIFE
-#neworder.timeline = (0.0, 100.0, 1)
-
 # running/debug options
 neworder.log_level = 1
 neworder.do_checks = False
@@ -43,7 +36,6 @@ neworder.transitions = {
 
 # Finalisation 
 neworder.checkpoints = {
-  "hist": "people.plot()",
-  "check": "people.check()",
-  "stats": "people.stats()"
+  "1stats": "people.stats()",
+  "2hist": "people.plot()"
 }

@@ -11,7 +11,9 @@ import numpy as np
 # 		(100) .01, 1, 
 # 	};
 
-mortality_rate = np.full(100, 0.01)
+max_age = 100.0
+
+mortality_rate = np.full(int(max_age), 0.01)
 mortality_rate[-1] = 1.0
 
 # Age of Consent at which the rates begin 
