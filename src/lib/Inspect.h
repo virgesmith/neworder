@@ -19,9 +19,9 @@ std::string as_string(PyObject* obj);
 
 std::string as_string(const py::object& obj);
 
-std::vector<std::pair<std::string, std::string>> dir(PyObject* obj, bool public_only=true);
+// std::vector<std::pair<std::string, std::string>> dir(PyObject* obj, bool public_only=true);
 
-std::vector<std::pair<std::string, std::string>> dir(const py::object& obj, bool public_only=true);
+// std::vector<std::pair<std::string, std::string>> dir(const py::object& obj, bool public_only=true);
 
 }
 

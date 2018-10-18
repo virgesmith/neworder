@@ -28,7 +28,7 @@ This is based on the example in the second chapter of the book - *The Life Table
 
 ![Mortality histogram - 10000 people](./img/mortality_hist_10k.gif) ![Mortality histogram - 100000 people](./img/mortality_hist_100k.gif)
 
-The mortality data is sourced from the NewETHPOP project (TODO ref) and represents the mortality rate for white British males in one of the London Boroughs.
+The mortality data is sourced from the NewETHPOP[[1]](../../README.md#references) project and represents the mortality rate for white British males in one of the London Boroughs.
 
 The "pythonic" implementation uses a pandas dataframe to store the population, as opposed to an array of `Person` objects representing each individual. This a struct-of-arrays rather than array-of-structs approach is, in this instance, far more efficient, running roughly three times quicker. It retains the basic algorithm: 
 - each year, sample time of death for alive individuals 
@@ -41,3 +41,6 @@ The "pythonic" implementation uses a pandas dataframe to store the population, a
 
 An even more efficient implementation is to sample the time of death directly using the Lewis-Shedler [[4]](../../README.md#references) "thinning" algorithm - this approach doesn't require a time loop.
 
+## More
+
+Although not directly taken from the book, [Competing](../../README.md#competing) and [RiskPaths](../../README.md#riskpaths) illustrate how `neworder` can be used to efficiently implement MODGEN-based models.

@@ -82,9 +82,9 @@ void send(const Buffer& data, int process)
 template<>
 void receive(std::string& data, int process)
 {
-  // Probe for an incoming message from process zero
+  // Probe for an incoming message from process 
   MPI_Status status;
-  MPI_Probe(0, 0, MPI_COMM_WORLD, &status);
+  MPI_Probe(process, 0, MPI_COMM_WORLD, &status);
 
   // When probe returns, the status object has the size and other attributes of the incoming message. Get the message size
   int size;
@@ -98,9 +98,9 @@ void receive(std::string& data, int process)
 template<>
 void receive(Buffer& data, int process)
 {
-  // Probe for an incoming message from process zero
+  // Probe for an incoming message from process
   MPI_Status status;
-  MPI_Probe(0, 0, MPI_COMM_WORLD, &status);
+  MPI_Probe(process, 0, MPI_COMM_WORLD, &status);
 
   // When probe returns, the status object has the size and other attributes of the incoming message. Get the message size
   int size;
