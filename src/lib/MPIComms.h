@@ -53,6 +53,12 @@ struct mpi_type_trait<double>
 namespace neworder {
 namespace mpi {
 
+// sendrecv distribution policies
+enum DistPolicy { 
+  CHAIN_FWD, // send to next (or nowhere if highest rank), recv from prev (or nowhere if rank 0)
+  CHAIN_FWD_WRAPPED, // send to next (or rank 0 if highest rank), recv from prev (or highest rank if rank 0)
+};
+
 void send_obj(const py::object& o, int rank);
 
 py::object receive_obj(int rank);
@@ -94,6 +100,33 @@ void receive(T& data, int process)
 
 template<>
 void receive(std::string& data, int process);
+
+template<typename T>
+T& sendrecv(T& data, neworder::mpi::DistPolicy dist_policy = neworder::mpi::DistPolicy::CHAIN_FWD_WRAPPED)
+{
+#ifdef NEWORDER_MPI
+  neworder::Environment& env = neworder::getenv();
+  int source, dest;
+  // CHAIN_FWD_WRAPPED
+  switch (dist_policy)
+  {
+  case CHAIN_FWD_WRAPPED:  
+    dest = (env.rank() + 1) % env.size();
+    source = (env.rank() - 1) % env.size();
+    break;
+  case CHAIN_FWD:
+    dest = env.rank() == env.size() - 1 ?  MPI_PROC_NULL: env.rank() + 1;
+    source = env.rank() == 0 ?  MPI_PROC_NULL: env.rank() - 1;
+    break;
+  default:
+    throw std::runtime_error("invalid sendrecv distribution policy");
+  }
+
+  MPI_Sendrecv_replace(&data, 1, mpi_type_trait<T>::type, dest, 0, source, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+  // TODO return a ref to data?
+#endif
+  return data;
+}
 
 template<typename T>
 void broadcast(T& data, int process)

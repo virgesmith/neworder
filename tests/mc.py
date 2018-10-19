@@ -21,7 +21,7 @@ def test():
   a = no.first_arrival(p, dt, n)
   t.check(np.nanmin(a) > 0.0)
   t.check(np.nanmax(a) < 10.0)
-  no.log("%f - %f" % (np.nanmin(a), np.nanmax(a)))
+  #no.log("%f - %f" % (np.nanmin(a), np.nanmax(a)))
 
   # now set a to all 8.0
   a = np.full(n, 8.0)

@@ -36,8 +36,14 @@ void test_mpi()
   CHECK(send_recv(1, env));
   CHECK(send_recv((int64_t)-1, env));
   CHECK(send_recv(71.25, env));
-//  CHECK(send_recv("const char*", env));
-//  CHECK(send_recv("std::string"_s, env));
+  double x = 71.22 + env.rank();
+  //neworder::log("bx=%%"_s % x);
+  x = neworder::mpi::sendrecv(x);  
+  // TODO why is this same on all procs?
+  //neworder::log("ax=%%"_s % x);
+  CHECK(x == 71.22); // - env.rank());
+  //CHECK(send_recv("const char*", env));
+  CHECK(send_recv("std::string"_s, env));
   int i = env.rank();
   // will set i to 0 for all procs
   //neworder::log("proc %% i=%%"_s % env.rank() % i);
@@ -54,7 +60,7 @@ void test_mpi()
 
   neworder::mpi::sync();
 
-  double x = 10.0 * env.rank() + env.size();
+  x = 10.0 * env.rank() + env.size();
 
   std::vector<double> g(env.size(), -1.0);
   neworder::mpi::gather(x, g, 0);
