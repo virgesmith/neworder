@@ -287,10 +287,6 @@ The microsimulation has been run on the ARC3[[2]](#references) cluster and took 
 
 See the [examples/people_multi](examples/people_multi) directory and the script [mpi_job.sh](mpi_job.sh)
 
-# More Examples
-
-Perhaps (or not) surprisingly, calculating the fair value of a financial derivative can be framed as a microsimulation problem, see [here](doc/examples/Option.md).
-
 ## MODGEN-based models
 
 ### [Microsimulation and Population Dynamics](doc/examples/Modgen_book.md)
@@ -307,7 +303,6 @@ The figure below shows the distribution of up to four births (stacked) plus mort
 
 ![Competing Fetility-Mortality histogram](./doc/examples/img/competing_hist_100k.png)
 
-
 ### RiskPaths
 
 RiskPaths is a well-known MODGEN model that is primarily used for teaching purposes and described here[[5]](#references) in terms of the model itself and here in terms of implementation[[6]](#references). It models fertility in soviet-era eastern Europe, examining fertility as a function of time and union state. In the model, a woman can enter a maximum of two unions in her lifetime. The first union is divided into two sections: a (deterministic) 3 year period during which fertility is at a maximum, followed by a (stochastic) period with lower fertility.
@@ -323,6 +318,17 @@ See also:
 
 Note: the mortality rate used in this model does not have a realistic age structure - events that take place in later years have little bearing on the outcome, which is time of first pregnancy. 
 
+# More Examples
+
+## Agent-Based Models
+
+An implementation of the Schelling ABM [[7]](#references) is [here](examples/schelling/model.py). It's an almost pure python implementation, only using the timeline and logging functionality provided by the neworder framework.
+
+## Derivative Pricing & Risk
+
+Perhaps (or not) surprisingly, calculating the fair value of a financial derivative can be framed as a microsimulation problem, see [here](doc/examples/Option.md).
+
+
 # References
 
 [1] [NewETHPOP](http://www.ethpop.org/)
@@ -336,3 +342,5 @@ Note: the mortality rate used in this model does not have a realistic age struct
 [5] [General characteristics of Modgen applications--exploring the model RiskPaths](https://www.statcan.gc.ca/eng/microsimulation/modgen/new/chap3/chap3)
 
 [6] [Modgen and the application RiskPaths from the model developer's view](https://www.statcan.gc.ca/eng/microsimulation/modgen/new/chap4/chap4)
+
+[7] [Dynamic models of segregation](https://www.tandfonline.com/doi/abs/10.1080/0022250X.1971.9989794)

@@ -5,9 +5,9 @@ import neworder
 assert neworder.size() == 1
 
 # category 0 is empty
-gridsize = [40,40]
-categories = [0.2, 0.3, 0.5]
-similarity = 0.5
+gridsize = [40,50]
+categories = [0.3, 0.3, 0.3, 0.1]
+similarity = 0.4
 
 neworder.timeline = (0, 100, 100)
 
