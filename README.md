@@ -322,7 +322,11 @@ Note: the mortality rate used in this model does not have a realistic age struct
 
 ## Agent-Based Models
 
-An implementation of the Schelling ABM [[7]](#references) is [here](examples/schelling/model.py). It's an almost pure python implementation, only using the timeline and logging functionality provided by the neworder framework.
+An implementation of the Schelling ABM [[7]](#references) is [here](examples/schelling/model.py). It's an almost pure python implementation, only using the timeline and logging functionality provided by the neworder framework, configured [here](examples/schelling/config.py)
+
+![Schelling](./doc/examples/img/schelling.gif)
+
+In the above example, the similarity threshhold is 50% and the cells composition is: 30% empty, 30% red, 30% blue and 10% green, on a 80 x 100 grid.
 
 ## Derivative Pricing & Risk
 

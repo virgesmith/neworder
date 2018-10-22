@@ -5,11 +5,11 @@ import neworder
 assert neworder.size() == 1
 
 # category 0 is empty
-gridsize = [40,50]
+gridsize = [80,100]
 categories = [0.3, 0.3, 0.3, 0.1]
-similarity = 0.4
+similarity = 0.5
 
-neworder.timeline = (0, 100, 100)
+neworder.timeline = (0, 50, 50)
 
 # running/debug options
 neworder.log_level = 1
@@ -28,4 +28,5 @@ neworder.transitions = {
 # Finalisation 
 neworder.checkpoints = {
   "stats": "model.stats()",
+  "anim": "model.animate()"
 }
