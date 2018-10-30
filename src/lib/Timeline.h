@@ -29,6 +29,7 @@ public:
 
   double time() const;
   size_t index() const;
+  size_t nsteps() const;
 
   double dt() const;
   void step();

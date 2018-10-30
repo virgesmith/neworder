@@ -54,9 +54,8 @@ class People():
   def __init__(self, input_data, key):
     self.pp = pd.read_hdf(input_data, key)
 
-    neworder.log("PP init:")
-    neworder.log(self.pp.columns.values)
     # fields:
+    # ['period' 'id' 'age' 'gender' 'workstate' 'civilstate' 'dur_in_couple' 'mother_id' 'partner_id' 'hh_id']
     #     # period and id are implicit
     #     - age:        int
     #     - gender:     bool

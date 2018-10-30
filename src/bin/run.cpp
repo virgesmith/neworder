@@ -62,6 +62,13 @@ int run(int rank, int size, bool indep)
     {
       env().attr("timestep") = env.timeline().dt();
     }
+
+    // Initialise to start of timeline (so that initialisation code has access to these)
+    env().attr("time") = env.timeline().time();
+    env().attr("timeindex") = env.timeline().index();
+    env().attr("ntimesteps") = env.timeline().nsteps();
+
+
     // TODO more info re defaulted timeline and overridden timestep
     double dt = py::extract<double>(env().attr("timestep")); 
     neworder::log("starting microsimulation. timestep=%%, checkpoint(s) at %%"_s % dt % env.timeline().checkpoints());
@@ -142,9 +149,10 @@ int run(int rank, int size, bool indep)
     do
     {
       env.timeline().step(); 
-      // TODO is there a way to do this in-place? does it really matter?
+      // get new time position
       double t = env.timeline().time();
       int timeindex = env.timeline().index();
+      // ensure python is updated
       env().attr("time") = t;
       env().attr("timeindex") = timeindex;
 

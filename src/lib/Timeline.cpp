@@ -60,6 +60,11 @@ double neworder::Timeline::dt() const
   return m_dt; 
 }
 
+size_t neworder::Timeline::nsteps() const 
+{ 
+  return m_steps; 
+}
+
 void neworder::Timeline::step()
 {
   if (m_index < m_checkpoints.back())

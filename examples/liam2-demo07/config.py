@@ -53,10 +53,12 @@ neworder.initialisations = {
 # ]
 # - household: [csv_output]
 neworder.transitions = {
+  "hh_summary" : "households.csv_output()",
+  #"test": "log(people.active_age(20))"
 }
 
 neworder.checkpoints = {
-  "save_data" : "log(retirement_age(2034))",
+  "hh_summary" : "households.write_reports('hh_size.csv')",
 }
 
 # default_entity: person
