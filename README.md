@@ -332,7 +332,6 @@ In the above example, the similarity threshhold is 50% and the cells composition
 
 Perhaps (or not) surprisingly, calculating the fair value of a financial derivative can be framed as a microsimulation problem, see [here](doc/examples/Option.md).
 
-
 # References
 
 [1] [NewETHPOP](http://www.ethpop.org/)

@@ -22,11 +22,11 @@ name             | type        | default | description
 
 Additionally, the module creates the following runtime variables in the `neworder` namespace:
 
-name       | type        | default | description
------------|-------------|---------|--------------
-`time`     | float       |         | time of current timestep
-`timeindex`| int         |         | index of current timestep
-
+name        | type        | default | description
+------------|-------------|---------|--------------
+`time`      | float       |         | time of current timestep
+`timeindex` | int         |         | index of current timestep
+`ntimesteps`| int         |         | total number of timesteps (constant)
 
 ## Functions
 The `neworder` module exposes the following functions to python:

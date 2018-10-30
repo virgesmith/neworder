@@ -1,9 +1,13 @@
 """ people.py """
 
+from pathlib import Path
 from enum import Enum
+import numpy as np
 import pandas as pd
 import neworder
 
+#  macros:
+UNSET = -1
 
 class Gender(Enum):
   MALE = True
@@ -48,12 +52,17 @@ class RetirementAge():
 
 class People():
 
-  #  macros:
-  UNSET = -1
-
   def __init__(self, input_data, key):
     self.pp = pd.read_hdf(input_data, key)
 
+    # iterator for new unique ids
+    self.iditer = max(self.pp.id) + 1
+
+    self.mmort = pd.read_csv(neworder.data_dir / "al_p_dead_m.csv", skiprows=1).rename({"Unnamed: 0": "age"}, axis=1)
+    self.fmort = pd.read_csv(neworder.data_dir / "al_p_dead_f.csv", skiprows=1).rename({"Unnamed: 0": "age"}, axis=1)
+    self.fert = pd.read_csv(neworder.data_dir / "al_p_birth.csv", skiprows=1).rename({"Unnamed: 0": "age"}, axis=1)
+
+    # al_p_divorce.csv al_p_inwork.csv al_p_mmkt_f.csv al_p_mmkt_m.csv al_p_unemployed.csv
     # fields:
     # ['period' 'id' 'age' 'gender' 'workstate' 'civilstate' 'dur_in_couple' 'mother_id' 'partner_id' 'hh_id']
     #     # period and id are implicit
@@ -70,6 +79,7 @@ class People():
 
     #     # fields not present in input
     #     - agegroup_civilstate: {type: int, initialdata: False}
+    self.pp["agegroup_civilstate"] = np.zeros(len(self.pp), dtype=int)
 
     # links:
     #     mother: {type: many2one, target: person, field: mother_id}
@@ -77,45 +87,80 @@ class People():
     #     household: {type: many2one, target: household, field: hh_id}
     #     children: {type: one2many, target: person, field: mother_id}
 
+  # possible transitions and regressions
+  def ageing(self):
+    self.pp.age = self.pp.age + 1
+    self.pp.loc[self.pp.age < 50, "agegroup_civilstate"] = 5 * (self.pp[self.pp.age < 50].age / 5).values.astype(int)
+    self.pp.loc[self.pp.age >= 50, "agegroup_civilstate"] = 10 * (self.pp[self.pp.age >= 50].age / 10).values.astype(int)
 
-    # possible transitions and regressions
-    def ageing(self):
-      pass
-    # - age: age + 1
-    # - agegroup_civilstate: if(age < 50,
-    #                           5 * trunc(age / 5),
-    #                           10 * trunc(age / 10))
+  def birth(self):
+    # construct fertility lookup for the current timestep, means a left join with zero missing values (male or too young/old)
+    fert = pd.DataFrame({"age": self.fert.age, "gender": np.full(len(self.fert), False), "fertility_rate": self.fert[str(int(neworder.time))].values})
+    
+    frates = pd.merge(self.pp, fert, how='left').fillna(0.0)["fertility_rate"].values
 
-    def birth(self):
-      pass
-    # - to_give_birth: logit_regr(0.0,
-    #                             filter=ISFEMALE and (
-    #                                 age >= 15) and (age <= 50),
-    #                             align='al_p_birth.csv')
-    # - new('person', filter=to_give_birth,
-    #       mother_id=id,
-    #       hh_id=hh_id,
-    #       partner_id=UNSET,
-    #       civilstate=SINGLE,
-    #       age=0,
-    #       agegroup_civilstate=0,
-    #       gender=choice([MALE, FEMALE], [0.51, 0.49]))
+    self.pp["__baby"] = neworder.hazard(frates * neworder.timestep)
 
-    def death(self):
-      pass
-        # - dead: if(ISMALE,
-        #             logit_regr(0.0, align='al_p_dead_m.csv'),
-        #             logit_regr(0.0, align='al_p_dead_f.csv'))
-        # - mother_id: if(mother.dead, UNSET, mother_id)
-        # - civilstate: if(partner.dead, WIDOW, civilstate)
-        # - partner_id: if(partner.dead, UNSET, partner_id)
-        # - show('Avg age of dead men', avg(age, filter=dead and ISMALE))
-        # - show('Avg age of dead women', avg(age, filter=dead and ISFEMALE))
-        # - show('Widows', count(ISWIDOW))
-        # - remove(dead)
+    # clone mothers (hh id persists)
+    newborns = self.pp[self.pp["__baby"] == True].copy()
+    newborns.mother_id = newborns.id
+    newborns.id = range(self.iditer, self.iditer + len(newborns))
+    self.iditer = self.iditer + len(newborns)
+    newborns.partner_id = UNSET
+    newborns.dur_in_couple = UNSET
+    newborns.civilstate = RelationshipStatus.SINGLE.value
+    newborns.age = 0
+    newborns.agegroup_civilstate = 0
+    #newborns.workstate = 0
+    newborns.gender = neworder.hazard(0.51, len(newborns))
 
-    def marriage(self):
-      pass
+    #neworder.log(newborns)
+    self.pp = self.pp.append(newborns)
+
+  # - to_give_birth: logit_regr(0.0,
+  #                             filter=ISFEMALE and (
+  #                                 age >= 15) and (age <= 50),
+  #                             align='al_p_birth.csv')
+  # - new('person', filter=to_give_birth,
+  #       mother_id=id,
+  #       hh_id=hh_id,
+  #       partner_id=UNSET,
+  #       civilstate=SINGLE,
+  #       age=0,
+  #       agegroup_civilstate=0,
+  #       gender=choice([MALE, FEMALE], [0.51, 0.49]))
+
+  def death(self):
+    # construct mortality lookup for the current timestep, means an easy join
+    mort = pd.DataFrame({"age": self.mmort.age, "gender": np.full(len(self.mmort), True), "mortality_rate": self.mmort[str(int(neworder.time))].values})
+    mort = mort.append(pd.DataFrame({"age": self.fmort.age, "gender": np.full(len(self.fmort), False), "mortality_rate": self.fmort[str(int(neworder.time))].values}))
+
+    # join the lookup with the people and get each person's mortality rate
+    mrates = pd.merge(self.pp, mort, how='left')["mortality_rate"].values
+
+    # scale by timestep
+    self.pp["__dead"] = neworder.hazard(mrates * neworder.timestep)
+
+    # record ids of deceased to unlink
+    dead_ids = self.pp[self.pp["__dead"] == True].id.values
+
+    # unlink dead mothers
+    self.pp.loc[self.pp.mother_id.isin(dead_ids), "mother_id"] = UNSET
+    # unlink dead partners
+    self.pp.loc[self.pp.partner_id.isin(dead_ids), "civilstate"] = RelationshipStatus.WIDOW.value
+    self.pp.loc[self.pp.partner_id.isin(dead_ids), "partner_id"] = UNSET
+
+    #neworder.log("Avg age of men = %f" % np.mean(self.pp[self.pp.gender == True].age))
+    neworder.log("Avg age of dead men = %f" % np.mean(self.pp[(self.pp["__dead"] == True) & (self.pp.gender == True)].age))
+    #neworder.log("Avg age of women = %f" % np.mean(self.pp[self.pp.gender == False].age))
+    neworder.log("Avg age of dead women = %f" % np.mean(self.pp[(self.pp["__dead"] == True) & (self.pp.gender == False)].age))
+    neworder.log("widows=%f" % len(self.pp[self.pp.civilstate == RelationshipStatus.WIDOW]))
+
+    # remove deceased
+    self.pp = self.pp[self.pp["__dead"] == False]
+
+  def marriage(self):
+    pass
 #         - to_couple: if((age >= 18) and (age <= 90) and not ISMARRIED,
 #                         if(ISMALE,
 #                             logit_regr(0.0, align='al_p_mmkt_m.csv'),
@@ -163,74 +208,76 @@ class People():
 # #                           partner.gender, hh_id, filter=justcoupled),
 # #                      suffix='new_couples')
 
-    def get_a_life(self):
-      pass
-        # # create new households for persons aged 24+ who are still
-        # # living with their mother
-        # - in_mother_hh: hh_id == mother.hh_id
-        # - should_move: in_mother_hh and (age >= 24)
-        # - hh_id: if(should_move, new('household'), hh_id)
-        # # bring along their children, if any
-        # - hh_id: if(in_mother_hh and mother.should_move,
-        #             mother.hh_id,
-        #             hh_id)
+  def get_a_life(self):
+    pass
+      # # create new households for persons aged 24+ who are still
+      # # living with their mother
+      # - in_mother_hh: hh_id == mother.hh_id
+      # - should_move: in_mother_hh and (age >= 24)
+      # - hh_id: if(should_move, new('household'), hh_id)
+      # # bring along their children, if any
+      # - hh_id: if(in_mother_hh and mother.should_move,
+      #             mother.hh_id,
+      #             hh_id)
 
-    def divorce(self):
-      pass
-        # - agediff: if(ISFEMALE and ISMARRIED, age - partner.age, 0)
-        # - nb_children: household.get(persons.count(age < 18))
-        # # select females to divorce
+  def divorce(self):
+    pass
+      # - agediff: if(ISFEMALE and ISMARRIED, age - partner.age, 0)
+      # - nb_children: household.get(persons.count(age < 18))
+      # # select females to divorce
 
-        # # here we use logit_regr with an actual expression, which means
-        # # that within each group, persons with a high value for the
-        # # given expression will be selected first.
-        # - divorce: logit_regr(0.6713593 * nb_children
-        #                       - 0.0785202 * dur_in_couple
-        #                       + 0.1429621 * agediff - 0.0088308 * agediff ** 2
-        #                       - 4.546278,
-        #                       filter=ISFEMALE and ISMARRIED and (
-        #                           dur_in_couple > 0),
-        #                       align='al_p_divorce.csv')
-        # # break link to partner
-        # - to_divorce: divorce or partner.divorce
-        # - partner_id: if(to_divorce, UNSET, partner_id)
+      # # here we use logit_regr with an actual expression, which means
+      # # that within each group, persons with a high value for the
+      # # given expression will be selected first.
+      # - divorce: logit_regr(0.6713593 * nb_children
+      #                       - 0.0785202 * dur_in_couple
+      #                       + 0.1429621 * agediff - 0.0088308 * agediff ** 2
+      #                       - 4.546278,
+      #                       filter=ISFEMALE and ISMARRIED and (
+      #                           dur_in_couple > 0),
+      #                       align='al_p_divorce.csv')
+      # # break link to partner
+      # - to_divorce: divorce or partner.divorce
+      # - partner_id: if(to_divorce, UNSET, partner_id)
 
-        # - civilstate: if(to_divorce, DIVORCED, civilstate)
-        # - dur_in_couple: if(to_divorce, 0, dur_in_couple)
-        # # move out males
-        # - hh_id: if(ISMALE and to_divorce,
-        #             new('household'),
-        #             hh_id)
+      # - civilstate: if(to_divorce, DIVORCED, civilstate)
+      # - dur_in_couple: if(to_divorce, 0, dur_in_couple)
+      # # move out males
+      # - hh_id: if(ISMALE and to_divorce,
+      #             new('household'),
+      #             hh_id)
 
-    def civilstate_changes(self):
-      pass
-        # the lag() function returns the value of any expression
-        # at the end of the previous period. Note that for non-aggregate
-        # expressions, it returns a value for all individuals present
-        # in the *current* period. For individuals which were not
-        # present (born) in the previous period, it returns the
-        # "missing" value (-1 for int fields, like in this case).
-        #- show(groupby(civilstate, lag(civilstate)))
+  def civilstate_changes(self):
+    pass
+      # the lag() function returns the value of any expression
+      # at the end of the previous period. Note that for non-aggregate
+      # expressions, it returns a value for all individuals present
+      # in the *current* period. For individuals which were not
+      # present (born) in the previous period, it returns the
+      # "missing" value (-1 for int fields, like in this case).
+      #- show(groupby(civilstate, lag(civilstate)))
 
-    def chart_demography(self):
-      pass
-        # - bar(groupby(agegroup_civilstate, gender),
-        #       fname='demography_{period}.png')
+  def chart_demography(self):
+    pass
+      # - bar(groupby(agegroup_civilstate, gender),
+      #       fname='demography_{period}.png')
 
-    def csv_output(self):
-      pass
-        # - csv(groupby(agegroup_civilstate, gender),
-        #       fname='demography_{period}.csv')
+  def csv_output(self):
 
-        # - csv(period,
-        #       avg(age, filter=ISMALE), avg(age, filter=ISFEMALE),
-        #       avg(age),
-        #       fname='average_age.csv', mode='a')
-        # - csv(period, count(not ACTIVEAGE) / count(ACTIVEAGE),
-        #       fname='dependency_ratio.csv', mode='a')
+    self.pp.to_csv("pop.csv", index=False)
+    
+      # - csv(groupby(agegroup_civilstate, gender),
+      #       fname='demography_{period}.csv')
 
-    def init_reports(self):
-      pass
-        # - csv('period', 'men', 'women', 'total',
-        #       fname='average_age.csv')
-        # - csv('period', 'ratio', fname='dependency_ratio.csv')
+      # - csv(period,
+      #       avg(age, filter=ISMALE), avg(age, filter=ISFEMALE),
+      #       avg(age),
+      #       fname='average_age.csv', mode='a')
+      # - csv(period, count(not ACTIVEAGE) / count(ACTIVEAGE),
+      #       fname='dependency_ratio.csv', mode='a')
+
+  def init_reports(self):
+    pass
+      # - csv('period', 'men', 'women', 'total',
+      #       fname='average_age.csv')
+      # - csv('period', 'ratio', fname='dependency_ratio.csv')
