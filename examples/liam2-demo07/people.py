@@ -199,9 +199,9 @@ class People():
     #x = self.pp.loc[(self.pp.hh_id == self.pp.loc[self.pp.id == self.pp.mother_id].hh_id)] # & (self.pp.age >= 24)]
     #neworder.log(x)
 
-    x = self.pp.merge(self.pp[['id','hh_id']].rename(columns={'id':'mother_id'}),how='left',on="mother_id")
-    neworder.log(x[(x.hh_id_x == x.hh_id_y)])# & x.age >= 24])
-    x.to_csv("movers.csv", index=False)
+    # links id to mother_id, filtering for age and same household
+    movers = self.pp.merge(self.pp[['id','hh_id']].rename(columns={'id':'mother_id'}),how='left',on="mother_id")
+    mover_ids = neworder.log(movers[(movers.hh_id_x == movers.hh_id_y) & (movers.age >= 24)].id.values)
     
     # # create new households for persons aged 24+ who are still
     # # living with their mother
