@@ -57,7 +57,8 @@ neworder.initialisations = {
 neworder.transitions = {
   "p_age": "people.ageing()",
   "p_death": "people.death()",
-  "b_birth": "people.birth()",
+  "p_birth": "people.birth()",
+  "p_moveout": "people.get_a_life()",
   "h_summary" : "households.csv_output()",
   #"test": "log(people.active_age(20))"
 }

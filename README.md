@@ -326,7 +326,7 @@ An implementation of the Schelling ABM [[7]](#references) is [here](examples/sch
 
 ![Schelling](./doc/examples/img/schelling.gif)
 
-In the above example, the similarity threshhold is 50% and the cells composition is: 30% empty, 30% red, 30% blue and 10% green, on a 80 x 100 grid.
+In the above example, the similarity threshold is 50% and the cells composition is: 30% empty, 30% red, 30% blue and 10% green, on a 80 x 100 grid.
 
 ## Derivative Pricing & Risk
 

@@ -13,6 +13,9 @@ class Households():
     self.hh = pd.read_hdf(input_data, key)
     # cols are just: period, id
 
+    # iterator for new unique ids
+    self.iditer = max(self.hh.id) + 1
+
     # TODO probably more efficient ways to do this?
     nsteps = neworder.ntimesteps + 1
     self.output = pd.DataFrame({'period': np.empty(nsteps), 'N_persons': np.empty(nsteps), 'N_children': np.empty(nsteps)})
@@ -44,6 +47,8 @@ class Households():
     self.output.to_csv(output_data, index=False)
 
   def clean_empty(self):
-    neworder.log('Number of empty households:' % len(self.hh[self.hh.X == 0]))
-    self.hh = self.hh[self.hh.X != 0]
+    # list hh ids in the people array
+    active = people.pp.hh_id.unique()
+    neworder.log('Number of empty households:' % len(self.hh[~self.hh.id.isin(active)]))
+    self.hh = self.hh[self.hh.id.isin(active)]
 

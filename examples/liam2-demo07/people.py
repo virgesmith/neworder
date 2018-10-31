@@ -117,19 +117,6 @@ class People():
     #neworder.log(newborns)
     self.pp = self.pp.append(newborns)
 
-  # - to_give_birth: logit_regr(0.0,
-  #                             filter=ISFEMALE and (
-  #                                 age >= 15) and (age <= 50),
-  #                             align='al_p_birth.csv')
-  # - new('person', filter=to_give_birth,
-  #       mother_id=id,
-  #       hh_id=hh_id,
-  #       partner_id=UNSET,
-  #       civilstate=SINGLE,
-  #       age=0,
-  #       agegroup_civilstate=0,
-  #       gender=choice([MALE, FEMALE], [0.51, 0.49]))
-
   def death(self):
     # construct mortality lookup for the current timestep, means an easy join
     mort = pd.DataFrame({"age": self.mmort.age, "gender": np.full(len(self.mmort), True), "mortality_rate": self.mmort[str(int(neworder.time))].values})
@@ -209,16 +196,22 @@ class People():
 # #                      suffix='new_couples')
 
   def get_a_life(self):
-    pass
-      # # create new households for persons aged 24+ who are still
-      # # living with their mother
-      # - in_mother_hh: hh_id == mother.hh_id
-      # - should_move: in_mother_hh and (age >= 24)
-      # - hh_id: if(should_move, new('household'), hh_id)
-      # # bring along their children, if any
-      # - hh_id: if(in_mother_hh and mother.should_move,
-      #             mother.hh_id,
-      #             hh_id)
+    #x = self.pp.loc[(self.pp.hh_id == self.pp.loc[self.pp.id == self.pp.mother_id].hh_id)] # & (self.pp.age >= 24)]
+    #neworder.log(x)
+
+    x = self.pp.merge(self.pp[['id','hh_id']].rename(columns={'id':'mother_id'}),how='left',on="mother_id")
+    neworder.log(x[(x.hh_id_x == x.hh_id_y)])# & x.age >= 24])
+    x.to_csv("movers.csv", index=False)
+    
+    # # create new households for persons aged 24+ who are still
+    # # living with their mother
+    # - in_mother_hh: hh_id == mother.hh_id
+    # - should_move: in_mother_hh and (age >= 24)
+    # - hh_id: if(should_move, new('household'), hh_id)
+    # # bring along their children, if any
+    # - hh_id: if(in_mother_hh and mother.should_move,
+    #             mother.hh_id,
+    #             hh_id)
 
   def divorce(self):
     pass
