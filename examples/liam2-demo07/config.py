@@ -9,7 +9,7 @@ see http://liam2.plan.be/
 from pathlib import Path
 import neworder
 
-neworder.timeline = (2016, 2028, 12)
+neworder.timeline = (2016, 2024, 8)
 
 neworder.data_dir = Path("../LIAM2/examples")
 
@@ -58,8 +58,9 @@ neworder.transitions = {
   "p_age": "people.ageing()",
   "p_death": "people.death()",
   "p_birth": "people.birth()",
-  "p_moveout": "people.get_a_life()",
+  "p_moveout": "people.get_a_life(households)",
   "h_summary" : "households.csv_output()",
+  "h_prune" : "households.clean_empty(people)"
   #"test": "log(people.active_age(20))"
 }
 

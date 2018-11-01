@@ -81,11 +81,10 @@ class People():
     #     - agegroup_civilstate: {type: int, initialdata: False}
     self.pp["agegroup_civilstate"] = np.zeros(len(self.pp), dtype=int)
 
-    # links:
-    #     mother: {type: many2one, target: person, field: mother_id}
-    #     partner: {type: many2one, target: person, field: partner_id}
-    #     household: {type: many2one, target: household, field: hh_id}
-    #     children: {type: one2many, target: person, field: mother_id}
+  def newids(self, n):
+    assert n > 0
+    self.iditer = self.iditer + n
+    return np.array(range(self.iditer - n, self.iditer))
 
   # possible transitions and regressions
   def ageing(self):
@@ -141,7 +140,7 @@ class People():
     neworder.log("Avg age of dead men = %f" % np.mean(self.pp[(self.pp["__dead"] == True) & (self.pp.gender == True)].age))
     #neworder.log("Avg age of women = %f" % np.mean(self.pp[self.pp.gender == False].age))
     neworder.log("Avg age of dead women = %f" % np.mean(self.pp[(self.pp["__dead"] == True) & (self.pp.gender == False)].age))
-    neworder.log("widows=%f" % len(self.pp[self.pp.civilstate == RelationshipStatus.WIDOW]))
+    neworder.log("widows=%d" % len(self.pp[self.pp.civilstate == RelationshipStatus.WIDOW.value]))
 
     # remove deceased
     self.pp = self.pp[self.pp["__dead"] == False]
@@ -195,23 +194,29 @@ class People():
 # #                           partner.gender, hh_id, filter=justcoupled),
 # #                      suffix='new_couples')
 
-  def get_a_life(self):
+  def get_a_life(self, households):
     #x = self.pp.loc[(self.pp.hh_id == self.pp.loc[self.pp.id == self.pp.mother_id].hh_id)] # & (self.pp.age >= 24)]
     #neworder.log(x)
 
     # links id to mother_id, filtering for age and same household
-    movers = self.pp.merge(self.pp[['id','hh_id']].rename(columns={'id':'mother_id'}),how='left',on="mother_id")
-    mover_ids = neworder.log(movers[(movers.hh_id_x == movers.hh_id_y) & (movers.age >= 24)].id.values)
-    
-    # # create new households for persons aged 24+ who are still
-    # # living with their mother
-    # - in_mother_hh: hh_id == mother.hh_id
-    # - should_move: in_mother_hh and (age >= 24)
-    # - hh_id: if(should_move, new('household'), hh_id)
-    # # bring along their children, if any
-    # - hh_id: if(in_mother_hh and mother.should_move,
-    #             mother.hh_id,
-    #             hh_id)
+    movers = self.pp.merge(self.pp[['id','hh_id']].rename(columns={'id':'mother_id'}), how='left', on="mother_id")
+    mover_ids = movers[(movers.hh_id_x == movers.hh_id_y) & (movers.age >= 24)].id.values
+
+    if len(mover_ids):
+      new_hh_ids = households.new(len(mover_ids))
+      # children (0 or more) move with mother so think loop is unavoidable here
+      nchildren = 0
+      for i in range(len(mover_ids)):
+        old_hh_id = self.pp.loc[self.pp.id == mover_ids[i], "hh_id"].values[0]
+        # move person
+        self.pp.loc[self.pp.id == mover_ids[i], "hh_id"] = new_hh_ids[i]
+        # move any children in same house
+        nchildren = nchildren + len(self.pp.loc[(self.pp.mother_id == mover_ids[i]) 
+                  & (self.pp.hh_id == old_hh_id)])
+        self.pp.loc[(self.pp.mother_id == mover_ids[i]) 
+                  & (self.pp.hh_id == old_hh_id), "hh_id"] = new_hh_ids[i]
+
+      neworder.log("movers %d + %d children" % (len(mover_ids), nchildren))
 
   def divorce(self):
     pass
@@ -257,6 +262,7 @@ class People():
 
   def csv_output(self):
 
+    self.pp.drop(["__baby", "__dead"], axis=1, inplace=True)
     self.pp.to_csv("pop.csv", index=False)
     
       # - csv(groupby(agegroup_civilstate, gender),

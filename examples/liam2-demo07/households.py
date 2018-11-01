@@ -26,6 +26,14 @@ class Households():
     self.output.N_persons[neworder.timeindex] = 0
     self.output.N_children[neworder.timeindex] = 0
 
+  def new(self, n):
+    assert n > 0
+    self.iditer = self.iditer + n
+    newids = np.array(range(self.iditer - n, self.iditer))
+    #neworder.log(self.hh.head())
+    self.hh = self.hh.append(pd.DataFrame({"period": np.full(n, neworder.timestep), "id": newids}))
+    return newids
+
   def csv_output(self):
     # - csv(period,
     #       avg(persons.count()),
@@ -46,9 +54,10 @@ class Households():
     #self.output.to_hdf(output_data, "hh_size")
     self.output.to_csv(output_data, index=False)
 
-  def clean_empty(self):
+  def clean_empty(self, people):
     # list hh ids in the people array
     active = people.pp.hh_id.unique()
-    neworder.log('Number of empty households:' % len(self.hh[~self.hh.id.isin(active)]))
+    neworder.log('Number of empty households: %d' % len(self.hh[~self.hh.id.isin(active)]))
     self.hh = self.hh[self.hh.id.isin(active)]
+    neworder.log('Number of filled households: %d' % len(self.hh))
 
