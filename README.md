@@ -3,9 +3,45 @@
 [![Build Status](https://travis-ci.org/virgesmith/neworder.png?branch=master)](https://travis-ci.org/virgesmith/neworder) 
 [![License](https://img.shields.io/github/license/mashape/apistatus.svg)](https://opensource.org/licenses/MIT)
 
-Neworder is a prototype microsimulation package inspired by [openm++](https://ompp.sourceforge.io/) and MODGEN. Models are defined in high-level code (python) and executed within an embedded simulation framework (written in C++) which exposes a subset of itself as a python module. (In order words the C++ framework can call python _and vice versa_).
+*neworder* is a prototype microsimulation package inspired by [openm++](https://ompp.sourceforge.io/) and MODGEN. Models are defined in high-level code (python) and executed within an embedded simulation framework (written in C++) which exposes a subset of itself as a python module. (In order words the C++ framework can call python _and vice versa_). 
 
-## Key Features:
+Purely coincidentally, *neworder* is similar in some respects to the python-based [LIAM2](http://liam2.plan.be/pages/about.html) tool, and can be thought of powerful best-of-both-worlds hybrid of MODGEN and LIAM2:
+- models are specified in python code, so can be arbitrarily complex
+- native support for parallel execution
+- fast (compiled C++) libraries of statistical and data manipulation functions 
+- no constraints on input/output data formats or storage
+- python is a modern and very common language in data science and has a huge package ecosystem
+
+All this does however require that model developers are comfortable with coding in python.
+
+- **[installation](doc/installation.md)**
+- **[API reference](doc/reference.md)**
+
+## Contents
+
+- [Key Features](#key-features)    
+	- [Data and Performance](#data-and-performance)      
+- [Proofs of Concept](#proofs-of-concept) 
+- [The Framework](#the-framework)
+	- [Provision](#provision)       
+- [Requirements](#requirements)       
+	- [Compulsory](#compulsory)
+	- [Optional](#optional)
+- [Examples](#examples)
+	- [The obligatory "Hello world" example](#the-obligatory-"hello-world"-example)
+		- [Understanding the workflow and the output](#understanding-the-workflow-and-the-output)
+	- [Diagnostics](#diagnostics)   
+	- [Microsimulation of People](#microsimulation-of-people)
+		- [Parallel Execution](#parallel-execution)
+	- [MODGEN-based models](#modgen-based-models)
+		- [Microsimulation and Population Dynamics](#microsimulation-and-population-dynamics)
+		- [Competing Risks](#competing-risks)
+		- [RiskPaths](#riskpaths)
+	- [Agent-Based Models](#agent-based-models)
+	- [Derivative Pricing & Risk](#derivative-pricing-&-risk)
+- [References](#references)
+
+## Key Features
 - low barriers to entry: users need only write standard python code, little or no new coding skills required.
 - flexibility: models are defined entirely in user code.
 - reusability: leverage python modules like numpy, pandas.
@@ -21,17 +57,13 @@ As python and C++ have very different memory models, it's generally not advisabl
 
 &ast; For instance, a common requirement in microsimulation is to randomly amend a state (given in a column in a data frame) according to a specified transition matrix. This algorithm requires a loop (i.e. each case dealt with separately) and a python implementation was benchmarked at about 1,500 cases per second. The same algorithm implemented in (compiled) C++ runs some 20,000 times faster, processing the entire test dataset (~120k rows) in under 4 milliseconds.
 
-For detailed information, see:
-- [installation](doc/installation.md)
-- [API reference](doc/reference.md)
-
-## Proof-of-concept 
+## Proofs-of-concept 
 
 The proofs of concept are two variants of a simulation of a population in terms of fertility, mortality and migration by age, gender, ethnicity and location (MSOA<sup>*</sup>) over a 40-year period (2011-2050). The two distinct use cases are:
 - desktop: a single-process simulation of a single local authority (initially ~280k people).
 - cluster: a highly parallel simulation of England & Wales, starting in 2011 (initially ~56M people).
 
-&ast; after migration an individual's geographic resolution is widened to LAD.
+&ast; after migration an individual's location is widened to LAD.
 
 The single local authority case ran in about 25 seconds on a desktop PC. The larger simulation ran on the ARC3 [[2]](#references) HPC cluster, using 48 cores, in under 5 minutes.
 
@@ -212,11 +244,9 @@ array([30.43439191, 13.88102712,  1.69985666, 13.28639123,  1.75969325])
 [no 0/1] SUCCESS
 ```
 
-[You can use numbers for reference-style link definitions][4]
-
 See [examples/diagnostics/config.py](examples/diagnostics/config.py)
 
-## Microsimulation of People (single area)
+## Microsimulation of People
 
 In this example, the input data is a csv file containing a microsynthesised 2011 population of Newcastle generated from UK census data, by age, gender and ethnicity. The transitions modelled are: ageing, births, deaths and migrations. 
 
@@ -295,7 +325,7 @@ See the [examples/people_multi](examples/people_multi) directory and the script 
 
 We implement some example MODGEN models in *Microsimulation and Population Dynamics* [[3]](#references), and adapt them to run more efficiently in the `neworder` framework.
 
-### Competing
+### Competing Risks
 
 This is a case-based continuous-time microsimulation of the competing risks of (multiple) fertility and mortality. The former is sampled using a nonhomogeneous multiple-arrival-time simulation of a Poisson process, with a minimum gap between events of 9 months. Mortality is sampled using a standard nonhomogeneous Poisson process. A mortality event before a birth event cancels the birth event.
 
@@ -317,8 +347,6 @@ See also:
 - the [input data](examples/riskpaths/data.py)
 
 Note: the mortality rate used in this model does not have a realistic age structure - events that take place in later years have little bearing on the outcome, which is time of first pregnancy. 
-
-# More Examples
 
 ## Agent-Based Models
 
