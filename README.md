@@ -222,27 +222,26 @@ The 'model' configuration is here: [examples/hello_world/config.py](examples/hel
 
 This isn't really an example, it just outputs useful diagnostic information to track down bugs/problems, and opens a debug shell so that the neworder environment can be inspected. Below we use neworder interactively to sample 5 stopping times based on a 10% hazard rate:
 
-```
-$ ./run_example.sh diagnostics
-[no 0/1] env: seed=19937 python 3.6.6 (default, Sep 12 2018, 18:26:19)  [GCC 8.0.1 20180414 (experimental) [trunk revision 259383]]
+<pre>
+[no 0/1] env: seed=19937 python 3.6.7 (default, Oct 22 2018, 11:32:17)  [GCC 8.2.0]
 [py 0/1] MODULE=neworder0.0.0_boost1_65_1
-[py 0/1] PYTHON=3.6.6 (default, Sep 12 2018, 18:26:19)  [GCC 8.0.1 20180414 (experimental) [trunk revision 259383]]
+[py 0/1] PYTHON=3.6.7 (default, Oct 22 2018, 11:32:17)  [GCC 8.2.0]
 [py 0/1] Loaded neworder/boost/python libs:
-[py 0/1]   libpython3.6m.so.1.0 => /usr/lib/x86_64-linux-gnu/libpython3.6m.so.1.0 (0x00007ffadf4ea000)
-[py 0/1]   libboost_python3-py36.so.1.65.1 => /usr/lib/x86_64-linux-gnu/libboost_python3-py36.so.1.65.1 (0x00007ffadf2ab000)
-[py 0/1]   libboost_numpy3-py36.so.1.65.1 => /usr/lib/x86_64-linux-gnu/libboost_numpy3-py36.so.1.65.1 (0x00007ffadf0a0000)
-[py 0/1]   libneworder.so => src/lib/libneworder.so (0x00007ffadee70000)
+[py 0/1]   libpython3.6m.so.1.0 => /usr/lib/x86_64-linux-gnu/libpython3.6m.so.1.0 (0x00007f3b08816000)
+[py 0/1]   libboost_python3-py36.so.1.65.1 => /usr/lib/x86_64-linux-gnu/libboost_python3-py36.so.1.65.1 (0x00007f3b085d7000)
+[py 0/1]   libneworder.so => src/lib/libneworder.so (0x00007f3b0839c000)
+[py 0/1]   libboost_numpy3-py36.so.1.65.1 => /usr/lib/x86_64-linux-gnu/libboost_numpy3-py36.so.1.65.1 (0x00007f3b069ec000)
 [py 0/1] PYTHONPATH=examples/diagnostics:examples/shared
-[no 0/1] starting microsimulation...
-[no 0/1] t=1.000000 checkpoint: shell
+[no 0/1] starting microsimulation. timestep=0.000000, checkpoint(s) at [1]
+[no 0/1] t=0.000000(1) checkpoint: shell
 [starting neworder debug shell]
 >>> import neworder
 >>> neworder.stopping(0.1, 5)
 array([30.43439191, 13.88102712,  1.69985666, 13.28639123,  1.75969325])
->>>
+>>> <b><font color="red">ctrl-D</font></b>
 [exiting neworder debug shell]
-[no 0/1] SUCCESS
-```
+[no 0/1] SUCCESS exec time=22.416254s
+</pre>
 
 See [examples/diagnostics/config.py](examples/diagnostics/config.py)
 
