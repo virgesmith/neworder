@@ -20,6 +20,15 @@ void test_no()
   CHECK((neworder::log("neworder module test"), true));
   CHECK((neworder::log("test logging types: %% %% %% %% %% %% %%"_s % false % 0 % 0.0 % "" % ""_s % std::vector<int>(10) % (void*)nullptr), true));
 
+  // test formatting
+  CHECK(format::decimal(3.14, 6, 6) == "     3.140000");
+  CHECK(format::decimal(1000000.0 / 7, 6, 6) == "142857.142857");
+  CHECK(format::pad(3, 4) == "   3");
+  CHECK(format::pad(3, 5, '0') == "00003");
+  CHECK(format::hex<int32_t>(24233) == "0x00005ea9");
+  CHECK(format::hex<size_t>(133, false) == "0000000000000085");
+  CHECK(format::boolean(false) == "false");
+  
   /*neworder::Environment& env =*/ neworder::getenv();
   py::object module = py::import("neworder");
 

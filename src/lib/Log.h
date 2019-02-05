@@ -4,6 +4,9 @@
 #include "python.h"
 
 #include <string>
+#include <type_traits>
+#include <sstream>
+#include <iomanip>
 #include <iostream>
 
 
@@ -57,6 +60,50 @@ std::string operator%(std::string&& str, T value)
     str.replace(s, 2, to_string_impl(value)); 
   }
   return std::move(str);
+}
+
+// formatters
+namespace format {
+
+  // format floating point to __x.yz
+  template<typename T>
+  std::string decimal(T x, int pad, int places)
+  {
+    static_assert(std::is_floating_point<T>::value, "decimal formatting requires a floating-point type");
+    std::ostringstream str;
+    str.precision(places);
+    str << std::fixed << std::setw(pad + places + 1) << x;
+    return str.str();
+  }
+
+  // pad integral types
+  template<typename T>
+  std::string pad(T x, int width, char padchar=' ')
+  {
+    static_assert(std::is_integral<T>::value, "padding requires an integral type");
+    std::ostringstream str;
+    str << std::setfill(padchar) << std::setw(width) << x;
+    return str.str();
+  }
+
+  // integral types in hex (zero padded, width implied from size of T, prefix is '0x' if specified)
+  template<typename T>
+  std::string hex(T x, bool prefix=true)
+  {
+    static_assert(std::is_integral<T>::value, "hex formatting requires an integral type");
+    constexpr int width = (sizeof(T) << 1); // e.g. 32bits=4bytes -> 8 chars
+
+    std::ostringstream str;
+    str << (prefix ? "0x": "") << std::setfill('0') << std::setw(width) << std::hex << x;
+    return str.str();
+  }
+
+  // boolean type as string "true" or "false"
+  inline std::string boolean(bool x)
+  {
+    return x ? "true" : "false";
+  }
+
 }
 
 namespace neworder {
