@@ -8,7 +8,8 @@ import numpy as np
 # Expose the enviroment to python
 import neworder
 
-# no timeline is defined
+# no timeline is required in this example, but it would typically look like this:
+# neworder.timeline = (start_time, [checkpoint1, [checkpoint2...]], end_time. num_timesteps)
 
 # Checks to run during the simulation
 neworder.log_level = 1 # this doesnt do anything at the moment

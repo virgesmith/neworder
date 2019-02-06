@@ -12,10 +12,10 @@ Purely coincidentally, *neworder* is similar in some respects to the python-base
 - no constraints on input/output data formats or storage
 - python is a modern and very common language in data science and has a huge package ecosystem
 
-All this does however require that model developers are comfortable with coding in python.
+All this does however require that model developers are comfortable coding in python.
 
-- **[installation](doc/installation.md)**
-- **[API reference](doc/reference.md)**
+**[installation](doc/installation.md)**    |**[API reference](doc/reference.md)**    
+:-----------------------------------------:|:---------------------------------------:
 
 ## Contents
 
@@ -28,7 +28,7 @@ All this does however require that model developers are comfortable with coding 
 	- [Compulsory](#compulsory)
 	- [Optional](#optional)
 - [Examples](#examples)
-	- [The obligatory "Hello world" example](#the-obligatory-"hello-world"-example)
+	- [Hello World](#hello-world)
 		- [Understanding the workflow and the output](#understanding-the-workflow-and-the-output)
 	- [Diagnostics](#diagnostics)   
 	- [Microsimulation of People](#microsimulation-of-people)
@@ -136,24 +136,29 @@ $ ./run_example.sh <name> [size [-c]]
 ```
 which will run the model defined in the directory `./examples/<name>`, running optionally over `size` processes, which can be set to use identical RNG streams with the `-c` flag.
 
-## The obligatory "Hello world" example
+## Hello World
 
-This example is a simple illustration of the structure required, and all the files are extensively commented. It can be used as a skeleton for new project. 
+This example is a simple illustration of the structure required, and how it fits together. All the files are extensively commented. and it can be used as a skeleton for new project. 
+
+The output from *neworder* is prefixed with a source identifier in square brackets, containing the following information for debugging purposes:
+- Source of message: `no` if logged from the framework itself, `py` if logged from python code (via the `neworder.log()` function).
+- the process id ('rank' in MPI parlance) and the total number of processes ('size' in MPI parlance) - in serial mode these default to 0/1.
+
 
 ```bash
 $ ./run_example.sh hello_world
-[no 0/1] env: seed=19937 python 3.6.6 (default, Sep 12 2018, 18:26:19)  [GCC 8.0.1 20180414 (experimental) [trunk revision 259383]]
-[no 0/1] starting microsimulation...
-[no 0/1] t=0.000000 initialise: greeter
-[no 0/1] t=1.000000 transition: who
-[no 0/1] t=1.000000 check: eval
-[no 0/1] t=1.000000 checkpoint: say_hello
+[no 0/1] env: seed=19937 python 3.6.7 (default, Oct 22 2018, 11:32:17)  [GCC 8.2.0]
+[no 0/1] starting microsimulation. timestep=0.000000, checkpoint(s) at [1]
+[no 0/1] t=0.000000(0) initialise: greeter
+[no 0/1] t=0.000000(1) transition: who
+[no 0/1] t=0.000000(1) check: eval
+[no 0/1] t=0.000000(1) checkpoint: say_hello
 [py 0/1] Hello neworder_user
-[no 0/1] SUCCESS
+[no 0/1] SUCCESS exec time=0.005971s
 ```
 ### Understanding the workflow and the output
 
-Defining a timeline for the model is compulsory. This example doesn't really require one, so [config.py](examples/hello_world/config.py) specfies the simplest possible:
+Typically, defining a timeline for the model is necessary but not compulsory. By default the start time and timestep is zero, and there is a single timestep. This example doesn't require a timeline. The [config.py](examples/hello_world/config.py) file does include a comment illustrating how a timeline would be defined.
 
 The environment initialises, indicating the random seed and the python version used:
 ```
@@ -210,10 +215,6 @@ Finally the framework indicates the model ran successfully:
 ```
 [no 0/1] SUCCESS
 ```
-
-In the output above, each line has a prefix in square brackets contains the following information for debugging purposes:
-- Source of message: `no` if logged from the framework itself, `py` if logged from python code (via the `neworder.log()` function).
-- the process id ('rank' in MPI parlance) and the total number of processes ('size' in MPI parlance) - in serial mode these default to 0/1.
 
 The 'model' configuration is here: [examples/hello_world/config.py](examples/hello_world/config.py). This file refers to a second file in which the "model" is defined, see [examples/hello_world/greet.py](examples/hello_world/greet.py)
 
