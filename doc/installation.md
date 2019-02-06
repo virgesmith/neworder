@@ -1,15 +1,36 @@
 # Installation
 
-_So far only tested on Ubuntu 16.04/18.04_
+_So far only tested on Ubuntu 16.04/18.04_. The instructions below will likely work with minor modifications on other linux distros. 
+
+Windows and OSX are not currently supported, but the long-term plan is to provide `CMake` build scipts for all 3 platforms. Pull requests are welcome!
+
+## Contents
+
+- [Requirements](#requirements)    
+	- [Install Dependencies](#install-dependencies)      
+	- [Minimum Versions](#minimum-versions)      
+	- [Boost](#boost)      
+- [Build and Test](#build-and-test)
+	- [Standard Build](#standard-build)       
+	- [Parallel Build](#parallel-build)       
+- [HPC Installation Notes (ARC3)](#hpc-installation-notes-arc3)       
+	- [Issues](#issues)
+	- [Conda](#conda)
+	- [Non-Conda](#non-conda)
 
 ## Requirements
 
+### Install Dependencies
 ```bash
 $ sudo apt install -y build-essential python3 python3-dev python3-pip libboost-python-dev
 $ python3 -m pip install -U numpy pandas
 ```
+For parallel execution, you'll first need to make sure you have an implementation of MPI (including a compiler), e.g:
+```bash
+$ sudo apt install mpich libmipch-dev
+```
 
-### Minimum versions
+### Minimum Versions
 
 python: 3.5
 - numpy: 1.15
@@ -22,29 +43,41 @@ C++14: gcc 5.4
 
 ### Boost
 
-Boost.numpy was introduced in version 1.63, Boost 1.65.1 or higher is recommended. For platforms that come with older versions, see e.g. [this script](tools/boost_python.sh) which downloads 1.67.0 and builds only the python modules for python3:
+`Boost.numpy` was introduced in version 1.63, although 1.65.1 or higher is recommended. If the package version meets this requirement the following steps are nto required.
+
+For platforms that come with older boost versions, see e.g. [this script](../tools/boost_python.sh) which downloads 1.67.0 and builds only the python modules for python3:
 
 ```bash
-./bootstrap.sh --prefix=/usr/local --with-libraries=python --with-python=$(which python3)
+$ ./bootstrap.sh --prefix=/usr/local --with-libraries=python --with-python=$(which python3)
 ./b2 cxxflags=-DBOOST_NO_AUTO_PTR install
 ```
 
-## Clone, build and test
-```
-$ git clone https://github.com/virgesmith/neworder
+## Build and Test
+
+First clone (or fork) the repo, then enter the repo's root directory, e.g.:
+```bash
+$ git clone git@github.com:virgesmith/neworder
 $ cd neworder
+```
+
+### Standard Build
+
+From the root of the repo, build and run tests:
+```bash
 $ make && make test
 ```
+
 For Ubuntu 16.04 / python 3.5 you may need to set the make env like so:
+
 ```bash
 $ make PYVER=3.5 BOOST_PYTHON_LIB=boost_python-py35 && make PYVER=3.5 BOOST_PYTHON_LIB=boost_python-py35 test
 ```
-For MPI-enabled execution, you'll first need to make sure you have an implementation of MPI (including a compiler), e.g:
 
-```bash
-$ sudo apt install mpich libmipch-dev
-```
-And use the [MPI.mk](MPI.mk) makefile to build the MPI-enabled framework:
+### Parallel Build
+
+Ensure the MPI dependencies (see above) have been installed.
+
+From the root of the repo use the [MPI.mk](MPI.mk) makefile to build the MPI-enabled framework:
 ```bash
 $ make -f MPI.mk
 ```
@@ -53,7 +86,7 @@ and to test,
 $ make -f MPI.mk test
 ```
 
-## HPC installation (ARC3)
+## HPC Installation Notes (ARC3)
 
 ### Issues
 makefile hacks
