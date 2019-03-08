@@ -10,6 +10,7 @@
 
 size_t interp(const std::vector<double>& cumprob, double x)
 {
+  // TODO would bisection search here be better (even for small arrays)?
   size_t lbound = 0;
   for (; lbound < cumprob.size() - 1; ++lbound)
   {
@@ -19,6 +20,8 @@ size_t interp(const std::vector<double>& cumprob, double x)
   return lbound;
 }
 
+
+// TODO one-off-
 // categories are all possible categorty labels. Order corresponds to row/col in matrix
 // matrix is a transition matrix
 void neworder::df::transition(np::ndarray categories, np::ndarray matrix, py::object &df, const std::string& colname)
@@ -37,11 +40,16 @@ void neworder::df::transition(np::ndarray categories, np::ndarray matrix, py::ob
     throw std::runtime_error("cumulative transition matrix size (%%) is not same as length of categories (%%)"_s % matrix.get_shape()[0] % m);
 
   // construct checked cumulative probabilities for each state to randomly interpolate
+  // IMPORTANT NOTE: whilst numpy is row-major, pandas stores column-major, i.e. the columns are contiguous memory
+  // (transposing in python doesnt change the memory layout, it just changes the view)
+  // the code below assumes the transition matrix is column major (i.e. col sums to unity not rows)
+  // but produces a *row-major* cumulative probability matrix
+
   std::vector<std::vector<double>> cumprobs(m, std::vector<double>(m));
   for (int i = 0; i < m; ++i)
   {
     // point to beginning of row
-    double* p = pycpp::begin<double>(matrix) + i * m;
+    double* p = pycpp::begin<double>(matrix) + i;
     if (p[0] < 0.0 || p[0] > 1.0) 
       throw std::runtime_error("invalid transition probability %% at (%%,%%)"_s % p[0] % i % 0);
     cumprobs[i][0] = p[0];
@@ -49,10 +57,11 @@ void neworder::df::transition(np::ndarray categories, np::ndarray matrix, py::ob
     {
       if (p[j] < 0.0 || p[j] > 1.0) 
         throw std::runtime_error("invalid transition probability %% at (%%,%%)"_s % p[0] % i % 0);
-      cumprobs[i][j] = cumprobs[i][j-1] + p[j];
+      cumprobs[i][j] = cumprobs[i][j-1] + p[j*m];
     }
-    if (cumprobs[i][m-1] != 1.0)
-      throw std::runtime_error("probabilities don't sum to unity in transition matrix row %%"_s % i);
+    // check probabilities sum to unity within tolerance
+    if (fabs(cumprobs[i][m-1] - 1.0) > std::numeric_limits<double>::epsilon())
+      throw std::runtime_error("probabilities don't sum to unity (%%) in transition matrix row %%"_s % cumprobs[i][m-1] % i);
   }
 
   // reverse catgory lookup

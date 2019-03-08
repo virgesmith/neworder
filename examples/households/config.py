@@ -8,8 +8,12 @@ import neworder
 # THIS could be very, very useful
 #https://stackoverflow.com/questions/47297585/building-a-transition-matrix-using-words-in-python-numpy
 
+neworder.area = "E08000021"
+
 # define some global variables describing where the starting population and the parameters of the dynamics come from
-initial_population = "examples/households/data/ssm_hh_E08000021_OA11_2011.csv"
+data_dir = "examples/households/data"
+initial_population = "ssm_hh_"+neworder.area+"_OA11_2011.csv"
+neworder.final_population = "dm_hh_"+neworder.area+"_OA11.csv"
 
 # running/debug options
 neworder.log_level = 1
@@ -20,11 +24,11 @@ assert neworder.size() == 1, "This example is configured to be run as a single p
 # run 4 sims
 #neworder.sequence = np.array([3,1,2,0])
 # define the evolution
-neworder.timeline = (2011.25, 2012.25, 1)
+neworder.timeline = (2011.25, 2020.25, 9)
 
 # initialisation
 neworder.initialisations = {
-  "households": { "module": "households", "class_": "Households", "parameters": [initial_population] }
+  "households": { "module": "households", "class_": "Households", "parameters": [data_dir, initial_population] }
 }
 
 # timestep must be defined in neworder
@@ -41,5 +45,5 @@ neworder.checks = {
 
 # Generate output at each checkpoint  
 neworder.checkpoints = {
-  "write_table" : "households.write_table()" 
+  "write_table" : "households.write_table(final_population)" 
 }
