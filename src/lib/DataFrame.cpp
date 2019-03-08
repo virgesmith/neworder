@@ -24,10 +24,10 @@ size_t interp(const std::vector<double>& cumprob, double x)
 // TODO one-off-
 // categories are all possible categorty labels. Order corresponds to row/col in matrix
 // matrix is a transition matrix
-void neworder::df::transition(np::array categories, np::array matrix, py::object &df, const std::string& colname)
+void neworder::df::transition(np::ndarray categories, np::ndarray matrix, py::object &df, const std::string& colname)
 {
   // Extract column from DF as np.array
-  np::array col = np::from_object(df.attr(colname.c_str()));
+  np::ndarray col = np::from_object(df.attr(colname.c_str()));
 
   int m = pycpp::size(categories);
 
@@ -100,7 +100,7 @@ void neworder::df::directmod(py::object& df, const std::string& colname)
 {
   py::object col = df.attr(colname.c_str());
   // .values? pd.Series -> np.array?
-  np::array arr = np::from_object(col); // this is a reference 
+  np::ndarray arr = np::from_object(col); // this is a reference 
   size_t n = pycpp::size(arr);
 
   for (size_t i = 0; i < n; ++i)
