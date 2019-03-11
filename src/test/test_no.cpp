@@ -22,9 +22,12 @@ void test_no()
 
   // test formatting
   CHECK(format::decimal(3.14, 6, 6) == "     3.140000");
-  CHECK(format::decimal(1000000.0 / 7, 6, 6) == "142857.142857");
+  // ignores the 1 LHS padding as there are 6 digits
+  CHECK(format::decimal(1000000.0 / 7, 1, 6) == "142857.142857");
   CHECK(format::pad(3, 4) == "   3");
   CHECK(format::pad(3, 5, '0') == "00003");
+  // ignores 3 as number requires 4 chars
+  CHECK(format::pad(5000, 3, '0') == "5000");
   CHECK(format::hex<int32_t>(24233) == "0x00005ea9");
   CHECK(format::hex<size_t>(133, false) == "0000000000000085");
   CHECK(format::boolean(false) == "false");
