@@ -18,7 +18,7 @@ def partition(arr, count):
 allcountries = pd.read_csv("./examples/world/data/CountryLookup.csv", encoding='utf-8', sep="\t")["Code"][:4]
 
 initial_populations = partition(allcountries, neworder.size())
-
+#initial_populations = [["ALB", "ASM", "ATG"]]
 # running/debug options
 neworder.log_level = 1
  
