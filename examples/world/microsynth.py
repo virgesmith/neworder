@@ -12,11 +12,14 @@ from helpers import *
 
 class Microsynth:
   def __init__(self, countries):
+
+    value_column = "2019 [YR2019]"
     self.countries = countries
 
     neworder.log("Microsynthesising populations for %s" % ", ".join(self.countries))
 
-    alldata = pd.read_csv("./examples/world/data/CountryData.csv")
+    alldata = pd.read_csv("./examples/world/data/CountryData.csv").replace("..","")
+    alldata[value_column] = pd.to_numeric(alldata[value_column]) 
     # SP.POP.0004.FE
     # ...
     # SP.POP.80UP.FE
@@ -24,8 +27,12 @@ class Microsynth:
     # ...
     # SP.POP.80UP.MA
     for country in self.countries:
-      data = alldata[(alldata["Country Code"] == country) & (alldata["Series Code"]).str.match("SP.POP.*[FE|MA]$")]
-      neworder.log(data.head())
+      data = alldata[(alldata["Country Code"] == country) & (alldata["Series Code"]).str.match("SP.POP.*(FE|MA)$")]
+      # fallback to totals if age-speicific values not available
+      if data[value_column].isnull().values.any():
+        data = alldata[(alldata["Country Code"] == country) & (alldata["Series Code"]).str.match("^SP.POP.TOTL$")]
+      
+      neworder.log(data)
       #neworder.log("%s pop = %d" % (data[(data.Country == country) && ()]))
 
 
