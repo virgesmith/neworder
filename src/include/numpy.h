@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "python.h"
+#include "NewOrder.h"
 
 #include "pybind11/numpy.h"
 
@@ -18,7 +18,8 @@ namespace np {
   template<typename T>
   array zeros(const std::initializer_list<size_t>& shape)
   {
-    return py::array_t<T>(shape, T(0));
+    T zero(0);
+    return py::array_t<T>(shape, &zero);
   }
 
   // TODO what is required here (if anything)
@@ -69,7 +70,7 @@ const T* cbegin(const np::array& a)
 }
 
 template<typename T>
-T* end(const np::array& a)
+T* end(np::array& a)
 {
   return begin<T>(a) + size(a);
 }

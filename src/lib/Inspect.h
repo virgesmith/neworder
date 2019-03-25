@@ -1,6 +1,6 @@
 #pragma once
 
-#include "python.h"
+#include "NewOrder.h"
 
 #include <vector>
 #include <string>
@@ -13,7 +13,7 @@ const char* type(const py::object& o);
 
 bool callable(const py::object& o);
 
-bool has_attr(const py::object& o, const char* attr_name);
+NEWORDER_EXPORT bool has_attr(const py::object& o, const char* attr_name);
 
 std::string as_string(PyObject* obj);
 

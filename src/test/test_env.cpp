@@ -7,7 +7,7 @@
 #include "Module.h"
 #include "Environment.h"
 
-#include "python.h"
+#include "NewOrder.h"
 #include "numpy.h"
 
 #include <vector>
@@ -24,7 +24,7 @@ void test_env()
   neworder::Environment& env = neworder::Environment::init(0, 1);
   //neworder::Environment& env = neworder::getenv();
 
-  py::object module = py::import("neworder");
+  py::object module = py::module::import("neworder");
 
   CHECK(env.rank() == 0);
   CHECK(env.size() == 1);

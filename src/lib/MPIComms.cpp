@@ -136,7 +136,7 @@ void broadcast(std::string& data, int process)
 void neworder::mpi::send_obj(const py::object& o, int rank)
 {
 #ifdef NEWORDER_MPI
-  py::object pickle = py::import("pickle");
+  py::object pickle = py::module::import("pickle");
   py::object serialised = pickle.attr("dumps")(o);
 
   //you can also write checks here for length, verify the 
@@ -158,9 +158,9 @@ py::object neworder::mpi::receive_obj(int rank)
   Buffer b(nullptr, 0);
   receive(b, rank); // b is alloc'd in here
 
-  py::object pickle = py::import("pickle");
+  py::object pickle = py::module::import("pickle");
 
-  py::object o = pickle.attr("loads")(py::handle<>(PyBytes_FromStringAndSize(b.buf, b.size)));
+  py::object o = pickle.attr("loads")(py::handle(PyBytes_FromStringAndSize(b.buf, b.size)));
   //neworder::log("got %% from %%"_s % s % rank);
   return o;
 #else
@@ -171,14 +171,14 @@ py::object neworder::mpi::receive_obj(int rank)
 void neworder::mpi::send_csv(const py::object& df, int rank)
 {
 #ifdef NEWORDER_MPI
-  py::object io = py::import("io");
+  py::object io = py::module::import("io");
   py::object buf = io.attr("StringIO")();
   // kwargs broken?
   // py::dict kwargs;
   // kwargs["index"] = false;
   // to_csv(path_or_buf=None, sep=', ', na_rep='', float_format=None, columns=None, header=True, index=True...
   df.attr("to_csv")(buf); //, ", ", "", py::object(), py::object(), true, false); 
-  std::string csvbuf = py::extract<std::string>(buf.attr("getvalue")())();
+  std::string csvbuf = buf.attr("getvalue").cast<std::string>();
   send(csvbuf, rank);
 #else
   throw std::runtime_error("%% not implemented (binary doesn't support MPI)"_s % __FUNCTION__);
@@ -191,8 +191,8 @@ py::object neworder::mpi::receive_csv(int rank)
   std::string buf;
   receive(buf, rank);
 
-  py::object io = py::import("io");
-  py::object pd = py::import("pandas");
+  py::object io = py::module::import("io");
+  py::object pd = py::module::import("pandas");
   py::object pybuf = io.attr("StringIO")(buf);
   py::object df = pd.attr("read_csv")(pybuf);
   // temp workaround for not being able to pass to_csv index=False arg
@@ -208,11 +208,11 @@ py::object neworder::mpi::receive_csv(int rank)
 py::object neworder::mpi::broadcast_obj(py::object& o, int rank)
 {
 #ifdef NEWORDER_MPI
-  py::object pickle = py::import("pickle");
+  py::object pickle = py::module::import("pickle");
   py::object serialised = pickle.attr("dumps")(o);
   Buffer b(PyBytes_AsString(serialised.ptr()), (int)PyBytes_Size(serialised.ptr()));
   broadcast(b, rank);
-  return pickle.attr("loads")(py::handle<>(PyBytes_FromStringAndSize(b.buf, b.size)));
+  return pickle.attr("loads")(py::handle(PyBytes_FromStringAndSize(b.buf, b.size)));
 #else
   throw std::runtime_error("%% not implemented (binary doesn't support MPI)"_s % __FUNCTION__);
 #endif

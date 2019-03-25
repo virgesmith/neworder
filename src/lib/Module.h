@@ -1,6 +1,6 @@
 #pragma once
 
-#include "python.h"
+#include "NewOrder.h"
 
 #include <vector>
 #include <map>
@@ -9,7 +9,7 @@ namespace neworder {
 
 // Define a piece of python code to be exec/eval-u(a)ted on calling operator()
 // Perhaps better named LazyEval?
-class PYBIND11_EXPORT Callback final
+class NEWORDER_EXPORT Callback final
 {
 public:
   // Construct using one of these two variants 
@@ -49,9 +49,9 @@ std::string python_version();
 // interactive shell mk2 - uses the code module
 void shell(/*const py::object& local*/);
 
-void set_timeline(const py::tuple& spec);
+NEWORDER_EXPORT void set_timeline(const py::tuple& spec);
 
-void import_module();
+NEWORDER_EXPORT void import_module();
 
 } // namespace neworder
 

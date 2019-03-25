@@ -25,3 +25,4 @@ dm*.csv
 examples/people_multi/data
 
 .venv/
+**/ipch/**

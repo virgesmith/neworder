@@ -3,7 +3,7 @@
 #include "Environment.h"
 #include "MPIResource.h"
 
-#include "python.h"
+#include "NewOrder.h"
 
 #include <vector>
 #include <string>
@@ -20,10 +20,10 @@ void test_py(int nmodules, const char* testmodules[])
 {
   for (int i = 0; i < nmodules; ++i)
   {
-    py::object module = py::import(testmodules[i]);
+    py::object module = py::module::import(testmodules[i]);
     py::object testfunc = module.attr("test");
     neworder::log("running test %%.py"_s % testmodules[i]);
-    CHECK(py::extract<bool>(testfunc())());
+    CHECK(testfunc().cast<bool>());
   }
 }
 
@@ -33,7 +33,7 @@ int run(int rank, int size, bool indep, int nmodules, const char* testmodules[])
   try
   {
     // load module, call func with args
-    test1("op", "mul", {"2", "3"}, py::object(6));
+    test1("op", "mul", {"2", "3"}, py::int_(6));
     test1("op", "void", {"2", "3"}, py::object());
 
     // module (C++) tests

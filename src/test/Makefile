@@ -2,8 +2,6 @@ INTDIR=int$(SUFFIX)
 
 CXXFLAGS += -I../include -I../lib
 
-LDFLAGS += -l$(BOOST_PYTHON_LIB) -l$(BOOST_NUMPY_LIB)
-
 src=$(wildcard test*.cpp) run.cpp main$(SUFFIX).cpp
 dep=$(patsubst %,$(INTDIR)/%,$(src:.cpp=.d))
 obj=$(patsubst %,$(INTDIR)/%,$(src:.cpp=.o))

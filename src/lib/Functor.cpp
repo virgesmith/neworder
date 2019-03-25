@@ -2,7 +2,7 @@
 #include "Functor.h"
 
 #include "Inspect.h"
-#include "python.h"
+#include "NewOrder.h"
 
 pycpp::Functor::Functor(py::object func, py::list args) : m_func(func)
 { 

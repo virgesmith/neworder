@@ -7,7 +7,7 @@
 #include "Module.h"
 #include "Environment.h"
 
-#include "python.h"
+#include "NewOrder.h"
 #include "numpy.h"
 
 #include <vector>
@@ -33,7 +33,7 @@ void test_no()
   CHECK(format::boolean(false) == "false");
   
   /*neworder::Environment& env =*/ neworder::getenv();
-  py::object module = py::import("neworder");
+  py::object module = py::module::import("neworder");
 
   // Check required (but defaulted) attrs visible from both C++ and python
   const char* attrs[] = {"rank", "size"/*, "sequence", "seq"*/}; 
@@ -41,13 +41,13 @@ void test_no()
   for (size_t i = 0; i < sizeof(attrs)/sizeof(attrs[0]); ++i)
   {
     CHECK(pycpp::has_attr(module, attrs[i]));
-    CHECK(py::extract<bool>(neworder::Callback::eval("'%%' in locals()"_s % attrs[i])()));
+    CHECK(neworder::Callback::eval("'%%' in locals()"_s % attrs[i])().cast<bool>());
   }
 
   // Check diagnostics consistent
-  CHECK(py::extract<bool>(neworder::Callback::eval("name() == '%%'"_s % neworder::module_name())()));
-  CHECK(py::extract<bool>(neworder::Callback::eval("version() == '%%'"_s % neworder::module_version())()));
-  CHECK(py::extract<bool>(neworder::Callback::eval("python() == '%%'"_s % neworder::python_version()/*.c_str()*/)()));
+  CHECK(neworder::Callback::eval("name() == '%%'"_s % neworder::module_name())().cast<bool>());
+  CHECK(neworder::Callback::eval("version() == '%%'"_s % neworder::module_version())().cast<bool>());
+  CHECK(neworder::Callback::eval("python() == '%%'"_s % neworder::python_version()/*.c_str()*/)().cast<bool>());
 
   double x = -1e10;
   CHECK(neworder::Timeline::distant_past() < x);

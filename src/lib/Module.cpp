@@ -11,7 +11,7 @@
 #include "MPIComms.h"
 
 
-#include "python.h"
+#include "NewOrder.h"
 
 #include <pybind11/embed.h>
 
@@ -84,7 +84,7 @@ void neworder::shell(/*const py::object& local*/)
   py::dict kwargs;
   kwargs["banner"] = py::str("[starting neworder debug shell]");
   kwargs["exitmsg"] = py::str("[exiting neworder debug shell]");
-  //py::import("neworder");
+  //py::module::import("neworder");
   //kwargs["local"] = py::handle<>(PyObject_Dir());
   py::object interpreter = py::module::import("code").attr("interact")(*py::tuple(), **kwargs);
 }
@@ -204,9 +204,10 @@ PYBIND11_EMBEDDED_MODULE(neworder_, m)
 
 }
 
-// void neworder::import_module()
-// {
-//   // First register callback module
-//   PyImport_AppendInittab(module_name(), &PyInit_neworder);
-// }
+void neworder::import_module()
+{
+  // TODO anything required?
+  // First register callback module
+  //PyImport_AppendInittab(module_name(), &PyInit_neworder);
+}
 

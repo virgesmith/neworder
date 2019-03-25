@@ -60,7 +60,7 @@ np::array neworder::ustream(size_t n)
 }
 
 // simple hazard constant probability 
-np::array neworder::hazard(double prob, size_t n)
+NEWORDER_EXPORT np::array neworder::hazard(double prob, size_t n)
 {
   std::mt19937& prng = neworder::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
@@ -68,15 +68,26 @@ np::array neworder::hazard(double prob, size_t n)
   return pycpp::make_array<int>(n, [&]() { return (dist(prng) < prob) ? 1 : 0; });
 }
 
-// // hazard with varying probablities 
-// np::array neworder::hazard(const np::array& prob)
-// {
-//   Hazard f;
-//   return f(prob);
-// }
+// hazard with varying probablities 
+np::array neworder::hazard(const np::array& prob)
+{
+  std::mt19937& prng = neworder::getenv().prng();
+  std::uniform_real_distribution<> dist(0.0, 1.0);
+
+  py::array_t<int> result(prob.size());
+  const double* pp = (const double*)prob.data(0);
+  int* pr = (int*)result.request().ptr;
+  for (size_t i = 0; i < prob.size(); ++i, ++pp, ++pr)
+  {
+    *pr = (dist(prng) < *pp) ? 1 : 0;
+  }
+  return result;
+  // Hazard f;
+  // return f(prob);
+}
 
 // computes stopping times 
-np::array neworder::stopping(double prob, size_t n)
+NEWORDER_EXPORT np::array neworder::stopping(double prob, size_t n)
 {
   std::mt19937& prng = neworder::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
@@ -85,11 +96,23 @@ np::array neworder::stopping(double prob, size_t n)
   return pycpp::make_array<double>(n, [&]() { return -::log(dist(prng)) * rprob; });
 }
 
-// np::array neworder::stopping(const np::array& prob)
-// {
-//   Stopping f;
-//   return f(prob);
-// }
+np::array neworder::stopping(const np::array& prob)
+{
+  std::mt19937& prng = neworder::getenv().prng();
+  std::uniform_real_distribution<> dist(0.0, 1.0);
+
+  py::array_t<double> result(prob.size());
+  const double* pp = (const double*)prob.data(0);
+  double* pr = (double*)result.request().ptr;
+  for (size_t i = 0; i < prob.size(); ++i, ++pp, ++pr)
+  {
+    *pr = -::log(dist(prng)) / (*pp);
+  }
+  return result;
+
+  // Stopping f;
+  // return f(prob);
+}
 
 // DEPRECATED - NO LONGER EXPOSED TO PYTHON (use first_arrival)
 // MC stopping time for a non-homogeneous poisson process, given
@@ -97,45 +120,45 @@ np::array neworder::stopping(double prob, size_t n)
 // uses the thinning algorithm described in: 
 // Lewis, Peter A., and Gerald S. Shedler. "Simulation of nonhomogeneous Poisson processes by thinning." Naval Research Logistics (NRL) 26.3 (1979): 403-413.
 // See also explanation in Glasserman, Monte-Carlo Methods in Financial Engineering, 2003, pp140-141
-np::array neworder::stopping_nhpp(const np::array& lambda_t, double dt, size_t n)
-{
-  std::mt19937& prng = neworder::getenv().prng();
-  std::uniform_real_distribution<> dist(0.0, 1.0);
+// np::array neworder::stopping_nhpp(const np::array& lambda_t, double dt, size_t n)
+// {
+//   std::mt19937& prng = neworder::getenv().prng();
+//   std::uniform_real_distribution<> dist(0.0, 1.0);
 
-  const double* pl = pycpp::cbegin<double>(lambda_t);
-  size_t nl = pycpp::size(lambda_t);
+//   const double* pl = pycpp::cbegin<double>(lambda_t);
+//   size_t nl = pycpp::size(lambda_t);
 
-  // validate lambdas - but what exactly is valid?
-  if (pl[nl-1] == 0.0)
-  {
-    throw std::runtime_error("Non-homogeneous Poisson process requires a nonzero final hazard rate");
-  }
-  // for (size_t i = 0; i < nl; ++i)
-  // {
-  //   if (pl[i] <= 0.0 || pl[i] >= 1.0)
-  //     throw std::runtime_error("Lewis-Shedler algorithm requires probabilities in (0,1): element %% is %%"_s % i % pl[i]);
-  // }
+//   // validate lambdas - but what exactly is valid?
+//   if (pl[nl-1] == 0.0)
+//   {
+//     throw std::runtime_error("Non-homogeneous Poisson process requires a nonzero final hazard rate");
+//   }
+//   // for (size_t i = 0; i < nl; ++i)
+//   // {
+//   //   if (pl[i] <= 0.0 || pl[i] >= 1.0)
+//   //     throw std::runtime_error("Lewis-Shedler algorithm requires probabilities in (0,1): element %% is %%"_s % i % pl[i]);
+//   // }
 
-  // What is the optimal lambda_u? For now largest value
-  double lambda_u = *std::max_element(pl, pl + nl);
-  double lambda_i;
+//   // What is the optimal lambda_u? For now largest value
+//   double lambda_u = *std::max_element(pl, pl + nl);
+//   double lambda_i;
 
-  np::array times = pycpp::empty_1d_array<double>(n);
-  double* pt = pycpp::begin<double>(times);
+//   np::array times = pycpp::empty_1d_array<double>(n);
+//   double* pt = pycpp::begin<double>(times);
 
-  for (size_t i = 0; i < n; ++i)
-  {
-    // rejection sampling
-    pt[i] = 0.0;
-    do 
-    {
-      pt[i] += -::log(dist(prng)) / lambda_u;
-      // final entry in lambda_t is flat extrapolated...
-      lambda_i = pl[ std::min((size_t)(pt[i] / dt), nl-1) ];
-    } while (dist(prng) > lambda_i / lambda_u);
-  }
-  return times;
-}
+//   for (size_t i = 0; i < n; ++i)
+//   {
+//     // rejection sampling
+//     pt[i] = 0.0;
+//     do 
+//     {
+//       pt[i] += -::log(dist(prng)) / lambda_u;
+//       // final entry in lambda_t is flat extrapolated...
+//       lambda_i = pl[ std::min((size_t)(pt[i] / dt), nl-1) ];
+//     } while (dist(prng) > lambda_i / lambda_u);
+//   }
+//   return times;
+// }
 
 
 // multiple-arrival (0+) process 
