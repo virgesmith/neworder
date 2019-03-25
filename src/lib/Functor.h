@@ -11,7 +11,7 @@
 namespace pycpp
 {
 
-class Functor
+class PYBIND11_EXPORT Functor
 {
 public:
   Functor(py::object func, py::list args);

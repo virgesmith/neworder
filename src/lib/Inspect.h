@@ -27,4 +27,4 @@ std::string as_string(const py::object& obj);
 
 std::ostream& operator<<(std::ostream& os, const py::object& o);
 
-// std::ostream& operator<<(std::ostream& os, const np::ndarray& a);
+// std::ostream& operator<<(std::ostream& os, const np::array& a);

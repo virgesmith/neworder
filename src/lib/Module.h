@@ -9,7 +9,7 @@ namespace neworder {
 
 // Define a piece of python code to be exec/eval-u(a)ted on calling operator()
 // Perhaps better named LazyEval?
-class Callback final
+class PYBIND11_EXPORT Callback final
 {
 public:
   // Construct using one of these two variants 

@@ -71,10 +71,10 @@ std::string pycpp::as_string(const py::object& obj)
 
 std::ostream& operator<<(std::ostream& os, const py::object& o)
 {
-  return os << py::extract<std::string>(py::str(o))();
+  return os << py::str(o);
 }
 
-// std::ostream& operator<<(std::ostream& os, const np::ndarray& a)
+// std::ostream& operator<<(std::ostream& os, const np::array& a)
 // {
 //   return os << py::extract<std::string>(py::str(a))();
 // }

@@ -26,7 +26,7 @@ void test_np()
   // create an array and expose to python...
   py::tuple shape = py::make_tuple(3, 3);
   np::dtype dtype = np::dtype::get_builtin<double>();
-  np::ndarray a = np::zeros(shape, dtype);
+  np::array a = np::zeros(shape, dtype);
   module.attr("a") = a;
   CHECK(a.get_nd() == 2);
   CHECK(pycpp::size(a) == 9);
@@ -63,7 +63,7 @@ void test_np()
   // load a DF and try to extract/modify...
   neworder::Callback::exec("import pandas as pd;import neworder;neworder.df=pd.read_csv('../../tests/df.csv')")();
   py::object df = module.attr("df");
-  np::ndarray c = np::from_object(df.attr("columns").attr("values"));
+  np::array c = np::from_object(df.attr("columns").attr("values"));
   c[1] = "Changed";
   // check unchanged
   CHECK(neworder::Callback::eval("df.columns.values[0] == 'PID'")());
@@ -71,7 +71,7 @@ void test_np()
   CHECK(neworder::Callback::eval("df.columns.values[1] == 'Changed'")());
 
   // Can't modify DF values directly as 2d-array (it copies), need to select individual columns
-  np::ndarray v = np::from_object(df.attr("Changed"));
+  np::array v = np::from_object(df.attr("Changed"));
   v[0] = "MOVED!";
   // check changed
   CHECK(neworder::Callback::eval("df.Changed[0] == 'MOVED!'")());
@@ -111,13 +111,13 @@ void test_np()
     double m_c;
   };
 
-  np::ndarray in = pycpp::zero_1d_array<double>(9);
+  np::array in = pycpp::zero_1d_array<double>(9);
   UnaryArrayFunc f(1.0, 2.75);
-  np::ndarray out = f(in);
+  np::array out = f(in);
   CHECK(pycpp::at<double>(out, 0) == 2.75);
 
   BinaryArrayFunc g(3.125, 1.0);
-  np::ndarray out2 = g(in, out);
+  np::array out2 = g(in, out);
   
   CHECK(pycpp::at<double>(out2, 0) == 2.75 * 3.125 + 1.0);
 
@@ -137,7 +137,7 @@ void test_np()
 
     DotFunc(const py::object& arg1, const py::object& arg2) : m_result(0.0)
     {
-      np::ndarray products = super::operator()(arg1, arg2);
+      np::array products = super::operator()(arg1, arg2);
 
       for (double* p = pycpp::begin<double>(products); p != pycpp::end<double>(products); ++p)
       {
@@ -154,15 +154,15 @@ void test_np()
     double m_result;
   };
 
-  np::ndarray v1 = pycpp::make_array<double>(10, [](){ return 2.0; });
-  np::ndarray v2 = pycpp::make_array<double>(10, [](){ return 0.5; });
+  np::array v1 = pycpp::make_array<double>(10, [](){ return 2.0; });
+  np::array v2 = pycpp::make_array<double>(10, [](){ return 0.5; });
   CHECK(DotFunc(v1, v2) == 10.0);
 
   // now see if it works with vector * scalar
   py::object scalar(1.0);
   CHECK(DotFunc(v1, scalar) == 20.0);
 
-  np::ndarray n1 = neworder::nparray::isnever(v1);
+  np::array n1 = neworder::nparray::isnever(v1);
   CHECK(!n1[0]);
 
 }

@@ -103,7 +103,7 @@ neworder::Environment::Environment() : m_init(false) //: m_sequence(neworder::ze
   // init numpy
   np::initialize();
 
-  m_self = new py::object(py::import("neworder"));
+  m_self = new py::module("neworder");
   
   // dummy sequence (needs to be read from config.py - which hasnt been loaded yet)
   // m_self->attr("sequence") = neworder::zero_1d_array<int64_t>(1);
@@ -132,20 +132,20 @@ std::string neworder::Environment::get_error() noexcept
     PyErr_Fetch(&exc, &val, &tb);
     PyErr_NormalizeException(&exc, &val, &tb);
 
-    py::handle<> hexc(exc), hval(py::allow_null(val)), htb(py::allow_null(tb));
+    py::handle hexc(exc), hval(/*py::allow_null*/(val)), htb(/*py::allow_null*/(tb));
 
     PyErr_Clear();
     if(!hval)
     {
-      return py::extract<std::string>(py::str(hexc));
+      return py::str(hexc);
     }
     else
     {
-      py::object traceback(py::import("traceback"));
+      py::module traceback("traceback");
       py::object format_exception(traceback.attr("format_exception"));
       py::object formatted_list(format_exception(hexc,hval,htb));
-      py::object formatted(py::str("").join(formatted_list));
-      return py::extract<std::string>(formatted);
+      py::object formatted(py::str("")/*.join(formatted_list)*/);
+      return formatted.cast<std::string>();
     } 
   }
   return "unable to determine python error";
@@ -157,8 +157,8 @@ std::string neworder::Environment::version()
   // Get and display python version - only do once
   if (version_string.empty())
   {
-    py::object sys = py::import("sys");
-    version_string = py::extract<std::string>(sys.attr("version"));
+    py::module sys("sys");
+    version_string = sys.attr("version").cast<std::string>();
     std::replace(version_string.begin(), version_string.end(), '\n', ' ');
   }
   return version_string;

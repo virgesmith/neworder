@@ -8,6 +8,6 @@
 
 namespace neworder { namespace nparray {
 
-np::ndarray isnever(const np::ndarray& x);
+np::array isnever(const np::array& x);
 
 }} //neworder::nparray

@@ -51,7 +51,7 @@ private:
   std::uniform_real_distribution<double> m_dist;  
 };
 
-np::ndarray neworder::ustream(size_t n)
+np::array neworder::ustream(size_t n)
 {
   std::mt19937& prng = neworder::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
@@ -60,7 +60,7 @@ np::ndarray neworder::ustream(size_t n)
 }
 
 // simple hazard constant probability 
-np::ndarray neworder::hazard(double prob, size_t n)
+np::array neworder::hazard(double prob, size_t n)
 {
   std::mt19937& prng = neworder::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
@@ -69,14 +69,14 @@ np::ndarray neworder::hazard(double prob, size_t n)
 }
 
 // hazard with varying probablities 
-np::ndarray neworder::hazard(const np::ndarray& prob)
+np::array neworder::hazard(const np::array& prob)
 {
   Hazard f;
   return f(prob);
 }
 
 // computes stopping times 
-np::ndarray neworder::stopping(double prob, size_t n)
+np::array neworder::stopping(double prob, size_t n)
 {
   std::mt19937& prng = neworder::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
@@ -85,7 +85,7 @@ np::ndarray neworder::stopping(double prob, size_t n)
   return pycpp::make_array<double>(n, [&]() { return -::log(dist(prng)) * rprob; });
 }
 
-np::ndarray neworder::stopping(const np::ndarray& prob)
+np::array neworder::stopping(const np::array& prob)
 {
   Stopping f;
   return f(prob);
@@ -97,7 +97,7 @@ np::ndarray neworder::stopping(const np::ndarray& prob)
 // uses the thinning algorithm described in: 
 // Lewis, Peter A., and Gerald S. Shedler. "Simulation of nonhomogeneous Poisson processes by thinning." Naval Research Logistics (NRL) 26.3 (1979): 403-413.
 // See also explanation in Glasserman, Monte-Carlo Methods in Financial Engineering, 2003, pp140-141
-np::ndarray neworder::stopping_nhpp(const np::ndarray& lambda_t, double dt, size_t n)
+np::array neworder::stopping_nhpp(const np::array& lambda_t, double dt, size_t n)
 {
   std::mt19937& prng = neworder::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
@@ -120,7 +120,7 @@ np::ndarray neworder::stopping_nhpp(const np::ndarray& lambda_t, double dt, size
   double lambda_u = *std::max_element(pl, pl + nl);
   double lambda_i;
 
-  np::ndarray times = pycpp::empty_1d_array<double>(n);
+  np::array times = pycpp::empty_1d_array<double>(n);
   double* pt = pycpp::begin<double>(times);
 
   for (size_t i = 0; i < n; ++i)
@@ -139,7 +139,7 @@ np::ndarray neworder::stopping_nhpp(const np::ndarray& lambda_t, double dt, size
 
 
 // multiple-arrival (0+) process 
-np::ndarray neworder::arrivals(const np::ndarray& lambda_t, double dt, double gap, size_t n)
+np::array neworder::arrivals(const np::array& lambda_t, double dt, double gap, size_t n)
 {
   std::mt19937& prng = neworder::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
@@ -191,7 +191,7 @@ np::ndarray neworder::arrivals(const np::ndarray& lambda_t, double dt, double ga
     //neworder::log("%%: %%"_s % i % times[i]);
   }
 
-  np::ndarray nptimes = np::empty(py::make_tuple(n, imax- 1), np::dtype::get_builtin<double>());
+  np::array nptimes = np::empty(py::make_tuple(n, imax- 1), np::dtype::get_builtin<double>());
   pycpp::fill(nptimes, neworder::Timeline::never());
   double* pa = pycpp::begin<double>(nptimes);
 
@@ -207,7 +207,7 @@ np::ndarray neworder::arrivals(const np::ndarray& lambda_t, double dt, double ga
   return nptimes;
 }
 
-np::ndarray neworder::first_arrival(const np::ndarray& lambda_t, double dt, size_t n, double minval)
+np::array neworder::first_arrival(const np::array& lambda_t, double dt, size_t n, double minval)
 {
   std::mt19937& prng = neworder::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
@@ -219,7 +219,7 @@ np::ndarray neworder::first_arrival(const np::ndarray& lambda_t, double dt, size
   double lambda_u = *std::max_element(pl, pl + nl);
   double lambda_i;
 
-  np::ndarray times = pycpp::empty_1d_array<double>(n);
+  np::array times = pycpp::empty_1d_array<double>(n);
   double* pt = pycpp::begin<double>(times);
   double tmax = (nl - 1) * dt;
 
@@ -245,7 +245,7 @@ np::ndarray neworder::first_arrival(const np::ndarray& lambda_t, double dt, size
 
 // next-arrival process - times of transition from a state arrived at at startingpoints to a subsequent state, with an optional deterministic minimum separation
 // if the state hasn't been arrived at (neworder::never())
-np::ndarray neworder::next_arrival(const np::ndarray& startingpoints, const np::ndarray& lambda_t, double dt, bool relative, double minsep)
+np::array neworder::next_arrival(const np::array& startingpoints, const np::array& lambda_t, double dt, bool relative, double minsep)
 {
   size_t n = pycpp::size(startingpoints);
 
@@ -260,8 +260,8 @@ np::ndarray neworder::next_arrival(const np::ndarray& startingpoints, const np::
   double lambda_u = *std::max_element(pl, pl + nl);
   double lambda_i;
 
-  np::ndarray times = pycpp::empty_1d_array<double>(n);
-  //np::ndarray times = pycpp::zero_1d_array<double>(n);
+  np::array times = pycpp::empty_1d_array<double>(n);
+  //np::array times = pycpp::zero_1d_array<double>(n);
   double* pt = pycpp::begin<double>(times);
 
   for (size_t i = 0; i < n; ++i)

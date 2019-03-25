@@ -218,11 +218,11 @@ py::object neworder::mpi::broadcast_obj(py::object& o, int rank)
 #endif
 }
 
-np::ndarray neworder::mpi::gather_array(double x, int rank)
+np::array neworder::mpi::gather_array(double x, int rank)
 {
 #ifdef NEWORDER_MPI
   neworder::Environment& env = neworder::getenv();
-  np::ndarray ret = pycpp::empty_1d_array<double>(rank == env.rank() ? env.size() : 0);
+  np::array ret = pycpp::empty_1d_array<double>(rank == env.rank() ? env.size() : 0);
   double* p = (rank == env.rank()) ? pycpp::begin<double>(ret) : nullptr;
   MPI_Gather(&x, 1, mpi_type_trait<double>::type, p, 1, mpi_type_trait<double>::type, rank, MPI_COMM_WORLD);
   return ret;
@@ -231,7 +231,7 @@ np::ndarray neworder::mpi::gather_array(double x, int rank)
 #endif
 }
 
-double neworder::mpi::scatter_array(np::ndarray x, int rank)
+double neworder::mpi::scatter_array(np::array x, int rank)
 {
 #ifdef NEWORDER_MPI
   neworder::Environment& env = neworder::getenv();
@@ -251,7 +251,7 @@ double neworder::mpi::scatter_array(np::ndarray x, int rank)
 #endif
 }
 
-np::ndarray neworder::mpi::allgather_array(np::ndarray source_dest)
+np::array neworder::mpi::allgather_array(np::array source_dest)
 {
 #ifdef NEWORDER_MPI
   neworder::Environment& env = neworder::getenv();

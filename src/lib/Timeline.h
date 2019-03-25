@@ -1,11 +1,12 @@
 #pragma once
 
+#include "python.h"
+
 #include <vector>
 #include <cstddef>
 
 // fwd decl
 namespace boost { namespace python { class tuple; } }
-namespace py = boost::python;
 
 namespace neworder {
 

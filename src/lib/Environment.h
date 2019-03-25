@@ -17,7 +17,7 @@ namespace neworder {
 // - define the var in C++ and provide a python accessor function
 // for numpy arrays (and pandas DataFrames), C++ and python ref the same data
 
-struct Environment
+struct PYBIND11_EXPORT Environment
 {
 public:
 
@@ -80,7 +80,7 @@ private:
 
   // RNG sequence index
   //size_t m_seqno; use python version for now
-  //np::ndarray m_sequence;
+  //np::array m_sequence;
 
   // MPI rank/size
   int m_rank;

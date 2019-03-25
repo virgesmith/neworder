@@ -114,9 +114,9 @@ void neworder::set_timeline(const py::tuple& spec)
 // Deal with defaulted arguments for certain functions
 // see https://stackoverflow.com/questions/35886682/passing-specific-arguments-to-boost-python-function-with-default-arguments
 
-// np::ndarray first_arrival(const np::ndarray&, double, size_t, double = 0.0);
+// np::array first_arrival(const np::array&, double, size_t, double = 0.0);
 BOOST_PYTHON_FUNCTION_OVERLOADS(first_arrival_default, neworder::first_arrival, 3, 4)
-// np::ndarray next_arrival(const np::ndarray&, const np::ndarray&, double, bool = false, double = 0.0);
+// np::array next_arrival(const np::array&, const np::array&, double, bool = false, double = 0.0);
 BOOST_PYTHON_FUNCTION_OVERLOADS(next_arrival_default, neworder::next_arrival, 3, 5)
 
 
@@ -145,10 +145,10 @@ BOOST_PYTHON_MODULE(neworder)
   // MC
   py::def("ustream", no::ustream);
   // explicitly give function type for overloads 
-  py::def<np::ndarray (*)(double, size_t)>("hazard", no::hazard);
-  py::def<np::ndarray (*)(const np::ndarray&)>("hazard", no::hazard);
-  py::def<np::ndarray (*)(double, size_t)>("stopping", no::stopping);
-  py::def<np::ndarray (*)(const np::ndarray&)>("stopping", no::stopping);
+  py::def<np::array (*)(double, size_t)>("hazard", no::hazard);
+  py::def<np::array (*)(const np::array&)>("hazard", no::hazard);
+  py::def<np::array (*)(double, size_t)>("stopping", no::stopping);
+  py::def<np::array (*)(const np::array&)>("stopping", no::stopping);
   //py::def("stopping_nhpp", no::stopping_nhpp);
   py::def("arrivals", no::arrivals);
   // deal with default minval arg - see above
