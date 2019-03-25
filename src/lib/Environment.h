@@ -6,10 +6,12 @@
 #include "NewOrder.h"
 #include "numpy.h"
 
+#include <pybind11/embed.h>
+
 #include <random>
 #include <string>
 
-namespace neworder {
+namespace no {
 
 // duplication of data between python/C++
 // for scalar, either (whichever is the most efficient):
@@ -17,7 +19,7 @@ namespace neworder {
 // - define the var in C++ and provide a python accessor function
 // for numpy arrays (and pandas DataFrames), C++ and python ref the same data
 
-struct PYBIND11_EXPORT Environment
+struct NEWORDER_EXPORT Environment
 {
 public:
 
@@ -64,9 +66,11 @@ public:
   //operator py::object&() { return m_self; } doesnt implicitly cast
   py::object& operator()() { return *m_self; }
 
-  neworder::Timeline& timeline() { return m_timeline; }
+  no::Timeline& timeline() { return m_timeline; }
 
 private:
+
+  py::scoped_interpreter m_guard; // start the interpreter and keep it alive
 
   // compute the RNG seed
   int64_t compute_seed() const;
@@ -96,7 +100,7 @@ private:
   // thread/process-safe seeding strategy deferred until config loaded
   std::mt19937 m_prng;
 
-  neworder::Timeline m_timeline;
+  no::Timeline m_timeline;
 };
 
 // syntactic sugar

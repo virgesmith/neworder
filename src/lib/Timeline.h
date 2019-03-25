@@ -5,10 +5,8 @@
 #include <vector>
 #include <cstddef>
 
-// fwd decl
-namespace boost { namespace python { class tuple; } }
 
-namespace neworder {
+namespace no {
 
 class Timeline final
 {
@@ -21,7 +19,7 @@ public:
 
   // Timeline(double begin, double end, int n);
 
-  // Timeline(const py/*boost::python*/::tuple& spec);
+  // Timeline(const py::tuple& spec);
 
   ~Timeline() = default;
 

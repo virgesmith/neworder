@@ -7,7 +7,7 @@
 #include <iostream>
 
 // User-defined string literal and overloaded % operator allow for easy vaguely pythonic construction of log messages, e.g.
-// neworder::log("the value of %% plus %% is %%"_s % 2 % "2" % 4.0);
+// no::log("the value of %% plus %% is %%"_s % 2 % "2" % 4.0);
 
 // C++14 implements the ""s -> std::string, use this for C++11
 std::string operator ""_s(const char* p, size_t s)
@@ -51,13 +51,13 @@ std::string to_string_impl(const std::string& v)
 // }
 
 // not visible to python
-void neworder::log(const std::string& msg)
+void no::log(const std::string& msg)
 {
-  std::cout << neworder::getenv().context() << msg << std::endl;
+  std::cout << no::getenv().context() << msg << std::endl;
 }
 
 // not visible to python
-void neworder::log(const py::object& msg)
+void no::log(const py::object& msg)
 {
-  std::cout << neworder::getenv().context() << pycpp::as_string(msg.ptr()) << std::endl;
+  std::cout << no::getenv().context() << pycpp::as_string(msg.ptr()) << std::endl;
 }

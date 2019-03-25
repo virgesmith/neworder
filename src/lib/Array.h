@@ -9,10 +9,6 @@
 
 #include <cstring>
 
-// TODO use boost.python (requires >= 1.63, 16.4 comes with 1.58)
-// or https://github.com/ndarray/Boost.NumPy
-//#include <boost/python/numpy.hpp>
-
 // See https://docs.scipy.org/doc/numpy/reference/c-api.html
 
 namespace pycpp {

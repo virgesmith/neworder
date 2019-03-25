@@ -9,7 +9,7 @@ Windows and OSX are not currently supported, but the long-term plan is to provid
 - [Requirements](#requirements)    
 	- [Install Dependencies](#install-dependencies)      
 	- [Minimum Versions](#minimum-versions)      
-	- [Boost](#boost)      
+	- [PyBind11](#pybind11)      
 - [Build and Test](#build-and-test)
 	- [Standard Build](#standard-build)       
 	- [Parallel Build](#parallel-build)       
@@ -22,8 +22,8 @@ Windows and OSX are not currently supported, but the long-term plan is to provid
 
 ### Install Dependencies
 ```bash
-$ sudo apt install -y build-essential python3 python3-dev python3-pip libboost-python-dev
-$ python3 -m pip install -U numpy pandas
+$ sudo apt install -y build-essential python3 python3-dev python3-pip
+$ python3 -m pip install -U numpy pandas pybind11
 ```
 For parallel execution, you'll first need to make sure you have an implementation of MPI (including a compiler), e.g:
 ```bash
@@ -37,20 +37,23 @@ python: 3.5
 - pandas: 0.23
 
 C++14: gcc 5.4 
-- boost 1.63
+- pybind11 2.2.4
 - MPI (mpich 3.3a2)
 
 
-### Boost
+### PyBind11
 
-`Boost.numpy` was introduced in version 1.63, although 1.65.1 or higher is recommended. If the package version meets this requirement the following steps are nto required.
-
-For platforms that come with older boost versions, see e.g. [this script](../tools/boost_python.sh) which downloads 1.67.0 and builds only the python modules for python3:
+Can be installed using pip
 
 ```bash
-$ ./bootstrap.sh --prefix=/usr/local --with-libraries=python --with-python=$(which python3)
-./b2 cxxflags=-DBOOST_NO_AUTO_PTR install
+(.venv) $ pip install pybind11
 ```
+or
+```bash
+$ python3 -m pip install pybind11
+```
+
+TODO conda...
 
 ## Build and Test
 
@@ -70,7 +73,7 @@ $ make && make test
 For Ubuntu 16.04 / python 3.5 you may need to set the make env like so:
 
 ```bash
-$ make PYVER=3.5 BOOST_PYTHON_LIB=boost_python-py35 && make PYVER=3.5 BOOST_PYTHON_LIB=boost_python-py35 test
+$ make PYVER=3.5 test
 ```
 
 ### Parallel Build
@@ -90,7 +93,6 @@ $ make -f MPI.mk test
 
 ### Issues
 makefile hacks
-boost: version + include dir + lib dir
 openmpi vs mpich?
 pandas 
 
@@ -100,7 +102,6 @@ Below is out of date
 
 Switch to gnu toolchain and add python **but not python-libs** (which are outdated):
 
-Don't use the boost module - is doesn't have the boost-numpy library
 
 ```bash
 $ module switch intel gnu
@@ -110,15 +111,13 @@ Currently Loaded Modulefiles:
   1) licenses        3) gnu/6.3.0       5) user
   2) sge             4) openmpi/2.0.2   6) python/3.6.0
 ```
-Optionally use different g++ or boost versions:
+Optionally use different g++ or python versions:
 ```bash
 $ module switch gnu gnu/7.2.0
-$ module switch boost boost/1.65.1
 $ module switch python python/3.6.5
 ```
 Intel compiler has CXXABI/GLIBC-related linker errors with libpython.
 
-If boost.numpy is missing (as it is on ARC3), then see the [boost](#boost) section above to build 
 
 ~~Currently~~Previously experiencing issues running tests:
 ```

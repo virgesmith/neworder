@@ -20,16 +20,16 @@ void test_py(int nmodules, const char* testmodules[])
 {
   for (int i = 0; i < nmodules; ++i)
   {
-    py::object module = py::module::import(testmodules[i]);
+    py::module module = py::module::import(testmodules[i]);
     py::object testfunc = module.attr("test");
-    neworder::log("running test %%.py"_s % testmodules[i]);
+    no::log("running test %%.py"_s % testmodules[i]);
     CHECK(testfunc().cast<bool>());
   }
 }
 
 int run(int rank, int size, bool indep, int nmodules, const char* testmodules[]) 
 {
-  neworder::Environment& env = neworder::Environment::init(rank, size, indep);
+  no::Environment& env = no::Environment::init(rank, size, indep);
   try
   {
     // load module, call func with args
@@ -39,7 +39,7 @@ int run(int rank, int size, bool indep, int nmodules, const char* testmodules[])
     // module (C++) tests
     test_no();
     test_env();
-    test_np(); // boost.Python.numpy
+    test_np(); 
     test_mpi();
     test_errors();
 
@@ -50,7 +50,7 @@ int run(int rank, int size, bool indep, int nmodules, const char* testmodules[])
   }
   catch(py::error_already_set&)
   {
-    std::cerr << "%%ERROR (py::error_already_set): %%"_s % env.context(neworder::Environment::PY) % env.get_error() << std::endl;
+    std::cerr << "%%ERROR (py::error_already_set): %%"_s % env.context(no::Environment::PY) % env.get_error() << std::endl;
     return 1;
   }
   catch(std::exception& e)

@@ -9,10 +9,10 @@
 
 
 // This function must be used to init the environment
-neworder::Environment& neworder::Environment::init(int rank, int size, bool indep)
+no::Environment& no::Environment::init(int rank, int size, bool indep)
 {
   // make our rank/size visible to python
-  Environment& env = neworder::getenv();
+  Environment& env = no::getenv();
 
   // // to "share" scalars across C++ and python, use the py::extract<> object
   // env.m_self->attr("rank") = rank;
@@ -25,7 +25,7 @@ neworder::Environment& neworder::Environment::init(int rank, int size, bool inde
 
   env.m_seed = env.compute_seed();
 
-  neworder::log("env: seed=%% python %%"_s % env.m_seed % version());
+  no::log("env: seed=%% python %%"_s % env.m_seed % version());
 
   env.m_prng.seed(env.m_seed);
 
@@ -36,66 +36,66 @@ neworder::Environment& neworder::Environment::init(int rank, int size, bool inde
 
 
 // syntactic sugar
-neworder::Environment& neworder::getenv()
+no::Environment& no::getenv()
 {
   return Global::instance<Environment>();
 }
 
 // MPI rank (0 if serial)
-int neworder::Environment::rank()
+int no::Environment::rank()
 {
-  if (!neworder::getenv().m_init)
+  if (!no::getenv().m_init)
     throw std::runtime_error("accessing %% before init called"_s % __FUNCTION__);
-  return neworder::getenv().m_rank;
+  return no::getenv().m_rank;
 }
 
 // MPI size (1 if serial)
-int neworder::Environment::size()
+int no::Environment::size()
 {
-  if (!neworder::getenv().m_init)
+  if (!no::getenv().m_init)
     throw std::runtime_error("accessing %% before init called"_s % __FUNCTION__);
-  return neworder::getenv().m_size;
+  return no::getenv().m_size;
 }
 
 // MPI random stream independence (true if serial)
-bool neworder::Environment::indep()
+bool no::Environment::indep()
 {
-  if (!neworder::getenv().m_init)
+  if (!no::getenv().m_init)
     throw std::runtime_error("accessing %% before init called"_s % __FUNCTION__);
-  return neworder::getenv().m_indep;
+  return no::getenv().m_indep;
 }
 
-void neworder::Environment::reset()
+void no::Environment::reset()
 {
-  if (!neworder::getenv().m_init)
+  if (!no::getenv().m_init)
     throw std::runtime_error("accessing %% before init called"_s % __FUNCTION__);
-  neworder::getenv().m_prng.seed(neworder::getenv().m_seed);
+  no::getenv().m_prng.seed(no::getenv().m_seed);
 }
 
 
-std::string neworder::Environment::context(int ctx) const
+std::string no::Environment::context(int ctx) const
 {
   std::string idstring = "[%% %%/%%] "_s % (ctx == 0 ? "no" : "py") % m_rank % m_size;
   return idstring;
 }
 
 // compute the RNG seed
-int64_t neworder::Environment::compute_seed() const
+int64_t no::Environment::compute_seed() const
 {
   // ensure stream (in)dependence w.r.t. sequence and MPI rank/sizes
   return 77027473 * 0 + 19937 * m_size + m_rank * m_indep;  
 }
 
-std::mt19937& neworder::Environment::prng()
+std::mt19937& no::Environment::prng()
 {
   return m_prng;
 }
 
 // Note this does not fully initialise, do not construct directly, use the static init function
-neworder::Environment::Environment() : m_init(false) //: m_sequence(neworder::zero_1d_array<int64_t>(1))
+no::Environment::Environment() : m_init(false), m_guard() //: m_sequence(no::zero_1d_array<int64_t>(1))
 {
   // make the neworder module available in embedded python env
-  neworder::import_module();
+  no::import_module();
 
   // Init python env
   Py_Initialize();
@@ -106,11 +106,11 @@ neworder::Environment::Environment() : m_init(false) //: m_sequence(neworder::ze
   m_self = new py::module("neworder");
   
   // dummy sequence (needs to be read from config.py - which hasnt been loaded yet)
-  // m_self->attr("sequence") = neworder::zero_1d_array<int64_t>(1);
+  // m_self->attr("sequence") = no::zero_1d_array<int64_t>(1);
   // m_self->attr("seq") = 0;
 } 
 
-neworder::Environment::~Environment() 
+no::Environment::~Environment() 
 {
   // Python >=3.6
   // if (Py_FinalizeEx() < 0)
@@ -122,7 +122,7 @@ neworder::Environment::~Environment()
 
 // check for errors in the python env: if it returns, there is no error
 // copied from: https://wiki.python.org/moin/boost.python/EmbeddingPython
-std::string neworder::Environment::get_error() noexcept
+std::string no::Environment::get_error() noexcept
 {
   // see PyErr_Fetch: https://docs.python.org/3/c-api/exceptions.html
   std::string message;
@@ -151,13 +151,13 @@ std::string neworder::Environment::get_error() noexcept
   return "unable to determine python error";
 }
 
-std::string neworder::Environment::version()
+std::string no::Environment::version()
 {
   static std::string version_string;
   // Get and display python version - only do once
   if (version_string.empty())
   {
-    py::module sys("sys");
+    py::module sys = py::module::import("sys");
     version_string = sys.attr("version").cast<std::string>();
     std::replace(version_string.begin(), version_string.end(), '\n', ' ');
   }

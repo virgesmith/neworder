@@ -106,7 +106,7 @@ namespace format {
 
 }
 
-namespace neworder {
+namespace no {
 
 // msg is forcibly coerced to a string
 void log(const py::object& msg);

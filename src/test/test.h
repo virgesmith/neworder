@@ -12,9 +12,9 @@ struct Test
   size_t f;
 };
 
-#define LOG_INFO(x) neworder::log(x)
-#define LOG_WARNING(x) neworder::log(x)
-#define LOG_ERROR(x) neworder::log(x)
+#define LOG_INFO(x) no::log(x)
+#define LOG_WARNING(x) no::log(x)
+#define LOG_ERROR(x) no::log(x)
 
 #define CHECK(cond) \
   ++Global::instance<Test>().t; \

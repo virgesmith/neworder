@@ -50,7 +50,7 @@ struct mpi_type_trait<double>
 
 #endif
 
-namespace neworder {
+namespace no {
 namespace mpi {
 
 // sendrecv distribution policies
@@ -102,10 +102,10 @@ template<>
 void receive(std::string& data, int process);
 
 template<typename T>
-T& sendrecv(T& data, neworder::mpi::DistPolicy dist_policy = neworder::mpi::DistPolicy::CHAIN_FWD_WRAPPED)
+T& sendrecv(T& data, no::mpi::DistPolicy dist_policy = no::mpi::DistPolicy::CHAIN_FWD_WRAPPED)
 {
 #ifdef NEWORDER_MPI
-  neworder::Environment& env = neworder::getenv();
+  no::Environment& env = no::getenv();
   int source, dest;
   // CHAIN_FWD_WRAPPED
   switch (dist_policy)
@@ -144,7 +144,7 @@ template<typename T>
 std::vector<T>& gather(const T& source, std::vector<T>& dest, int process)
 {
 #ifdef NEWORDER_MPI
-  neworder::Environment& env = neworder::getenv();
+  no::Environment& env = no::getenv();
   // If rank=process, return the array, otherwise return an empty array
   T* p = nullptr;
   if (env.rank() == process)
@@ -165,7 +165,7 @@ template<typename T>
 T& scatter(const std::vector<T>& source, T& dest, int process)
 {
 #ifdef NEWORDER_MPI
-  neworder::Environment& env = neworder::getenv();
+  no::Environment& env = no::getenv();
   // If rank=process, return the array, otherwise return an empty array
   T* p = nullptr;
   if (env.rank() == process)
@@ -183,7 +183,7 @@ template<typename T>
 std::vector<T>& allgather(std::vector<T>& source_dest)
 {
 #ifdef NEWORDER_MPI
-  neworder::Environment& env = neworder::getenv();
+  no::Environment& env = no::getenv();
   // If rank=process, return the array, otherwise return an empty array
   if (source_dest.size() < (size_t)env.size())
     throw std::runtime_error("allgather array size %% is smaller than MPI size (%%)"_s % source_dest.size() % env.size());
@@ -198,4 +198,4 @@ std::vector<T>& allgather(std::vector<T>& source_dest)
 
 void sync();
 
-}} // neworder::mpi
+}} // no::mpi

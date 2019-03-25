@@ -60,23 +60,23 @@ struct mpi_type_trait<std::string>
 };
 #endif
 
-namespace neworder { namespace mpi {
+namespace no { namespace mpi {
 
 template<>
 void send(const std::string& data, int process)
 {
-  // neworder::log("send length %%"_s % size);
+  // no::log("send length %%"_s % size);
   MPI_Send(data.data(), data.size(), mpi_type_trait<std::string>::type, process, 0, MPI_COMM_WORLD);
-  // neworder::log("send %%"_s % data.substr(40));
+  // no::log("send %%"_s % data.substr(40));
 }
 
 template<>
 void send(const Buffer& data, int process)
 {
   //MPI_Send(&data.size, 1, mpi_type_trait<int>::type, process, 0, MPI_COMM_WORLD);
-  //neworder::log("buf send length %%"_s % data.size);
+  //no::log("buf send length %%"_s % data.size);
   MPI_Send(data.buf, data.size, mpi_type_trait<Buffer>::type, process, 0, MPI_COMM_WORLD);
-  // neworder::log("send %%"_s % data.substr(40));
+  // no::log("send %%"_s % data.substr(40));
 }
 
 template<>
@@ -89,7 +89,7 @@ void receive(std::string& data, int process)
   // When probe returns, the status object has the size and other attributes of the incoming message. Get the message size
   int size;
   MPI_Get_count(&status, mpi_type_trait<std::string>::type, &size);
-  neworder::log("str recv length %%"_s % size);
+  no::log("str recv length %%"_s % size);
 
   data.resize(size);
   MPI_Recv(&data[0], size, mpi_type_trait<std::string>::type, process, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
@@ -105,7 +105,7 @@ void receive(Buffer& data, int process)
   // When probe returns, the status object has the size and other attributes of the incoming message. Get the message size
   int size;
   MPI_Get_count(&status, mpi_type_trait<Buffer>::type, &size);
-  //neworder::log("buf recv length %%"_s % size);
+  //no::log("buf recv length %%"_s % size);
 
   data.alloc(size);
   MPI_Recv(data.buf, data.size, mpi_type_trait<Buffer>::type, process, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
@@ -133,7 +133,7 @@ void broadcast(std::string& data, int process)
 
 
 // to the next rank 
-void neworder::mpi::send_obj(const py::object& o, int rank)
+void no::mpi::send_obj(const py::object& o, int rank)
 {
 #ifdef NEWORDER_MPI
   py::object pickle = py::module::import("pickle");
@@ -145,14 +145,14 @@ void neworder::mpi::send_obj(const py::object& o, int rank)
 
   // something along the lines of (see https://docs.python.org/3.6/c-api/buffer.html)
   //std::string s(PyBytes_AsString(serialised.ptr()), py::len(serialised)); 
-  //neworder::log("sending %% (len %%) to 1"_s % s % s.size());
+  //no::log("sending %% (len %%) to 1"_s % s % s.size());
   send(b, rank);
 #else
   throw std::runtime_error("%% not implemented (binary doesn't support MPI)"_s % __FUNCTION__);
 #endif
 }
 
-py::object neworder::mpi::receive_obj(int rank)
+py::object no::mpi::receive_obj(int rank)
 {
 #ifdef NEWORDER_MPI
   Buffer b(nullptr, 0);
@@ -161,14 +161,14 @@ py::object neworder::mpi::receive_obj(int rank)
   py::object pickle = py::module::import("pickle");
 
   py::object o = pickle.attr("loads")(py::handle(PyBytes_FromStringAndSize(b.buf, b.size)));
-  //neworder::log("got %% from %%"_s % s % rank);
+  //no::log("got %% from %%"_s % s % rank);
   return o;
 #else
   throw std::runtime_error("%% not implemented (binary doesn't support MPI)"_s % __FUNCTION__);
 #endif
 }
 
-void neworder::mpi::send_csv(const py::object& df, int rank)
+void no::mpi::send_csv(const py::object& df, int rank)
 {
 #ifdef NEWORDER_MPI
   py::object io = py::module::import("io");
@@ -185,7 +185,7 @@ void neworder::mpi::send_csv(const py::object& df, int rank)
 #endif
 }
 
-py::object neworder::mpi::receive_csv(int rank)
+py::object no::mpi::receive_csv(int rank)
 {
 #ifdef NEWORDER_MPI
   std::string buf;
@@ -205,7 +205,7 @@ py::object neworder::mpi::receive_csv(int rank)
 
 // Broadcast object from rank to all other procs
 // Have to return by value as (some) python objects are immutable 
-py::object neworder::mpi::broadcast_obj(py::object& o, int rank)
+py::object no::mpi::broadcast_obj(py::object& o, int rank)
 {
 #ifdef NEWORDER_MPI
   py::object pickle = py::module::import("pickle");
@@ -218,10 +218,10 @@ py::object neworder::mpi::broadcast_obj(py::object& o, int rank)
 #endif
 }
 
-np::array neworder::mpi::gather_array(double x, int rank)
+np::array no::mpi::gather_array(double x, int rank)
 {
 #ifdef NEWORDER_MPI
-  neworder::Environment& env = neworder::getenv();
+  no::Environment& env = no::getenv();
   np::array ret = pycpp::empty_1d_array<double>(rank == env.rank() ? env.size() : 0);
   double* p = (rank == env.rank()) ? pycpp::begin<double>(ret) : nullptr;
   MPI_Gather(&x, 1, mpi_type_trait<double>::type, p, 1, mpi_type_trait<double>::type, rank, MPI_COMM_WORLD);
@@ -231,10 +231,10 @@ np::array neworder::mpi::gather_array(double x, int rank)
 #endif
 }
 
-double neworder::mpi::scatter_array(np::array x, int rank)
+double no::mpi::scatter_array(np::array x, int rank)
 {
 #ifdef NEWORDER_MPI
-  neworder::Environment& env = neworder::getenv();
+  no::Environment& env = no::getenv();
   // If rank=process, return the array, otherwise return an empty array
   double dest;
   double* p = nullptr;
@@ -251,10 +251,10 @@ double neworder::mpi::scatter_array(np::array x, int rank)
 #endif
 }
 
-np::array neworder::mpi::allgather_array(np::array source_dest)
+np::array no::mpi::allgather_array(np::array source_dest)
 {
 #ifdef NEWORDER_MPI
-  neworder::Environment& env = neworder::getenv();
+  no::Environment& env = no::getenv();
   // If rank=process, return the array, otherwise return an empty array
   if (pycpp::size(source_dest) < (size_t)env.size())
     throw std::runtime_error("allgather array size %% is smaller than MPI size (%%)"_s % pycpp::size(source_dest) % env.size());
@@ -268,12 +268,12 @@ np::array neworder::mpi::allgather_array(np::array source_dest)
 #endif
 }
 
-void neworder::mpi::sync()
+void no::mpi::sync()
 {
 #ifdef NEWORDER_MPI
-  //neworder::log("waiting for other processes...");
+  //no::log("waiting for other processes...");
   MPI_Barrier(MPI_COMM_WORLD);
-  //neworder::log("...resuming");
+  //no::log("...resuming");
 // #else
 //   throw std::runtime_error("%% not implemented (binary doesn't support MPI)"_s % __FUNCTION__);
 #endif

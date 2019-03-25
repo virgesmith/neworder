@@ -5,7 +5,7 @@
 #include <vector>
 #include <map>
 
-namespace neworder {
+namespace no {
 
 // Define a piece of python code to be exec/eval-u(a)ted on calling operator()
 // Perhaps better named LazyEval?
@@ -53,7 +53,7 @@ NEWORDER_EXPORT void set_timeline(const py::tuple& spec);
 
 NEWORDER_EXPORT void import_module();
 
-} // namespace neworder
+} // namespace no
 
 
 

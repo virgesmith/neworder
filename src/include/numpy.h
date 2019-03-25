@@ -42,19 +42,21 @@ inline size_t size(const np::array& a)
   return a.size();
 }
 
+// TODO safer implementation
 template<typename T>
 T& at(np::array& a, size_t index)
 {
   // Flattened indexing. TODO reuse Index from humanleague if necess
   // if (a.get_nd() != 1)
   //   throw std::runtime_error("np::array dim>1");
-  return *(reinterpret_cast<T*>(a.mutable_data((int)index)));
+  return *(reinterpret_cast<T*>(a.mutable_data(0)) + index);
 }
 
+// TODO safer implementation
 template<typename T>
 const T& at(const np::array& a, size_t index)
 {
-  return *(reinterpret_cast<const T*>(a.data((int)index)));
+  return *(reinterpret_cast<const T*>(a.data(0)) + index);
 }
 
 template<typename T>

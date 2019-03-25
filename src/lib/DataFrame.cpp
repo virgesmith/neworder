@@ -24,7 +24,7 @@ size_t interp(const std::vector<double>& cumprob, double x)
 // TODO one-off-
 // categories are all possible categorty labels. Order corresponds to row/col in matrix
 // matrix is a transition matrix
-void neworder::df::transition(np::array categories, np::array matrix, py::object &df, const std::string& colname)
+void no::df::transition(np::array categories, np::array matrix, py::object &df, const std::string& colname)
 {
   // Extract column from DF as np.array
   np::array col = df.attr(colname.c_str());
@@ -71,10 +71,10 @@ void neworder::df::transition(np::array categories, np::array matrix, py::object
     lookup[pycpp::at<int64_t>(categories, i)] = i;
   }
 
-  // neworder::log("row %% %% %% %%..."_s % p[0] % p[1] % p[2] % p[3]);
-  // neworder::log("col %% %% %% %%..."_s % p[0] % p[m] % p[2*m] % p[3*m]);
+  // no::log("row %% %% %% %%..."_s % p[0] % p[1] % p[2] % p[3]);
+  // no::log("col %% %% %% %%..."_s % p[0] % p[m] % p[2*m] % p[3*m]);
 
-  std::mt19937& prng = neworder::getenv().prng();
+  std::mt19937& prng = no::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
   size_t n = pycpp::size(col);
@@ -91,14 +91,14 @@ void neworder::df::transition(np::array categories, np::array matrix, py::object
       continue;
     int64_t j = it->second;
     int64_t k = interp(cumprobs[j], r[i]);
-    //neworder::log("interp %%:%% -> %%"_s % j % r[i] % k);
+    //no::log("interp %%:%% -> %%"_s % j % r[i] % k);
     pycpp::at<int64_t>(col, i) = pycpp::at<int64_t>(categories, k);
   }
-  neworder::log("transition %% elapsed: %%"_s % n % t.elapsed_s());
+  no::log("transition %% elapsed: %%"_s % n % t.elapsed_s());
 }
 
 // example of directly modifying a DF?
-void neworder::df::directmod(py::object& df, const std::string& colname)
+void no::df::directmod(py::object& df, const std::string& colname)
 {
   // .values? pd.Series -> np.array?
   np::array arr = df.attr(colname.c_str());
@@ -111,7 +111,7 @@ void neworder::df::directmod(py::object& df, const std::string& colname)
 }
 
 
-void neworder::df::linked_change(py::object& df, const std::string& cat, const std::string& link_cat)
+void no::df::linked_change(py::object& df, const std::string& cat, const std::string& link_cat)
 {
   // .values? pd.Series -> np.array?
   np::array arr0 = df.attr(cat.c_str()); // this is a reference 
@@ -126,7 +126,7 @@ void neworder::df::linked_change(py::object& df, const std::string& cat, const s
 }
 
 // // append two DFs? pointless to call c++ that just calls python
-// py::object neworder::df::append(const py::object& df1, const py::object& df2)
+// py::object no::df::append(const py::object& df1, const py::object& df2)
 // {
 //   py::dict kwargs;
 //   kwargs["ignore_index"] = true;

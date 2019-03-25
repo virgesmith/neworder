@@ -6,8 +6,8 @@
 // for now, only vectorised in the sense the code is compiled (and the compiler is free to choose SIMD if it sees fit)
 // TODO if bottleneck help compiler's SIMD vectorisation using ideally openmp directives
 
-namespace neworder { namespace nparray {
+namespace no { namespace nparray {
 
 np::array isnever(const np::array& x);
 
-}} //neworder::nparray
+}} //no::nparray

@@ -12,9 +12,6 @@
 #include <iostream>
 #include <cstdlib>
 
-// TODO Logger...?
-namespace no = neworder;
-
 void append_model_paths(const char* paths[], size_t n)
 {
   if (!paths || !n) return;
@@ -34,12 +31,12 @@ void append_model_paths(const char* paths[], size_t n)
 
 int run(int rank, int size, bool indep)
 {
-  neworder::Environment& env = neworder::Environment::init(rank, size, indep);
+  no::Environment& env = no::Environment::init(rank, size, indep);
   Timer timer;
   try
   {
     // Load (and exec) config file
-    py::object config = py::module::import("config");
+    py::module config = py::module::import("config");
     // Update the env accordingly
     //env.configure(config);
 
@@ -53,7 +50,7 @@ int run(int rank, int size, bool indep)
     if (pycpp::has_attr(env(), "timeline"))
     {
       py::tuple t = env().attr("timeline");
-      neworder::set_timeline(t);
+      no::set_timeline(t);
       // set (possibly override) timestep if timeline specified
       env().attr("timestep") = env.timeline().dt();
     }
@@ -71,7 +68,7 @@ int run(int rank, int size, bool indep)
 
     // TODO more info re defaulted timeline and overridden timestep
     double dt = env().attr("timestep").cast<double>(); 
-    neworder::log("starting microsimulation. timestep=%%, checkpoint(s) at %%"_s % dt % env.timeline().checkpoints());
+    no::log("starting microsimulation. timestep=%%, checkpoint(s) at %%"_s % dt % env.timeline().checkpoints());
 
     // modifiers (exec)
     no::CallbackArray modifierArray; 
@@ -129,8 +126,8 @@ int run(int rank, int size, bool indep)
       std::string class_name = kv.second.attr("class_").cast<std::string>();
       py::list args = kv.second.attr("parameters");
 
-      neworder::log("t=%%(%%) initialise: %%"_s % env.timeline().time() % env.timeline().index() % name);
-      py::object module = py::module::import(modulename.c_str());
+      no::log("t=%%(%%) initialise: %%"_s % env.timeline().time() % env.timeline().index() % name);
+      py::module module = py::module::import(modulename.c_str());
       py::object class_ = module.attr(class_name.c_str());
       py::object object = pycpp::Functor(class_, args)();
 
@@ -141,7 +138,7 @@ int run(int rank, int size, bool indep)
     // Apply any modifiers for this process
     if (!modifierArray.empty())
     {
-      neworder::log("t=%%(%%) modifier: %%"_s % env.timeline().time() % env.timeline().index() % modifierArray[env.rank()].code());
+      no::log("t=%%(%%) modifier: %%"_s % env.timeline().time() % env.timeline().index() % modifierArray[env.rank()].code());
       modifierArray[env.rank()]();
     }
 
@@ -158,12 +155,12 @@ int run(int rank, int size, bool indep)
 
       for (auto it = transitionTable.begin(); it != transitionTable.end(); ++it)
       {
-        neworder::log("t=%%(%%) transition: %% "_s % t % timeindex % it->first);
+        no::log("t=%%(%%) transition: %% "_s % t % timeindex % it->first);
         (it->second)();  
       }
       for (auto it = checkTable.begin(); it != checkTable.end(); ++it)
       {
-        neworder::log("t=%%(%%) check: %% "_s % t % timeindex % it->first);
+        no::log("t=%%(%%) check: %% "_s % t % timeindex % it->first);
         bool ok = it->second().cast<bool>();
         if (!ok) 
         {
@@ -174,18 +171,18 @@ int run(int rank, int size, bool indep)
       {
         for (auto it = checkpointTable.begin(); it != checkpointTable.end(); ++it)
         {
-          neworder::log("t=%%(%%) checkpoint: %%"_s % t % timeindex % it->first);   
+          no::log("t=%%(%%) checkpoint: %%"_s % t % timeindex % it->first);   
           // Note: return value is ignored (exec not eval)
           (it->second)();  
         }
       } 
     }
     while (!env.timeline().end());
-    neworder::log("SUCCESS exec time=%%s"_s % timer.elapsed_s());
+    no::log("SUCCESS exec time=%%s"_s % timer.elapsed_s());
   }
   catch(py::error_already_set&)
   {
-    std::cerr << "%% ERROR: %%"_s % env.context(neworder::Environment::PY) % env.get_error() << std::endl;
+    std::cerr << "%% ERROR: %%"_s % env.context(no::Environment::PY) % env.get_error() << std::endl;
     return 1;
   }
   catch(std::exception& e)

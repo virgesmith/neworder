@@ -8,7 +8,7 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace neworder {
+namespace no {
 
 // Uniform random [0,1) fed from the environment's PRNG stream
 np::array ustream(size_t n);
@@ -26,10 +26,6 @@ np::array stopping(double prob, size_t n);
 
 // vector stopping 
 np::array stopping(const np::array& prob);
-
-// DEPRECATED - NO LONGER EXPOSED TO PYTHON (use first_arrival)
-// vector stopping for non-homogeneous poisson process (i.e. time-dependent hazard rate)
-np::array stopping_nhpp(const np::array& lambda_t, double dt, size_t n);
 
 // multiple-arrival (0+) process (requires that final hazard rate is zero)
 np::array arrivals(const np::array& lambda_t, double dt, double gap, size_t n);

@@ -13,7 +13,7 @@
 // // Realised random outcomes based on vector of hazard rates
 // struct Hazard : pycpp::UnaryArrayOp<int, double>
 // {
-//   Hazard() : m_prng(neworder::getenv().prng()), m_dist(0.0, 1.0) { }      
+//   Hazard() : m_prng(no::getenv().prng()), m_dist(0.0, 1.0) { }      
 
 //   int operator()(double p)
 //   {
@@ -34,7 +34,7 @@
 // // Turns vector of hazard rates into random stopping times
 // struct Stopping : pycpp::UnaryArrayOp<double, double>
 // {
-//   Stopping() : m_prng(neworder::getenv().prng()), m_dist(0.0, 1.0) { }      
+//   Stopping() : m_prng(no::getenv().prng()), m_dist(0.0, 1.0) { }      
 
 //   double operator()(double p)
 //   {
@@ -51,27 +51,27 @@
 //   std::uniform_real_distribution<double> m_dist;  
 // };
 
-np::array neworder::ustream(size_t n)
+np::array no::ustream(size_t n)
 {
-  std::mt19937& prng = neworder::getenv().prng();
+  std::mt19937& prng = no::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
   return pycpp::make_array<double>(n, [&](){ return dist(prng); });
 }
 
 // simple hazard constant probability 
-NEWORDER_EXPORT np::array neworder::hazard(double prob, size_t n)
+NEWORDER_EXPORT np::array no::hazard(double prob, size_t n)
 {
-  std::mt19937& prng = neworder::getenv().prng();
+  std::mt19937& prng = no::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
   return pycpp::make_array<int>(n, [&]() { return (dist(prng) < prob) ? 1 : 0; });
 }
 
 // hazard with varying probablities 
-np::array neworder::hazard(const np::array& prob)
+np::array no::hazard(const np::array& prob)
 {
-  std::mt19937& prng = neworder::getenv().prng();
+  std::mt19937& prng = no::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
   py::array_t<int> result(prob.size());
@@ -87,18 +87,18 @@ np::array neworder::hazard(const np::array& prob)
 }
 
 // computes stopping times 
-NEWORDER_EXPORT np::array neworder::stopping(double prob, size_t n)
+NEWORDER_EXPORT np::array no::stopping(double prob, size_t n)
 {
-  std::mt19937& prng = neworder::getenv().prng();
+  std::mt19937& prng = no::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
   double rprob = 1.0 / prob;
 
   return pycpp::make_array<double>(n, [&]() { return -::log(dist(prng)) * rprob; });
 }
 
-np::array neworder::stopping(const np::array& prob)
+np::array no::stopping(const np::array& prob)
 {
-  std::mt19937& prng = neworder::getenv().prng();
+  std::mt19937& prng = no::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
   py::array_t<double> result(prob.size());
@@ -114,57 +114,11 @@ np::array neworder::stopping(const np::array& prob)
   // return f(prob);
 }
 
-// DEPRECATED - NO LONGER EXPOSED TO PYTHON (use first_arrival)
-// MC stopping time for a non-homogeneous poisson process, given
-// a piecewise-constant hazard rate with spacing dt=1
-// uses the thinning algorithm described in: 
-// Lewis, Peter A., and Gerald S. Shedler. "Simulation of nonhomogeneous Poisson processes by thinning." Naval Research Logistics (NRL) 26.3 (1979): 403-413.
-// See also explanation in Glasserman, Monte-Carlo Methods in Financial Engineering, 2003, pp140-141
-// np::array neworder::stopping_nhpp(const np::array& lambda_t, double dt, size_t n)
-// {
-//   std::mt19937& prng = neworder::getenv().prng();
-//   std::uniform_real_distribution<> dist(0.0, 1.0);
-
-//   const double* pl = pycpp::cbegin<double>(lambda_t);
-//   size_t nl = pycpp::size(lambda_t);
-
-//   // validate lambdas - but what exactly is valid?
-//   if (pl[nl-1] == 0.0)
-//   {
-//     throw std::runtime_error("Non-homogeneous Poisson process requires a nonzero final hazard rate");
-//   }
-//   // for (size_t i = 0; i < nl; ++i)
-//   // {
-//   //   if (pl[i] <= 0.0 || pl[i] >= 1.0)
-//   //     throw std::runtime_error("Lewis-Shedler algorithm requires probabilities in (0,1): element %% is %%"_s % i % pl[i]);
-//   // }
-
-//   // What is the optimal lambda_u? For now largest value
-//   double lambda_u = *std::max_element(pl, pl + nl);
-//   double lambda_i;
-
-//   np::array times = pycpp::empty_1d_array<double>(n);
-//   double* pt = pycpp::begin<double>(times);
-
-//   for (size_t i = 0; i < n; ++i)
-//   {
-//     // rejection sampling
-//     pt[i] = 0.0;
-//     do 
-//     {
-//       pt[i] += -::log(dist(prng)) / lambda_u;
-//       // final entry in lambda_t is flat extrapolated...
-//       lambda_i = pl[ std::min((size_t)(pt[i] / dt), nl-1) ];
-//     } while (dist(prng) > lambda_i / lambda_u);
-//   }
-//   return times;
-// }
-
 
 // multiple-arrival (0+) process 
-np::array neworder::arrivals(const np::array& lambda_t, double dt, double gap, size_t n)
+np::array no::arrivals(const np::array& lambda_t, double dt, double gap, size_t n)
 {
-  std::mt19937& prng = neworder::getenv().prng();
+  std::mt19937& prng = no::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
   const double* pl = pycpp::cbegin<double>(lambda_t);
@@ -203,7 +157,7 @@ np::array neworder::arrivals(const np::array& lambda_t, double dt, double gap, s
         lambda_i = pl[ std::min((size_t)(pt / dt), nl-1) ];
         if (pt > tmax && lambda_i == 0.0)
         {
-          pt = neworder::Timeline::never();
+          pt = no::Timeline::never();
           break;
         }
       } while (dist(prng) > lambda_i / lambda_u);
@@ -211,11 +165,11 @@ np::array neworder::arrivals(const np::array& lambda_t, double dt, double gap, s
       pt += gap;
     } while (pt < tmax);
     imax = std::max(times[i].size(), imax);
-    //neworder::log("%%: %%"_s % i % times[i]);
+    //no::log("%%: %%"_s % i % times[i]);
   }
 
   np::array nptimes = np::empty<double>({n, imax- 1});
-  pycpp::fill(nptimes, neworder::Timeline::never());
+  pycpp::fill(nptimes, no::Timeline::never());
   double* pa = pycpp::begin<double>(nptimes);
 
   for (size_t i = 0; i < times.size(); ++i)
@@ -230,9 +184,9 @@ np::array neworder::arrivals(const np::array& lambda_t, double dt, double gap, s
   return nptimes;
 }
 
-np::array neworder::first_arrival(const np::array& lambda_t, double dt, size_t n, double minval)
+np::array no::first_arrival(const np::array& lambda_t, double dt, size_t n, double minval)
 {
-  std::mt19937& prng = neworder::getenv().prng();
+  std::mt19937& prng = no::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
   const double* pl = pycpp::cbegin<double>(lambda_t);
@@ -258,7 +212,7 @@ np::array neworder::first_arrival(const np::array& lambda_t, double dt, size_t n
       // deal with open case (event not certain to happen)
       if (pt[i] > tmax && lambda_i == 0.0)
       {
-        pt[i] = neworder::Timeline::never();
+        pt[i] = no::Timeline::never();
         break;
       }
     } while (dist(prng) > lambda_i / lambda_u);
@@ -267,12 +221,12 @@ np::array neworder::first_arrival(const np::array& lambda_t, double dt, size_t n
 }
 
 // next-arrival process - times of transition from a state arrived at at startingpoints to a subsequent state, with an optional deterministic minimum separation
-// if the state hasn't been arrived at (neworder::never())
-np::array neworder::next_arrival(const np::array& startingpoints, const np::array& lambda_t, double dt, bool relative, double minsep)
+// if the state hasn't been arrived at (no::never())
+np::array no::next_arrival(const np::array& startingpoints, const np::array& lambda_t, double dt, bool relative, double minsep)
 {
   size_t n = pycpp::size(startingpoints);
 
-  std::mt19937& prng = neworder::getenv().prng();
+  std::mt19937& prng = no::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
   const double* pl = pycpp::cbegin<double>(lambda_t);
@@ -292,9 +246,9 @@ np::array neworder::next_arrival(const np::array& startingpoints, const np::arra
     // account for any deterministic time lag (e.g. 9 months between births)
     double offset = pycpp::at<double>(startingpoints, i) + minsep;
     // skip if we haven't actually arrived at the state to transition from
-    if (neworder::Timeline::isnever(offset))
+    if (no::Timeline::isnever(offset))
     {
-      pt[i] = neworder::Timeline::never();
+      pt[i] = no::Timeline::never();
       continue;
     }
     // offset if lambdas in absolute time (not relative to start point)
@@ -306,7 +260,7 @@ np::array neworder::next_arrival(const np::array& startingpoints, const np::arra
       lambda_i = pl[ std::min((size_t)(pt[i] / dt), nl-1) ];
       if (pt[i] > tmax && lambda_i == 0.0)
       {
-        pt[i] = neworder::Timeline::never();
+        pt[i] = no::Timeline::never();
         break;
       }
     } while (dist(prng) > lambda_i / lambda_u);

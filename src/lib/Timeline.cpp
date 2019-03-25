@@ -7,12 +7,12 @@
 #include <algorithm>
 
 // Default "null" timeline is just one step of arbitrary size
-neworder::Timeline::Timeline() : m_checkpoints{1}, m_steps(1), m_begin(0.0), m_dt(0.0), m_index(0), m_time(0.0) 
+no::Timeline::Timeline() : m_checkpoints{1}, m_steps(1), m_begin(0.0), m_dt(0.0), m_index(0), m_time(0.0) 
 { 
 
 }
 
-neworder::Timeline::Timeline(const std::vector<double>& checkpoint_times, size_t nsteps) 
+no::Timeline::Timeline(const std::vector<double>& checkpoint_times, size_t nsteps) 
   : m_checkpoints(checkpoint_times.size()), m_steps(nsteps)
 {
   size_t n = checkpoint_times.size();
@@ -47,27 +47,27 @@ neworder::Timeline::Timeline(const std::vector<double>& checkpoint_times, size_t
   m_time = m_begin;
 }
 
-double neworder::Timeline::time() const 
+double no::Timeline::time() const 
 { 
   return m_time; 
 }
 
-size_t neworder::Timeline::index() const 
+size_t no::Timeline::index() const 
 { 
   return m_index; 
 }
 
-double neworder::Timeline::dt() const 
+double no::Timeline::dt() const 
 { 
   return m_dt; 
 }
 
-size_t neworder::Timeline::nsteps() const 
+size_t no::Timeline::nsteps() const 
 { 
   return m_steps; 
 }
 
-void neworder::Timeline::step()
+void no::Timeline::step()
 {
   if (m_index < m_checkpoints.back())
   {
@@ -76,42 +76,42 @@ void neworder::Timeline::step()
   }
 }
 
-bool neworder::Timeline::is_checkpoint() const
+bool no::Timeline::is_checkpoint() const
 {
   return std::find(m_checkpoints.begin(), m_checkpoints.end(), m_index) != m_checkpoints.end();
 }
 
-const std::vector<size_t>& neworder::Timeline::checkpoints() const
+const std::vector<size_t>& no::Timeline::checkpoints() const
 {
   return m_checkpoints;
 }
 
-bool neworder::Timeline::end() const
+bool no::Timeline::end() const
 {
   return m_index == m_steps;
 }
 
 // returns a floating point number that compares less than any other number
-double neworder::Timeline::distant_past()
+double no::Timeline::distant_past()
 {
   return -std::numeric_limits<double>::max();
 }
 
 // returns a floating point number that compares greater than any other number
-double neworder::Timeline::far_future()
+double no::Timeline::far_future()
 {
   return std::numeric_limits<double>::max();
 }
 
 // returns a floating point number that compares unequal to (and unordered w.r.t) any other number
 // thus the following all evaluate to true: never() != never(), !(x < never()), !(x >= never()) (so be careful!)
-double neworder::Timeline::never()
+double no::Timeline::never()
 {
   return std::numeric_limits<double>::quiet_NaN();
 }
 
 // use this rather than direct comparison to never, as NaN != NaN (as above) 
-bool neworder::Timeline::isnever(double t)
+bool no::Timeline::isnever(double t)
 {
   return std::isnan(t);
 }
