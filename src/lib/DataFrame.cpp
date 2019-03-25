@@ -69,7 +69,6 @@ void neworder::df::transition(np::ndarray categories, np::ndarray matrix, py::ob
   for (int i = 0; i < m; ++i)
   {
     lookup[pycpp::at<int64_t>(categories, i)] = i;
-    //neworder::log("%%->%%"_s % pycpp::at<int64_t>(categories, i) % lookup[pycpp::at<int64_t>(categories, i)]);
   }
 
   // neworder::log("row %% %% %% %%..."_s % p[0] % p[1] % p[2] % p[3]);
@@ -86,8 +85,11 @@ void neworder::df::transition(np::ndarray categories, np::ndarray matrix, py::ob
 
   for (size_t i = 0; i < n; ++i)
   {
-    // look up the index...
-    int64_t j = lookup[pycpp::at<int64_t>(col, i)];
+    // look up the index, ignoring values that havent been explicitly set in categories (like -1)
+    auto it = lookup.find(pycpp::at<int64_t>(col, i));
+    if (it == lookup.end())
+      continue;
+    int64_t j = it->second;
     int64_t k = interp(cumprobs[j], r[i]);
     //neworder::log("interp %%:%% -> %%"_s % j % r[i] % k);
     pycpp::at<int64_t>(col, i) = pycpp::at<int64_t>(categories, k);
@@ -109,11 +111,28 @@ void neworder::df::directmod(py::object& df, const std::string& colname)
   }
 }
 
-// append two DFs?
-py::object neworder::df::append(const py::object& df1, const py::object& df2)
+
+void neworder::df::linked_change(py::object& df, const std::string& cat, const std::string& link_cat)
 {
-  py::dict kwargs;
-  kwargs["ignore_index"] = true;
-  py::object result = df1.attr("append")(df2, kwargs);
-  return result;
+  py::object col0 = df.attr(cat.c_str());
+  // .values? pd.Series -> np.array?
+  np::ndarray arr0 = np::from_object(col0); // this is a reference 
+  py::object col1 = df.attr(link_cat.c_str());
+  // .values? pd.Series -> np.array?
+  np::ndarray arr1 = np::from_object(col1); // this is a reference 
+
+  throw std::runtime_error("ongoing dev (liam2-demo07?)");
+  // for ()
+  // {
+
+  // }
 }
+
+// // append two DFs? pointless to call c++ that just calls python
+// py::object neworder::df::append(const py::object& df1, const py::object& df2)
+// {
+//   py::dict kwargs;
+//   kwargs["ignore_index"] = true;
+//   py::object result = df1.attr("append")(df2, kwargs);
+//   return result;
+// }

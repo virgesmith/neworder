@@ -161,7 +161,7 @@ BOOST_PYTHON_MODULE(neworder)
   // working on pandas df manipulation  
   py::def("transition", no::df::transition);
   py::def("directmod", no::df::directmod);
-  py::def("append", no::df::append, py::return_value_policy<py::return_by_value>());
+  py::def("linked_change", no::df::linked_change, py::return_value_policy<py::return_by_value>());
 
   // MPI
   py::def("rank", neworder::Environment::rank);

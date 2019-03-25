@@ -17,9 +17,11 @@ testharness_mpi
 
 # data
 dm*.csv
-**/data/
+#**/data/
 
 # MODGEN example code
 **/Chapter*/ModgenExample
 # bulk data
 examples/people_multi/data
+
+.venv/
