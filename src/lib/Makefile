@@ -11,8 +11,6 @@ $(shell mkdir -p $(INTDIR))
 
 CXXFLAGS += -I../include
 
-#LDFLAGS += -l$(BOOST_PYTHON_LIB) -l$(BOOST_NUMPY_LIB)
-
 all: libneworder$(SUFFIX).so
 
 libneworder$(SUFFIX).so: $(obj)

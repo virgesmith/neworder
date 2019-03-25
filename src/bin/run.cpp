@@ -98,36 +98,39 @@ int run(int rank, int size, bool indep)
     no::CallbackTable checkTable; 
     if (do_checks)
     {
-      py::list checks = py::dict(env().attr("checks")).items();
-      for (int i = 0; i < py::len(checks); ++i)
+      py::dict checks = py::dict(env().attr("checks"));
+      for (const auto& kv: checks)
       {
-        checkTable.insert(std::make_pair(checks[i][0].cast<std::string>(), no::Callback::eval(checks[i][1].cast<std::string>())));
+        checkTable.insert(std::make_pair(kv.first.cast<std::string>(), no::Callback::eval(kv.second.cast<std::string>())));
       }
     }
 
     // execs
     no::CallbackTable checkpointTable; 
-    py::list checkpoints = py::dict(env().attr("checkpoints")).items();
-    for (int i = 0; i < py::len(checkpoints); ++i)
+    py::dict checkpoints = py::dict(env().attr("checkpoints"));
+    for (const auto& kv: checkpoints)
     {
-      checkpointTable.insert(std::make_pair(checkpoints[i][0].cast<std::string>(), no::Callback::exec(checkpoints[i][1].cast<std::string>())));
+      checkpointTable.insert(std::make_pair(kv.first.cast<std::string>(), no::Callback::exec(kv.second.cast<std::string>())));
     }
     // Iterate over sequence(s) //do {
 
     // reset stuff...
     // initialisations...
     // list of module-class-constructor args -> list of objects
-    py::list initialisations = py::dict(env().attr("initialisations")).items();
-    for (int i = 0; i < py::len(initialisations); ++i)
+    py::dict initialisations = py::dict(env().attr("initialisations"));
+    for (const auto& kv: initialisations)
     {
-      py::dict spec = py::dict(initialisations[i][1]);
-      std::string modulename = py::extract<std::string>(spec["module"])();
-      std::string class_name = py::extract<std::string>(spec["class_"])();
-      py::list args = py::list(spec["parameters"]);
+      const std::string& name = kv.first.cast<std::string>();
+      //py::dict spec = kv.second;
+      // std::string modulename = spec["module"].cast<std::string>();
+      // std::string class_name = spec["class_"].cast<std::string>();
+      //py::list args = py::list(spec["parameters"]);
+      std::string modulename = kv.second.attr("module").cast<std::string>();
+      std::string class_name = kv.second.attr("class_").cast<std::string>();
+      py::list args = kv.second.attr("parameters");
 
-      const std::string name = py::extract<std::string>(initialisations[i][0])();
       neworder::log("t=%%(%%) initialise: %%"_s % env.timeline().time() % env.timeline().index() % name);
-      py::object module = py::import(modulename.c_str());
+      py::object module = py::module::import(modulename.c_str());
       py::object class_ = module.attr(class_name.c_str());
       py::object object = pycpp::Functor(class_, args)();
 
@@ -161,7 +164,7 @@ int run(int rank, int size, bool indep)
       for (auto it = checkTable.begin(); it != checkTable.end(); ++it)
       {
         neworder::log("t=%%(%%) check: %% "_s % t % timeindex % it->first);
-        bool ok = py::extract<bool>((it->second)())();
+        bool ok = it->second().cast<bool>();
         if (!ok) 
         {
           throw std::runtime_error("check failed");

@@ -11,8 +11,6 @@ $(info $(dep))
 $(info $(obj))
 $(shell mkdir -p $(INTDIR))
 
-LDFLAGS += -l$(BOOST_PYTHON_LIB) -l$(BOOST_NUMPY_LIB)
-
 all: neworder$(SUFFIX)
 
 neworder$(SUFFIX): $(obj)
