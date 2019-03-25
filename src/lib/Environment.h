@@ -64,13 +64,14 @@ public:
 
   // returns the env as a python object 
   //operator py::object&() { return m_self; } doesnt implicitly cast
-  py::object& operator()() { return *m_self; }
+  py::module& operator()() { return *m_self; }
 
   no::Timeline& timeline() { return m_timeline; }
 
 private:
 
-  py::scoped_interpreter m_guard; // start the interpreter and keep it alive
+  // TODO reinstate when this is no longer static lifetime
+  //py::scoped_interpreter m_guard; // start the interpreter and keep it alive
 
   // compute the RNG seed
   int64_t compute_seed() const;
@@ -96,7 +97,7 @@ private:
   int64_t m_seed;
 
   // TODO work out why this segfaults if the dtor is called (even on exit)
-  py::object* m_self;
+  py::module* m_self;
   // thread/process-safe seeding strategy deferred until config loaded
   std::mt19937 m_prng;
 

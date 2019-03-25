@@ -92,16 +92,14 @@ std::mt19937& no::Environment::prng()
 }
 
 // Note this does not fully initialise, do not construct directly, use the static init function
-no::Environment::Environment() : m_init(false), m_guard() //: m_sequence(no::zero_1d_array<int64_t>(1))
+no::Environment::Environment() : m_init(false) //, m_guard() segfaults on exit (presumably called **too late** (singleton))
 {
+  py::initialize_interpreter();
   // make the neworder module available in embedded python env
-  no::import_module();
+  //no::import_module();
 
-  // Init python env
-  Py_Initialize();
-
-  // init numpy
-  np::initialize();
+  // // init numpy
+  // np::initialize();
 
   m_self = new py::module("neworder");
   
@@ -112,12 +110,6 @@ no::Environment::Environment() : m_init(false), m_guard() //: m_sequence(no::zer
 
 no::Environment::~Environment() 
 {
-  // Python >=3.6
-  // if (Py_FinalizeEx() < 0)
-  // {
-  //   // report an error...somehow
-  // }
-  Py_Finalize();
 }
 
 // check for errors in the python env: if it returns, there is no error
