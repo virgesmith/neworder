@@ -97,8 +97,8 @@ def test():
   # it's possible this could fail depending on random draw
   t.check(np.array_equal(np.sort(df["DC2101EW_C_ETHPUK11"].unique()), np.array(range(4))))
 
-  df2 = df.copy()
-  df3 = no.append(df,df2)
-  t.check(len(df3) == len(df) + len(df2)) 
+  # df2 = df.copy()
+  # df3 = no.append(df,df2)
+  # t.check(len(df3) == len(df) + len(df2)) 
 
   return not t.any_failed
