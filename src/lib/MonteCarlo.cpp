@@ -10,46 +10,46 @@
 #include <algorithm>
 #include <cmath>
 
-// Realised random outcomes based on vector of hazard rates
-struct Hazard : pycpp::UnaryArrayOp<int, double>
-{
-  Hazard() : m_prng(neworder::getenv().prng()), m_dist(0.0, 1.0) { }      
+// // Realised random outcomes based on vector of hazard rates
+// struct Hazard : pycpp::UnaryArrayOp<int, double>
+// {
+//   Hazard() : m_prng(neworder::getenv().prng()), m_dist(0.0, 1.0) { }      
 
-  int operator()(double p)
-  {
-    return (m_dist(m_prng) < p) ? 1 : 0;
-  }
+//   int operator()(double p)
+//   {
+//     return (m_dist(m_prng) < p) ? 1 : 0;
+//   }
 
-  // implementing the above function in a derived class hides the (below) base-class implementations of operator() 
-  // see https://stackoverflow.com/questions/1628768/why-does-an-overridden-function-in-the-derived-class-hide-other-overloads-of-the/1629074#1629074
-  // force it to be visible:
-  using pycpp::UnaryArrayOp<int, double>::operator();
+//   // implementing the above function in a derived class hides the (below) base-class implementations of operator() 
+//   // see https://stackoverflow.com/questions/1628768/why-does-an-overridden-function-in-the-derived-class-hide-other-overloads-of-the/1629074#1629074
+//   // force it to be visible:
+//   using pycpp::UnaryArrayOp<int, double>::operator();
 
-private:
-  std::mt19937& m_prng;
-  std::uniform_real_distribution<double> m_dist;  
-};
+// private:
+//   std::mt19937& m_prng;
+//   std::uniform_real_distribution<double> m_dist;  
+// };
 
 
-// Turns vector of hazard rates into random stopping times
-struct Stopping : pycpp::UnaryArrayOp<double, double>
-{
-  Stopping() : m_prng(neworder::getenv().prng()), m_dist(0.0, 1.0) { }      
+// // Turns vector of hazard rates into random stopping times
+// struct Stopping : pycpp::UnaryArrayOp<double, double>
+// {
+//   Stopping() : m_prng(neworder::getenv().prng()), m_dist(0.0, 1.0) { }      
 
-  double operator()(double p)
-  {
-    return -::log(m_dist(m_prng)) / p;
-  } 
+//   double operator()(double p)
+//   {
+//     return -::log(m_dist(m_prng)) / p;
+//   } 
 
-  // implementing the above function in a derived class hides the (below) base-class implementations of operator() 
-  // see https://stackoverflow.com/questions/1628768/why-does-an-overridden-function-in-the-derived-class-hide-other-overloads-of-the/1629074#1629074
-  // force it to be visible:
-  using pycpp::UnaryArrayOp<double, double>::operator();
+//   // implementing the above function in a derived class hides the (below) base-class implementations of operator() 
+//   // see https://stackoverflow.com/questions/1628768/why-does-an-overridden-function-in-the-derived-class-hide-other-overloads-of-the/1629074#1629074
+//   // force it to be visible:
+//   using pycpp::UnaryArrayOp<double, double>::operator();
 
-private:
-  std::mt19937& m_prng;
-  std::uniform_real_distribution<double> m_dist;  
-};
+// private:
+//   std::mt19937& m_prng;
+//   std::uniform_real_distribution<double> m_dist;  
+// };
 
 np::array neworder::ustream(size_t n)
 {
@@ -68,12 +68,12 @@ np::array neworder::hazard(double prob, size_t n)
   return pycpp::make_array<int>(n, [&]() { return (dist(prng) < prob) ? 1 : 0; });
 }
 
-// hazard with varying probablities 
-np::array neworder::hazard(const np::array& prob)
-{
-  Hazard f;
-  return f(prob);
-}
+// // hazard with varying probablities 
+// np::array neworder::hazard(const np::array& prob)
+// {
+//   Hazard f;
+//   return f(prob);
+// }
 
 // computes stopping times 
 np::array neworder::stopping(double prob, size_t n)
@@ -85,11 +85,11 @@ np::array neworder::stopping(double prob, size_t n)
   return pycpp::make_array<double>(n, [&]() { return -::log(dist(prng)) * rprob; });
 }
 
-np::array neworder::stopping(const np::array& prob)
-{
-  Stopping f;
-  return f(prob);
-}
+// np::array neworder::stopping(const np::array& prob)
+// {
+//   Stopping f;
+//   return f(prob);
+// }
 
 // DEPRECATED - NO LONGER EXPOSED TO PYTHON (use first_arrival)
 // MC stopping time for a non-homogeneous poisson process, given
@@ -102,7 +102,7 @@ np::array neworder::stopping_nhpp(const np::array& lambda_t, double dt, size_t n
   std::mt19937& prng = neworder::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
-  double* pl = pycpp::begin<double>(lambda_t);
+  const double* pl = pycpp::cbegin<double>(lambda_t);
   size_t nl = pycpp::size(lambda_t);
 
   // validate lambdas - but what exactly is valid?
@@ -144,7 +144,7 @@ np::array neworder::arrivals(const np::array& lambda_t, double dt, double gap, s
   std::mt19937& prng = neworder::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
-  double* pl = pycpp::begin<double>(lambda_t);
+  const double* pl = pycpp::cbegin<double>(lambda_t);
   size_t nl = pycpp::size(lambda_t);
 
   // validate lambdas - but what exactly is valid?
@@ -191,7 +191,7 @@ np::array neworder::arrivals(const np::array& lambda_t, double dt, double gap, s
     //neworder::log("%%: %%"_s % i % times[i]);
   }
 
-  np::array nptimes = np::empty(py::make_tuple(n, imax- 1), np::dtype::get_builtin<double>());
+  np::array nptimes = np::empty<double>({n, imax- 1});
   pycpp::fill(nptimes, neworder::Timeline::never());
   double* pa = pycpp::begin<double>(nptimes);
 
@@ -212,7 +212,7 @@ np::array neworder::first_arrival(const np::array& lambda_t, double dt, size_t n
   std::mt19937& prng = neworder::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
-  double* pl = pycpp::begin<double>(lambda_t);
+  const double* pl = pycpp::cbegin<double>(lambda_t);
   size_t nl = pycpp::size(lambda_t);
 
   // What is the optimal lambda_u? For now largest value
@@ -252,7 +252,7 @@ np::array neworder::next_arrival(const np::array& startingpoints, const np::arra
   std::mt19937& prng = neworder::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
-  double* pl = pycpp::begin<double>(lambda_t);
+  const double* pl = pycpp::cbegin<double>(lambda_t);
   size_t nl = pycpp::size(lambda_t);
   double tmax = (nl - 1) * dt;
 

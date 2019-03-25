@@ -39,20 +39,20 @@ int run(int rank, int size, bool indep)
   try
   {
     // Load (and exec) config file
-    py::object config = py::import("config");
+    py::object config = py::module::import("config");
     // Update the env accordingly
     //env.configure(config);
 
-    bool do_checks= py::extract<bool>(env().attr("do_checks"))();
+    bool do_checks = env().attr("do_checks").cast<bool>();
 
-    int log_level = py::extract<int>(env().attr("log_level"))();
+    int log_level = env().attr("log_level").cast<int>();
     // TODO actually do something with log_level...
     (void)log_level;
 
     // timeline comes in as a (double, double..., int) tuple: (begin, [checkpoint, [checkpoint,]]... end, n)
     if (pycpp::has_attr(env(), "timeline"))
     {
-      py::tuple t = py::extract<py::tuple>(env().attr("timeline"));
+      py::tuple t = env().attr("timeline");
       neworder::set_timeline(t);
       // set (possibly override) timestep if timeline specified
       env().attr("timestep") = env.timeline().dt();
@@ -70,7 +70,7 @@ int run(int rank, int size, bool indep)
 
 
     // TODO more info re defaulted timeline and overridden timestep
-    double dt = py::extract<double>(env().attr("timestep")); 
+    double dt = env().attr("timestep").cast<double>(); 
     neworder::log("starting microsimulation. timestep=%%, checkpoint(s) at %%"_s % dt % env.timeline().checkpoints());
 
     // modifiers (exec)
@@ -81,18 +81,17 @@ int run(int rank, int size, bool indep)
       int n = py::len(modifiers);
       modifierArray.reserve(n);
       for (int i = 0; i < n; ++i)
-      {
-        modifierArray.push_back(no::Callback::exec(py::extract<std::string>(modifiers[i])()));
+      {        
+        modifierArray.push_back(no::Callback::exec(modifiers[i].cast<std::string>()));
       }
     }
 
     // transiations (exec)
     no::CallbackTable transitionTable; 
-    py::list transitions = py::dict(env().attr("transitions")).items();
-    for (int i = 0; i < py::len(transitions); ++i)
+    py::dict transitions = py::dict(env().attr("transitions")); //.items();
+    for (const auto& kv: transitions)
     {
-      transitionTable.insert(std::make_pair(py::extract<std::string>(transitions[i][0])(), 
-                                            no::Callback::exec(py::extract<std::string>(transitions[i][1])())));
+      transitionTable.insert(std::make_pair(kv.first.cast<std::string>(), no::Callback::exec(kv.second.cast<std::string>())));
     }
 
     // checks (eval)
@@ -102,8 +101,7 @@ int run(int rank, int size, bool indep)
       py::list checks = py::dict(env().attr("checks")).items();
       for (int i = 0; i < py::len(checks); ++i)
       {
-        checkTable.insert(std::make_pair(py::extract<std::string>(checks[i][0])(), 
-                                        no::Callback::eval(py::extract<std::string>(checks[i][1])())));
+        checkTable.insert(std::make_pair(checks[i][0].cast<std::string>(), no::Callback::eval(checks[i][1].cast<std::string>())));
       }
     }
 
@@ -112,8 +110,7 @@ int run(int rank, int size, bool indep)
     py::list checkpoints = py::dict(env().attr("checkpoints")).items();
     for (int i = 0; i < py::len(checkpoints); ++i)
     {
-      checkpointTable.insert(std::make_pair(py::extract<std::string>(checkpoints[i][0])(), 
-                                            no::Callback::exec(py::extract<std::string>(checkpoints[i][1])())));
+      checkpointTable.insert(std::make_pair(checkpoints[i][0].cast<std::string>(), no::Callback::exec(checkpoints[i][1].cast<std::string>())));
     }
     // Iterate over sequence(s) //do {
 

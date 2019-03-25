@@ -13,6 +13,8 @@
 
 #include "python.h"
 
+#include <pybind11/embed.h>
+
 #include <iostream>
 
 namespace {
@@ -38,17 +40,18 @@ neworder::Callback neworder::Callback::exec(const std::string& code)
 neworder::Callback::Callback(const std::string& code, bool exec/*, const std::string& locals*/) : m_exec(exec), m_code(code)
 {
   // assuming they ref current env
-  m_globals = py::import("__main__").attr("__dict__");
-  m_locals = py::import("neworder").attr("__dict__");
+  m_globals = py::module::import("__main__").attr("__dict__");
+  m_locals = py::module::import("neworder").attr("__dict__");
 }
 
 py::object neworder::Callback::operator()() const 
 {
-  // see https://www.boost.org/doc/libs/1_66_0/libs/python/doc/html/reference/embedding.html#embedding.boost_python_exec_hpp
+  py::scoped_interpreter guard{};
   // evaluate the global/local namespaces at the last minute? or do they update dynamically?
   if (m_exec)
   {
-    return py::exec(m_code.c_str(), m_globals, m_locals);
+    py::exec(m_code.c_str(), m_globals, m_locals);
+    return py::object();
   }
   else
   {
@@ -83,7 +86,7 @@ void neworder::shell(/*const py::object& local*/)
   kwargs["exitmsg"] = py::str("[exiting neworder debug shell]");
   //py::import("neworder");
   //kwargs["local"] = py::handle<>(PyObject_Dir());
-  py::object interpreter = py::import("code").attr("interact")(*py::tuple(), **kwargs);
+  py::object interpreter = py::module::import("code").attr("interact")(*py::tuple(), **kwargs);
 }
 
 
@@ -95,18 +98,18 @@ void neworder::set_timeline(const py::tuple& spec)
   for (size_t i = 0; i < n - 1; ++i)
   {
     // allow integer (or float) values
-    py::extract<int> intval(spec[i]);
-    if (intval.check())
+    py::int_ intval();
+    if (py::isinstance<py::int_>(spec[i]))
     {
-      checkpoint_times[i] = intval();
+      checkpoint_times[i] = spec[i].cast<int>();
     }
     else
     {
-      checkpoint_times[i] = py::extract<double>(spec[i]);
+      checkpoint_times[i] = spec[i].cast<double>();
     }
   }
 
-  size_t nsteps = py::extract<int>(spec[n-1]);
+  size_t nsteps = spec[n-1].cast<int>();
 
   getenv().timeline() = Timeline(checkpoint_times, nsteps);
 }
@@ -115,70 +118,70 @@ void neworder::set_timeline(const py::tuple& spec)
 // see https://stackoverflow.com/questions/35886682/passing-specific-arguments-to-boost-python-function-with-default-arguments
 
 // np::array first_arrival(const np::array&, double, size_t, double = 0.0);
-BOOST_PYTHON_FUNCTION_OVERLOADS(first_arrival_default, neworder::first_arrival, 3, 4)
+//BOOST_PYTHON_FUNCTION_OVERLOADS(first_arrival_default, neworder::first_arrival, 3, 4)
 // np::array next_arrival(const np::array&, const np::array&, double, bool = false, double = 0.0);
-BOOST_PYTHON_FUNCTION_OVERLOADS(next_arrival_default, neworder::next_arrival, 3, 5)
+//BOOST_PYTHON_FUNCTION_OVERLOADS(next_arrival_default, neworder::next_arrival, 3, 5)
 
 
 // python-visible log function defined above
 
-BOOST_PYTHON_MODULE(neworder)
+PYBIND11_EMBEDDED_MODULE(neworder_, m)
 {
   namespace no = neworder;
 
   // utility/diagnostics
-  py::def("name", no::module_name);
-  py::def("version", no::module_version);
-  py::def("python", no::python_version);
-  py::def("log", log_obj);
-  py::def("shell", no::shell);
-  py::def("reseed", neworder::Environment::reset);
+  m.def("name", no::module_name);
+  m.def("version", no::module_version);
+  m.def("python", no::python_version);
+  m.def("log", log_obj);
+  m.def("shell", no::shell);
+  m.def("reseed", neworder::Environment::reset);
 
   // time-related
-  //py::def("set_timeline", no::set_timeline);
-  py::def("distant_past", no::Timeline::distant_past);
-  py::def("far_future", no::Timeline::far_future);
-  py::def("never", no::Timeline::never);
-  py::def("isnever", no::Timeline::isnever); // scalar 
-  py::def("isnever", no::nparray::isnever); // array
+  //m.def("set_timeline", no::set_timeline);
+  m.def("distant_past", no::Timeline::distant_past);
+  m.def("far_future", no::Timeline::far_future);
+  m.def("never", no::Timeline::never);
+  m.def("isnever", no::Timeline::isnever); // scalar 
+  m.def("isnever", no::nparray::isnever); // array
   
   // MC
-  py::def("ustream", no::ustream);
+  m.def("ustream", no::ustream);
   // explicitly give function type for overloads 
-  py::def<np::array (*)(double, size_t)>("hazard", no::hazard);
-  py::def<np::array (*)(const np::array&)>("hazard", no::hazard);
-  py::def<np::array (*)(double, size_t)>("stopping", no::stopping);
-  py::def<np::array (*)(const np::array&)>("stopping", no::stopping);
-  //py::def("stopping_nhpp", no::stopping_nhpp);
-  py::def("arrivals", no::arrivals);
+  m.def<np::array (*)(double, size_t)>("hazard", no::hazard);
+  m.def<np::array (*)(const np::array&)>("hazard", no::hazard);
+  m.def<np::array (*)(double, size_t)>("stopping", no::stopping);
+  m.def<np::array (*)(const np::array&)>("stopping", no::stopping);
+  //m.def("stopping_nhpp", no::stopping_nhpp);
+  m.def("arrivals", no::arrivals);
   // deal with default minval arg - see above
-  py::def("first_arrival", no::first_arrival, first_arrival_default(py::args("lambda_t", "dt", "n", "minval")));
-  py::def("next_arrival", no::next_arrival, next_arrival_default(py::args("startingpoints", "lambda_t", "delta_t", "relative", "minsep")));
+  m.def("first_arrival", no::first_arrival); //, first_arrival_default(py::args("lambda_t", "dt", "n", "minval")));
+  m.def("next_arrival", no::next_arrival); //, next_arrival_default(py::args("startingpoints", "lambda_t", "delta_t", "relative", "minsep")));
 
-  py::def("lazy_exec", no::Callback::exec);
-  py::def("lazy_eval", no::Callback::eval);
+  m.def("lazy_exec", no::Callback::exec);
+  m.def("lazy_eval", no::Callback::eval);
 
   // working on pandas df manipulation  
-  py::def("transition", no::df::transition);
-  py::def("directmod", no::df::directmod);
-  py::def("linked_change", no::df::linked_change, py::return_value_policy<py::return_by_value>());
+  m.def("transition", no::df::transition);
+  m.def("directmod", no::df::directmod);
+  m.def("linked_change", no::df::linked_change /*, py::return_value_policy<py::return_by_value>()*/);
 
   // MPI
-  py::def("rank", neworder::Environment::rank);
-  py::def("size", neworder::Environment::size);
-  py::def("send", no::mpi::send_obj);
-  py::def("receive", no::mpi::receive_obj);
-  py::def("send_csv", no::mpi::send_csv);
-  py::def("receive_csv", no::mpi::receive_csv);
-  py::def("broadcast", no::mpi::broadcast_obj);
-  py::def("gather", no::mpi::gather_array);
-  py::def("scatter", no::mpi::scatter_array);
-  py::def("allgather", no::mpi::allgather_array/*, py::return_value_policy<py::return_by_value>()*/);
-  py::def("sync", no::mpi::sync);
-  py::def("indep", neworder::Environment::indep);
+  m.def("rank", neworder::Environment::rank);
+  m.def("size", neworder::Environment::size);
+  m.def("send", no::mpi::send_obj);
+  m.def("receive", no::mpi::receive_obj);
+  m.def("send_csv", no::mpi::send_csv);
+  m.def("receive_csv", no::mpi::receive_csv);
+  m.def("broadcast", no::mpi::broadcast_obj);
+  m.def("gather", no::mpi::gather_array);
+  m.def("scatter", no::mpi::scatter_array);
+  m.def("allgather", no::mpi::allgather_array/*, py::return_value_policy<py::return_by_value>()*/);
+  m.def("sync", no::mpi::sync);
+  m.def("indep", neworder::Environment::indep);
   
   // Deferred eval/exec of Python code
-  py::class_<no::Callback>("Callback", py::no_init)
+  py::class_<no::Callback>(m, "Callback"/*, py::no_init*/)
     .def("__call__", &no::Callback::operator())
     .def("__str__", &no::Callback::code)
     ;
@@ -201,9 +204,9 @@ BOOST_PYTHON_MODULE(neworder)
 
 }
 
-void neworder::import_module()
-{
-  // First register callback module
-  PyImport_AppendInittab(module_name(), &PyInit_neworder);
-}
+// void neworder::import_module()
+// {
+//   // First register callback module
+//   PyImport_AppendInittab(module_name(), &PyInit_neworder);
+// }
 

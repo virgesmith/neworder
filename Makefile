@@ -9,16 +9,16 @@ BOOST_NUMPY_LIB=
 #BOOST_PYTHON_LIB=boost_python36
 #BOOST_NUMPY_LIB=boost_numpy36
 # override for custom boost lib/location
-BOOST_EXTRA_CXXFLAGS=
-BOOST_EXTRA_LDFLAGS=
+#BOOST_EXTRA_CXXFLAGS=
+#BOOST_EXTRA_LDFLAGS=
 
 
 # Query python env for compile and link settings
 #CXXFLAGS = $(shell python$(PYVER)-config --cflags | sed 's/-Wstrict-prototypes//g' | sed 's/-O3//g') -I$(shell python$(PYVER) -c "import numpy;print(numpy.get_include())")
 CXXFLAGS = $(shell python3 -m pybind11 --includes)
 CXXFLAGS += -O2 -Werror -Wno-error=deprecated-declarations -fPIC -std=c++14 -pedantic
-CXXFLAGS += -DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION -DBOOST_NO_AUTO_PTR $(BOOST_EXTRA_CXXFLAGS)
-LDFLAGS := $(shell python$(PYVER)-config --ldflags) $(BOOST_EXTRA_LDFLAGS)
+CXXFLAGS += -DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION
+LDFLAGS := $(shell python$(PYVER)-config --ldflags) 
 
 # MPI not enabled
 SUFFIX :=

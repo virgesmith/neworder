@@ -51,6 +51,12 @@ T& at(np::array& a, size_t index)
 }
 
 template<typename T>
+const T& at(const np::array& a, size_t index)
+{
+  return *(reinterpret_cast<const T*>(a.data((int)index)));
+}
+
+template<typename T>
 T* begin(np::array& a)
 {
   return reinterpret_cast<T*>(a.mutable_data(0));
@@ -66,6 +72,12 @@ template<typename T>
 T* end(const np::array& a)
 {
   return begin<T>(a) + size(a);
+}
+
+template<typename T>
+const T* cend(const np::array& a)
+{
+  return cbegin<T>(a) + size(a);
 }
 
 // Uninitialised 1d array
@@ -88,7 +100,7 @@ template<typename T>
 np::array make_array(size_t n, const std::function<T()>& f)
 {
   np::array a = pycpp::empty_1d_array<T>(n); 
-  T* p = reinterpret_cast<T*>(a.data());
+  T* p = reinterpret_cast<T*>(a.mutable_data());
   std::generate(p, p + n, f);
   return a;
 }
@@ -96,7 +108,7 @@ np::array make_array(size_t n, const std::function<T()>& f)
 template<typename T>
 np::array& fill(np::array& a, T val)
 {
-  T* p = reinterpret_cast<T*>(a.data());
+  T* p = reinterpret_cast<T*>(a.mutable_data());
   size_t n = pycpp::size(a);
   std::fill(p, p + n, val);
   return a;
