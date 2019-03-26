@@ -141,12 +141,15 @@ PYBIND11_EMBEDDED_MODULE(neworder, m)
 
   m.def("arrivals", no::arrivals);
   // deal with default minval arg
-  m.def<np::array (*)(const np::array&, double, size_t)>("first_arrival", no::first_arrival);
+  m.def<np::array (*)(const np::array&, double, size_t)>("first_arrival", [](const np::array& lambda_t, double dt, size_t n) { 
+                                                                            return no::first_arrival(lambda_t, dt, n, 0.0); });
   m.def<np::array (*)(const np::array&, double, size_t, double)>("first_arrival", no::first_arrival);
    
   // deal with default relative and minval args
-  m.def<np::array (*)(const np::array&, const np::array&, double)>("next_arrival", no::next_arrival); 
-  m.def<np::array (*)(const np::array&, const np::array&, double, bool)>("next_arrival", no::next_arrival); 
+  m.def<np::array (*)(const np::array&, const np::array&, double)>("next_arrival", [](const np::array& startingpoints, const np::array& lambda_t, double dt) { 
+                                                                                    return no::next_arrival(startingpoints, lambda_t, dt, false, 0.0); }); 
+  m.def<np::array (*)(const np::array&, const np::array&, double, bool)>("next_arrival", [](const np::array& startingpoints, const np::array& lambda_t, double dt, bool relative) { 
+                                                                                    return no::next_arrival(startingpoints, lambda_t, dt, relative, 0.0); }); 
   m.def<np::array (*)(const np::array&, const np::array&, double, bool, double)>("next_arrival", no::next_arrival); 
 
   m.def("lazy_exec", no::Callback::exec);
