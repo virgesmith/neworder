@@ -70,8 +70,8 @@ void test_np()
 
   // Can't modify DF values directly as 2d-array (it copies), need to select individual columns
   // np::array v = df.attr("Changed");
-  // //v[0] = "MOVED!";
-  // // check changed
+  // v[0] = "MOVED!";
+  // check changed
   // CHECK(no::Callback::eval("df.Changed[0] == 'MOVED!'")());
   // // check unchanged
   // CHECK(no::Callback::eval("df.Changed[1] == 'E02000001'")());
@@ -109,15 +109,16 @@ void test_np()
   //   double m_c;
   // };
 
-  // np::array in = pycpp::zero_1d_array<double>(9);
+  np::array in = pycpp::zero_1d_array<double>(9);
   // UnaryArrayFunc f(1.0, 2.75);
-  // np::array out = f(in);
-  // CHECK(pycpp::at<double>(out, 0) == 2.75);
+  np::array out = pycpp::unary_op<double, double>(in, [](double x) { return 1.0 * x + 2.75; });
+  CHECK(pycpp::at<double>(out, 0) == 2.75);
 
   // BinaryArrayFunc g(3.125, 1.0);
   // np::array out2 = g(in, out);
+  np::array out2 = pycpp::binary_op<double, double, double>(in, out, [](double x, double y) { return 3.125 * (x + y) + 1.0; });
   
-  // CHECK(pycpp::at<double>(out2, 0) == 2.75 * 3.125 + 1.0);
+  CHECK(pycpp::at<double>(out2, 0) == 2.75 * 3.125 + 1.0);
 
   // Test vector-scalar operations
   // Inner product - rather than having operator() for syntactic sugar I'm using the constructor for this purpose
@@ -152,9 +153,19 @@ void test_np()
   //   double m_result;
   // };
 
-  // np::array v1 = pycpp::make_array<double>(10, [](){ return 2.0; });
-  // np::array v2 = pycpp::make_array<double>(10, [](){ return 0.5; });
-  // CHECK(DotFunc(v1, v2) == 10.0);
+  auto dot = [](const np::array& x, const np::array& y) { 
+    np::array products = pycpp::binary_op<double, double, double>(x, y, [](double a, double b){ return a * b; });
+    double result = 0.0;
+    for (double* p = pycpp::begin<double>(products); p != pycpp::end<double>(products); ++p)
+    {
+      result += *p;
+    }
+    return result;
+  };
+
+  np::array v1 = pycpp::make_array<double>(10, [](){ return 2.0; });
+  np::array v2 = pycpp::make_array<double>(10, [](){ return 0.5; });
+  CHECK(dot(v1, v2) == 10.0);
 
   // // now see if it works with vector * scalar
   // py::object scalar(1.0);

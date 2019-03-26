@@ -8,6 +8,7 @@
 // create a np namespace
 namespace np {
   using py::array;
+  template<typename T> using array_t = py::array_t<T>;
 
   template<typename T>
   array empty(const std::initializer_list<size_t>& shape)
@@ -33,12 +34,6 @@ namespace pycpp {
 
 inline size_t size(const np::array& a)
 {
-  // size_t dim = a.ndim();
-  // // assumes dim >=1 
-  // size_t s = a.shape(0);
-  // for (size_t i = 1; i < dim; ++i)
-  //   s *= a.shape(i);
-  // return s;
   return a.size();
 }
 
@@ -116,6 +111,37 @@ np::array& fill(np::array& a, T val)
   std::fill(p, p + n, val);
   return a;
 }
+
+// "nullary" op implemented as pycpp::make_array
+
+template<typename R, typename A>
+np::array_t<R> unary_op(const np::array_t<A>& arg, const std::function<R(A)>& f)
+{
+  py::array_t<R> result(arg.size());
+  const A* pa = (const A*)arg.data(0);
+  R* pr = (R*)result.request().ptr;
+  for (size_t i = 0; i < arg.size(); ++i, ++pa, ++pr)
+  {
+    *pr = f(*pa);
+  }
+  return result;
+}
+
+template<typename R, typename A0, typename A1>
+np::array_t<R> binary_op(const np::array_t<A0>& arg0, const np::array_t<A1>& arg1, const std::function<R(A0, A1)>& f)
+{
+  assert(arg0.size() == arg1.size());
+  py::array_t<R> result(arg0.size());
+  const A0* pa0 = (const A0*)arg0.data(0);
+  const A1* pa1 = (const A1*)arg1.data(0);
+  R* pr = (R*)result.request().ptr;
+  for (size_t i = 0; i < arg0.size(); ++i, ++pa0, ++pa1, ++pr)
+  {
+    *pr = f(*pa0, *pa1);
+  }
+  return result;
+}
+
 
 // template<typename R, typename A>
 // struct UnaryArrayOp

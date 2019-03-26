@@ -49,7 +49,7 @@ py::object no::Callback::operator()() const
   if (m_exec)
   {
     py::exec(m_code.c_str(), m_globals, m_locals);
-    return py::object();
+    return py::none();
   }
   else
   {

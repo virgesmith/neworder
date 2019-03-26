@@ -38,7 +38,6 @@ int run(int rank, int size, bool indep)
     // Load (and exec) config file
     py::module config = py::module::import("config");
     // Update the env accordingly
-    //env.configure(config);
 
     bool do_checks = env().attr("do_checks").cast<bool>();
 
@@ -65,7 +64,6 @@ int run(int rank, int size, bool indep)
     env().attr("timeindex") = env.timeline().index();
     env().attr("ntimesteps") = env.timeline().nsteps();
 
-
     // TODO more info re defaulted timeline and overridden timestep
     double dt = env().attr("timestep").cast<double>(); 
     no::log("starting microsimulation. timestep=%%, checkpoint(s) at %%"_s % dt % env.timeline().checkpoints());
@@ -83,7 +81,7 @@ int run(int rank, int size, bool indep)
       }
     }
 
-    // transiations (exec)
+    // transitions (exec)
     no::CallbackTable transitionTable; 
     py::dict transitions = py::dict(env().attr("transitions")); //.items();
     for (const auto& kv: transitions)
@@ -91,13 +89,18 @@ int run(int rank, int size, bool indep)
       transitionTable.insert(std::make_pair(kv.first.cast<std::string>(), no::Callback::exec(kv.second.cast<std::string>())));
     }
 
+    no::log("done trans");
+
     // checks (eval)
     no::CallbackTable checkTable; 
     if (do_checks)
     {
       py::dict checks = py::dict(env().attr("checks"));
+      no::log(checks);
       for (const auto& kv: checks)
       {
+        no::log(kv.first);
+        no::log(kv.second);
         checkTable.insert(std::make_pair(kv.first.cast<std::string>(), no::Callback::eval(kv.second.cast<std::string>())));
       }
     }

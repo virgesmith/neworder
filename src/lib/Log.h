@@ -109,7 +109,7 @@ namespace format {
 namespace no {
 
 // msg is forcibly coerced to a string
-void log(const py::object& msg);
+NEWORDER_EXPORT void log(const py::handle& msg);
 void log(const std::string& msg);
 
 }

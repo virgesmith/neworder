@@ -96,16 +96,7 @@ no::Environment::Environment() : m_init(false) //, m_guard() segfaults on exit (
 {
   py::initialize_interpreter();
   // make the neworder module available in embedded python env
-  //no::import_module();
-
-  // // init numpy
-  // np::initialize();
-
-  m_self = new py::module("neworder");
-  
-  // dummy sequence (needs to be read from config.py - which hasnt been loaded yet)
-  // m_self->attr("sequence") = no::zero_1d_array<int64_t>(1);
-  // m_self->attr("seq") = 0;
+  m_self = new py::module(py::module::import("neworder"));
 } 
 
 no::Environment::~Environment() 

@@ -74,14 +74,17 @@ np::array no::hazard(const np::array& prob)
   std::mt19937& prng = no::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
-  py::array_t<int> result(prob.size());
-  const double* pp = (const double*)prob.data(0);
-  int* pr = (int*)result.request().ptr;
-  for (size_t i = 0; i < prob.size(); ++i, ++pp, ++pr)
-  {
-    *pr = (dist(prng) < *pp) ? 1 : 0;
-  }
-  return result;
+  return pycpp::unary_op<double, double>(prob, [&](double p){ return dist(prng) < p ? 1 : 0; });
+
+  // py::array_t<int> result(prob.size());
+  // const double* pp = (const double*)prob.data(0);
+  // int* pr = (int*)result.request().ptr;
+  // for (size_t i = 0; i < prob.size(); ++i, ++pp, ++pr)
+  // {
+  //   *pr = (dist(prng) < *pp) ? 1 : 0;
+  // }
+  // return result;
+
   // Hazard f;
   // return f(prob);
 }
@@ -101,14 +104,7 @@ np::array no::stopping(const np::array& prob)
   std::mt19937& prng = no::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
-  py::array_t<double> result(prob.size());
-  const double* pp = (const double*)prob.data(0);
-  double* pr = (double*)result.request().ptr;
-  for (size_t i = 0; i < prob.size(); ++i, ++pp, ++pr)
-  {
-    *pr = -::log(dist(prng)) / (*pp);
-  }
-  return result;
+  return pycpp::unary_op<double, double>(prob, [&](double p) { return -::log(dist(prng)) / p; });
 
   // Stopping f;
   // return f(prob);
