@@ -5,7 +5,7 @@
 // the vectorised (nparray) implementation of Timerline::isnever
 np::array no::nparray::isnever(const np::array& x)
 {
-  size_t n = pycpp::size(x);
+  size_t n = x.size();
   np::array result = pycpp::empty_1d_array<bool>(n);
 
   bool* const pr = pycpp::begin<bool>(result);

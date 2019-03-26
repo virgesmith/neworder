@@ -6,17 +6,6 @@
 #include <algorithm>
 #include <iostream>
 
-const char* pycpp::type(PyObject* p)
-{
-  if (!p)
-    throw std::runtime_error("null object");
-  return Py_TYPE(p)->tp_name;
-}
-
-const char* pycpp::type(const py::object& o)
-{
-  return pycpp::type(o.ptr());
-}
 
 bool pycpp::callable(const py::object& o) 
 {

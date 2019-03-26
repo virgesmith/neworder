@@ -29,7 +29,7 @@ void no::df::transition(np::array categories, np::array matrix, py::object &df, 
   // Extract column from DF as np.array
   np::array col = df.attr(colname.c_str());
 
-  int m = pycpp::size(categories);
+  int m = categories.size();
 
   // check matrix is 2d, square & categories len = matrix len
   if (matrix.ndim() != 2)
@@ -77,7 +77,7 @@ void no::df::transition(np::array categories, np::array matrix, py::object &df, 
   std::mt19937& prng = no::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
-  size_t n = pycpp::size(col);
+  size_t n = col.size();
 
   Timer t;
   std::vector<double> r(n);
@@ -102,7 +102,7 @@ void no::df::directmod(py::object& df, const std::string& colname)
 {
   // .values? pd.Series -> np.array?
   np::array arr = df.attr(colname.c_str());
-  size_t n = pycpp::size(arr);
+  size_t n = arr.size();
 
   for (size_t i = 0; i < n; ++i)
   {

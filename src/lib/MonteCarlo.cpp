@@ -118,7 +118,7 @@ np::array no::arrivals(const np::array& lambda_t, double dt, double gap, size_t 
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
   const double* pl = pycpp::cbegin<double>(lambda_t);
-  size_t nl = pycpp::size(lambda_t);
+  size_t nl = lambda_t.size();
 
   // validate lambdas - but what exactly is valid?
   if (pl[nl-1] != 0.0)
@@ -186,7 +186,7 @@ np::array no::first_arrival(const np::array& lambda_t, double dt, size_t n, doub
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
   const double* pl = pycpp::cbegin<double>(lambda_t);
-  size_t nl = pycpp::size(lambda_t);
+  size_t nl = lambda_t.size();
 
   // What is the optimal lambda_u? For now largest value
   double lambda_u = *std::max_element(pl, pl + nl);
@@ -220,13 +220,13 @@ np::array no::first_arrival(const np::array& lambda_t, double dt, size_t n, doub
 // if the state hasn't been arrived at (no::never())
 np::array no::next_arrival(const np::array& startingpoints, const np::array& lambda_t, double dt, bool relative, double minsep)
 {
-  size_t n = pycpp::size(startingpoints);
+  size_t n = startingpoints.size();
 
   std::mt19937& prng = no::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
   const double* pl = pycpp::cbegin<double>(lambda_t);
-  size_t nl = pycpp::size(lambda_t);
+  size_t nl = lambda_t.size();
   double tmax = (nl - 1) * dt;
 
   // What is the optimal lambda_u? For now largest value

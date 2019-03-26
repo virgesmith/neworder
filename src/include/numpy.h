@@ -32,11 +32,6 @@ namespace np {
 // helper functions for ndarrays
 namespace pycpp {
 
-inline size_t size(const np::array& a)
-{
-  return a.size();
-}
-
 // TODO safer implementation
 template<typename T>
 T& at(np::array& a, size_t index)
@@ -69,13 +64,13 @@ const T* cbegin(const np::array& a)
 template<typename T>
 T* end(np::array& a)
 {
-  return begin<T>(a) + size(a);
+  return begin<T>(a) + a.size();
 }
 
 template<typename T>
 const T* cend(const np::array& a)
 {
-  return cbegin<T>(a) + size(a);
+  return cbegin<T>(a) + a.size();
 }
 
 // Uninitialised 1d array
@@ -107,12 +102,12 @@ template<typename T>
 np::array& fill(np::array& a, T val)
 {
   T* p = reinterpret_cast<T*>(a.mutable_data());
-  size_t n = pycpp::size(a);
+  size_t n = a.size();
   std::fill(p, p + n, val);
   return a;
 }
 
-// "nullary" op implemented as pycpp::make_array
+// "nullary"/scalar unary op implemented as pycpp::make_array
 
 template<typename R, typename A>
 np::array_t<R> unary_op(const np::array_t<A>& arg, const std::function<R(A)>& f)
@@ -123,6 +118,32 @@ np::array_t<R> unary_op(const np::array_t<A>& arg, const std::function<R(A)>& f)
   for (size_t i = 0; i < arg.size(); ++i, ++pa, ++pr)
   {
     *pr = f(*pa);
+  }
+  return result;
+}
+
+template<typename R, typename A0, typename A1>
+np::array_t<R> binary_op(A0 arg0, const np::array_t<A1>& arg1, const std::function<R(A0, A1)>& f)
+{
+  py::array_t<R> result(arg1.size());
+  const A1* pa1 = (const A1*)arg1.data(0);
+  R* pr = (R*)result.request().ptr;
+  for (size_t i = 0; i < arg0.size(); ++i, ++pa1, ++pr)
+  {
+    *pr = f(arg0, *pa1);
+  }
+  return result;
+}
+
+template<typename R, typename A0, typename A1>
+np::array_t<R> binary_op(const np::array_t<A0>& arg0, A1 arg1, const std::function<R(A0, A1)>& f)
+{
+  py::array_t<R> result(arg0.size());
+  const A0* pa0 = (const A0*)arg0.data(0);
+  R* pr = (R*)result.request().ptr;
+  for (size_t i = 0; i < arg0.size(); ++i, ++pa0, ++pr)
+  {
+    *pr = f(*pa0, arg1);
   }
   return result;
 }

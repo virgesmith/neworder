@@ -26,30 +26,6 @@ std::string to_string_impl(const std::string& v)
   return v;
 }
 
-
-// // specialise for const char*
-// template<> 
-// std::string operator%(std::string&& str, const char* value)
-// {
-//   size_t s = str.find("%%");
-//   if (s != std::string::npos)
-//   {
-//     str.replace(s, 2, value); 
-//   }
-//   return std::move(str);
-// }
-
-// // non-template for string (specialisation isn't matched for some reason)
-// std::string operator%(std::string&& str, const std::string& value)
-// {
-//   size_t s = str.find("%%");
-//   if (s != std::string::npos)
-//   {
-//     str.replace(s, 2, value); 
-//   }
-//   return std::move(str);
-// }
-
 // not visible to python
 void no::log(const std::string& msg)
 {

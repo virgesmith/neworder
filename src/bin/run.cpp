@@ -89,22 +89,17 @@ int run(int rank, int size, bool indep)
       transitionTable.insert(std::make_pair(kv.first.cast<std::string>(), no::Callback::exec(kv.second.cast<std::string>())));
     }
 
-    no::log("done trans");
-
     // checks (eval)
     no::CallbackTable checkTable; 
     if (do_checks)
     {
       py::dict checks = py::dict(env().attr("checks"));
-      no::log(checks);
       for (const auto& kv: checks)
       {
-        no::log(kv.first);
-        no::log(kv.second);
         checkTable.insert(std::make_pair(kv.first.cast<std::string>(), no::Callback::eval(kv.second.cast<std::string>())));
       }
     }
-
+    
     // execs
     no::CallbackTable checkpointTable; 
     py::dict checkpoints = py::dict(env().attr("checkpoints"));
@@ -112,22 +107,20 @@ int run(int rank, int size, bool indep)
     {
       checkpointTable.insert(std::make_pair(kv.first.cast<std::string>(), no::Callback::exec(kv.second.cast<std::string>())));
     }
-    // Iterate over sequence(s) //do {
 
-    // reset stuff...
     // initialisations...
     // list of module-class-constructor args -> list of objects
     py::dict initialisations = py::dict(env().attr("initialisations"));
     for (const auto& kv: initialisations)
     {
       const std::string& name = kv.first.cast<std::string>();
-      //py::dict spec = kv.second;
-      // std::string modulename = spec["module"].cast<std::string>();
-      // std::string class_name = spec["class_"].cast<std::string>();
-      //py::list args = py::list(spec["parameters"]);
-      std::string modulename = kv.second.attr("module").cast<std::string>();
-      std::string class_name = kv.second.attr("class_").cast<std::string>();
-      py::list args = kv.second.attr("parameters");
+
+      // Note: 
+      kv.second.attr("module"); 
+      // kv.second["module"];
+      std::string modulename = kv.second["module"].cast<std::string>();
+      std::string class_name = kv.second["class_"].cast<std::string>();
+      py::list args = kv.second["parameters"];
 
       no::log("t=%%(%%) initialise: %%"_s % env.timeline().time() % env.timeline().index() % name);
       py::module module = py::module::import(modulename.c_str());
@@ -183,19 +176,14 @@ int run(int rank, int size, bool indep)
     while (!env.timeline().end());
     no::log("SUCCESS exec time=%%s"_s % timer.elapsed_s());
   }
-  catch(py::error_already_set&)
-  {
-    std::cerr << "%% ERROR: %%"_s % env.context(no::Environment::PY) % env.get_error() << std::endl;
-    return 1;
-  }
   catch(std::exception& e)
   {
-    std::cerr << "%% ERROR: %%"_s % env.context() % e.what() << std::endl;
+    std::cerr << "%%ERROR:%%"_s % env.context() % e.what() << std::endl;
     return 1;
   }
   catch(...)
   {
-    std::cerr << "%% ERROR: unknown exception"_s % env.context() << std::endl;
+    std::cerr << "%%ERROR: (unknown exception)"_s % env.context() << std::endl;
     return 1;
   }
   return 0;

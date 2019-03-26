@@ -27,7 +27,7 @@ void test_np()
   np::array a = np::zeros<double>({3,3});
   module.attr("a") = a;
   CHECK(a.ndim() == 2);
-  CHECK(pycpp::size(a) == 9);
+  CHECK(a.size() == 9);
 
   // python modifies array
   no::Callback::exec("a[1,1]=6.25")();  
@@ -47,8 +47,8 @@ void test_np()
   CHECK(no::Callback::eval("a[2,1] == 0.7")());  
   CHECK(no::Callback::eval("a[2,2] == 0.8")());  
 
-  // modifying usibg index
-  for (size_t i = 0; i < pycpp::size(a); ++i)
+  // modifying using index
+  for (size_t i = 0; i < a.size(); ++i)
   {
     pycpp::at<double>(a, i) = (double)i / 100;
   }
@@ -61,15 +61,22 @@ void test_np()
   // load a DF and try to extract/modify...
   no::Callback::exec("import pandas as pd;import neworder;neworder.df=pd.read_csv('../../tests/df.csv')")();
   py::object df = module.attr("df");
-  np::array c = df.attr("columns").attr("values");
-  pycpp::at<const char*>(c, 1) = "Changed";
-  // check unchanged
+  py::array cols = df.attr("columns").attr("values");
+  // check unchanged (no pybind11 support for string arrays)
   CHECK(no::Callback::eval("df.columns.values[0] == 'PID'")());
-  // check changed
-  //CHECK(no::Callback::eval("df.columns.values[1] == 'Changed'")());
+  CHECK(no::Callback::eval("df.columns.values[1] == 'Area'")());
+
+  // TODO how to read/write string arrays...
 
   // Can't modify DF values directly as 2d-array (it copies), need to select individual columns
-  // np::array v = df.attr("Changed");
+  np::array v = df.attr("PID");
+  CHECK(pycpp::at<int64_t>(v, 0) == 0);
+  CHECK(pycpp::at<int64_t>(v, v.size()-1) == v.size()-1);
+  // increment each value
+  for (int64_t* p = pycpp::begin<int64_t>(v); p != pycpp::end<int64_t>(v); ++p) *p += 1;
+  // check python sees update
+  CHECK(no::Callback::eval("df.PID[0] == 1")());
+  CHECK(no::Callback::eval("df.PID[len(df)-1] == len(df)")());
   // v[0] = "MOVED!";
   // check changed
   // CHECK(no::Callback::eval("df.Changed[0] == 'MOVED!'")());
@@ -78,39 +85,9 @@ void test_np()
 
   //no::Callback::exec("import pandas as pd;import neworder;neworder.log(neworder.df.head())")();
 
-  // struct UnaryArrayFunc : pycpp::UnaryArrayOp<double, double>
-  // {
-  //   UnaryArrayFunc(double m, double c) : m_m(m), m_c(c) { }
-    
-  //   double operator()(double x) { return m_m * x + m_c; }
-
-  //   // workaround: above function hides base-class implementations of operator() 
-  //   // see https://stackoverflow.com/questions/1628768/why-does-an-overridden-function-in-the-derived-class-hide-other-overloads-of-the/1629074#1629074
-  //   using pycpp::UnaryArrayOp<double, double>::operator();
-
-  // private:
-  //   double m_m;
-  //   double m_c;
-  // };
-
-  // struct BinaryArrayFunc : pycpp::BinaryArrayOp<double, double, double>
-  // {
-
-  //   BinaryArrayFunc(double m, double c) : m_m(m), m_c(c) { }
-    
-  //   double operator()(double x, double y) { return m_m * (x + y) + m_c; }
-
-  //   // workaround: above function hides base-class implementations of operator() 
-  //   // see https://stackoverflow.com/questions/1628768/why-does-an-overridden-function-in-the-derived-class-hide-other-overloads-of-the/1629074#1629074
-  //   using pycpp::BinaryArrayOp<double, double, double>::operator();
-
-  // private:
-  //   double m_m;
-  //   double m_c;
-  // };
-
   np::array in = pycpp::zero_1d_array<double>(9);
   // UnaryArrayFunc f(1.0, 2.75);
+  // np::array out2 = g(in, out);
   np::array out = pycpp::unary_op<double, double>(in, [](double x) { return 1.0 * x + 2.75; });
   CHECK(pycpp::at<double>(out, 0) == 2.75);
 
@@ -121,37 +98,6 @@ void test_np()
   CHECK(pycpp::at<double>(out2, 0) == 2.75 * 3.125 + 1.0);
 
   // Test vector-scalar operations
-  // Inner product - rather than having operator() for syntactic sugar I'm using the constructor for this purpose
-  // and providing an explicit operator double to produce the result. This avoids the extra pair of brackets (FWIW)
-  // struct DotFunc : pycpp::BinaryArrayOp<double, double, double>
-  // {
-  //   typedef pycpp::BinaryArrayOp<double, double, double> super;
-    
-  //   double operator()(double x, double y) { return x * y; }
-
-  //   // no workaround: above function hides base-class implementations of operator() 
-  //   // We actually want to provide our own implementation - that returns a scalar rather than a vector 
-  //   // So the base implementation remains hidden, we use it in our override to calculate the products,
-  //   // which are then summed. 
-
-  //   DotFunc(const py::object& arg1, const py::object& arg2) : m_result(0.0)
-  //   {
-  //     np::array products = super::operator()(arg1, arg2);
-
-  //     for (double* p = pycpp::begin<double>(products); p != pycpp::end<double>(products); ++p)
-  //     {
-  //       m_result += *p;
-  //     }
-  //   }
-
-  //   operator double()
-  //   {
-  //     return m_result;
-  //   }
-
-  // private:
-  //   double m_result;
-  // };
 
   auto dot = [](const np::array& x, const np::array& y) { 
     np::array products = pycpp::binary_op<double, double, double>(x, y, [](double a, double b){ return a * b; });

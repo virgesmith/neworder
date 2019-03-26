@@ -10,9 +10,7 @@
 #include "DataFrame.h"
 #include "MPIComms.h"
 
-
 #include "NewOrder.h"
-
 
 #include <iostream>
 
@@ -112,17 +110,8 @@ void no::set_timeline(const py::tuple& spec)
   getenv().timeline() = Timeline(checkpoint_times, nsteps);
 }
 
-// Deal with defaulted arguments for certain functions
-// see https://stackoverflow.com/questions/35886682/passing-specific-arguments-to-boost-python-function-with-default-arguments
-
-// np::array first_arrival(const np::array&, double, size_t, double = 0.0);
-//BOOST_PYTHON_FUNCTION_OVERLOADS(first_arrival_default, no::first_arrival, 3, 4)
-// np::array next_arrival(const np::array&, const np::array&, double, bool = false, double = 0.0);
-//BOOST_PYTHON_FUNCTION_OVERLOADS(next_arrival_default, neworder::next_arrival, 3, 5)
-
 
 // python-visible log function defined above
-
 PYBIND11_EMBEDDED_MODULE(neworder, m)
 {
 
@@ -149,11 +138,16 @@ PYBIND11_EMBEDDED_MODULE(neworder, m)
   m.def<np::array (*)(const np::array&)>("hazard", no::hazard);
   m.def<np::array (*)(double, size_t)>("stopping", no::stopping);
   m.def<np::array (*)(const np::array&)>("stopping", no::stopping);
-  //m.def("stopping_nhpp", no::stopping_nhpp);
+
   m.def("arrivals", no::arrivals);
-  // deal with default minval arg - see above
-  m.def("first_arrival", no::first_arrival); //, first_arrival_default(py::args("lambda_t", "dt", "n", "minval")));
-  m.def("next_arrival", no::next_arrival); //, next_arrival_default(py::args("startingpoints", "lambda_t", "delta_t", "relative", "minsep")));
+  // deal with default minval arg
+  m.def<np::array (*)(const np::array&, double, size_t)>("first_arrival", no::first_arrival);
+  m.def<np::array (*)(const np::array&, double, size_t, double)>("first_arrival", no::first_arrival);
+   
+  // deal with default relative and minval args
+  m.def<np::array (*)(const np::array&, const np::array&, double)>("next_arrival", no::next_arrival); 
+  m.def<np::array (*)(const np::array&, const np::array&, double, bool)>("next_arrival", no::next_arrival); 
+  m.def<np::array (*)(const np::array&, const np::array&, double, bool, double)>("next_arrival", no::next_arrival); 
 
   m.def("lazy_exec", no::Callback::exec);
   m.def("lazy_eval", no::Callback::eval);
@@ -161,7 +155,7 @@ PYBIND11_EMBEDDED_MODULE(neworder, m)
   // working on pandas df manipulation  
   m.def("transition", no::df::transition);
   m.def("directmod", no::df::directmod);
-  m.def("linked_change", no::df::linked_change /*, py::return_value_policy<py::return_by_value>()*/);
+  m.def("linked_change", no::df::linked_change, py::return_value_policy::take_ownership);
 
   // MPI
   m.def("rank", no::Environment::rank);
@@ -173,7 +167,7 @@ PYBIND11_EMBEDDED_MODULE(neworder, m)
   m.def("broadcast", no::mpi::broadcast_obj);
   m.def("gather", no::mpi::gather_array);
   m.def("scatter", no::mpi::scatter_array);
-  m.def("allgather", no::mpi::allgather_array/*, py::return_value_policy<py::return_by_value>()*/);
+  m.def("allgather", no::mpi::allgather_array, py::return_value_policy::take_ownership);
   m.def("sync", no::mpi::sync);
   m.def("indep", no::Environment::indep);
   

@@ -48,14 +48,9 @@ int run(int rank, int size, bool indep, int nmodules, const char* testmodules[])
 
     REPORT()
   }
-  catch(py::error_already_set&)
-  {
-    std::cerr << "%%ERROR (py::error_already_set): %%"_s % env.context(no::Environment::PY) % env.get_error() << std::endl;
-    return 1;
-  }
   catch(std::exception& e)
   {
-    std::cerr << "%%ERROR (std::exception): %%"_s % env.context() % e.what() << std::endl;
+    std::cerr << "%%ERROR %%"_s % env.context() % e.what() << std::endl;
     return 1;
   }
   catch(...)
