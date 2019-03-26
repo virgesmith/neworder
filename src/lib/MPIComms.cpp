@@ -178,7 +178,7 @@ void no::mpi::send_csv(const py::object& df, int rank)
   // kwargs["index"] = false;
   // to_csv(path_or_buf=None, sep=', ', na_rep='', float_format=None, columns=None, header=True, index=True...
   df.attr("to_csv")(buf); //, ", ", "", py::object(), py::object(), true, false); 
-  std::string csvbuf = buf.attr("getvalue").cast<std::string>();
+  std::string csvbuf = buf.attr("getvalue")().cast<std::string>();
   send(csvbuf, rank);
 #else
   throw std::runtime_error("%% not implemented (binary doesn't support MPI)"_s % __FUNCTION__);

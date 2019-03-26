@@ -41,16 +41,15 @@ def test():
   s = neworder.stopping(0.1, 10000)
   t.check(isinstance(s, np.ndarray))
   t.check(len(s) == 10000)
-  t.check(abs(np.mean(s)/10 - 1.0) < 0.02)
+  t.check(abs(np.mean(s)/10 - 1.0) < 0.03)
 
   sv = neworder.stopping(np.array([0.1, 0.2, 0.3, 0.4, 0.5]))
   t.check(isinstance(sv, np.ndarray))
   t.check(len(sv) == 5)
 
-  # TODO FIX
   # Non-homogeneous Poisson process (time-dependent hazard) 
-  # nhpp = neworder.first_arrival(np.array([0.1, 0.2, 0.3, 0.4, 0.5]), 1.0, 10)
-  # t.check(isinstance(nhpp, np.ndarray))
-  # t.check(len(nhpp) == 10)
+  nhpp = neworder.first_arrival(np.array([0.1, 0.2, 0.3, 0.4, 0.5]), 1.0, 10)
+  t.check(isinstance(nhpp, np.ndarray))
+  t.check(len(nhpp) == 10)
 
   return not t.any_failed
