@@ -48,7 +48,7 @@ void test_np()
   CHECK(no::Callback::eval("a[2,2] == 0.8")());  
 
   // modifying using index
-  for (size_t i = 0; i < a.size(); ++i)
+  for (ssize_t i = 0; i < a.size(); ++i)
   {
     pycpp::at<double>(a, i) = (double)i / 100;
   }

@@ -26,3 +26,6 @@ examples/people_multi/data
 
 .venv/
 **/ipch/**
+
+.eggs/
+*.egg-info/

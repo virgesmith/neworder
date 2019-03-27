@@ -115,7 +115,7 @@ np::array_t<R> unary_op(const np::array_t<A>& arg, const std::function<R(A)>& f)
   py::array_t<R> result(arg.size());
   const A* pa = (const A*)arg.data(0);
   R* pr = (R*)result.request().ptr;
-  for (size_t i = 0; i < arg.size(); ++i, ++pa, ++pr)
+  for (ssize_t i = 0; i < arg.size(); ++i, ++pa, ++pr)
   {
     *pr = f(*pa);
   }
@@ -128,7 +128,7 @@ np::array_t<R> binary_op(A0 arg0, const np::array_t<A1>& arg1, const std::functi
   py::array_t<R> result(arg1.size());
   const A1* pa1 = (const A1*)arg1.data(0);
   R* pr = (R*)result.request().ptr;
-  for (size_t i = 0; i < arg0.size(); ++i, ++pa1, ++pr)
+  for (ssize_t i = 0; i < arg0.size(); ++i, ++pa1, ++pr)
   {
     *pr = f(arg0, *pa1);
   }
@@ -141,7 +141,7 @@ np::array_t<R> binary_op(const np::array_t<A0>& arg0, A1 arg1, const std::functi
   py::array_t<R> result(arg0.size());
   const A0* pa0 = (const A0*)arg0.data(0);
   R* pr = (R*)result.request().ptr;
-  for (size_t i = 0; i < arg0.size(); ++i, ++pa0, ++pr)
+  for (ssize_t i = 0; i < arg0.size(); ++i, ++pa0, ++pr)
   {
     *pr = f(*pa0, arg1);
   }
@@ -156,7 +156,7 @@ np::array_t<R> binary_op(const np::array_t<A0>& arg0, const np::array_t<A1>& arg
   const A0* pa0 = (const A0*)arg0.data(0);
   const A1* pa1 = (const A1*)arg1.data(0);
   R* pr = (R*)result.request().ptr;
-  for (size_t i = 0; i < arg0.size(); ++i, ++pa0, ++pa1, ++pr)
+  for (ssize_t i = 0; i < arg0.size(); ++i, ++pa0, ++pa1, ++pr)
   {
     *pr = f(*pa0, *pa1);
   }

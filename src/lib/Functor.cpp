@@ -8,7 +8,7 @@ pycpp::Functor::Functor(py::object func, py::list args) : m_func(func)
 { 
   // avoids oddd error passing list elements directly as args 
   m_args.reserve(py::len(args));
-  for (int i = 0; i < py::len(args); ++i) 
+  for (size_t i = 0; i < py::len(args); ++i) 
   {
     m_args.push_back(args[i]);
   }

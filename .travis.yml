@@ -74,16 +74,17 @@ matrix:
     #   - python3 -m pip install -U numpy pandas 
     #   - make PYVER=3.5 test
 
-    # - language: python
-    #   python: 3.6
-    #   script:
-    #   - sudo apt install python3-dev 
-    #   - python3 -m pip install -U numpy pandas 
-    #   - make && make test
+    - language: python
+      python: 3.6
+      script:
+      - sudo apt install python3-dev 
+      - python3 -m pip install -U numpy pandas pybind11 
+      - make && make test
 
   allow_failures:
     - python: 3.5
     - python: 3.6
+    - cmake
 
 #after_success:
 #  - Rscript -e 'covr::codecov()'
