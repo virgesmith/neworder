@@ -6,9 +6,9 @@ sudo: true
 
 matrix:
   include:
-    - language: node_js
-      node_js:
-      - "8"
+    # - language: node_js
+    #   node_js:
+    #   - "8"
 
     - name: native_cpp
       addons:
@@ -67,12 +67,13 @@ matrix:
       - python3 -c"import pandas;print(pandas.__version__)"
 
 
-    # - language: python
-    #   python: 3.5
-    #   script:
-    #   - sudo apt install python3-dev 
-    #   - python3 -m pip install -U numpy pandas 
-    #   - make PYVER=3.5 test
+    - language: python
+      python: 3.5
+      script:
+      - sudo apt install python3-dev 
+      - python3 -m pip install -U numpy pandas pybind11 
+      - ./setup.py build
+      - ./setup.py test
 
     - language: python
       python: 3.6
@@ -80,6 +81,7 @@ matrix:
       - sudo apt install python3-dev 
       - python3 -m pip install -U numpy pandas pybind11 
       - ./setup.py build
+      - ./setup.py test
 
   allow_failures:
     - python: 3.5

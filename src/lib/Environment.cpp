@@ -1,4 +1,3 @@
-
 #include "Environment.h"
 #include "Inspect.h"
 #include "Module.h"
@@ -25,7 +24,7 @@ no::Environment& no::Environment::init(int rank, int size, bool indep)
 
   env.m_seed = env.compute_seed();
 
-  no::log("env: seed=%% python %%"_s % env.m_seed % version());
+  no::log("neworder %% env: seed=%% python %%"_s % module_version() % env.m_seed % python_version());
 
   env.m_prng.seed(env.m_seed);
 
@@ -134,7 +133,7 @@ std::string no::Environment::get_error() noexcept
   return "unable to determine python error";
 }
 
-std::string no::Environment::version()
+std::string no::Environment::python_version()
 {
   static std::string version_string;
   // Get and display python version - only do once

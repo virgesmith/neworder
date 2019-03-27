@@ -29,7 +29,7 @@ void test_np()
   CHECK(a.ndim() == 2);
   CHECK(a.size() == 9);
 
-  for (size_t i = 0; i < a.size(); ++i) 
+  for (ssize_t i = 0; i < a.size(); ++i) 
   {
     CHECK(no::Callback::eval("a[%%,%%]"_s % (i/3) % (i%3))().cast<double>() == 0.0);
   }

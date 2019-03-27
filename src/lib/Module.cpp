@@ -67,7 +67,7 @@ const char* no::module_version()
 
 std::string no::python_version()
 {
-  return no::getenv().version();
+  return no::getenv().python_version();
 }
 
 void no::shell(/*const py::object& local*/)

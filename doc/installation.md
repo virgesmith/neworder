@@ -1,8 +1,8 @@
 # Installation
 
-_So far only tested on Ubuntu 16.04/18.04_. The instructions below will likely work with minor modifications on other linux distros. 
+_So far only tested on Ubuntu 16.04/18.04 and the ARC3 HPC platform_. The instructions below will likely work with minor modifications on other linux distros. 
 
-Windows and OSX are not currently supported, but the long-term plan is to provide `CMake` build scipts for all 3 platforms. Pull requests are welcome!
+Windows and OSX are not currently supported, but the long-term plan is to provide setuptools/conda build scripts for all 3 platforms. Pull requests are welcome!
 
 ## Contents
 
@@ -140,13 +140,18 @@ ImportError: numpy.core.multiarray failed to import
 which was due to python-libs module not being loaded. 
 
 ### Conda
-`neworder` may not be compatible at all with conda - it seems that their conda python binary statically links to libpython. Further investigation required.
+`neworder` works with conda, provided a conda compiler is used, and, for MPI, a conda MPI package. Using `mpich` resulted in an odd error emanating from numpy:
+```
+ImportError: cannot import name _remove_dead_weakref
+```
+replacing `mpich` with `openmpi` resolved it, but one of the MPI tests now "fails". (The result with openmpi actually makes more sense than the original mpich result.) 
+
 
 ### Non-Conda
 - Global python packages are old and the code isn't compatible. This can be resolved by updating at user-level, e.g.:
-```
-$ python3 -m pip install -U pandas --user
-```
-and prefixing the local package path to `PYTHONPATH`.
+	```
+	$ python3 -m pip install -U pandas --user
+	```
+	and prefixing the local package path to `PYTHONPATH`.
 
-- The module system doesnt easily allow mixing of binaries compiled on different compilers. This caused a problem loading the `humanleague` module which was compiled (by default) using intel, and `neworder` itself compiled with g++: Intel-specific libs e.g. libimf.so weren't found. Might be able to hack `LD_LIBRARY_PATH` to fix this?
+- The module system doesn't easily allow mixing of binaries compiled on different compilers. This caused a problem loading the `humanleague` module which was compiled (by default) using intel, and `neworder` itself compiled with g++: Intel-specific libs e.g. libimf.so weren't found. Might be able to hack `LD_LIBRARY_PATH` to fix this? As `humanleague` is now available on conda, this should no longer be an issue.
