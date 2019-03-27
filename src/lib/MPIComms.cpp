@@ -222,8 +222,8 @@ np::array no::mpi::gather_array(double x, int rank)
 {
 #ifdef NEWORDER_MPI
   no::Environment& env = no::getenv();
-  np::array ret = pycpp::empty_1d_array<double>(rank == env.rank() ? env.size() : 0);
-  double* p = (rank == env.rank()) ? pycpp::begin<double>(ret) : nullptr;
+  np::array ret = np::empty_1d_array<double>(rank == env.rank() ? env.size() : 0);
+  double* p = (rank == env.rank()) ? np::begin<double>(ret) : nullptr;
   MPI_Gather(&x, 1, mpi_type_trait<double>::type, p, 1, mpi_type_trait<double>::type, rank, MPI_COMM_WORLD);
   return ret;
 #else
@@ -242,7 +242,7 @@ double no::mpi::scatter_array(np::array x, int rank)
   {
     if (x.size() < (size_t)env.size())
       throw std::runtime_error("scatter array size %% is smaller than MPI size (%%)"_s % x.size() % env.size());
-    p = pycpp::begin<double>(x);
+    p = np::begin<double>(x);
   }
   MPI_Scatter(p, 1, mpi_type_trait<double>::type, &dest, 1, mpi_type_trait<double>::type, rank, MPI_COMM_WORLD);
   return dest;
@@ -259,8 +259,8 @@ np::array no::mpi::allgather_array(np::array source_dest)
   if (source_dest.size() < (size_t)env.size())
     throw std::runtime_error("allgather array size %% is smaller than MPI size (%%)"_s % source_dest.size() % env.size());
   // take a copy of the soruce to avoid runtime error due to aliased buffers
-  double source = pycpp::at<double>(source_dest, env.rank());
-  double* p = pycpp::begin<double>(source_dest);
+  double source = np::at<double>(source_dest, env.rank());
+  double* p = np::begin<double>(source_dest);
   MPI_Allgather(&source, 1, mpi_type_trait<double>::type, p, 1, mpi_type_trait<double>::type, MPI_COMM_WORLD);
   return source_dest;
 #else

@@ -1,11 +1,10 @@
 # Requirements:
-# pybind11: install with pip
+# pybind11: install with pip/conda
 
 # override to force a specific python3 version
 PYVER=3
 
-# Query python env for compile and link settings
-#CXXFLAGS = $(shell python$(PYVER)-config --cflags | sed 's/-Wstrict-prototypes//g' | sed 's/-O3//g') -I$(shell python$(PYVER) -c "import numpy;print(numpy.get_include())")
+# Query python env/pybind11 for compile and link settings
 CXXFLAGS = $(shell python3 -m pybind11 --includes)
 CXXFLAGS += -O2 -Werror -Wno-error=deprecated-declarations -fPIC -std=c++14 -pedantic
 CXXFLAGS += -DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION

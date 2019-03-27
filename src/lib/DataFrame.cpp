@@ -49,7 +49,7 @@ void no::df::transition(np::array categories, np::array matrix, py::object &df, 
   for (int i = 0; i < m; ++i)
   {
     // point to beginning of row
-    double* p = pycpp::begin<double>(matrix) + i;
+    double* p = np::begin<double>(matrix) + i;
     if (p[0] < 0.0 || p[0] > 1.0) 
       throw std::runtime_error("invalid transition probability %% at (%%,%%)"_s % p[0] % i % 0);
     cumprobs[i][0] = p[0];
@@ -68,7 +68,7 @@ void no::df::transition(np::array categories, np::array matrix, py::object &df, 
   std::map<int64_t, int> lookup;
   for (int i = 0; i < m; ++i)
   {
-    lookup[pycpp::at<int64_t>(categories, i)] = i;
+    lookup[np::at<int64_t>(categories, i)] = i;
   }
 
   // no::log("row %% %% %% %%..."_s % p[0] % p[1] % p[2] % p[3]);
@@ -86,13 +86,13 @@ void no::df::transition(np::array categories, np::array matrix, py::object &df, 
   for (size_t i = 0; i < n; ++i)
   {
     // look up the index, ignoring values that havent been explicitly set in categories (like -1)
-    auto it = lookup.find(pycpp::at<int64_t>(col, i));
+    auto it = lookup.find(np::at<int64_t>(col, i));
     if (it == lookup.end())
       continue;
     int64_t j = it->second;
     int64_t k = interp(cumprobs[j], r[i]);
     //no::log("interp %%:%% -> %%"_s % j % r[i] % k);
-    pycpp::at<int64_t>(col, i) = pycpp::at<int64_t>(categories, k);
+    np::at<int64_t>(col, i) = np::at<int64_t>(categories, k);
   }
   no::log("transition %% elapsed: %%"_s % n % t.elapsed_s());
 }
@@ -106,7 +106,7 @@ void no::df::directmod(py::object& df, const std::string& colname)
 
   for (size_t i = 0; i < n; ++i)
   {
-    pycpp::at<int64_t>(arr, i) += 1;
+    np::at<int64_t>(arr, i) += 1;
   }
 }
 

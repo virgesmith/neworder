@@ -14,8 +14,8 @@ neworder.log("MODULE=" + neworder.name() + neworder.version())
 neworder.log("PYTHON=" + neworder.python())
 
 all_libs = subprocess.getoutput("ldd src/bin/neworder").replace("\t", "").split("\n")
-neworder.log("Loaded neworder/python libs:")
-[neworder.log("  " + s) for _, s in enumerate(all_libs) if "neworder" in s or "python" in s]
+neworder.log("Loaded libs:")
+[neworder.log("  " + s) for _, s in enumerate(all_libs)]
 
 neworder.log("PYTHONPATH=" + os.environ["PYTHONPATH"] if "PYTHONPATH" in os.environ else "<undefined>")
 

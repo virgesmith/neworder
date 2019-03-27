@@ -21,6 +21,9 @@ Windows and OSX are not currently supported, but the long-term plan is to provid
 ## Requirements
 
 ### Install Dependencies
+
+#### Pip/virtualenv
+
 ```bash
 $ sudo apt install -y build-essential python3 python3-dev python3-pip
 $ python3 -m pip install -U numpy pandas pybind11
@@ -28,6 +31,17 @@ $ python3 -m pip install -U numpy pandas pybind11
 For parallel execution, you'll first need to make sure you have an implementation of MPI (including a compiler), e.g:
 ```bash
 $ sudo apt install mpich libmipch-dev
+```
+#### Conda
+
+Conda also requires a specific C++ compiler:
+
+```bash
+$ conda install pybind11 gxx_linux-64 
+```
+For parallel execution, you'll first need to make sure you a conda-supporting implementation of MPI (including a compiler), e.g:
+```bash
+$ conda install mpich
 ```
 
 ### Minimum Versions
@@ -39,21 +53,6 @@ python: 3.5
 C++14: gcc 5.4 
 - pybind11 2.2.4
 - MPI (mpich 3.3a2)
-
-
-### PyBind11
-
-Can be installed using pip
-
-```bash
-(.venv) $ pip install pybind11
-```
-or
-```bash
-$ python3 -m pip install pybind11
-```
-
-TODO conda...
 
 ## Build and Test
 
@@ -69,7 +68,7 @@ From the root of the repo, build and run tests:
 ```bash
 $ make && make test
 ```
-
+(adding `-j<N>` as appropriate for parallel building)
 For Ubuntu 16.04 / python 3.5 you may need to set the make env like so:
 
 ```bash

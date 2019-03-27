@@ -6,10 +6,10 @@
 np::array no::nparray::isnever(const np::array& x)
 {
   size_t n = x.size();
-  np::array result = pycpp::empty_1d_array<bool>(n);
+  np::array result = np::empty_1d_array<bool>(n);
 
-  bool* const pr = pycpp::begin<bool>(result);
-  const double* const px = pycpp::cbegin<double>(x);
+  bool* const pr = np::begin<bool>(result);
+  const double* const px = np::cbegin<double>(x);
   for (size_t i = 0; i < n; ++i)
   {
     pr[i] = no::Timeline::isnever(px[i]);

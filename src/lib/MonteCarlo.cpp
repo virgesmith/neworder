@@ -56,7 +56,7 @@ np::array no::ustream(size_t n)
   std::mt19937& prng = no::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
-  return pycpp::make_array<double>(n, [&](){ return dist(prng); });
+  return np::make_array<double>(n, [&](){ return dist(prng); });
 }
 
 // simple hazard constant probability 
@@ -65,7 +65,7 @@ NEWORDER_EXPORT np::array no::hazard(double prob, size_t n)
   std::mt19937& prng = no::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
-  return pycpp::make_array<int>(n, [&]() { return (dist(prng) < prob) ? 1 : 0; });
+  return np::make_array<int>(n, [&]() { return (dist(prng) < prob) ? 1 : 0; });
 }
 
 // hazard with varying probablities 
@@ -74,7 +74,7 @@ np::array no::hazard(const np::array& prob)
   std::mt19937& prng = no::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
-  return pycpp::unary_op<double, double>(prob, [&](double p){ return dist(prng) < p ? 1 : 0; });
+  return np::unary_op<double, double>(prob, [&](double p){ return dist(prng) < p ? 1 : 0; });
 
   // py::array_t<int> result(prob.size());
   // const double* pp = (const double*)prob.data(0);
@@ -96,7 +96,7 @@ NEWORDER_EXPORT np::array no::stopping(double prob, size_t n)
   std::uniform_real_distribution<> dist(0.0, 1.0);
   double rprob = 1.0 / prob;
 
-  return pycpp::make_array<double>(n, [&]() { return -::log(dist(prng)) * rprob; });
+  return np::make_array<double>(n, [&]() { return -::log(dist(prng)) * rprob; });
 }
 
 np::array no::stopping(const np::array& prob)
@@ -104,7 +104,7 @@ np::array no::stopping(const np::array& prob)
   std::mt19937& prng = no::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
-  return pycpp::unary_op<double, double>(prob, [&](double p) { return -::log(dist(prng)) / p; });
+  return np::unary_op<double, double>(prob, [&](double p) { return -::log(dist(prng)) / p; });
 
   // Stopping f;
   // return f(prob);
@@ -117,7 +117,7 @@ np::array no::arrivals(const np::array& lambda_t, double dt, double gap, size_t 
   std::mt19937& prng = no::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
-  const double* pl = pycpp::cbegin<double>(lambda_t);
+  const double* pl = np::cbegin<double>(lambda_t);
   size_t nl = lambda_t.size();
 
   // validate lambdas - but what exactly is valid?
@@ -165,8 +165,8 @@ np::array no::arrivals(const np::array& lambda_t, double dt, double gap, size_t 
   }
 
   np::array nptimes = np::empty<double>({n, imax- 1});
-  pycpp::fill(nptimes, no::Timeline::never());
-  double* pa = pycpp::begin<double>(nptimes);
+  np::fill(nptimes, no::Timeline::never());
+  double* pa = np::begin<double>(nptimes);
 
   for (size_t i = 0; i < times.size(); ++i)
   {
@@ -185,15 +185,15 @@ np::array no::first_arrival(const np::array& lambda_t, double dt, size_t n, doub
   std::mt19937& prng = no::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
-  const double* pl = pycpp::cbegin<double>(lambda_t);
+  const double* pl = np::cbegin<double>(lambda_t);
   size_t nl = lambda_t.size();
 
   // What is the optimal lambda_u? For now largest value
   double lambda_u = *std::max_element(pl, pl + nl);
   double lambda_i;
 
-  np::array times = pycpp::empty_1d_array<double>(n);
-  double* pt = pycpp::begin<double>(times);
+  np::array times = np::empty_1d_array<double>(n);
+  double* pt = np::begin<double>(times);
   double tmax = (nl - 1) * dt;
 
   for (size_t i = 0; i < n; ++i)
@@ -225,7 +225,7 @@ np::array no::next_arrival(const np::array& startingpoints, const np::array& lam
   std::mt19937& prng = no::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
-  const double* pl = pycpp::cbegin<double>(lambda_t);
+  const double* pl = np::cbegin<double>(lambda_t);
   size_t nl = lambda_t.size();
   double tmax = (nl - 1) * dt;
 
@@ -233,14 +233,14 @@ np::array no::next_arrival(const np::array& startingpoints, const np::array& lam
   double lambda_u = *std::max_element(pl, pl + nl);
   double lambda_i;
 
-  np::array times = pycpp::empty_1d_array<double>(n);
-  //np::array times = pycpp::zero_1d_array<double>(n);
-  double* pt = pycpp::begin<double>(times);
+  np::array times = np::empty_1d_array<double>(n);
+  //np::array times = np::zero_1d_array<double>(n);
+  double* pt = np::begin<double>(times);
 
   for (size_t i = 0; i < n; ++i)
   {
     // account for any deterministic time lag (e.g. 9 months between births)
-    double offset = pycpp::at<double>(startingpoints, i) + minsep;
+    double offset = np::at<double>(startingpoints, i) + minsep;
     // skip if we haven't actually arrived at the state to transition from
     if (no::Timeline::isnever(offset))
     {

@@ -23,5 +23,5 @@ void test1(const std::string& modulename, const std::string& functionname, const
     args[i] = std::stoi(argstrings[i]);
   }
   py::object result = args.size() == 2 ? function(args[0], args[1]) : function();
-  CHECK(result == expected);
+  CHECK(result.is(expected));
 }

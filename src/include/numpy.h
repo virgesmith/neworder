@@ -7,30 +7,9 @@
 
 // create a np namespace
 namespace np {
-  using py::array;
-  template<typename T> using array_t = py::array_t<T>;
 
-  template<typename T>
-  array empty(const std::initializer_list<size_t>& shape)
-  {
-    return py::array_t<T>(shape);
-  }
-
-  template<typename T>
-  array zeros(const std::initializer_list<size_t>& shape)
-  {
-    T zero(0);
-    return py::array_t<T>(shape, &zero);
-  }
-
-  // TODO what is required here (if anything)
-  inline void initialize()
-  {
-  }
-}
-
-// helper functions for ndarrays
-namespace pycpp {
+using py::array;
+template<typename T> using array_t = py::array_t<T>;
 
 // TODO safer implementation
 template<typename T>
@@ -77,14 +56,7 @@ const T* cend(const np::array& a)
 template<typename T>
 np::array empty_1d_array(size_t n)
 {
-  return np::empty<T>({n});
-}
-
-// Zero-initialised 1d array
-template<typename T>
-np::array zero_1d_array(size_t n)
-{
-  return np::zeros<T>({n});
+  return np::array_t<T>({n});
 }
 
 // Create a 1d array, initialising with a function
@@ -92,7 +64,7 @@ np::array zero_1d_array(size_t n)
 template<typename T>
 np::array make_array(size_t n, const std::function<T()>& f)
 {
-  np::array a = pycpp::empty_1d_array<T>(n); 
+  np::array a = empty_1d_array<T>(n); 
   T* p = reinterpret_cast<T*>(a.mutable_data());
   std::generate(p, p + n, f);
   return a;
@@ -107,8 +79,7 @@ np::array& fill(np::array& a, T val)
   return a;
 }
 
-// "nullary"/scalar unary op implemented as pycpp::make_array
-
+// "nullary"/scalar unary op implemented as make_array
 template<typename R, typename A>
 np::array_t<R> unary_op(const np::array_t<A>& arg, const std::function<R(A)>& f)
 {
@@ -163,44 +134,24 @@ np::array_t<R> binary_op(const np::array_t<A0>& arg0, const np::array_t<A1>& arg
   return result;
 }
 
+template<typename T>
+array empty(const std::initializer_list<size_t>& shape)
+{
+  return array_t<T>(shape);
+}
 
-// template<typename R, typename A>
-// struct UnaryArrayOp
-// {
-//   typedef A argument_type;
-//   typedef R result_type;
+template<typename T>
+array zeros(const std::initializer_list<size_t>& shape)
+{
+  array_t<T> a(shape);
+  return fill(a, T(0));
+}
 
-//   virtual ~UnaryArrayOp() { }
-
-//   virtual R operator()(A) = 0;
-
-//   // implementing the above function in a derived class hides the (below) base-class implementations of operator() 
-//   // see https://stackoverflow.com/questions/1628768/why-does-an-overridden-function-in-the-derived-class-hide-other-overloads-of-the/1629074#1629074
-//   // use a using declaration in the derived class to force it to be visible
-//   np::array operator()(const py::object& arg) 
-//   {
-//     return np::array(np::unary_ufunc<UnaryArrayOp<R,A>>::call(*this, arg, py::object()));      
-//   }
-// };
-
-// template<typename R, typename A1, typename A2>
-// struct BinaryArrayOp
-// {
-//   typedef A1 first_argument_type;
-//   typedef A2 second_argument_type;
-//   typedef R result_type;
-
-//   virtual ~BinaryArrayOp() { }
-
-//   virtual R operator()(A1, A2) = 0;
-
-//   // implementing the above function in a derived class hides the (below) base-class implementations of operator() 
-//   // see https://stackoverflow.com/questions/1628768/why-does-an-overridden-function-in-the-derived-class-hide-other-overloads-of-the/1629074#1629074
-//   // use a using declaration in the derived class to force it to be visible
-//   np::array operator()(const py::object& arg1, const py::object& arg2) 
-//   {
-//     return np::array(np::binary_ufunc<BinaryArrayOp<R, A1, A2>>::call(*this, arg1, arg2, py::object()));      
-//   }
-// };
+// Zero-initialised 1d array
+template<typename T>
+np::array zero_1d_array(size_t n)
+{
+  return np::zeros<T>({n});
+}
 
 }
