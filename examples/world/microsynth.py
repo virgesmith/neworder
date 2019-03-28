@@ -45,7 +45,7 @@ class Microsynth:
         self._generate(data.values, country)
 
     # memory used in MB scaled up to world pop
-    neworder.log(self.pop.memory_usage() / len(self.pop) * 7.5e9 / 1024 / 1024)
+    #neworder.log(self.pop.memory_usage() / len(self.pop) * 7.5e9 / 1024 / 1024)
 
   def _generate(self, agg_data, country):
     agg_data = humanleague.integerise(agg_data)["result"]
