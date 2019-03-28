@@ -82,7 +82,7 @@ matrix:
       - sudo apt-get -y install build-essential mpich libmpich-dev
       script:
       #- sudo apt install python3-dev 
-      #- python3 -m pip install -U numpy pandas pybind11 
+      - python3 -m pip install pybind11 
       - ./setup.py build
       - ./setup.py test
 

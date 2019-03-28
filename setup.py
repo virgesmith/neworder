@@ -108,6 +108,6 @@ setup(
   ext_modules = [dummy],
   #ext_scripts = [neworderbin, newordertest],
   setup_requires=['numpy', 'pybind11'],
-  install_requires=['numpy', 'pandas'],
+  install_requires=[],
   test_suite='setup.test_suite'
 )
