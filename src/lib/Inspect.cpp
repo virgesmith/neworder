@@ -17,21 +17,22 @@ bool pycpp::has_attr(const py::object& o, const char* attr_name)
   return PyObject_HasAttrString(o.ptr(), attr_name);
 }
 
-// string repr
-std::string pycpp::as_string(PyObject* obj)
-{
-  PyObject* repr = PyObject_Str(obj);
-  PyObject* str = PyUnicode_AsEncodedString(repr, "utf-8", "~E~");
-  const char *bytes = PyBytes_AS_STRING(str);
+// // string repr
+// std::string pycpp::as_string(PyObject* obj)
+// {
+//   PyObject* repr = PyObject_Str(obj);
+//   PyObject* str = PyUnicode_AsEncodedString(repr, "utf-8", "~E~");
+//   const char *bytes = PyBytes_AS_STRING(str);
 
-  Py_XDECREF(repr);
-  Py_XDECREF(str);
-  return std::string(bytes);
-}
+//   Py_XDECREF(repr);
+//   Py_XDECREF(str);
+//   return std::string(bytes);
+// }
 
 std::string pycpp::as_string(const py::object& obj)
 {
-  return as_string(obj.ptr());
+  return py::str(obj).cast<std::string>();
+  //return as_string(obj.ptr());
 }
 
 // std::vector<std::pair<std::string, std::string>> pycpp::dir(PyObject* obj, bool public_only)
@@ -58,12 +59,8 @@ std::string pycpp::as_string(const py::object& obj)
 //   return res;
 // }
 
-std::ostream& operator<<(std::ostream& os, const py::object& o)
+std::ostream& operator<<(std::ostream& os, const py::handle& o)
 {
-  return os << py::str(o);
+  return os << py::str(o).cast<std::string>();
 }
 
-// std::ostream& operator<<(std::ostream& os, const np::array& a)
-// {
-//   return os << py::extract<std::string>(py::str(a))();
-// }

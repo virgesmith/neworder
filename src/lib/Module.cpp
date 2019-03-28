@@ -16,10 +16,10 @@
 
 namespace {
 
-// not visible to (rest of) C++ - use function declareds in Log.h
+// not visible to (rest of) C++ - use the function declared in Log.h
 void log_obj(const py::object& msg)
 {
-  std::cout << no::getenv().context(no::Environment::PY) << pycpp::as_string(msg.ptr()) << std::endl;
+  std::cout << no::getenv().context(no::Environment::PY) << msg << std::endl;
 }
 
 }
@@ -114,7 +114,6 @@ void no::set_timeline(const py::tuple& spec)
 // python-visible log function defined above
 PYBIND11_EMBEDDED_MODULE(neworder, m)
 {
-
   // utility/diagnostics
   m.def("name", no::module_name);
   m.def("version", no::module_version);
@@ -198,10 +197,4 @@ PYBIND11_EMBEDDED_MODULE(neworder, m)
 
 }
 
-void no::import_module()
-{
-  // TODO anything required?
-  // First register callback module
-  //PyImport_AppendInittab(module_name(), &PyInit_neworder);
-}
 

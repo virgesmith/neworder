@@ -51,8 +51,6 @@ void shell(/*const py::object& local*/);
 
 NEWORDER_EXPORT void set_timeline(const py::tuple& spec);
 
-NEWORDER_EXPORT void import_module();
-
 } // namespace no
 
 

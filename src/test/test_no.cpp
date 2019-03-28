@@ -36,13 +36,17 @@ void test_no()
   py::object module = py::module::import("neworder");
 
   // Check required (but defaulted) attrs visible from both C++ and python
-  const char* attrs[] = {"rank", "size"/*, "sequence", "seq"*/}; 
+  const char* attrs[] = {"rank", "size"}; 
 
   for (size_t i = 0; i < sizeof(attrs)/sizeof(attrs[0]); ++i)
   {
     CHECK(pycpp::has_attr(module, attrs[i]));
     CHECK(no::Callback::eval("'%%' in locals()"_s % attrs[i])().cast<bool>());
   }
+
+  // check string conversion
+  CHECK(pycpp::as_string(module.attr("never")).substr(0, 42) == "<built-in method never of PyCapsule object");
+  CHECK(pycpp::as_string(module.attr("never")()) == "nan");
 
   // Check diagnostics consistent
   CHECK(no::Callback::eval("name() == '%%'"_s % no::module_name())().cast<bool>());

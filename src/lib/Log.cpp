@@ -35,5 +35,5 @@ void no::log(const std::string& msg)
 // not visible to python
 void no::log(const py::handle& msg)
 {
-  std::cout << no::getenv().context() << pycpp::as_string(msg.ptr()) << std::endl;
+  std::cout << no::getenv().context() << msg << std::endl;
 }
