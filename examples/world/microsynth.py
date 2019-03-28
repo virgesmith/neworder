@@ -103,4 +103,4 @@ class Microsynth:
     # TODO define path in config
     filename = "./examples/world/data/pop2019_{}-{}.csv".format(neworder.rank(), neworder.size())
     neworder.log("writing %s" % filename)
-    return self.data.to_csv(filename, index=False)
+    return self.pop.to_csv(filename, index=False)

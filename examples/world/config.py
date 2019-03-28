@@ -15,7 +15,7 @@ def partition(arr, count):
     return [arr[i::count] for i in range(count)]
   return [arr]
 
-allcountries = pd.read_csv("./examples/world/data/CountryLookup.csv", encoding='utf-8', sep="\t")["Code"][:4]
+allcountries = pd.read_csv("./examples/world/data/CountryLookup.csv", encoding='utf-8', sep="\t")["Code"]
 
 initial_populations = partition(allcountries, neworder.size())
 #initial_populations = [["ALB", "ASM", "ATG"]]
@@ -42,4 +42,5 @@ neworder.checks = {
 
 # Generate output at each checkpoint  
 neworder.checkpoints = {
+  "write": "people.write_table()"
 }
