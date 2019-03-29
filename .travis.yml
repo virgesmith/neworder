@@ -86,6 +86,8 @@ matrix:
       script:
       - python setup.py build
       - ./run_example.sh hello_world
+      - ./run_example.sh diagnostics
+      - python -c "import numpy; print(numpy.__version__)"
 
   allow_failures:
     - python: 3.5
