@@ -4,7 +4,7 @@ Serves as a skeleton for user projects
 """
 
 # for shared arrays
-import numpy as np
+#import numpy as np
 # Expose the enviroment to python
 import neworder
 
