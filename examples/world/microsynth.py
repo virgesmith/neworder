@@ -34,7 +34,10 @@ class Microsynth:
           neworder.log("%s: gender specific population data not available" % country_lookup[country])
           data = alldata[(alldata["Country Code"] == country) & (alldata["Series Code"]).str.match("^SP.POP.TOTL$")]
           assert len(data) == 1
-          self._generate_from_total(data[self.value_column].values, country)
+          if np.isnan(data[self.value_column].values):
+            neworder.log("%s: total population data not available - skipping" % country)
+          else:
+            self._generate_from_total(data[self.value_column].values, country)
         else: 
           raise NotImplementedError("microsynth from M/F totals")
       else:
