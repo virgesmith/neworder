@@ -34,9 +34,9 @@ matrix:
         conda install -q conda-build
         conda create -q -n test-environment python=$CONDA
         source activate test-environment      
-    install:
-      - conda install gxx_linux-64 openmpi numpy pandas pybind11
-    script:
+      install:
+        - conda install gxx_linux-64 openmpi numpy pandas pybind11
+      script:
       - |
         make && make test
         make -f MPI.mk && make -f MPI.mk test
