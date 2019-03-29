@@ -1,5 +1,4 @@
 # override to force a specific python3 version
-PYVER=3
 
 # also set (CXXFLAGS below) NEWORDER_MPI to prevent skipping of MPI-specific code
 CXX=mpic++
@@ -10,13 +9,13 @@ MPI_INDEP := 1
 MPI_DEP := 0
 
 # Query python env for compile and link settings
-CXXFLAGS = $(shell python3 -m pybind11 --includes)
+CXXFLAGS = $(shell python -m pybind11 --includes)
 CXXFLAGS += -O2 -Werror -Wno-error=deprecated-declarations -fPIC -std=c++14 -pedantic -DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION -DNEWORDER_MPI
 # get version from __init__.py
 CXXFLAGS += -DNEWORDER_VERSION_MAJOR=$(shell python3 -c "import neworder;print(neworder.__version__.split('.')[0])") \
             -DNEWORDER_VERSION_MINOR=$(shell python3 -c "import neworder;print(neworder.__version__.split('.')[1])") \
             -DNEWORDER_VERSION_PATCH=$(shell python3 -c "import neworder;print(neworder.__version__.split('.')[2])")
-LDFLAGS := $(shell python$(PYVER)-config --ldflags)
+LDFLAGS := $(shell python-config --ldflags)
 
 export
 

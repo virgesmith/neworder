@@ -66,14 +66,9 @@ $ cd neworder
 
 From the root of the repo, build and run tests:
 ```bash
-$ make && make test
+$ make -j<N> && make test
 ```
-(adding `-j<N>` as appropriate for parallel building)
-For Ubuntu 16.04 / python 3.5 you may need to set the make env like so:
-
-```bash
-$ make PYVER=3.5 test
-```
+picking an suitable <N> for your platform, typically 1-1.5x number of cores.
 
 ### Parallel Build
 
@@ -81,9 +76,9 @@ Ensure the MPI dependencies (see above) have been installed.
 
 From the root of the repo use the [MPI.mk](MPI.mk) makefile to build the MPI-enabled framework:
 ```bash
-$ make -f MPI.mk
+$ make -j<N> -f MPI.mk
 ```
-and to test,
+picking an suitable <N> for your platform, typically 1-1.5x number of cores. And to test,
 ```bash
 $ make -f MPI.mk test
 ```
