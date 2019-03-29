@@ -22,21 +22,40 @@ matrix:
       - make && make test
       - make -f MPI.mk && make -f MPI.mk test
 
-    - name: venv_py36
-      env: PYTHON=3.6
-      addons:
-        apt:
-          sources:
-          - ubuntu-toolchain-r-test
+    - name: conda_py36
       before_install: 
-      - sudo apt-get update
-      - sudo apt-get -y install build-essential mpich libmpich-dev
-      script:
-      - virtualenv -p python3.6 .venv
-      - source .venv/bin/activate
-      - pip install -U numpy pandas pybind11
-      - make && make test
-      - make -f MPI.mk && make -f MPI.mk test
+      - | 
+        wget -O miniconda.sh https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
+        bash miniconda.sh -b -p $HOME/miniconda
+        export PATH="$HOME/miniconda/bin:$PATH"
+        conda config --set always_yes yes --set changeps1 no
+        conda config --add channels conda-forge
+        conda update -q conda
+        conda install -q conda-build
+        conda create -q -n test-environment python=$CONDA
+        source activate test-environment      
+    install:
+      - conda install gxx_linux-64 openmpi numpy pandas pybind11
+    script:
+      - |
+        make && make test
+        make -f MPI.mk && make -f MPI.mk test
+
+    # - name: venv_py36
+    #   env: PYTHON=3.6
+    #   addons:
+    #     apt:
+    #       sources:
+    #       - ubuntu-toolchain-r-test
+    #   before_install: 
+    #   - sudo apt-get update
+    #   - sudo apt-get -y install build-essential mpich libmpich-dev
+    #   script:
+    #   - virtualenv -p python3.6 .venv
+    #   - source .venv/bin/activate
+    #   - pip install -U numpy pandas pybind11
+    #   - make && make test
+    #   - make -f MPI.mk && make -f MPI.mk test
 
     # - name: cmake
     #   addons:
@@ -81,17 +100,17 @@ matrix:
     #   - python setup.py build
     #   - python setup.py test
 
-    # - language: python
-    #   python: 3.6
-    #   before_install:
-    #   - sudo apt-get update
-    #   - sudo apt-get -y install build-essential mpich libmpich-dev
-    #   script:
-    #   - pip install -U pybind11 numpy pandas
-    #   - python setup.py build
-    #   - ./run_example.sh hello_world
-    #   - ./run_example.sh diagnostics
-    #   - python setup.py test
+    - language: python
+      python: 3.6
+      before_install:
+      - sudo apt-get update
+      - sudo apt-get -y install build-essential mpich libmpich-dev
+      script:
+      - pip install -U pybind11 numpy pandas
+      - python setup.py build
+      - ./run_example.sh hello_world
+      - ./run_example.sh diagnostics
+      - python setup.py test
 
   allow_failures:
     - python: 3.5
