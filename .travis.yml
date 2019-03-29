@@ -84,8 +84,8 @@ matrix:
       install:
       - pip install pybind11 numpy pandas
       script:
-      - python setup.py build
-      - source ~/virtualenv/python3.6/bin/activate
+      - source ~/virtualenv/python3.6/bin/activate && python setup.py build
+      - source ~/virtualenv/python3.6/bin/activate && python setup.py test
       - ./run_example.sh hello_world
       - ./run_example.sh diagnostics
       - python -c "import platform; print(platform.python_version())"
