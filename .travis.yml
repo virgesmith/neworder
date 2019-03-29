@@ -23,6 +23,7 @@ matrix:
       - make -f MPI.mk && make -f MPI.mk test
 
     - name: venv_py36
+      env: PYTHON=3.6
       addons:
         apt:
           sources:
