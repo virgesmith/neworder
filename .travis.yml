@@ -85,7 +85,7 @@ matrix:
       - pip install pybind11 numpy pandas
       script:
       - python setup.py build
-      - PYTHONPATH=/home/travis/virtualenv/python3.6.7:$PYTHONPATH python setup.py test
+      - python setup.py test
 
   allow_failures:
     - python: 3.5

@@ -32,6 +32,8 @@ int run(int rank, int size, bool indep, int nmodules, const char* testmodules[])
   no::Environment& env = no::Environment::init(rank, size, indep);
   try
   {
+    // fix travis (no module named numpy)?
+    py::module::import("numpy");
     // load module, call func with args
     test1("op", "mul", {"2", "3"}, py::int_(6));
     test1("op", "void", {"2", "3"}, py::none());
