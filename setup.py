@@ -1,4 +1,5 @@
-#!/usr/bin/env python3
+# this can interfere with virtualenv?
+##!/usr/bin/env python3
 
 import os
 import glob
