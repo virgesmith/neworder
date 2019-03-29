@@ -38,8 +38,8 @@ matrix:
         - conda install gxx_linux-64 openmpi numpy pandas pybind11
       script:
       - |
-        make && make test
-        make -f MPI.mk && make -f MPI.mk test
+        make PY_CFG=python3-config && make test
+        make PY_CFG=python3-config -f MPI.mk && make -f MPI.mk test
 
     # - name: venv_py36
     #   env: PYTHON=3.6
