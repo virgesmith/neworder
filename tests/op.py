@@ -1,6 +1,6 @@
 # https://docs.python.org/3/extending/embedding.html
 
-#import numpy as np
+import numpy as np
 import neworder
 
 import test as test_
@@ -21,18 +21,6 @@ def void(a,b):
   pass
 
 notafunc = 3.1
-
-import os
-import subprocess
-
-neworder.log("MODULE=" + neworder.name() + neworder.version())
-neworder.log("PYTHON=" + neworder.python())
-
-all_libs = subprocess.getoutput("ldd ../../src/bin/neworder").replace("\t", "").split("\n")
-neworder.log("Loaded libs:")
-[neworder.log("  " + s) for _, s in enumerate(all_libs)]
-
-neworder.log("PYTHONPATH=" + os.environ["PYTHONPATH"] if "PYTHONPATH" in os.environ else "<undefined>")
 
 def test():
   t = test_.Test()

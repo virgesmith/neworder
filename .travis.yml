@@ -85,7 +85,7 @@ matrix:
       - pip install pybind11 numpy pandas
       script:
       - python setup.py build
-      - python setup.py test
+      - ./run_example.sh hello_world
 
   allow_failures:
     - python: 3.5
