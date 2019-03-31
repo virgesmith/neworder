@@ -96,10 +96,12 @@ matrix:
       - sudo apt-get update
       - sudo apt-get -y install build-essential mpich libmpich-dev
       script:
-      - pip install pybind11 numpy pandas --user
+      - pip install pybind11 numpy pandas
       - python setup.py build
       - ./run_example.sh hello_world
       - ./run_example.sh diagnostics
+      - echo $PATH
+      - echo $PYTHONPATH
       - python setup.py test
 
   allow_failures:
