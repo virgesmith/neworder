@@ -96,7 +96,7 @@ matrix:
       - sudo apt-get update
       - sudo apt-get -y install build-essential mpich libmpich-dev
       script:
-      - pip install -U pybind11 numpy pandas
+      - pip install pybind11 numpy pandas --user
       - python setup.py build
       - ./run_example.sh hello_world
       - ./run_example.sh diagnostics
