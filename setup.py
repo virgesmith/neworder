@@ -1,4 +1,5 @@
-#!/usr/bin/env python3
+# this can interfere with virtualenv?
+##!/usr/bin/env python3
 
 import os
 import glob
@@ -84,8 +85,9 @@ dummy = Extension("dummy", [])
 
 class BuildBinaries(build_ext):
   def run(self):
-    os.system("make -j4")
-    os.system("make -f MPI.mk -j4")
+    # NOTE: this picks up the OS lib (there isn't one in the venv)
+    os.system("make PY_CFG=python3-config -j4")
+    os.system("make PY_CFG=python3-config -f MPI.mk -j4")
 
 # TODO run test binary
 

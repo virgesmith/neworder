@@ -22,8 +22,6 @@ def void(a,b):
 
 notafunc = 3.1
 
-#neworder.log("callback: %s" % neworder.name())
-
 def test():
   t = test_.Test()
 

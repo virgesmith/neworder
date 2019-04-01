@@ -7,7 +7,7 @@ Prints diagnostic info and drops into an interactive shell
 import os
 import sys
 import subprocess
-import numpy as np
+#import numpy as np
 import neworder
 
 neworder.log("MODULE=" + neworder.name() + neworder.version())
@@ -30,7 +30,7 @@ neworder.transitions = {}
 
 # finally, open an interactive shell
 neworder.checkpoints = {
-  "shell": "shell()"
+#  "shell": "shell()"
 }
 
 

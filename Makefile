@@ -1,17 +1,18 @@
 # Requirements:
 # pybind11: install with pip/conda
+# virtualenv or conda using python 3.5 or higher
 
-# override to force a specific python3 version
-PYVER=3
+# this needs to be overridden sometimes, e.g. conda env contains python3-config and python-config is the OS's python2.7 version
+PY_CFG=python-config
 
 # Query python env/pybind11 for compile and link settings
-CXXFLAGS = $(shell python3 -m pybind11 --includes)
+CXXFLAGS = $(shell python -m pybind11 --includes)
 CXXFLAGS += -O2 -Werror -Wno-error=deprecated-declarations -fPIC -std=c++14 -pedantic -DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION
 # get version from __init__.py
 CXXFLAGS += -DNEWORDER_VERSION_MAJOR=$(shell python3 -c "import neworder;print(neworder.__version__.split('.')[0])") \
             -DNEWORDER_VERSION_MINOR=$(shell python3 -c "import neworder;print(neworder.__version__.split('.')[1])") \
             -DNEWORDER_VERSION_PATCH=$(shell python3 -c "import neworder;print(neworder.__version__.split('.')[2])")
-LDFLAGS := $(shell python$(PYVER)-config --ldflags) 
+LDFLAGS := $(shell $(PY_CFG) --ldflags) 
 
 # MPI not enabled
 SUFFIX :=

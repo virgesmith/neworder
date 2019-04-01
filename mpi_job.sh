@@ -3,7 +3,7 @@
 # Memory
 #$ -l h_vmem=24G
 # Request runtime 
-#$ -l h_rt=2:00:00 
+#$ -l h_rt=4:00:00 
 # Request CPU cores 
 #$ -pe ib 48 
 
@@ -16,9 +16,7 @@
 #$ -o logs/
 #$ -e logs/
 
-# for ARC3 non-conda env
-#export PYTHONPATH=~/.local/lib/python3.6/site-packages:$PYTHONPATH
-#export LD_LIBRARY_PATH=src/lib:$LD_LIBRARY_PATH 
+export LD_LIBRARY_PATH=src/lib:$LD_LIBRARY_PATH 
 
 # Check we are in a conda env - should be activated manually
 #source activate <env-name>

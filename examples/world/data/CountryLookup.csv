@@ -6,7 +6,6 @@ American Samoa	ASM
 Andorra	AND
 Angola	AGO
 Antigua and Barbuda	ATG
-Arab World	ARB
 Argentina	ARG
 Armenia	ARM
 Aruba	ABW
@@ -36,10 +35,8 @@ Cabo Verde	CPV
 Cambodia	KHM
 Cameroon	CMR
 Canada	CAN
-Caribbean small states	CSS
 Cayman Islands	CYM
 Central African Republic	CAF
-Central Europe and the Baltics	CEB
 Chad	TCD
 Channel Islands	CHI
 Chile	CHL
@@ -59,10 +56,6 @@ Denmark	DNK
 Djibouti	DJI
 Dominica	DMA
 Dominican Republic	DOM
-Early-demographic dividend	EAR
-East Asia & Pacific	EAS
-East Asia & Pacific (excluding high income)	EAP
-East Asia & Pacific (IDA & IBRD countries)	TEA
 Ecuador	ECU
 Egypt, Arab Rep.	EGY
 El Salvador	SLV
@@ -71,15 +64,9 @@ Eritrea	ERI
 Estonia	EST
 Eswatini	SWZ
 Ethiopia	ETH
-Euro area	EMU
-Europe & Central Asia	ECS
-Europe & Central Asia (excluding high income)	ECA
-Europe & Central Asia (IDA & IBRD countries)	TEC
-European Union	EUU
 Faroe Islands	FRO
 Fiji	FJI
 Finland	FIN
-Fragile and conflict affected situations	FCS
 France	FRA
 French Polynesia	PYF
 Gabon	GAB
@@ -97,8 +84,6 @@ Guinea	GIN
 Guinea-Bissau	GNB
 Guyana	GUY
 Haiti	HTI
-Heavily indebted poor countries (HIPC)	HPC
-High income	HIC
 Honduras	HND
 Hong Kong SAR, China	HKG
 Hungary	HUN
@@ -123,21 +108,13 @@ Kosovo	XKX
 Kuwait	KWT
 Kyrgyz Republic	KGZ
 Lao PDR	LAO
-Late-demographic dividend	LTE
-Latin America & Caribbean	LCN
-Latin America & Caribbean (excluding high income)	LAC
-Latin America & the Caribbean (IDA & IBRD countries)	TLA
 Latvia	LVA
-Least developed countries: UN classification	LDC
 Lebanon	LBN
 Lesotho	LSO
 Liberia	LBR
 Libya	LBY
 Liechtenstein	LIE
 Lithuania	LTU
-Low & middle income	LMY
-Low income	LIC
-Lower middle income	LMC
 Luxembourg	LUX
 Macao SAR, China	MAC
 Macedonia, FYR	MKD
@@ -152,10 +129,6 @@ Mauritania	MRT
 Mauritius	MUS
 Mexico	MEX
 Micronesia, Fed. Sts.	FSM
-Middle East & North Africa	MEA
-Middle East & North Africa (excluding high income)	MNA
-Middle East & North Africa (IDA & IBRD countries)	TMN
-Middle income	MIC
 Moldova	MDA
 Monaco	MCO
 Mongolia	MNG
@@ -172,13 +145,9 @@ New Zealand	NZL
 Nicaragua	NIC
 Niger	NER
 Nigeria	NGA
-North America	NAC
 Northern Mariana Islands	MNP
 Norway	NOR
-Not classified	INX
-OECD members	OED
 Oman	OMN
-Other small states	OSS
 Pacific island small states	PSS
 Pakistan	PAK
 Palau	PLW
@@ -189,8 +158,6 @@ Peru	PER
 Philippines	PHL
 Poland	POL
 Portugal	PRT
-Post-demographic dividend	PST
-Pre-demographic dividend	PRE
 Puerto Rico	PRI
 Qatar	QAT
 Romania	ROU
@@ -212,8 +179,6 @@ Small states	SST
 Solomon Islands	SLB
 Somalia	SOM
 South Africa	ZAF
-South Asia	SAS
-South Asia (IDA & IBRD)	TSA
 South Sudan	SSD
 Spain	ESP
 Sri Lanka	LKA
@@ -221,9 +186,6 @@ St. Kitts and Nevis	KNA
 St. Lucia	LCA
 St. Martin (French part)	MAF
 St. Vincent and the Grenadines	VCT
-Sub-Saharan Africa	SSF
-Sub-Saharan Africa (excluding high income)	SSA
-Sub-Saharan Africa (IDA & IBRD countries)	TSS
 Sudan	SDN
 Suriname	SUR
 Sweden	SWE
@@ -246,7 +208,6 @@ Ukraine	UKR
 United Arab Emirates	ARE
 United Kingdom	GBR
 United States	USA
-Upper middle income	UMC
 Uruguay	URY
 Uzbekistan	UZB
 Vanuatu	VUT
@@ -254,7 +215,6 @@ Venezuela, RB	VEN
 Vietnam	VNM
 Virgin Islands (U.S.)	VIR
 West Bank and Gaza	PSE
-World	WLD
 Yemen, Rep.	YEM
 Zambia	ZMB
 Zimbabwe	ZWE
