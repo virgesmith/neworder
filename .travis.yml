@@ -91,18 +91,16 @@ matrix:
     #   - python3 -c"import pandas;print(pandas.__version__)"
 
     - language: python
-      python: 3.5
+      python: 3.6
       before_install:
       - sudo apt-get update
       - sudo apt-get -y install build-essential mpich libmpich-dev
-      script:
+      install: 
       - pip install pybind11 numpy pandas
-      - python setup.py build
-      - ./run_example.sh hello_world
-      - ./run_example.sh diagnostics
-      - echo $PATH
-      - echo $PYTHONPATH
-      - python setup.py test
+      script:
+      # - python setup.py build
+      # - python setup.py test
+      - make && make test
 
   allow_failures:
     - python: 3.5
