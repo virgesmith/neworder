@@ -2,6 +2,7 @@
 """ config.py
 Microsimulation config
 """
+import os
 import numpy as np
 import neworder
 
@@ -14,13 +15,12 @@ import neworder
 # define the evolution
 neworder.timeline = (2011, 2012, 1)
 
+areas = os.getenv("LADS").split(" ")
 
-neworder.area = "E08000021"
-
-# define some global variables describing where the starting population and the parameters of the dynamics come from
+# define where the starting populations come from
 data_dir = "examples/households/data"
-initial_population = "hh_"+neworder.area+"_OA11_"+str(neworder.timeline[0])+".csv"
-neworder.final_population = "dm_hh_"+neworder.area+"_OA11_"+str(neworder.timeline[-2])+".csv"
+# 
+file_pattern = "hh_%s_OA11_%d.csv"
 
 # running/debug options
 neworder.log_level = 1
@@ -29,7 +29,7 @@ assert neworder.size() == 1, "This example is configured to be run as a single p
 
 # initialisation
 neworder.initialisations = {
-  "households": { "module": "households", "class_": "Households", "parameters": [data_dir, initial_population] }
+  "households": { "module": "households", "class_": "Households", "parameters": [data_dir, file_pattern, areas] }
 }
 
 # timestep must be defined in neworder
@@ -46,5 +46,5 @@ neworder.checks = {
 
 # Generate output at each checkpoint  
 neworder.checkpoints = {
-  "write_table" : "households.write_table(final_population)" 
+  "write_table" : "households.write_table()" 
 }
