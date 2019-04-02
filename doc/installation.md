@@ -37,7 +37,11 @@ And then install the python dependencies
 ```
 #### Conda
 
-Conda requires a specific C++ compiler and MPI implementation, rather than the system ones. First create an environment (if necessary) and activate:
+Conda requires a specific C++ compiler and MPI implementation, rather than the system ones, but basic systemwide build tools must be installed if not already present:
+```
+$ sudo apt install build-essential
+```
+Then create a new environment if necessary, and activate it:
 ```
 $ conda create -n .condaenv python=3 -y
 $ conda activate .condaenv
@@ -61,8 +65,8 @@ C++14: gcc 5.4
 
 First clone (or fork) the repo, then enter the repo's root directory, e.g.:
 ```bash
-$ git clone git@github.com:virgesmith/neworder
-$ cd neworder
+(<env>) $ git clone git@github.com:virgesmith/neworder
+(<env>) $ cd neworder
 ```
 
 ### Standard Build
