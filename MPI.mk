@@ -2,6 +2,15 @@
 # MPI: mpich and openmpi known to work
 # pybind11: install with pip/conda
 # virtualenv or conda using python 3.5 or higher
+ifndef VIRTUAL_ENV
+ifndef CONDA_DEFAULT_ENV
+$(error neworder requires either a virtualenv or a conda environment)
+else
+$(info Building in conda env: $(CONDA_DEFAULT_ENV))
+endif
+else
+$(info Building in virtualenv: $(VIRTUAL_ENV))
+endif
 
 # this needs to be overridden sometimes, e.g. conda env contains python3-config and python-config is the OS's python2.7 version
 PY_CFG=python-config

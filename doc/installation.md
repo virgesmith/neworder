@@ -14,9 +14,6 @@ Windows and OSX are not currently supported, but the long-term plan is to provid
 	- [Standard Build](#standard-build)       
 	- [Parallel Build](#parallel-build)       
 - [HPC Installation Notes (ARC3)](#hpc-installation-notes-arc3)       
-	- [Issues](#issues)
-	- [Conda](#conda)
-	- [Non-Conda](#non-conda)
 
 ## Requirements
 
@@ -24,24 +21,34 @@ Windows and OSX are not currently supported, but the long-term plan is to provid
 
 #### Pip/virtualenv
 
+First install system-level dependencies (compiler, make, MPI)
 ```bash
-$ sudo apt install -y build-essential python3 python3-dev python3-pip
-$ python3 -m pip install -U numpy pandas pybind11
+$ sudo apt install -y build-essential mpich libmipch-dev
 ```
-For parallel execution, you'll first need to make sure you have an implementation of MPI (including a compiler), e.g:
-```bash
-$ sudo apt install mpich libmipch-dev
+Now create and activate python3 virtualenv, e.g. 
+```
+$ virtualenv -p python3 .venv
+...
+$ source .venv/bin/activate
+```
+And then install the python dependencies
+```
+(.venv) $ pip install numpy pandas pybind11
 ```
 #### Conda
 
-Conda also requires a specific C++ compiler:
-
-```bash
-$ conda install pybind11 gxx_linux-64 
+Conda requires a specific C++ compiler and MPI implementation, rather than the system ones, but basic systemwide build tools must be installed if not already present:
 ```
-For parallel execution, you'll first need to make sure you a conda-supporting implementation of MPI (including a compiler), e.g:
+$ sudo apt install build-essential
+```
+Then create a new environment if necessary, and activate it:
+```
+$ conda create -n .condaenv python=3 -y
+$ conda activate .condaenv
+```
+Then install the package dependencies
 ```bash
-$ conda install mpich
+(.condaenv) $ conda install pybind11 gxx_linux-64 mpich numpy pandas
 ```
 
 ### Minimum Versions
@@ -58,44 +65,48 @@ C++14: gcc 5.4
 
 First clone (or fork) the repo, then enter the repo's root directory, e.g.:
 ```bash
-$ git clone git@github.com:virgesmith/neworder
-$ cd neworder
+(<env>) $ git clone git@github.com:virgesmith/neworder
+(<env>) $ cd neworder
 ```
 
 ### Standard Build
 
-From the root of the repo, build and run tests:
+From the root of the repo, in an activated virtualenv or conda environment, build with
 ```bash
-$ make -j<N> && make test
+(<env>) $ make -j<N>
 ```
-picking an suitable <N> for your platform, typically 1-1.5x number of cores.
+picking a suitable `<N>` for your platform, typically 1-1.5x number of cores. To test:
+```
+(<env>) $ make test
+```
 
 ### Parallel Build
 
-Ensure the MPI dependencies (see above) have been installed.
-
-From the root of the repo use the [MPI.mk](MPI.mk) makefile to build the MPI-enabled framework:
+From the root of the repo, in an activated virtualenv or conda environment, use the [MPI.mk](MPI.mk) makefile to build the MPI-enabled framework:
 ```bash
-$ make -j<N> -f MPI.mk
+(<env>) $ make -j<N> -f MPI.mk
 ```
 picking an suitable <N> for your platform, typically 1-1.5x number of cores. And to test,
 ```bash
-$ make -f MPI.mk test
+(<env>) $ make -f MPI.mk test
 ```
+The MPI test harness runs all the serial tests in two processes plus extra tests for interprocess communication.
 
+### Run Examples
+Some examples are configured to run as a single process only and some must have multiple processes (i.e. MPI). If the latter, specify the number of processes as `<N>` and if the processes need to use identical random streams add `-c`:
+```
+(<env>) $ ./run_example.sh <name> [<N> [ -c]] 
+```
+where `<name>` is the name of the example, e.g. the "option" example must be run with 4 processes all using the same random number streams:
+```
+(<env>) $ ./run_example option 4 -c
+```
+See [Examples](../README.md#examples) for more detail.
 ## HPC Installation Notes (ARC3)
-
-### Issues
-makefile hacks
-openmpi vs mpich?
-pandas 
-
-Below is out of date
 
 [These instructions are specific to ARC3 but may be of some use on other clusters - YMMV]
 
 Switch to gnu toolchain and add python **but not python-libs** (which are outdated):
-
 
 ```bash
 $ module switch intel gnu
@@ -134,19 +145,3 @@ ImportError: numpy.core.multiarray failed to import
 ```
 which was due to python-libs module not being loaded. 
 
-### Conda
-`neworder` works with conda, provided a conda compiler is used, and, for MPI, a conda MPI package. Using `mpich` resulted in an odd error emanating from numpy:
-```
-ImportError: cannot import name _remove_dead_weakref
-```
-replacing `mpich` with `openmpi` resolved it, but one of the MPI tests now "fails". (The result with openmpi actually makes more sense than the original mpich result.) 
-
-
-### Non-Conda
-- Global python packages are old and the code isn't compatible. This can be resolved by updating at user-level, e.g.:
-	```
-	$ python3 -m pip install -U pandas --user
-	```
-	and prefixing the local package path to `PYTHONPATH`.
-
-- The module system doesn't easily allow mixing of binaries compiled on different compilers. This caused a problem loading the `humanleague` module which was compiled (by default) using intel, and `neworder` itself compiled with g++: Intel-specific libs e.g. libimf.so weren't found. Might be able to hack `LD_LIBRARY_PATH` to fix this? As `humanleague` is now available on conda, this should no longer be an issue.
