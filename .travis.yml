@@ -115,4 +115,4 @@ notifications:
   email:
     on_success: change
     on_failure: change
-
+  slack: spenser-workspace:QzyXfMnQd5tUJaFZPK6Psl4M
