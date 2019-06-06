@@ -25,7 +25,7 @@ MPI_DEP := 0
 
 # Query python env for compile and link settings
 CXXFLAGS = $(shell python -m pybind11 --includes)
-CXXFLAGS += -O2 -Werror -Wno-error=deprecated-declarations -fPIC -std=c++14 -pedantic -DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION -DNEWORDER_MPI
+CXXFLAGS += -O2 -Werror -Wno-error=deprecated-declarations -fPIC -std=c++17 -pedantic -DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION -DNEWORDER_MPI
 # get version from __init__.py
 CXXFLAGS += -DNEWORDER_VERSION_MAJOR=$(shell python3 -c "import neworder;print(neworder.__version__.split('.')[0])") \
             -DNEWORDER_VERSION_MINOR=$(shell python3 -c "import neworder;print(neworder.__version__.split('.')[1])") \
