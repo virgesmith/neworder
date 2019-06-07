@@ -15,7 +15,10 @@ public:
   // borrowed
   Buffer(char* b, int n) : m_owned(false), m_buf(b), m_size(n) { }
   // owned
-  explicit Buffer(int n): m_owned(true), m_buf(new char[n]), m_size(n) { }
+  explicit Buffer(int n) 
+  { 
+    alloc(n); 
+  }
 
   Buffer(const Buffer&) = delete;
   Buffer& operator=(const Buffer&) = delete;
@@ -28,8 +31,8 @@ public:
   void alloc(int n)
   {
     free();
-    m_owned = true;
     m_buf = new char[n];
+    m_owned = true;
     m_size = n;
   }
 
