@@ -24,7 +24,7 @@ dm*.csv
 # bulk data
 examples/people_multi/data
 
-.venv/
+.venv*/
 **/ipch/**
 
 .eggs/
