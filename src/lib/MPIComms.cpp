@@ -7,14 +7,18 @@
 namespace {
 
 // Buffer for MPI send/recv
-struct Buffer
+class Buffer
 {
+public:
   typedef char value_type;
 
   // borrowed
-  Buffer(char* b, int n) : owned(false), buf(b), size(n) { }
+  Buffer(char* b, int n) : m_owned(false), m_buf(b), m_size(n) { }
   // owned
-  Buffer(int n): owned(true), buf(new char[n]), size(n) { }
+  explicit Buffer(int n) 
+  { 
+    alloc(n); 
+  }
 
   Buffer(const Buffer&) = delete;
   Buffer& operator=(const Buffer&) = delete;
@@ -27,20 +31,36 @@ struct Buffer
   void alloc(int n)
   {
     free();
-    owned = true;
-    buf = new char[n];
-    size = n;
+    m_buf = new char[n];
+    m_owned = true;
+    m_size = n;
   }
 
   void free()
   {
-    if (owned)
-      delete[] buf;
+    if (m_owned)
+      delete[] m_buf;
   }
 
-  bool owned;
-  char* buf;
-  int size;
+  bool owned() const 
+  {
+    return m_owned;
+  }
+
+  char* const buf() const 
+  {
+    return m_buf;
+  }
+
+  size_t size() const
+  {
+    return m_size;
+  }
+
+private:
+  bool m_owned;
+  char* m_buf;
+  int m_size;
 };
 
 }
@@ -75,7 +95,7 @@ void send(const Buffer& data, int process)
 {
   //MPI_Send(&data.size, 1, mpi_type_trait<int>::type, process, 0, MPI_COMM_WORLD);
   //no::log("buf send length %%"_s % data.size);
-  MPI_Send(data.buf, data.size, mpi_type_trait<Buffer>::type, process, 0, MPI_COMM_WORLD);
+  MPI_Send(data.buf(), data.size(), mpi_type_trait<Buffer>::type, process, 0, MPI_COMM_WORLD);
   // no::log("send %%"_s % data.substr(40));
 }
 
@@ -108,14 +128,14 @@ void receive(Buffer& data, int process)
   //no::log("buf recv length %%"_s % size);
 
   data.alloc(size);
-  MPI_Recv(data.buf, data.size, mpi_type_trait<Buffer>::type, process, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+  MPI_Recv(data.buf(), data.size(), mpi_type_trait<Buffer>::type, process, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 }
 
 template<>
 void broadcast(Buffer& data, int process)
 {
 #ifdef NEWORDER_MPI
-  MPI_Bcast(data.buf, data.size, MPI_CHAR, process, MPI_COMM_WORLD);
+  MPI_Bcast(data.buf(), data.size(), MPI_CHAR, process, MPI_COMM_WORLD);
 #endif
 }
 
@@ -160,7 +180,7 @@ py::object no::mpi::receive_obj(int rank)
 
   py::object pickle = py::module::import("pickle");
 
-  py::object o = pickle.attr("loads")(py::handle(PyBytes_FromStringAndSize(b.buf, b.size)));
+  py::object o = pickle.attr("loads")(py::handle(PyBytes_FromStringAndSize(b.buf(), b.size())));
   //no::log("got %% from %%"_s % s % rank);
   return o;
 #else
@@ -212,7 +232,7 @@ py::object no::mpi::broadcast_obj(py::object& o, int rank)
   py::object serialised = pickle.attr("dumps")(o);
   Buffer b(PyBytes_AsString(serialised.ptr()), (int)PyBytes_Size(serialised.ptr()));
   broadcast(b, rank);
-  return pickle.attr("loads")(py::handle(PyBytes_FromStringAndSize(b.buf, b.size)));
+  return pickle.attr("loads")(py::handle(PyBytes_FromStringAndSize(b.buf(), b.size())));
 #else
   throw std::runtime_error("%% not implemented (binary doesn't support MPI)"_s % __FUNCTION__);
 #endif
