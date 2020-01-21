@@ -1,4 +1,4 @@
-dist: xenial
+dist: bionic
 
 cache: packages
 
@@ -7,7 +7,7 @@ sudo: true
 matrix:
   include:
 
-    - name: venv_py37
+    - name: venv_py3
       addons:
         apt:
           sources:
@@ -18,13 +18,13 @@ matrix:
       - sudo apt-get update
       - sudo apt-get -y install build-essential mpich libmpich-dev
       script:
-      - virtualenv -p python3.7 .venv
+      - virtualenv -p python3 .venv
       - source .venv/bin/activate
       - pip install -U numpy pandas pybind11
       - make && make test
       - make -f MPI.mk && make -f MPI.mk test
 
-    - name: conda_py36
+    - name: conda_py3
       before_install: 
       - | 
         wget -O miniconda.sh https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
@@ -34,7 +34,7 @@ matrix:
         conda config --add channels conda-forge
         conda update -q conda
         conda install -q conda-build
-        conda create -q -n test-environment python=3.6
+        conda create -q -n test-environment python=3
         source activate test-environment      
       install:
         - conda install gxx_linux-64 mpich numpy pandas pybind11
