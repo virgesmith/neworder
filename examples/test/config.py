@@ -15,7 +15,7 @@ neworder.do_checks = False
  
 # initialisation
 neworder.initialisations = {
-  "test": { "module": "test", "class_": "Test", "parameters": [p_trans, population_size] }
+  "test": { "module": "test", "class_": "Test", "args": (p_trans, population_size) }
 }
 
 neworder.transitions = {

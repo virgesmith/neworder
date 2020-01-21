@@ -39,10 +39,10 @@ neworder.pv = np.zeros(neworder.size())
 
 # initialisation
 neworder.initialisations = {
-  "market": { "module": "market", "class_": "Market", "parameters": [spot, rate, divy, vol] },
-  "option": { "module": "option", "class_": "Option", "parameters": [callput, strike, expiry] },
+  "market": { "module": "market", "class_": "Market", "args": (spot, rate, divy, vol) },
+  "option": { "module": "option", "class_": "Option", "args": (callput, strike, expiry) },
   # TODO import module without creating a class instance?
-  "model": { "module": "black_scholes", "class_": "BS", "parameters": [] }
+  "model": { "module": "black_scholes", "class_": "BS" }
 }
 
 # process-specific modifiers (for sensitivities)

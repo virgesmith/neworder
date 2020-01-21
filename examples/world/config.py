@@ -24,7 +24,7 @@ neworder.log_level = 1
  
 # initialisation
 neworder.initialisations = {
-  "people": { "module": "microsynth", "class_": "Microsynth", "parameters": [initial_populations[neworder.rank()]] }
+  "people": { "module": "microsynth", "class_": "Microsynth", "args": (initial_populations[neworder.rank()]) }
 }
 
 # define the evolution

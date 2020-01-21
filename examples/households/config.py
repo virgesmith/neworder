@@ -29,7 +29,7 @@ assert neworder.size() == 1, "This example is configured to be run as a single p
 
 # initialisation
 neworder.initialisations = {
-  "households": { "module": "households", "class_": "Households", "parameters": [data_dir, file_pattern, areas] }
+  "households": { "module": "households", "class_": "Households", "args": (data_dir, file_pattern, areas) }
 }
 
 # timestep must be defined in neworder

@@ -14,13 +14,17 @@ namespace pycpp
 class PYBIND11_EXPORT Functor
 {
 public:
-  Functor(py::object func, py::list args);
+  Functor(py::object func);
+  Functor(py::object func, py::args args);
+  Functor(py::object func, py::kwargs kwargs);
+  Functor(py::object func, py::args args, py::kwargs kwargs);
 
   py::object operator()() const;
 
 private:
   py::object m_func;
-  /*py::list*/std::vector<py::object> m_args;
+  py::args m_args;
+  py::kwargs m_kwargs;
 };
 
 typedef std::map<std::string, Functor> FunctionTable;

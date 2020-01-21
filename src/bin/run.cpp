@@ -28,6 +28,31 @@ void append_model_paths(const char* paths[], size_t n)
   setenv("PYTHONPATH", pythonpath.c_str(), 1);
 }
 
+namespace {
+
+py::tuple get_or_empty(const py::handle& dict, const char* key)
+{
+  if (dict.contains(key))
+  {
+    // no::log("type of args is: (len=%%)"_s);
+    // no::log(dict[key].get_type());
+    // prevent a single string arg being expanded into a tuple of chars
+    if (dict[key].get_type() != py::tuple().get_type())
+    //if (dict[key].get_type() == py::str().get_type())
+    {
+      py::tuple t1(1);
+      t1[0] = dict[key];
+      return t1;  
+    }
+    return dict[key];
+  }
+  else
+  {
+    return py::tuple();
+  }
+}
+
+}
 
 int run(int rank, int size, bool indep)
 {
@@ -120,12 +145,17 @@ int run(int rank, int size, bool indep)
       // kv.second["module"];
       std::string modulename = kv.second["module"].cast<std::string>();
       std::string class_name = kv.second["class_"].cast<std::string>();
-      py::list args = kv.second["parameters"];
+      //if (kv.second.contains("args"))
+      //py::args args = py::args(kv.second["args"]); // from py::tuple
+      py::args args = get_or_empty(kv.second, "args");
+      // py::args args = py::tuple(1);
+      // args[0] = "hello";
+      py::kwargs kwargs = kv.second.contains("kwargs") ? py::kwargs(kv.second["kwargs"]) : py::kwargs(); // from py::dict
 
       no::log("t=%%(%%) initialise: %%"_s % env.timeline().time() % env.timeline().index() % name);
       py::module module = py::module::import(modulename.c_str());
       py::object class_ = module.attr(class_name.c_str());
-      py::object object = pycpp::Functor(class_, args)();
+      py::object object = pycpp::Functor(class_, args, kwargs)();
 
       // taking a const ref here to stay results in an empty string, which is bizarre love triangle
       env().attr(name.c_str()) = object;

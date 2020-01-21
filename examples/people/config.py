@@ -31,7 +31,7 @@ neworder.timeline = (2011, 2018, 2021, 10)
 
 # initialisation
 neworder.initialisations = {
-  "people": { "module": "population", "class_": "Population", "parameters": [initial_population, asfr, asmr, asir, asor, ascr, asxr] }
+  "people": { "module": "population", "class_": "Population", "args": (initial_population, asfr, asmr, asir, asor, ascr, asxr) }
 }
 
 # timestep must be defined in neworder

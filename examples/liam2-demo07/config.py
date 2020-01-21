@@ -9,7 +9,7 @@ see http://liam2.plan.be/
 from pathlib import Path
 import neworder
 
-neworder.timeline = (2016, 2024, 8)
+neworder.timeline = (2016, 2018, 2)
 
 neworder.data_dir = Path("../LIAM2/examples")
 
@@ -30,9 +30,9 @@ neworder.log_level = 1
 # - household: [init_reports, csv_output]
 # - person: [init_reports, csv_output]
 neworder.initialisations = {
-  "retirement_age": { "module": "people", "class_": "RetirementAge", "parameters": [input_data, "/globals/periodic"] },
-  "people": { "module": "people", "class_": "People", "parameters": [input_data, "/entities/person"] },
-  "households": { "module": "households", "class_": "Households", "parameters": [input_data, "/entities/household"] }
+  "retirement_age": { "module": "people", "class_": "RetirementAge", "args": (input_data, "/globals/periodic") },
+  "people": { "module": "people", "class_": "People", "args": (input_data, "/entities/person") },
+  "households": { "module": "households", "class_": "Households", "args": (input_data, "/entities/household") }
 }
 
 # processes:
@@ -58,6 +58,7 @@ neworder.transitions = {
   "p_age": "people.ageing()",
   "p_death": "people.death()",
   "p_birth": "people.birth()",
+  "p_divorce": "people.divorce()",
   "p_moveout": "people.get_a_life(households)",
   "h_summary" : "households.csv_output()",
   "h_prune" : "households.clean_empty(people)"

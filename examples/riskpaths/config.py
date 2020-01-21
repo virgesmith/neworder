@@ -27,7 +27,7 @@ neworder.do_checks = False
  
 # initialisation
 neworder.initialisations = {
-  "people": { "module": "riskpaths", "class_": "RiskPaths", "parameters": [population_size] }
+  "people": { "module": "riskpaths", "class_": "RiskPaths", "args": (population_size) }
 }
 
 neworder.transitions = {

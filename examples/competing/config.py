@@ -24,7 +24,7 @@ neworder.do_checks = False
 # initialisation, this creates the population but doesnt assign a time of death
 neworder.initialisations = {
   # a more efficient expression of the problem usin g pandas, runs about 5 times faster
-  "people": { "module": "people", "class_": "People", "parameters": [fertility_hazard_file, mortality_hazard_file, lad, ethnicity, population_size] }
+  "people": { "module": "people", "class_": "People", "args": (fertility_hazard_file, mortality_hazard_file, lad, ethnicity, population_size) }
 }
 
 # transitions: simply samples time of death for each individual

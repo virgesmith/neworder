@@ -17,7 +17,7 @@ neworder.do_checks = False
  
 # initialisation, this creates the population but doesnt assign a time of death
 neworder.initialisations = {
-  "people": { "module": "person", "class_": "People", "parameters": [mortality_hazard, population_size] }
+  "people": { "module": "person", "class_": "People", "args": (mortality_hazard, population_size) }
 }
 
 # This is case-based model with no explicit time evolution 

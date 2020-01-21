@@ -38,7 +38,7 @@ neworder.log_level = 1
 
 # initialisation
 neworder.initialisations = {
-  "households": { "module": "households", "class_": "Households", "parameters": [initial_populations[neworder.rank()], ht_trans, cache_dir] }
+  "households": { "module": "households", "class_": "Households", "args": (initial_populations[neworder.rank()], ht_trans, cache_dir) }
 }
 
 # timestep must be defined in neworder

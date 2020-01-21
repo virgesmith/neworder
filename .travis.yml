@@ -7,7 +7,7 @@ sudo: true
 matrix:
   include:
 
-    - name: venv_py35
+    - name: venv_py37
       addons:
         apt:
           sources:
@@ -18,7 +18,7 @@ matrix:
       - sudo apt-get update
       - sudo apt-get -y install build-essential mpich libmpich-dev
       script:
-      - virtualenv -p python3.5 .venv
+      - virtualenv -p python3.7 .venv
       - source .venv/bin/activate
       - pip install -U numpy pandas pybind11
       - make && make test

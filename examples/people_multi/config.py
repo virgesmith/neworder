@@ -30,7 +30,7 @@ neworder.log_level = 1
  
 # initialisation
 neworder.initialisations = {
-  "people": { "module": "population", "class_": "Population", "parameters": [initial_populations[neworder.rank()], asfr, asmr, asir, asor, ascr, asxr] }
+  "people": { "module": "population", "class_": "Population", "args": (initial_populations[neworder.rank()], asfr, asmr, asir, asor, ascr, asxr) }
 }
 
 # define the evolution

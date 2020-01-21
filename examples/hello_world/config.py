@@ -25,13 +25,13 @@ neworder.checks = {
 # Initialisation - construct an instance of Greet
 #
 # This creates an object called "greeter" within the neworder module, which is an instance of 
-# the class Greet from the "greet" module and is initialised with no parameters.
+# the class Greet from the "greet" module and is initialised with some parameters.
 # The pure python equivalent to the above is:
 #   import greet
 #   import neworder
 #   neworder.greeter = greet.Greet()
 neworder.initialisations = {
-  "greeter": { "module": "greet", "class_": "Greet", "parameters": [] }
+  "greeter": { "module": "greet", "class_": "Greet", "args": ("Namaste", "Bonjour", "Hola", "Annyeonghaseyo") },
 }
 
 # The "transition" in this case fetches the current username from the os
