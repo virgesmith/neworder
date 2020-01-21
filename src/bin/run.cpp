@@ -37,7 +37,7 @@ py::tuple get_or_empty(const py::handle& dict, const char* key)
     // no::log("type of args is: (len=%%)"_s);
     // no::log(dict[key].get_type());
     // prevent a single string arg being expanded into a tuple of chars
-    if (dict[key].get_type() != py::tuple().get_type())
+    if (!dict[key].get_type().is(py::tuple().get_type()))
     //if (dict[key].get_type() == py::str().get_type())
     {
       py::tuple t1(1);

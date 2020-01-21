@@ -29,9 +29,12 @@ neworder.checks = {
 # The pure python equivalent to the above is:
 #   import greet
 #   import neworder
-#   neworder.greeter = greet.Greet()
+#   neworder.greeter = greet.Greet("Namaste", "Bonjour", "Hola", "Annyeonghaseyo")
+# args must be a tuple or a single value
+# kwargs must be a dict, e.g. add
+# ..., kwargs = { ... } }
 neworder.initialisations = {
-  "greeter": { "module": "greet", "class_": "Greet", "args": ("Namaste", "Bonjour", "Hola", "Annyeonghaseyo") },
+  "greeter": { "module": "greet", "class_": "Greet", "args": ("Namaste", "Bonjour", "Hola", "Annyeonghaseyo") }
 }
 
 # The "transition" in this case fetches the current username from the os

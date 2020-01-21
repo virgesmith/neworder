@@ -11,6 +11,7 @@
 namespace pycpp
 {
 
+// TODO deprecate? it's only used once in run.cpp
 class PYBIND11_EXPORT Functor
 {
 public:

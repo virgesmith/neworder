@@ -5,7 +5,7 @@ import neworder # to pass greeting back to environment
 
 class Greet():
   # Constructor 
-  def __init__(self, *args):
+  def __init__(self, *args): #, **kwargs):
     self.name = "anonymous"
     self.hellos = args
 
