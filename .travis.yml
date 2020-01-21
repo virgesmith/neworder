@@ -93,7 +93,7 @@ matrix:
     #   - python3 -c"import pandas;print(pandas.__version__)"
 
     - language: python
-      python: 3.6
+      python: 3.7
       before_install:
       - sudo apt-get update
       - sudo apt-get -y install build-essential mpich libmpich-dev
@@ -104,9 +104,21 @@ matrix:
       # - python setup.py test
       - make && make test
 
-  allow_failures:
-    - python: 3.5
-    - python: 3.6
+    - language: python
+      python: 3.8
+      before_install:
+      - sudo apt-get update
+      - sudo apt-get -y install build-essential mpich libmpich-dev
+      install: 
+      - pip install pybind11 numpy pandas
+      script:
+      # - python setup.py build
+      # - python setup.py test
+      - make && make test
+
+  # allow_failures:
+  #   - python: 3.5
+  #   - python: 3.6
 
 #after_success:
 #  - Rscript -e 'covr::codecov()'
