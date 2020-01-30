@@ -7,45 +7,47 @@
 #include <algorithm>
 
 // Default "null" timeline is just one step of arbitrary size
-no::Timeline::Timeline() : m_checkpoints{1}, m_steps(1), m_begin(0.0), m_dt(0.0), m_index(0), m_time(0.0) 
+no::Timeline::Timeline() : m_checkpoints{1}, m_start(0.0), m_dt(0.0), m_index(0), m_time(0.0) 
 { 
 
 }
 
-no::Timeline::Timeline(const std::vector<double>& checkpoint_times, size_t nsteps) 
-  : m_checkpoints(checkpoint_times.size()), m_steps(nsteps)
+no::Timeline::Timeline(double start, double end, const std::vector<size_t>& checkpoints)
+  : m_start(start), m_end(end), m_checkpoints(checkpoints)
 {
-  size_t n = checkpoint_times.size();
-  if (n < 2)
-  {
-    std::runtime_error("timeline specification is too short, must contain a minimum of (begin, end)");
-  }
-
+  size_t n = m_checkpoints.size();
   // validate
   if (n < 1)
   {
-    throw std::runtime_error("invalid timeline: nsteps (%%) is not strictly positive"_s % n);
+    std::runtime_error("checkpoints must contain at least one value (the last step)");
   }
-  m_begin = checkpoint_times[0];
-  m_dt = (checkpoint_times.back() - checkpoint_times.front()) / m_steps;
 
-  // for now checkpoint at closest timestep (step 0 is not a checkpoint)
-  m_checkpoints.resize(checkpoint_times.size() - 1);
   // validate checkpoints monotonic and on timeline
-  for (size_t i = 1; i < checkpoint_times.size(); ++i)
+  for (size_t i = 1; i < m_checkpoints.size(); ++i)
   {
-    if (checkpoint_times[i] <= checkpoint_times[i-1])
+    if (m_checkpoints[i] <= m_checkpoints[i-1])
     {
-      throw std::runtime_error("invalid timeline: element %% (%%) is not strictly greater than previous (%%)"_s 
-        % i % checkpoint_times[i] % checkpoint_times[i-1]);
+      throw std::runtime_error("invalid timeline: checkpoint %% (%%) is not strictly greater than previous (%%)"_s 
+        % i % m_checkpoints[i] % m_checkpoints[i-1]);
     }
-    m_checkpoints[i-1] = static_cast<int>((checkpoint_times[i] - checkpoint_times[0]) / m_dt);
   }
 
+  m_dt = (m_end - m_start) / m_checkpoints.back();
   // set to start 
   m_index = 0;
-  m_time = m_begin;
+  m_time = m_start;
 }
+
+double no::Timeline::start() const
+{
+  return m_start;
+}
+
+double no::Timeline::end() const
+{
+  return m_end;
+}
+
 
 double no::Timeline::time() const 
 { 
@@ -64,10 +66,10 @@ double no::Timeline::dt() const
 
 size_t no::Timeline::nsteps() const 
 { 
-  return m_steps; 
+  return m_checkpoints.back(); 
 }
 
-void no::Timeline::step()
+void no::Timeline::next()
 {
   if (m_index < m_checkpoints.back())
   {
@@ -76,7 +78,7 @@ void no::Timeline::step()
   }
 }
 
-bool no::Timeline::is_checkpoint() const
+bool no::Timeline::at_checkpoint() const
 {
   return std::find(m_checkpoints.begin(), m_checkpoints.end(), m_index) != m_checkpoints.end();
 }
@@ -86,9 +88,9 @@ const std::vector<size_t>& no::Timeline::checkpoints() const
   return m_checkpoints;
 }
 
-bool no::Timeline::end() const
+bool no::Timeline::at_end() const
 {
-  return m_index == m_steps;
+  return m_index == m_checkpoints.back();
 }
 
 // returns a floating point number that compares less than any other number

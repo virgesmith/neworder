@@ -12,32 +12,33 @@ class Timeline final
 {
 public:
 
-  // Default "null" timeline is just one step of arbitrary size
+  // Default "null" timeline is just one step of zero size
   Timeline();
 
-  Timeline(const std::vector<double>& checkpoint_times, size_t nsteps);
-
-  // Timeline(double begin, double end, int n);
-
-  // Timeline(const py::tuple& spec);
+  Timeline(double start, double end, const std::vector<size_t>& checkpoints);
 
   ~Timeline() = default;
 
   Timeline(const Timeline&) = delete;
   Timeline& operator=(const Timeline&) = default;
+  Timeline(Timeline&&) = delete;
+  Timeline& operator=(Timeline&&) = default;
 
   double time() const;
   size_t index() const;
+
+  double start() const;
+  double end() const;
   size_t nsteps() const;
 
   double dt() const;
-  void step();
-
-  bool is_checkpoint() const;
-
   const std::vector<size_t>& checkpoints() const;
 
-  bool end() const;
+  void next();
+
+  bool at_checkpoint() const;
+
+  bool at_end() const;
 
   // returns a floating point number that compares unequal (and unordered) to any other number
   // thus the following all evaluate to true: never() != never(), !(x < never()), !(x >= never()) (so be careful!)
@@ -54,9 +55,9 @@ public:
 
 private:
   std::vector<size_t> m_checkpoints;
-  size_t m_steps; // total no. of steps
 
-  double m_begin; 
+  double m_start; 
+  double m_end;
   double m_dt; // timestep
 
   size_t m_index; // index of current time

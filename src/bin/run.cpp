@@ -70,7 +70,7 @@ int run(int rank, int size, bool indep)
     // TODO actually do something with log_level...
     (void)log_level;
 
-    // timeline comes in as a (double, double..., int) tuple: (begin, [checkpoint, [checkpoint,]]... end, n)
+    // timeline comes in as a tuple: (begin, end, [checkpoint(s)...])
     if (pycpp::has_attr(env(), "timeline"))
     {
       py::tuple t = env().attr("timeline");
@@ -91,7 +91,7 @@ int run(int rank, int size, bool indep)
 
     // TODO more info re defaulted timeline and overridden timestep
     double dt = env().attr("timestep").cast<double>(); 
-    no::log("starting microsimulation. timestep=%%, checkpoint(s) at %%"_s % dt % env.timeline().checkpoints());
+    no::log("starting microsimulation. start time=%%, timestep=%%, checkpoint(s) at %%"_s % env.timeline().start() % dt % env.timeline().checkpoints());
 
     // modifiers (exec)
     no::CallbackArray modifierArray; 
@@ -171,10 +171,11 @@ int run(int rank, int size, bool indep)
     // Loop with checkpoints
     do
     {
-      env.timeline().step(); 
+      env.timeline().next(); 
       // get new time position
       double t = env.timeline().time();
       int timeindex = env.timeline().index();
+      // TODO this should be inside the timeline class
       // ensure python is updated
       env().attr("time") = t;
       env().attr("timeindex") = timeindex;
@@ -193,7 +194,7 @@ int run(int rank, int size, bool indep)
           throw std::runtime_error("check failed");
         }  
       }
-      if (env.timeline().is_checkpoint())
+      if (env.timeline().at_checkpoint())
       {
         for (auto it = checkpointTable.begin(); it != checkpointTable.end(); ++it)
         {
@@ -203,7 +204,7 @@ int run(int rank, int size, bool indep)
         }
       } 
     }
-    while (!env.timeline().end());
+    while (!env.timeline().at_end());
     no::log("SUCCESS exec time=%%s"_s % timer.elapsed_s());
   }
   catch(std::exception& e)

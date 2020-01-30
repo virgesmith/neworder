@@ -89,25 +89,20 @@ void no::shell(/*const py::object& local*/)
 // TODO move? (this is called from run.cpp but not exposed to python) 
 void no::set_timeline(const py::tuple& spec) 
 {
-  size_t n = py::len(spec);
-  std::vector<double> checkpoint_times(n - 1);
-  for (size_t i = 0; i < n - 1; ++i)
-  {
-    // allow integer (or float) values
-    py::int_ intval();
-    if (py::isinstance<py::int_>(spec[i]))
-    {
-      checkpoint_times[i] = spec[i].cast<int>();
-    }
-    else
-    {
-      checkpoint_times[i] = spec[i].cast<double>();
-    }
+  // Format is: (start, end, [checkpoints])
+  if (py::len(spec) != 3) {
+    throw std::runtime_error("invalid timeline specification, should be (start, end, [checkpoints])");
   }
-
-  size_t nsteps = spec[n-1].cast<int>();
-
-  getenv().timeline() = Timeline(checkpoint_times, nsteps);
+  double start = spec[0].cast<double>();
+  double end = spec[1].cast<double>();
+  py::list cp = py::list(spec[2]);
+  size_t n = py::len(cp);
+  std::vector<size_t> checkpoint_times(n);
+  for (size_t i = 0; i < n; ++i)
+  {
+    checkpoint_times[i] = cp[i].cast<size_t>();
+  }
+  getenv().timeline() = Timeline(start, end, checkpoint_times);
 }
 
 

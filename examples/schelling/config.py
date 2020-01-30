@@ -11,7 +11,7 @@ categories = np.array([1.02, 0.19, 0.19, 0.6])
 categories = categories / sum(categories)
 similarity = 0.5
 
-neworder.timeline = (0, 500, 5000)
+neworder.timeline = (0, 500, [5000])
 
 # running/debug options
 neworder.log_level = 1

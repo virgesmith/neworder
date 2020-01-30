@@ -10,7 +10,7 @@ import person
 neworder.MAX_AGE = 100.0
 
 # This is case-based model - only a dummy timeline is required?
-neworder.timeline = (0.0, neworder.MAX_AGE, int(neworder.MAX_AGE))
+neworder.timeline = (0.0, neworder.MAX_AGE, [int(neworder.MAX_AGE)])
 
 # Choose a simple linearly increasing mortality rate: 0.1% aged 0 to 2.5% aged 100
 mortality_hazard_file = "examples/shared/NewETHPOP_mortality.csv"
