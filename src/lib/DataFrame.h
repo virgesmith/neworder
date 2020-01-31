@@ -10,7 +10,7 @@ void transition(np::array categories, np::array matrix, py::object& df, const st
 
 void directmod(py::object& df, const std::string& colname);
 
-void linked_change(py::object& df, const std::string& cat, const std::string& link_cat);
+//void linked_change(py::object& df, const std::string& cat, const std::string& link_cat);
 
 //py::object append(const py::object& df1, const py::object& df2);
 

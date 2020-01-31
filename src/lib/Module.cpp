@@ -82,7 +82,7 @@ void no::shell(/*const py::object& local*/)
   kwargs["exitmsg"] = py::str("[exiting neworder debug shell]");
   //py::module::import("neworder");
   //kwargs["local"] = py::handle<>(PyObject_Dir());
-  py::object interpreter = py::module::import("code").attr("interact")(*py::tuple(), **kwargs);
+  /* py::object interpreter = */py::module::import("code").attr("interact")(*py::tuple(), **kwargs);
 }
 
 
@@ -164,7 +164,7 @@ PYBIND11_EMBEDDED_MODULE(neworder, m)
   // working on pandas df manipulation  
   m.def("transition", no::df::transition);
   m.def("directmod", no::df::directmod);
-  m.def("linked_change", no::df::linked_change, py::return_value_policy::take_ownership);
+  //m.def("linked_change", no::df::linked_change, py::return_value_policy::take_ownership);
 
   // MPI
   m.def("rank", no::Environment::rank);

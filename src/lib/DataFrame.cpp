@@ -51,12 +51,14 @@ void no::df::transition(np::array categories, np::array matrix, py::object &df, 
     // point to beginning of row
     double* p = np::begin<double>(matrix) + i;
     if (p[0] < 0.0 || p[0] > 1.0) 
-      // cppcheck
+      // % is misinterpreted. NB to find code run cppcheck --xml 2> cppcheck,xml to find codes 
+      // cppcheck-suppress zerodiv 
       throw std::runtime_error("invalid transition probability %% at (%%,%%)"_s % p[0] % i % 0);
     cumprobs[i][0] = p[0];
     for (int j = 1; j < m; ++j)
     {
       if (p[j] < 0.0 || p[j] > 1.0) 
+      // cppcheck-suppress zerodiv 
         throw std::runtime_error("invalid transition probability %% at (%%,%%)"_s % p[0] % i % 0);
       cumprobs[i][j] = cumprobs[i][j-1] + p[j*m];
     }
@@ -112,19 +114,19 @@ void no::df::directmod(py::object& df, const std::string& colname)
 }
 
 
-void no::df::linked_change(py::object& df, const std::string& cat, const std::string& link_cat)
-{
-  // .values? pd.Series -> np.array?
-  np::array arr0 = df.attr(cat.c_str()); // this is a reference 
-  // .values? pd.Series -> np.array?
-  np::array arr1 = df.attr(link_cat.c_str()); // this is a reference 
+// void no::df::linked_change(py::object& df, const std::string& cat, const std::string& link_cat)
+// {
+//   // .values? pd.Series -> np.array?
+//   np::array arr0 = df.attr(cat.c_str()); // this is a reference 
+//   // .values? pd.Series -> np.array?
+//   np::array arr1 = df.attr(link_cat.c_str()); // this is a reference 
 
-  throw std::runtime_error("ongoing dev (liam2-demo07?)");
-  // for ()
-  // {
+//   throw std::runtime_error("ongoing dev (liam2-demo07?)");
+//   // for ()
+//   // {
 
-  // }
-}
+//   // }
+// }
 
 // // append two DFs? pointless to call c++ that just calls python
 // py::object no::df::append(const py::object& df1, const py::object& df2)

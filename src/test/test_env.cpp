@@ -24,7 +24,7 @@ void test_env()
   no::Environment& env = no::Environment::init(0, 1);
   //no::Environment& env = no::getenv();
 
-  py::object module = py::module::import("neworder");
+  /*py::object module =*/ py::module::import("neworder");
 
   CHECK(env.rank() == 0);
   CHECK(env.size() == 1);

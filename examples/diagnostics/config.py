@@ -23,14 +23,15 @@ neworder.log("PYTHONPATH=" + os.environ["PYTHONPATH"] if "PYTHONPATH" in os.envi
 neworder.log_level = 1 
 neworder.do_checks = False 
 
-# no timeline is defined
+# null timeline
+neworder.timeline = neworder.Timeline()
 
 neworder.initialisations = {}
 neworder.transitions = {}
 
 # finally, open an interactive shell
 neworder.checkpoints = {
-#  "shell": "shell()"
+  "shell": "shell()"
 }
 
 
