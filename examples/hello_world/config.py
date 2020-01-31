@@ -8,9 +8,6 @@ Serves as a skeleton for user projects
 # Expose the enviroment to python
 import neworder
 
-# no timeline is required in this example, but it would typically look like this:
-# neworder.timeline = (start_time, end_time, [checkpoints...])
-
 # Checks to run during the simulation
 neworder.log_level = 1 # this doesnt do anything at the moment
 neworder.do_checks = True
@@ -21,6 +18,10 @@ neworder.checks = {
   "eval": "True",
   #"exec": "a=True" # will fail, assigment is not eval-able
 }
+
+neworder.timeline = neworder.Timeline()
+# no timeline is required in this example, but it would typically look like this:
+# neworder.timeline = neworder.Timeline(start_time, end_time, [checkpoints...])
 
 # Initialisation - construct an instance of Greet
 #
@@ -40,6 +41,7 @@ neworder.initialisations = {
 # The "transition" in this case fetches the current username from the os
 # Note that the code is exec'd not eval'd: any return value is discarded
 neworder.transitions = { 
+  #"when": "neworder.log(neworder.timeline.index())",
   "who": "greeter.get_name()"
   #"exec": "a=1" # won't fail. a is in neworder namespace
 }

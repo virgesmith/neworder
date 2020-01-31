@@ -9,7 +9,7 @@ see http://liam2.plan.be/
 from pathlib import Path
 import neworder
 
-neworder.timeline = (2016, 2018, [2])
+neworder.timeline = neworder.Timeline(2016, 2018, [2])
 
 neworder.data_dir = Path("../LIAM2/examples")
 

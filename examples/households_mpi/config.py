@@ -16,7 +16,7 @@ assert neworder.size() > 1 and neworder.indep(), "This example requires MPI with
 # run 4 sims
 #neworder.sequence = np.array([3,1,2,0])
 # define the evolution
-neworder.timeline = (2011, 2019, [8])
+neworder.timeline = neworder.Timeline(2011, 2019, [8])
 
 # define where the starting populations come from
 data_dir = "examples/households/data"

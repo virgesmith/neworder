@@ -13,7 +13,7 @@ import neworder
 # run 4 sims
 #neworder.sequence = np.array([3,1,2,0])
 # define the evolution
-neworder.timeline = (2011, 2012, [1])
+neworder.timeline = neworder.Timeline(2011, 2012, [1])
 
 areas = os.getenv("LADS").split(" ")
 

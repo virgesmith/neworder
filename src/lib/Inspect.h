@@ -19,5 +19,4 @@ NEWORDER_EXPORT std::string as_string(const py::object& obj);
 
 }
 
-std::ostream& operator<<(std::ostream& os, const py::handle& o);
 

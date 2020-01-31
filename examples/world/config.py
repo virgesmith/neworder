@@ -28,7 +28,7 @@ neworder.initialisations = {
 }
 
 # define the evolution
-neworder.timeline = (2019, 2030, [11])
+neworder.timeline = neworder.Timeline(2019, 2030, [11])
 
 # timestep must be defined in neworder
 neworder.transitions = { 

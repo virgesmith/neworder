@@ -71,27 +71,13 @@ int run(int rank, int size, bool indep)
     (void)log_level;
 
     // timeline comes in as a tuple: (begin, end, [checkpoint(s)...])
-    if (pycpp::has_attr(env(), "timeline"))
+    if (!pycpp::has_attr(env(), "timeline"))
     {
-      py::tuple t = env().attr("timeline");
-      no::set_timeline(t);
-      // set (possibly override) timestep if timeline specified
-      env().attr("timestep") = env.timeline().dt();
+      throw std::runtime_error("Timeline must be defined in config.py");
     }
-    // if timestep hasnt been explicitly specified, use the default setting
-    if (!pycpp::has_attr(env(), "timestep"))
-    {
-      env().attr("timestep") = env.timeline().dt();
-    }
-
-    // Initialise to start of timeline (so that initialisation code has access to these)
-    env().attr("time") = env.timeline().time();
-    env().attr("timeindex") = env.timeline().index();
-    env().attr("ntimesteps") = env.timeline().nsteps();
-
     // TODO more info re defaulted timeline and overridden timestep
-    double dt = env().attr("timestep").cast<double>(); 
-    no::log("starting microsimulation. start time=%%, timestep=%%, checkpoint(s) at %%"_s % env.timeline().start() % dt % env.timeline().checkpoints());
+    no::log("starting microsimulation. start time=%%, timestep=%%, checkpoint(s) at %%"_s 
+      % env.timeline().start() % env.timeline().dt() % env.timeline().checkpoints());
 
     // modifiers (exec)
     no::CallbackArray modifierArray; 

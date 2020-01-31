@@ -30,6 +30,10 @@ no::Environment& no::Environment::init(int rank, int size, bool indep)
 
   // set init flag
   env.m_init = true;
+
+  // initialised in python code
+  env.m_timeline = nullptr;
+
   return env;
 }
 
@@ -146,3 +150,9 @@ std::string no::Environment::python_version()
   return version_string;
 }
 
+no::Timeline& no::Environment::timeline() 
+{ 
+  // get ref to python object 
+  if (!m_timeline) m_timeline = m_self->attr("timeline").cast<no::Timeline*>(); 
+  return *m_timeline;
+}

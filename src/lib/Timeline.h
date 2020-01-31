@@ -58,10 +58,8 @@ private:
 
   double m_start; 
   double m_end;
-  double m_dt; // timestep
 
   size_t m_index; // index of current time
-  double m_time; // current time
 };
 
 }

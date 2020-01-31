@@ -7,9 +7,8 @@
 #include <algorithm>
 
 // Default "null" timeline is just one step of arbitrary size
-no::Timeline::Timeline() : m_checkpoints{1}, m_start(0.0), m_dt(0.0), m_index(0), m_time(0.0) 
+no::Timeline::Timeline() : m_start(0.0), m_end(0.0), m_index(0), m_checkpoints{1} 
 { 
-
 }
 
 no::Timeline::Timeline(double start, double end, const std::vector<size_t>& checkpoints)
@@ -32,10 +31,8 @@ no::Timeline::Timeline(double start, double end, const std::vector<size_t>& chec
     }
   }
 
-  m_dt = (m_end - m_start) / m_checkpoints.back();
   // set to start 
   m_index = 0;
-  m_time = m_start;
 }
 
 double no::Timeline::start() const
@@ -51,17 +48,17 @@ double no::Timeline::end() const
 
 double no::Timeline::time() const 
 { 
-  return m_time; 
+  return m_start + m_index * dt(); 
 }
 
 size_t no::Timeline::index() const 
 { 
-  return m_index; 
+  return m_index;
 }
 
 double no::Timeline::dt() const 
 { 
-  return m_dt; 
+  return (m_end - m_start) / m_checkpoints.back();
 }
 
 size_t no::Timeline::nsteps() const 
@@ -73,7 +70,6 @@ void no::Timeline::next()
 {
   if (m_index < m_checkpoints.back())
   {
-    m_time += m_dt;
     ++m_index;
   }
 }

@@ -124,6 +124,18 @@ PYBIND11_EMBEDDED_MODULE(neworder, m)
   m.def("never", no::Timeline::never);
   m.def("isnever", no::Timeline::isnever); // scalar 
   m.def("isnever", no::nparray::isnever); // array
+
+  py::class_<no::Timeline>(m, "Timeline")
+    .def(py::init<double, double, const std::vector<size_t>&>())
+    .def(py::init<>())
+    .def("index", &no::Timeline::index)
+    .def("time", &no::Timeline::time)
+    .def("dt", &no::Timeline::dt)
+    .def("__repr__", [](const no::Timeline& tl) {
+        return "<neworder.Timeline start=%% end=%% checkpoints=%% index=%%>"_s 
+          % tl.start() % tl.end() % tl.checkpoints() % tl.index();
+      }
+    );
   
   // MC
   m.def("ustream", no::ustream);

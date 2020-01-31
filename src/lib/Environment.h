@@ -66,7 +66,7 @@ public:
   //operator py::object&() { return m_self; } doesnt implicitly cast
   py::module& operator()() { return *m_self; }
 
-  no::Timeline& timeline() { return m_timeline; }
+  no::Timeline& timeline();
 
 private:
 
@@ -101,7 +101,8 @@ private:
   // thread/process-safe seeding strategy deferred until config loaded
   std::mt19937 m_prng;
 
-  no::Timeline m_timeline;
+  // pointer to python-instantiated object
+  no::Timeline* m_timeline;
 };
 
 // syntactic sugar

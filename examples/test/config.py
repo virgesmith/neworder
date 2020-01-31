@@ -7,7 +7,7 @@ p_trans = 0.01
 # must be MPI enabled
 assert neworder.size() > 1
 
-neworder.timeline = (0, 100, [100])
+neworder.timeline = neworder.Timeline(0, 100, [100])
 
 # running/debug options
 neworder.log_level = 1

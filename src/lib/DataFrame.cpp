@@ -51,6 +51,7 @@ void no::df::transition(np::array categories, np::array matrix, py::object &df, 
     // point to beginning of row
     double* p = np::begin<double>(matrix) + i;
     if (p[0] < 0.0 || p[0] > 1.0) 
+      // cppcheck
       throw std::runtime_error("invalid transition probability %% at (%%,%%)"_s % p[0] % i % 0);
     cumprobs[i][0] = p[0];
     for (int j = 1; j < m; ++j)
