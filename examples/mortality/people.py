@@ -44,11 +44,11 @@ class People():
     # first filter out the already dead
     alive = self.population.loc[self.population.Alive].index
     # sample time of death
-    r = neworder.stopping(self.mortality_hazard.Rate.values[min(neworder.timeindex-1, self.max_rate_age)], len(alive))
+    r = neworder.stopping(self.mortality_hazard.Rate.values[min(neworder.timeline.index()-1, self.max_rate_age)], len(alive))
     # select if death happens before next timestep...
     dt = neworder.timestep
     # at final timestep everybody dies (at some later time) so dt is infinite
-    if neworder.time == neworder.MAX_AGE:
+    if neworder.timeline.time() == neworder.MAX_AGE:
       dt = neworder.far_future()
     # 
     newly_dead = alive[r<dt]

@@ -158,13 +158,13 @@ class Population:
     """ State of the nation """
     check(self.data)
     neworder.log("check OK: time={:.3f} size={} mean_age={:.2f}, pct_female={:.2f} net_migration={} ({}-{}+{}-{})" \
-      .format(neworder.time, self.size(), self.mean_age(), 100.0 * self.gender_split(), 
+      .format(neworder.timeline.time(), self.size(), self.mean_age(), 100.0 * self.gender_split(), 
       self.in_out[0] - self.in_out[1] + self.in_out[2] - self.in_out[3], 
       self.in_out[0], self.in_out[1], self.in_out[2], self.in_out[3]))
     return True # Faith
 
   def write_table(self):
-    filename = "./examples/people/dm_{}_{:.3f}.csv".format(self.lad, neworder.time)
+    filename = "./examples/people/dm_{}_{:.3f}.csv".format(self.lad, neworder.timeline.time())
     neworder.log("writing %s" % filename)
     return self.data.to_csv(filename, index=False)
 

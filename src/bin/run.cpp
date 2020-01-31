@@ -155,16 +155,11 @@ int run(int rank, int size, bool indep)
     }
 
     // Loop with checkpoints
-    do
+    while (!env.timeline().at_end())
     {
       env.timeline().next(); 
-      // get new time position
       double t = env.timeline().time();
       int timeindex = env.timeline().index();
-      // TODO this should be inside the timeline class
-      // ensure python is updated
-      env().attr("time") = t;
-      env().attr("timeindex") = timeindex;
 
       for (auto it = transitionTable.begin(); it != transitionTable.end(); ++it)
       {
@@ -190,7 +185,6 @@ int run(int rank, int size, bool indep)
         }
       } 
     }
-    while (!env.timeline().at_end());
     no::log("SUCCESS exec time=%%s"_s % timer.elapsed_s());
   }
   catch(std::exception& e)

@@ -11,7 +11,7 @@ class BS:
 
   def mc(self, option, market, nsims, quasi=False):
     # get the time from the environment
-    dt = neworder.time
+    dt = neworder.timeline.time()
     if quasi:
       normals = nstream_q(nsims)
     else:

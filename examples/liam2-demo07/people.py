@@ -61,7 +61,10 @@ class People():
     self.mmort = pd.read_csv(neworder.data_dir / "al_p_dead_m.csv", skiprows=1).rename({"Unnamed: 0": "age"}, axis=1)
     self.fmort = pd.read_csv(neworder.data_dir / "al_p_dead_f.csv", skiprows=1).rename({"Unnamed: 0": "age"}, axis=1)
     self.fert = pd.read_csv(neworder.data_dir / "al_p_birth.csv", skiprows=1).rename({"Unnamed: 0": "age"}, axis=1)
-
+    # TODO what are these values? why is col 2 (married) all zeros?
+    self.mpart = pd.read_csv(neworder.data_dir / "al_p_mmkt_m.csv", skiprows=1).rename({"Unnamed: 0": "agegrp"}, axis=1)
+    self.fpart = pd.read_csv(neworder.data_dir / "al_p_mmkt_f.csv", skiprows=1).rename({"Unnamed: 0": "agegrp"}, axis=1)
+    self.drate = pd.read_csv(neworder.data_dir / "al_p_divorce.csv", skiprows=1).rename({"Unnamed: 0": "agegrp"}, axis=1)
     # al_p_divorce.csv al_p_inwork.csv al_p_mmkt_f.csv al_p_mmkt_m.csv al_p_unemployed.csv
     # fields:
     # ['period' 'id' 'age' 'gender' 'workstate' 'civilstate' 'dur_in_couple' 'mother_id' 'partner_id' 'hh_id']
@@ -94,7 +97,7 @@ class People():
 
   def birth(self):
     # construct fertility lookup for the current timestep, means a left join with zero missing values (male or too young/old)
-    fert = pd.DataFrame({"age": self.fert.age, "gender": np.full(len(self.fert), False), "fertility_rate": self.fert[str(int(neworder.time))].values})
+    fert = pd.DataFrame({"age": self.fert.age, "gender": np.full(len(self.fert), False), "fertility_rate": self.fert[str(int(neworder.timeline.time()))].values})
     
     frates = pd.merge(self.pp, fert, how='left').fillna(0.0)["fertility_rate"].values
 
@@ -118,8 +121,8 @@ class People():
 
   def death(self):
     # construct mortality lookup for the current timestep, means an easy join
-    mort = pd.DataFrame({"age": self.mmort.age, "gender": np.full(len(self.mmort), True), "mortality_rate": self.mmort[str(int(neworder.time))].values})
-    mort = mort.append(pd.DataFrame({"age": self.fmort.age, "gender": np.full(len(self.fmort), False), "mortality_rate": self.fmort[str(int(neworder.time))].values}))
+    mort = pd.DataFrame({"age": self.mmort.age, "gender": np.full(len(self.mmort), True), "mortality_rate": self.mmort[str(int(neworder.timeline.time()))].values})
+    mort = mort.append(pd.DataFrame({"age": self.fmort.age, "gender": np.full(len(self.fmort), False), "mortality_rate": self.fmort[str(int(neworder.timeline.time()))].values}))
 
     # join the lookup with the people and get each person's mortality rate
     mrates = pd.merge(self.pp, mort, how='left')["mortality_rate"].values
@@ -219,31 +222,39 @@ class People():
       neworder.log("movers %d + %d children" % (len(mover_ids), nchildren))
 
   def divorce(self):
-    pass
-      # - agediff: if(ISFEMALE and ISMARRIED, age - partner.age, 0)
-      # - nb_children: household.get(persons.count(age < 18))
-      # # select females to divorce
+    drate = pd.DataFrame({"agegrp": self.drate.agegrp, "divorce_rate": self.drate[str(int(neworder.timeline.time()))].values})
+    neworder.log(drate)
 
-      # # here we use logit_regr with an actual expression, which means
-      # # that within each group, persons with a high value for the
-      # # given expression will be selected first.
-      # - divorce: logit_regr(0.6713593 * nb_children
-      #                       - 0.0785202 * dur_in_couple
-      #                       + 0.1429621 * agediff - 0.0088308 * agediff ** 2
-      #                       - 4.546278,
-      #                       filter=ISFEMALE and ISMARRIED and (
-      #                           dur_in_couple > 0),
-      #                       align='al_p_divorce.csv')
-      # # break link to partner
-      # - to_divorce: divorce or partner.divorce
-      # - partner_id: if(to_divorce, UNSET, partner_id)
+    # TODO need to map agegrp to age to merge
+    drates = pd.merge(self.pp, drate, how='left').fillna(0.0)["fertility_rate"].values
 
-      # - civilstate: if(to_divorce, DIVORCED, civilstate)
-      # - dur_in_couple: if(to_divorce, 0, dur_in_couple)
-      # # move out males
-      # - hh_id: if(ISMALE and to_divorce,
-      #             new('household'),
-      #             hh_id)
+    self.pp["__divorce"] = neworder.hazard(drates * neworder.timestep)
+
+    neworder.log(self.pp)
+    # - agediff: if(ISFEMALE and ISMARRIED, age - partner.age, 0)
+    # - nb_children: household.get(persons.count(age < 18))
+    # # select females to divorce
+
+    # # here we use logit_regr with an actual expression, which means
+    # # that within each group, persons with a high value for the
+    # # given expression will be selected first.
+    # - divorce: logit_regr(0.6713593 * nb_children
+    #                       - 0.0785202 * dur_in_couple
+    #                       + 0.1429621 * agediff - 0.0088308 * agediff ** 2
+    #                       - 4.546278,
+    #                       filter=ISFEMALE and ISMARRIED and (
+    #                           dur_in_couple > 0),
+    #                       align='al_p_divorce.csv')
+    # # break link to partner
+    # - to_divorce: divorce or partner.divorce
+    # - partner_id: if(to_divorce, UNSET, partner_id)
+
+    # - civilstate: if(to_divorce, DIVORCED, civilstate)
+    # - dur_in_couple: if(to_divorce, 0, dur_in_couple)
+    # # move out males
+    # - hh_id: if(ISMALE and to_divorce,
+    #             new('household'),
+    #             hh_id)
 
   def civilstate_changes(self):
     pass
@@ -261,7 +272,7 @@ class People():
       #       fname='demography_{period}.png')
 
   def csv_output(self):
-
+    # remove internal workspace columns
     self.pp.drop(["__baby", "__dead"], axis=1, inplace=True)
     self.pp.to_csv("pop.csv", index=False)
     

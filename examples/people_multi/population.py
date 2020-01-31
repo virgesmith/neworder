@@ -154,7 +154,7 @@ class Population:
     """ State of the nation """
     #check(self.data)
     neworder.log("check OK: time={:.3f} size={} mean_age={:.2f}, pct_female={:.2f} net_migration={} ({}-{}+{}-{})" \
-      .format(neworder.time, self.size(), self.mean_age(), 100.0 * self.gender_split(), 
+      .format(neworder.timeline.time(), self.size(), self.mean_age(), 100.0 * self.gender_split(), 
       self.in_out[0] - self.in_out[1] + self.in_out[2] - self.in_out[3], 
       self.in_out[0], self.in_out[1], self.in_out[2], self.in_out[3]))
     # wait for other processes
@@ -163,6 +163,6 @@ class Population:
 
   def write_table(self):
     # TODO define path in config
-    filename = "./examples/people_multi/data/dm_{:.3f}_{}-{}.csv".format(neworder.time, neworder.rank(), neworder.size())
+    filename = "./examples/people_multi/data/dm_{:.3f}_{}-{}.csv".format(neworder.timeline.time(), neworder.rank(), neworder.size())
     neworder.log("writing %s" % filename)
     return self.data.to_csv(filename, index=False)

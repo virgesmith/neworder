@@ -138,7 +138,7 @@ class Schelling():
 
     self.im = plt.imshow(self.pop[0], cmap=self.cmap, animated=True)
 
-    anim = animation.FuncAnimation(fig, self.__updatefig, frames=neworder.timeindex, interval=100, repeat=True, repeat_delay=3000)
+    anim = animation.FuncAnimation(fig, self.__updatefig, frames=neworder.timeline.index(), interval=100, repeat=True, repeat_delay=3000)
     anim.save("./test.gif", dpi=80, writer='imagemagick') 
     #plt.show()  
     

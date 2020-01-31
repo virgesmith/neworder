@@ -1,5 +1,4 @@
 {
-  "python.pythonPath": "/usr/bin/python3",
   "files.associations": {
     "*.mpp": "cpp",
     "cctype": "cpp",
@@ -73,5 +72,7 @@
     "markdown",
     "latex",
     "plaintext"
-  ]
+  ],
+  "editor.fontSize": 16,
+  "python.pythonPath": ".venv/bin/python"
 }

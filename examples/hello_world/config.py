@@ -20,6 +20,7 @@ neworder.checks = {
 }
 
 neworder.timeline = neworder.Timeline()
+#neworder.timeline = neworder.Timeline(2020, 2030, [10])
 # no timeline is required in this example, but it would typically look like this:
 # neworder.timeline = neworder.Timeline(start_time, end_time, [checkpoints...])
 
@@ -41,7 +42,7 @@ neworder.initialisations = {
 # The "transition" in this case fetches the current username from the os
 # Note that the code is exec'd not eval'd: any return value is discarded
 neworder.transitions = { 
-  #"when": "neworder.log(neworder.timeline.index())",
+  #"when": "log('t=%f(%d)' % (timeline.time(), timeline.index()))",
   "who": "greeter.get_name()"
   #"exec": "a=1" # won't fail. a is in neworder namespace
 }
