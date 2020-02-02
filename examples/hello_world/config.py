@@ -19,10 +19,11 @@ neworder.checks = {
   #"exec": "a=True" # will fail, assigment is not eval-able
 }
 
-neworder.timeline = neworder.Timeline()
-#neworder.timeline = neworder.Timeline(2020, 2030, [10])
+# empy timeline needs to be explicitly specifed
+neworder.timeline = neworder.Timeline.null()
+
 # no timeline is required in this example, but it would typically look like this:
-# neworder.timeline = neworder.Timeline(start_time, end_time, [checkpoints...])
+#neworder.timeline = neworder.Timeline(2020, 2030, [10])
 
 # Initialisation - construct an instance of Greet
 #
