@@ -20,8 +20,8 @@ public:
   ~Timeline() = default;
 
   Timeline(const Timeline&) = delete;
-  Timeline& operator=(const Timeline&) = default;
-  Timeline(Timeline&&) = delete;
+  Timeline& operator=(const Timeline&) = delete;
+  Timeline(Timeline&&) = default;
   Timeline& operator=(Timeline&&) = default;
 
   double time() const;
