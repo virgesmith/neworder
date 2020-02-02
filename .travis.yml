@@ -108,7 +108,7 @@ matrix:
       python: 3.7
       before_install:
       - sudo apt-get update
-      - sudo apt-get -y install build-essential mpich libmpich-dev
+      - sudo apt-get -y install python3.7 python3.7-dev build-essential mpich libmpich-dev
       install: 
       - pip install pybind11 numpy pandas
       script:
@@ -120,7 +120,7 @@ matrix:
       python: 3.8
       before_install:
       - sudo apt-get update
-      - sudo apt-get -y install build-essential mpich libmpich-dev
+      - sudo apt-get -y install python3.8 python3.8-dev build-essential mpich libmpich-dev
       install: 
       - pip install pybind11 numpy pandas
       script:
