@@ -22,13 +22,14 @@ void test_env()
   CHECK((no::log("neworder env test"), true));
 
   no::Environment& env = no::Environment::init(0, 1);
-  //no::Environment& env = no::getenv();
-
-  /*py::object module =*/ py::module::import("neworder");
+  const py::object& neworder  = env;
 
   CHECK(env.rank() == 0);
   CHECK(env.size() == 1);
-  CHECK(env.indep());
+  CHECK(neworder.attr("rank")().cast<int>() == 0);
+  CHECK(neworder.attr("size")().cast<int>() == 1);
+  CHECK(neworder.attr("INDEP").cast<bool>());
+  CHECK(neworder.attr("SEED").cast<int>() == 19937);
 
   no::log("neworder env test complete");
 

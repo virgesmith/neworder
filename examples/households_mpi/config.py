@@ -7,7 +7,7 @@ import glob
 import numpy as np
 import neworder
 
-assert neworder.size() > 1 and neworder.indep(), "This example requires MPI with independent RNG streams"
+assert neworder.size() > 1 and neworder.INDEP, "This example requires MPI with independent RNG streams"
 
 # THIS could be very, very useful
 #https://stackoverflow.com/questions/47297585/building-a-transition-matrix-using-words-in-python-numpy

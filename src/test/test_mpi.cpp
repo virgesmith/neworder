@@ -28,6 +28,7 @@ void test_mpi()
 {
 #ifdef NEWORDER_MPI
   no::Environment& env = no::getenv();
+  const py::object& neworder = env;
 
   CHECK(env.size() > 1);
 

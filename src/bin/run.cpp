@@ -57,21 +57,22 @@ py::tuple get_or_empty(const py::handle& dict, const char* key)
 int run(int rank, int size, bool indep)
 {
   no::Environment& env = no::Environment::init(rank, size, indep);
+  py::object& neworder = env; 
   Timer timer;
   try
   {
     // Load (and exec) config file
     py::module config = py::module::import("config");
     // Update the env accordingly
+  
+    bool do_checks = neworder.attr("do_checks").cast<bool>();
 
-    bool do_checks = env().attr("do_checks").cast<bool>();
-
-    int log_level = env().attr("log_level").cast<int>();
+    int log_level = neworder.attr("log_level").cast<int>();
     // TODO actually do something with log_level...
     (void)log_level;
 
     // timeline comes in as a tuple: (begin, end, [checkpoint(s)...])
-    if (!pycpp::has_attr(env(), "timeline"))
+    if (!pycpp::has_attr(neworder, "timeline"))
     {
       throw std::runtime_error("Timeline must be defined in config.py");
     }
@@ -81,9 +82,9 @@ int run(int rank, int size, bool indep)
 
     // modifiers (exec)
     no::CallbackArray modifierArray; 
-    if (pycpp::has_attr(env(), "modifiers"))
+    if (pycpp::has_attr(neworder, "modifiers"))
     {
-      py::list modifiers = py::list(env().attr("modifiers"));
+      py::list modifiers = py::list(neworder.attr("modifiers"));
       int n = py::len(modifiers);
       modifierArray.reserve(n);
       for (int i = 0; i < n; ++i)
@@ -94,7 +95,7 @@ int run(int rank, int size, bool indep)
 
     // transitions (exec)
     no::CallbackTable transitionTable; 
-    py::dict transitions = py::dict(env().attr("transitions")); //.items();
+    py::dict transitions = py::dict(neworder.attr("transitions")); //.items();
     for (const auto& kv: transitions)
     {
       transitionTable.insert(std::make_pair(kv.first.cast<std::string>(), no::Callback::exec(kv.second.cast<std::string>())));
@@ -104,7 +105,7 @@ int run(int rank, int size, bool indep)
     no::CallbackTable checkTable; 
     if (do_checks)
     {
-      py::dict checks = py::dict(env().attr("checks"));
+      py::dict checks = py::dict(neworder.attr("checks"));
       for (const auto& kv: checks)
       {
         checkTable.insert(std::make_pair(kv.first.cast<std::string>(), no::Callback::eval(kv.second.cast<std::string>())));
@@ -113,7 +114,7 @@ int run(int rank, int size, bool indep)
     
     // execs
     no::CallbackTable checkpointTable; 
-    py::dict checkpoints = py::dict(env().attr("checkpoints"));
+    py::dict checkpoints = py::dict(neworder.attr("checkpoints"));
     for (const auto& kv: checkpoints)
     {
       checkpointTable.insert(std::make_pair(kv.first.cast<std::string>(), no::Callback::exec(kv.second.cast<std::string>())));
@@ -121,7 +122,7 @@ int run(int rank, int size, bool indep)
 
     // initialisations...
     // list of module-class-constructor args -> list of objects
-    py::dict initialisations = py::dict(env().attr("initialisations"));
+    py::dict initialisations = py::dict(neworder.attr("initialisations"));
     for (const auto& kv: initialisations)
     {
       const std::string& name = kv.first.cast<std::string>();
@@ -144,7 +145,7 @@ int run(int rank, int size, bool indep)
       py::object object = pycpp::Functor(class_, args, kwargs)();
 
       // taking a const ref here to stay results in an empty string, which is bizarre love triangle
-      env().attr(name.c_str()) = object;
+      neworder.attr(name.c_str()) = object;
     }
 
     // Apply any modifiers for this process

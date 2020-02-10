@@ -62,9 +62,9 @@ public:
   // Accress the NRG stream (one per env)
   std::mt19937& prng();
 
-  // returns the env as a python object 
-  //operator py::object&() { return m_self; } doesnt implicitly cast
-  py::module& operator()() { return *m_self; }
+  // returns the neworder env as a python object 
+  operator py::object&() { return *m_self; } 
+  operator const py::object&() const { return *m_self; } 
 
   no::Timeline& timeline();
 
@@ -72,9 +72,6 @@ private:
 
   // TODO reinstate when this is no longer static lifetime
   //py::scoped_interpreter m_guard; // start the interpreter and keep it alive
-
-  // compute the RNG seed
-  int64_t compute_seed() const;
 
   // flag to check whether init has been called
   bool m_init;

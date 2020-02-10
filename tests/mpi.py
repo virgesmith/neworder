@@ -82,7 +82,7 @@ def test():
     t.check(not np.array_equal(a0, a1))
 
   # test ustream/sequence
-  t.check(neworder.indep())
+  t.check(neworder.INDEP)
   if root == neworder.rank():
     u0 = neworder.ustream(1000)
     u1 = np.zeros(1000)

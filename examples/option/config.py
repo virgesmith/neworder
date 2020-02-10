@@ -7,9 +7,6 @@ are the option itself, and the underlying stock (essentially the market) that go
 import numpy as np
 import neworder
 
-# run 4 times NB contained type is int64
-#neworder.sequence = np.array([10,11,12,13])
-
 # market data
 spot = 100.0 # underlying spot price
 rate = 0.02  # risk-free interest rate
@@ -25,15 +22,15 @@ expiry = 0.75
 neworder.timeline = neworder.Timeline(0.0, expiry, [1])
 
 neworder.nsims = 100000 # number of prices to simulate
-neworder.sync_streams = True # all procs use same RNG stream
+# #neworder.sync_streams = True # all procs use same RNG stream
 
 neworder.log_level = 1
 neworder.do_checks = False
-# no per-timestep checks implemented since there is only one timestep
+# # no per-timestep checks implemented since there is only one timestep
 neworder.checks = { }
 
 # use 4 identical sims with perturbations
-assert neworder.size() == 4 and not neworder.indep(), "This example requires 4 processes with identical RNG streams"
+assert neworder.size() == 4 and not neworder.INDEP, "This example requires 4 processes with identical RNG streams"
 
 neworder.pv = np.zeros(neworder.size())
 
@@ -42,7 +39,7 @@ neworder.initialisations = {
   "market": { "module": "market", "class_": "Market", "args": (spot, rate, divy, vol) },
   "option": { "module": "option", "class_": "Option", "args": (callput, strike, expiry) },
   # TODO import module without creating a class instance?
-  "model": { "module": "black_scholes", "class_": "BS" }
+  "model": { "module": "black_scholes", "class_": "BS" } # thread 'main' panicked at 'called `Option::unwrap()` on a `None` value', src/main.rs:110:16
 }
 
 # process-specific modifiers (for sensitivities)

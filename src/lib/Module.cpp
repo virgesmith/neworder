@@ -77,12 +77,14 @@ void no::shell(/*const py::object& local*/)
     no::log("WARNING: shell disabled in parallel mode, ignoring");
     return;
   }
+  py::dict locals;
+  locals["neworder"] = py::module::import("neworder");
   py::dict kwargs;
   kwargs["banner"] = py::str("[starting neworder debug shell]");
   kwargs["exitmsg"] = py::str("[exiting neworder debug shell]");
-  //py::module::import("neworder");
-  //kwargs["local"] = py::handle<>(PyObject_Dir());
-  /* py::object interpreter = */py::module::import("code").attr("interact")(*py::tuple(), **kwargs);
+  kwargs["local"] = locals; 
+  //kwargs["local"] = py::handle(PyObject_Dir(py::module::import("neworder").ptr()));
+  /* py::object interpreter = */py::module::import("code").attr("interact")(/**py::tuple(),*/ **kwargs);
 }
 
 
@@ -179,8 +181,7 @@ PYBIND11_EMBEDDED_MODULE(neworder, m)
   m.def("scatter", no::mpi::scatter_array);
   m.def("allgather", no::mpi::allgather_array, py::return_value_policy::take_ownership);
   m.def("sync", no::mpi::sync);
-  m.def("indep", no::Environment::indep);
-  
+
   // Deferred eval/exec of Python code
   py::class_<no::Callback>(m, "Callback"/*, py::no_init*/)
     .def("__call__", &no::Callback::operator())

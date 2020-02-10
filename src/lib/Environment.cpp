@@ -6,12 +6,23 @@
 #include <algorithm>
 #include <string>
 
+namespace {
+
+// compute the RNG seed
+int64_t compute_seed(int rank, int size, bool indep)
+{
+  // ensure stream (in)dependence w.r.t. sequence and MPI rank/sizes
+  return 77027473 * 0 + 19937 * size + rank * indep;  
+}
+
+}
 
 // This function must be used to init the environment
 no::Environment& no::Environment::init(int rank, int size, bool indep)
 {
   // make our rank/size visible to python
   Environment& env = no::getenv();
+  py::object& neworder = env; // env as python module
 
   // // to "share" scalars across C++ and python, use the py::extract<> object
   // env.m_self->attr("rank") = rank;
@@ -20,13 +31,15 @@ no::Environment& no::Environment::init(int rank, int size, bool indep)
   // python access is by function to avoid exposing a modifiable variable
   env.m_rank = rank;
   env.m_size = size;
-  env.m_indep = indep;
 
-  env.m_seed = env.compute_seed();
+  int64_t seed = compute_seed(rank, size, indep);
+  // stored in python
+  neworder.attr("INDEP") = indep;
+  neworder.attr("SEED") = seed;
 
-  no::log("neworder %% env: seed=%% python %%"_s % module_version() % env.m_seed % python_version());
+  env.m_prng.seed(seed);
 
-  env.m_prng.seed(env.m_seed);
+  no::log("neworder %% env: INDEP=%% SEED=%% python %%"_s % module_version() % indep % seed % python_version());
 
   // set init flag
   env.m_init = true;
@@ -82,12 +95,6 @@ std::string no::Environment::context(int ctx) const
   return idstring;
 }
 
-// compute the RNG seed
-int64_t no::Environment::compute_seed() const
-{
-  // ensure stream (in)dependence w.r.t. sequence and MPI rank/sizes
-  return 77027473 * 0 + 19937 * m_size + m_rank * m_indep;  
-}
 
 std::mt19937& no::Environment::prng()
 {
@@ -100,6 +107,9 @@ no::Environment::Environment() : m_init(false) //, m_guard() segfaults on exit (
   py::initialize_interpreter();
   // make the neworder module available in embedded python env
   m_self = new py::module(py::module::import("neworder"));
+  // add to sys to ensure neworder module can be resolved
+  py::dict sys_modules = py::module::import("sys").attr("modules");
+  sys_modules["neworder"] = *m_self;
 } 
 
 no::Environment::~Environment() 
