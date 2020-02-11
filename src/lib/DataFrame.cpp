@@ -77,14 +77,16 @@ void no::df::transition(np::array categories, np::array matrix, py::object &df, 
   // no::log("row %% %% %% %%..."_s % p[0] % p[1] % p[2] % p[3]);
   // no::log("col %% %% %% %%..."_s % p[0] % p[m] % p[2*m] % p[3*m]);
 
-  std::mt19937& prng = no::getenv().prng();
-  std::uniform_real_distribution<> dist(0.0, 1.0);
+  // std::mt19937& prng = no::getenv().prng();
+  // std::uniform_real_distribution<> dist(0.0, 1.0);
 
   size_t n = col.size();
 
   Timer t;
-  std::vector<double> r(n);
-  std::generate(r.begin(), r.end(), [&](){ return dist(prng);}); 
+  np::array_t<double> r = no::getenv().mc().ustream(n);
+  // if bottleneck, can access through
+  // auto p = r.unchecked<1>();
+  // x = p[i];
 
   for (size_t i = 0; i < n; ++i)
   {
@@ -93,7 +95,7 @@ void no::df::transition(np::array categories, np::array matrix, py::object &df, 
     if (it == lookup.end())
       continue;
     int64_t j = it->second;
-    int64_t k = interp(cumprobs[j], r[i]);
+    int64_t k = interp(cumprobs[j], np::at<double>(r, i));
     //no::log("interp %%:%% -> %%"_s % j % r[i] % k);
     np::at<int64_t>(col, i) = np::at<int64_t>(categories, k);
   }

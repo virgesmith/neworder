@@ -31,7 +31,7 @@ def test():
   t.check(no.isnever(no.never()))
 
   #t.check(False)
-  s = no.ustream(10000)
+  s = no.mc.ustream(10000)
   t.check(isinstance(s, np.ndarray))
 
   t.check(len(s) == 10000)

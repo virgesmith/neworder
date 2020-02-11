@@ -139,27 +139,35 @@ PYBIND11_EMBEDDED_MODULE(neworder, m)
           % tl.start() % tl.end() % tl.checkpoints() % tl.index();
       }
     );
-  
-  // MC
-  m.def("ustream", no::ustream);
-  // explicitly give function type for overloads 
-  m.def<np::array (*)(double, size_t)>("hazard", no::hazard);
-  m.def<np::array (*)(const np::array&)>("hazard", no::hazard);
-  m.def<np::array (*)(double, size_t)>("stopping", no::stopping);
-  m.def<np::array (*)(const np::array&)>("stopping", no::stopping);
 
-  m.def("arrivals", no::arrivals);
-  // deal with default minval arg
-  m.def<np::array (*)(const np::array&, double, size_t)>("first_arrival", [](const np::array& lambda_t, double dt, size_t n) { 
-                                                                            return no::first_arrival(lambda_t, dt, n, 0.0); });
-  m.def<np::array (*)(const np::array&, double, size_t, double)>("first_arrival", no::first_arrival);
-   
-  // deal with default relative and minval args
-  m.def<np::array (*)(const np::array&, const np::array&, double)>("next_arrival", [](const np::array& startingpoints, const np::array& lambda_t, double dt) { 
-                                                                                    return no::next_arrival(startingpoints, lambda_t, dt, false, 0.0); }); 
-  m.def<np::array (*)(const np::array&, const np::array&, double, bool)>("next_arrival", [](const np::array& startingpoints, const np::array& lambda_t, double dt, bool relative) { 
-                                                                                    return no::next_arrival(startingpoints, lambda_t, dt, relative, 0.0); }); 
-  m.def<np::array (*)(const np::array&, const np::array&, double, bool, double)>("next_arrival", no::next_arrival); 
+  // MC
+  py::class_<no::MonteCarlo>(m, "MonteCarlo")
+  //.def(py::init<uint32_t>()); // no ctor visible to python  
+    .def("indep", &no::MonteCarlo::indep)
+    .def("seed", &no::MonteCarlo::seed)  
+    .def("reset", &no::MonteCarlo::reset)  
+    .def("ustream", &no::MonteCarlo::ustream)
+    // explicitly give function type for overloads 
+    .def("hazard", py::overload_cast<double, size_t>(&no::MonteCarlo::hazard), "simulate outcomes from a flat hazard rate")
+    .def("hazard", py::overload_cast<const np::array&>(&no::MonteCarlo::hazard), "simulate outcomes from hazard rates")
+    .def("stopping", py::overload_cast<double, size_t>(&no::MonteCarlo::stopping), "simulate stopping times from a flat hazard rate")
+    .def("stopping", py::overload_cast<const np::array&>(&no::MonteCarlo::stopping), "simulate stopping times from hazard rates")
+    .def("arrivals", &no::MonteCarlo::arrivals)
+    .def("first_arrival", &no::MonteCarlo::first_arrival/*, py::arg("minval") = 0.0*/)
+    .def("first_arrival", [](no::MonteCarlo& mc, const np::array& lambda_t, double dt, size_t n) { 
+        return mc.first_arrival(lambda_t, dt, n, 0.0); 
+      })
+    .def("next_arrival", &no::MonteCarlo::next_arrival)
+    .def("next_arrival", [](no::MonteCarlo& mc, const np::array& startingpoints, const np::array& lambda_t, double dt, bool relative) { 
+        return mc.next_arrival(startingpoints, lambda_t, dt, relative, 0.0); 
+      })
+    .def("next_arrival", [](no::MonteCarlo& mc, const np::array& startingpoints, const np::array& lambda_t, double dt) { 
+        return mc.next_arrival(startingpoints, lambda_t, dt, false, 0.0); 
+      })
+    .def("__repr__", [](const no::MonteCarlo& mc) {
+        return "<neworder.MonteCarlo indep=%% seed=%%>"_s 
+          % mc.indep() % mc.seed();
+      });
 
   m.def("lazy_exec", no::Callback::exec);
   m.def("lazy_eval", no::Callback::eval);

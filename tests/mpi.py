@@ -82,13 +82,13 @@ def test():
     t.check(not np.array_equal(a0, a1))
 
   # test ustream/sequence
-  t.check(neworder.INDEP)
+  t.check(neworder.mc.indep())
   if root == neworder.rank():
-    u0 = neworder.ustream(1000)
+    u0 = neworder.mc.ustream(1000)
     u1 = np.zeros(1000)
   else:
     u0 = np.zeros(1000)
-    u1 = neworder.ustream(1000)
+    u1 = neworder.mc.ustream(1000)
   # broadcast u1 from 1
   neworder.broadcast(u1,1)
   # proc 0 should have 2 different random arrays
@@ -96,7 +96,7 @@ def test():
   t.check(not np.array_equal(u0, u1))
   
   # check independent streams
-  u = neworder.ustream(1000)
+  u = neworder.mc.ustream(1000)
   v = neworder.broadcast(u, root)
 
   # u == v on broadcasting process only

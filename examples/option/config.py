@@ -30,7 +30,7 @@ neworder.do_checks = False
 neworder.checks = { }
 
 # use 4 identical sims with perturbations
-assert neworder.size() == 4 and not neworder.INDEP, "This example requires 4 processes with identical RNG streams"
+assert neworder.size() == 4 and not neworder.mc.indep(), "This example requires 4 processes with identical RNG streams"
 
 neworder.pv = np.zeros(neworder.size())
 
@@ -39,7 +39,7 @@ neworder.initialisations = {
   "market": { "module": "market", "class_": "Market", "args": (spot, rate, divy, vol) },
   "option": { "module": "option", "class_": "Option", "args": (callput, strike, expiry) },
   # TODO import module without creating a class instance?
-  "model": { "module": "black_scholes", "class_": "BS" } # thread 'main' panicked at 'called `Option::unwrap()` on a `None` value', src/main.rs:110:16
+  "model": { "module": "black_scholes", "class_": "BS", "args": () } # thread 'main' panicked at 'called `Option::unwrap()` on a `None` value', src/main.rs:110:16
 }
 
 # process-specific modifiers (for sensitivities)

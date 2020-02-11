@@ -2,6 +2,7 @@
 
 #include "Global.h"
 #include "Timeline.h"
+#include "MonteCarlo.h"
 
 #include "NewOrder.h"
 #include "numpy.h"
@@ -59,8 +60,8 @@ public:
   // reset the RNG stream sequence to the original seed 
   static void reset();
 
-  // Accress the NRG stream (one per env)
-  std::mt19937& prng();
+  // Access the RNG stream (one per env)
+  no::MonteCarlo& mc() const;
 
   // returns the neworder env as a python object 
   operator py::object&() { return *m_self; } 
@@ -95,11 +96,12 @@ private:
 
   // TODO work out why this segfaults if the dtor is called (even on exit)
   py::module* m_self;
-  // thread/process-safe seeding strategy deferred until config loaded
-  std::mt19937 m_prng;
 
   // pointer to python-instantiated object
   no::Timeline* m_timeline;
+
+  // pointer to MC object initialised 
+  no::MonteCarlo* m_mc; 
 };
 
 // syntactic sugar

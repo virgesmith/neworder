@@ -15,9 +15,9 @@ def test():
     return True
   
   # test ustream/sequence
-  t.check(not neworder.INDEP)
+  t.check(not neworder.mc.indep())
 
-  u = neworder.ustream(1000)
+  u = neworder.mc.ustream(1000)
   v = neworder.broadcast(u, 0)
   # u == v for all processes
 

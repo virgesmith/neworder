@@ -51,30 +51,27 @@
 //   std::uniform_real_distribution<double> m_dist;  
 // };
 
-np::array no::ustream(size_t n)
+NEWORDER_EXPORT np::array no::MonteCarlo::ustream(size_t n)
 {
-  std::mt19937& prng = no::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
-  return np::make_array<double>(n, [&](){ return dist(prng); });
+  return np::make_array<double>(n, [&](){ return dist(m_prng); });
 }
 
 // simple hazard constant probability 
-NEWORDER_EXPORT np::array no::hazard(double prob, size_t n)
+NEWORDER_EXPORT np::array no::MonteCarlo::hazard(double prob, size_t n)
 {
-  std::mt19937& prng = no::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
-  return np::make_array<int>(n, [&]() { return (dist(prng) < prob) ? 1 : 0; });
+  return np::make_array<int>(n, [&]() { return (dist(m_prng) < prob) ? 1 : 0; });
 }
 
 // hazard with varying probablities 
-np::array no::hazard(const np::array& prob)
+np::array no::MonteCarlo::hazard(const np::array& prob)
 {
-  std::mt19937& prng = no::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
-  return np::unary_op<double, double>(prob, [&](double p){ return dist(prng) < p ? 1 : 0; });
+  return np::unary_op<double, double>(prob, [&](double p){ return dist(m_prng) < p ? 1 : 0; });
 
   // py::array_t<int> result(prob.size());
   // const double* pp = (const double*)prob.data(0);
@@ -90,21 +87,19 @@ np::array no::hazard(const np::array& prob)
 }
 
 // computes stopping times 
-NEWORDER_EXPORT np::array no::stopping(double prob, size_t n)
+NEWORDER_EXPORT np::array no::MonteCarlo::stopping(double prob, size_t n)
 {
-  std::mt19937& prng = no::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
   double rprob = 1.0 / prob;
 
-  return np::make_array<double>(n, [&]() { return -::log(dist(prng)) * rprob; });
+  return np::make_array<double>(n, [&]() { return -::log(dist(m_prng)) * rprob; });
 }
 
-np::array no::stopping(const np::array& prob)
+np::array no::MonteCarlo::stopping(const np::array& prob)
 {
-  std::mt19937& prng = no::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
-  return np::unary_op<double, double>(prob, [&](double p) { return -::log(dist(prng)) / p; });
+  return np::unary_op<double, double>(prob, [&](double p) { return -::log(dist(m_prng)) / p; });
 
   // Stopping f;
   // return f(prob);
@@ -112,9 +107,8 @@ np::array no::stopping(const np::array& prob)
 
 
 // multiple-arrival (0+) process 
-np::array no::arrivals(const np::array& lambda_t, double dt, double gap, size_t n)
+np::array no::MonteCarlo::arrivals(const np::array& lambda_t, double dt, double gap, size_t n)
 {
-  std::mt19937& prng = no::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
   const double* pl = np::cbegin<double>(lambda_t);
@@ -125,11 +119,6 @@ np::array no::arrivals(const np::array& lambda_t, double dt, double gap, size_t 
   {
     throw std::runtime_error("Multiple-arrival Non-homogeneous Poisson process requires a zero final hazard rate");
   }
-  // for (size_t i = 0; i < nl; ++i)
-  // {
-  //   if (pl[i] <= 0.0 || pl[i] >= 1.0)
-  //     throw std::runtime_error("Lewis-Shedler algorithm requires probabilities in (0,1): element %% is %%"_s % i % pl[i]);
-  // }
 
   // What is the optimal lambda_u? For now largest value
   double lambda_u = *std::max_element(pl, pl + nl);
@@ -148,7 +137,7 @@ np::array no::arrivals(const np::array& lambda_t, double dt, double gap, size_t 
     {
       do 
       {
-        pt += -::log(dist(prng)) / lambda_u;
+        pt += -::log(dist(m_prng)) / lambda_u;
         // final entry in lambda_t is flat extrapolated...
         lambda_i = pl[ std::min((size_t)(pt / dt), nl-1) ];
         if (pt > tmax && lambda_i == 0.0)
@@ -156,7 +145,7 @@ np::array no::arrivals(const np::array& lambda_t, double dt, double gap, size_t 
           pt = no::Timeline::never();
           break;
         }
-      } while (dist(prng) > lambda_i / lambda_u);
+      } while (dist(m_prng) > lambda_i / lambda_u);
       times[i].push_back(pt);
       pt += gap;
     } while (pt < tmax);
@@ -180,9 +169,8 @@ np::array no::arrivals(const np::array& lambda_t, double dt, double gap, size_t 
   return nptimes;
 }
 
-np::array no::first_arrival(const np::array& lambda_t, double dt, size_t n, double minval)
+np::array no::MonteCarlo::first_arrival(const np::array& lambda_t, double dt, size_t n, double minval)
 {
-  std::mt19937& prng = no::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
   const double* pl = np::cbegin<double>(lambda_t);
@@ -202,7 +190,7 @@ np::array no::first_arrival(const np::array& lambda_t, double dt, size_t n, doub
     pt[i] = minval;
     do 
     {
-      pt[i] += -::log(dist(prng)) / lambda_u;
+      pt[i] += -::log(dist(m_prng)) / lambda_u;
       // final entry in lambda_t is flat extrapolated...
       lambda_i = pl[ std::min((size_t)(pt[i] / dt), nl-1) ];
       // deal with open case (event not certain to happen)
@@ -211,18 +199,17 @@ np::array no::first_arrival(const np::array& lambda_t, double dt, size_t n, doub
         pt[i] = no::Timeline::never();
         break;
       }
-    } while (dist(prng) > lambda_i / lambda_u);
+    } while (dist(m_prng) > lambda_i / lambda_u);
   }
   return times;
 }
 
 // next-arrival process - times of transition from a state arrived at at startingpoints to a subsequent state, with an optional deterministic minimum separation
 // if the state hasn't been arrived at (no::never())
-np::array no::next_arrival(const np::array& startingpoints, const np::array& lambda_t, double dt, bool relative, double minsep)
+np::array no::MonteCarlo::next_arrival(const np::array& startingpoints, const np::array& lambda_t, double dt, bool relative, double minsep)
 {
   size_t n = startingpoints.size();
 
-  std::mt19937& prng = no::getenv().prng();
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
   const double* pl = np::cbegin<double>(lambda_t);
@@ -251,7 +238,7 @@ np::array no::next_arrival(const np::array& startingpoints, const np::array& lam
     pt[i] = relative ? 0.0 : offset;
     do 
     {
-      pt[i] += -::log(dist(prng)) / lambda_u;
+      pt[i] += -::log(dist(m_prng)) / lambda_u;
       // final entry in lambda_t is flat extrapolated...
       lambda_i = pl[ std::min((size_t)(pt[i] / dt), nl-1) ];
       if (pt[i] > tmax && lambda_i == 0.0)
@@ -259,7 +246,7 @@ np::array no::next_arrival(const np::array& startingpoints, const np::array& lam
         pt[i] = no::Timeline::never();
         break;
       }
-    } while (dist(prng) > lambda_i / lambda_u);
+    } while (dist(m_prng) > lambda_i / lambda_u);
     // restore offset if required
     pt[i] += relative ? offset : 0.0;
   }
