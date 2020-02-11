@@ -10,46 +10,35 @@
 #include <algorithm>
 #include <cmath>
 
-// // Realised random outcomes based on vector of hazard rates
-// struct Hazard : pycpp::UnaryArrayOp<int, double>
-// {
-//   Hazard() : m_prng(no::getenv().prng()), m_dist(0.0, 1.0) { }      
+namespace {
 
-//   int operator()(double p)
-//   {
-//     return (m_dist(m_prng) < p) ? 1 : 0;
-//   }
+// compute the RNG seed
+int64_t compute_seed(int rank, int size, bool indep)
+{
+  // ensure stream (in)dependence w.r.t. sequence and MPI rank/sizes
+  return 77027473 * 0 + 19937 * size + rank * indep;  
+}
 
-//   // implementing the above function in a derived class hides the (below) base-class implementations of operator() 
-//   // see https://stackoverflow.com/questions/1628768/why-does-an-overridden-function-in-the-derived-class-hide-other-overloads-of-the/1629074#1629074
-//   // force it to be visible:
-//   using pycpp::UnaryArrayOp<int, double>::operator();
+}
 
-// private:
-//   std::mt19937& m_prng;
-//   std::uniform_real_distribution<double> m_dist;  
-// };
+no::MonteCarlo::MonteCarlo(int rank, int size, bool indep) 
+  : m_indep(indep), m_seed(compute_seed(rank, size, indep)), m_prng(m_seed) { }
 
+bool no::MonteCarlo::indep() const 
+{ 
+  return m_indep; 
+}
 
-// // Turns vector of hazard rates into random stopping times
-// struct Stopping : pycpp::UnaryArrayOp<double, double>
-// {
-//   Stopping() : m_prng(no::getenv().prng()), m_dist(0.0, 1.0) { }      
+int64_t no::MonteCarlo::seed() const 
+{ 
+  return m_seed; 
+}
 
-//   double operator()(double p)
-//   {
-//     return -::log(m_dist(m_prng)) / p;
-//   } 
+void no::MonteCarlo::reset() 
+{
+  m_prng.seed(m_seed); 
+}
 
-//   // implementing the above function in a derived class hides the (below) base-class implementations of operator() 
-//   // see https://stackoverflow.com/questions/1628768/why-does-an-overridden-function-in-the-derived-class-hide-other-overloads-of-the/1629074#1629074
-//   // force it to be visible:
-//   using pycpp::UnaryArrayOp<double, double>::operator();
-
-// private:
-//   std::mt19937& m_prng;
-//   std::uniform_real_distribution<double> m_dist;  
-// };
 
 NEWORDER_EXPORT np::array no::MonteCarlo::ustream(size_t n)
 {
@@ -73,17 +62,6 @@ np::array no::MonteCarlo::hazard(const np::array& prob)
 
   return np::unary_op<double, double>(prob, [&](double p){ return dist(m_prng) < p ? 1 : 0; });
 
-  // py::array_t<int> result(prob.size());
-  // const double* pp = (const double*)prob.data(0);
-  // int* pr = (int*)result.request().ptr;
-  // for (size_t i = 0; i < prob.size(); ++i, ++pp, ++pr)
-  // {
-  //   *pr = (dist(prng) < *pp) ? 1 : 0;
-  // }
-  // return result;
-
-  // Hazard f;
-  // return f(prob);
 }
 
 // computes stopping times 
@@ -100,9 +78,6 @@ np::array no::MonteCarlo::stopping(const np::array& prob)
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
   return np::unary_op<double, double>(prob, [&](double p) { return -::log(dist(m_prng)) / p; });
-
-  // Stopping f;
-  // return f(prob);
 }
 
 
@@ -252,3 +227,4 @@ np::array no::MonteCarlo::next_arrival(const np::array& startingpoints, const np
   }
   return times;
 }
+

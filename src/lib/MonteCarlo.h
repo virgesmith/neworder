@@ -9,32 +9,18 @@
 #include <cstdint>
 
 
-namespace {
-
-// compute the RNG seed
-int64_t compute_seed(int rank, int size, bool indep)
-{
-  // ensure stream (in)dependence w.r.t. sequence and MPI rank/sizes
-  return 77027473 * 0 + 19937 * size + rank * indep;  
-}
-
-}
-
 namespace no {
 
 class MonteCarlo
 {
 public:
-  MonteCarlo(int rank, int size, bool indep) : m_indep(indep), m_seed(compute_seed(rank, size, indep)), m_prng(m_seed) { }
+  MonteCarlo(int rank, int size, bool indep);
 
-  bool indep() const { return m_indep; }
+  bool indep() const;
 
-  int64_t seed() const { return m_seed; }
+  int64_t seed() const;
 
-  void reset() 
-  {
-    m_prng.seed(m_seed); 
-  }
+  void reset();
 
   // Uniform random [0,1) fed from the environment's PRNG stream
   np::array ustream(size_t n);
