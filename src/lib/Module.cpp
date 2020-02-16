@@ -25,22 +25,27 @@ void log_obj(const py::object& msg)
 }
 
 
-no::Runtime::Runtime(const py::object& _globals, const py::object& locals) : m_globals(_globals), m_locals(locals)
+no::Runtime::Runtime(const std::string& local_module) : m_local(local_module)
 {
 }
 
-py::object no::Runtime::operator()(const std::
-tuple<std::string, CommandType>& cmd) const 
+py::object no::Runtime::operator()(const std::tuple<std::string, CommandType>& cmd) const 
 {
-  // evaluate the global/local namespaces at the last minute? or do they update dynamically?
+  // evaluate the local namespace at the last minute as they don't update dynamically?
+  py::dict locals;
+  if (!m_local.empty())
+  {
+    locals = py::module::import(m_local.c_str()).attr("__dict__");
+  }
+
   if (std::get<1>(cmd) == CommandType::Exec)
   {
-    py::exec(std::get<0>(cmd).c_str(), /*m_globals*/py::globals(), m_locals);
+    py::exec(std::get<0>(cmd).c_str(), py::globals(), locals);
     return py::none();
   }
   else
   {
-    return py::eval(std::get<0>(cmd).c_str(), /*m_globals*/py::globals(), m_locals);
+    return py::eval(std::get<0>(cmd).c_str(), py::globals(), locals);
   }
 }
 
@@ -67,7 +72,7 @@ void no::shell(/*const py::object& local*/)
     return;
   }
   py::dict locals;
-  locals["neworder"] = py::module::import("neworder");
+  locals/*["neworder"]*/ = py::module::import("neworder").attr("__dict__");
   py::dict kwargs;
   kwargs["banner"] = py::str("[starting neworder debug shell]");
   kwargs["exitmsg"] = py::str("[exiting neworder debug shell]");

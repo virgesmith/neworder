@@ -147,8 +147,8 @@ int run(int rank, int size, bool indep)
       neworder.attr(name.c_str()) = object;
     }
 
-    // ensure all the python runs in an with  neworder and the stuff we've initialised
-    no::Runtime runtime(py::module::import("neworder").attr("__dict__"), py::module::import("__main__").attr("__dict__"));
+    // ensure all the python runs in an env with neworder and the stuff we've initialised
+    no::Runtime runtime("neworder");
 
     // Apply any modifiers for this process
     if (!modifierArray.empty())

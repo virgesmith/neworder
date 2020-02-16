@@ -22,7 +22,7 @@ void test_np()
   //no::Environment& env = no::getenv();
 
   py::object module = py::module::import("neworder");
-  no::Runtime runtime(module.attr("__dict__"), module.attr("__dict__"));
+  no::Runtime runtime("neworder");
 
   // create an array and expose to python...
   np::array a = np::zeros<double>({3,3});

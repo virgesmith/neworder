@@ -34,7 +34,9 @@ neworder.transitions = {}
 
 # finally, open an interactive shell
 neworder.checkpoints = {
-  "shell": "neworder.shell()"
+  # TODO unify C++/rust versions
+  #"shell": "neworder.shell()"
+  "shell": "shell()"
 }
 
 

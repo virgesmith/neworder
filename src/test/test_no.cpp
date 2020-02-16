@@ -35,7 +35,7 @@ void test_no()
   
   // /*no::Environment& env =*/ no::getenv();
   py::object module = py::module::import("neworder");
-  no::Runtime runtime(module.attr("__dict__"), module.attr("__dict__")); //py::module::import("neworder").attr("__dict__"));
+  no::Runtime runtime("neworder");
 
   // Check required (but defaulted) attrs visible from both C++ and python
   const char* attrs[] = {"rank", "size"}; 

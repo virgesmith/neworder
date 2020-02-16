@@ -17,8 +17,8 @@ class NEWORDER_EXPORT Runtime final
 {
 public:
 
-  // globals is ignored
-  Runtime(const py::object& _globals, const py::object& locals);
+  // local module is not evaluated until execution
+  explicit Runtime(const std::string& local_module = std::string());
 
   ~Runtime() = default;
 
@@ -26,8 +26,7 @@ public:
 
 private:
 
-  py::object m_globals;
-  py::object m_locals;
+  std::string m_local;
 };
 
 typedef std::tuple<std::string, CommandType> Command;

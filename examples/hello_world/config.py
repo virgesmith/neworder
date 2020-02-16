@@ -43,6 +43,7 @@ neworder.initialisations = {
 # The "transition" in this case fetches the current username from the os
 # Note that the code is exec'd not eval'd: any return value is discarded
 neworder.transitions = { 
+  #"locals": "log(locals())", # neworder is in the root namespace
   #"when": "log('t=%f(%d)' % (timeline.time(), timeline.index()))",
   "who": "greeter.get_name()"
   #"exec": "a=1" # won't fail. a is in neworder namespace
