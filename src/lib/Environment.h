@@ -71,8 +71,8 @@ public:
 
 private:
 
-  // TODO reinstate when this is no longer static lifetime
-  //py::scoped_interpreter m_guard; // start the interpreter and keep it alive
+  // global interpreter lock (NB this is a singleton)
+  py::scoped_interpreter m_gil; 
 
   // flag to check whether init has been called
   bool m_init;

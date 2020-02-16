@@ -33,8 +33,9 @@ void test_no()
   CHECK(format::hex<size_t>(133, false) == "0000000000000085");
   CHECK(format::boolean(false) == "false");
   
-  /*no::Environment& env =*/ no::getenv();
+  // /*no::Environment& env =*/ no::getenv();
   py::object module = py::module::import("neworder");
+  no::Runtime runtime(module.attr("__dict__"), module.attr("__dict__")); //py::module::import("neworder").attr("__dict__"));
 
   // Check required (but defaulted) attrs visible from both C++ and python
   const char* attrs[] = {"rank", "size"}; 
@@ -42,7 +43,9 @@ void test_no()
   for (size_t i = 0; i < sizeof(attrs)/sizeof(attrs[0]); ++i)
   {
     CHECK(pycpp::has_attr(module, attrs[i]));
-    CHECK(no::Callback::eval("'%%' in locals()"_s % attrs[i])().cast<bool>());
+    // TODO why doesnt this work
+    CHECK(runtime({"'%%' in locals()"_s % attrs[i], no::CommandType::Eval}).cast<bool>());
+    //CHECK(runtime({"hasattr(neworder, '%%')"_s % attrs[i], no::CommandType::Eval}).cast<bool>());
   }
 
   // check string conversion
@@ -50,9 +53,9 @@ void test_no()
   CHECK(pycpp::as_string(module.attr("never")()) == "nan");
 
   // Check diagnostics consistent
-  CHECK(no::Callback::eval("name() == '%%'"_s % no::module_name())().cast<bool>());
-  CHECK(no::Callback::eval("version() == '%%'"_s % no::module_version())().cast<bool>());
-  CHECK(no::Callback::eval("python() == '%%'"_s % no::python_version()/*.c_str()*/)().cast<bool>());
+  CHECK(runtime({"name() == '%%'"_s % no::module_name(), no::CommandType::Eval}).cast<bool>());
+  CHECK(runtime({"version() == '%%'"_s % no::module_version(), no::CommandType::Eval}).cast<bool>());
+  CHECK(runtime({"python() == '%%'"_s % no::python_version(), no::CommandType::Eval}).cast<bool>());
 
   double x = -1e10;
   CHECK(no::Timeline::distant_past() < x);

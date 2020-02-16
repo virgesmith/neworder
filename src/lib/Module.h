@@ -2,43 +2,38 @@
 
 #include "NewOrder.h"
 
+#include <pybind11/embed.h>
+
 #include <vector>
 #include <map>
 
 namespace no {
 
+enum class CommandType { Eval, Exec };
+
 // Define a piece of python code to be exec/eval-u(a)ted on calling operator()
 // Perhaps better named LazyEval?
-class NEWORDER_EXPORT Callback final
+class NEWORDER_EXPORT Runtime final
 {
 public:
-  // Construct using one of these two variants 
-  static Callback exec(const std::string& code);
-  static Callback eval(const std::string& code);
-  
-  ~Callback() = default;
 
-  py::object operator()() const;
+  // globals is ignored
+  Runtime(const py::object& _globals, const py::object& locals);
 
-  bool is_exec() const { return m_exec; }
+  ~Runtime() = default;
 
-  const std::string code() const
-  {
-    return (m_exec ? "exec(\"" : "eval(\"") + m_code + "\")";
-  }
+  py::object operator()(const std::tuple<std::string, CommandType>& cmd) const;
 
 private:
-  // construct using one of the static functions
-  Callback(const std::string& code, bool exec);
 
-  bool m_exec;
-  std::string m_code;
   py::object m_globals;
   py::object m_locals;
 };
 
-typedef std::vector<Callback> CallbackArray;
-typedef std::map<std::string, Callback> CallbackTable;
+typedef std::tuple<std::string, CommandType> Command;
+
+typedef std::vector<Command> CommandList;
+typedef std::map<std::string, Command> CommandDict;
 
 const char* module_name();
 

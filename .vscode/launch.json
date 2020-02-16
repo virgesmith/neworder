@@ -8,7 +8,7 @@
       "name": "(gdb) Launch",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/src/bin/neworder",
+      "program": "${workspaceFolder}/src/test/testharness",
       "args": [],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",

@@ -94,9 +94,8 @@ no::MonteCarlo& no::Environment::mc() const
 }
 
 // Note this does not fully initialise, do not construct directly, use the static init function
-no::Environment::Environment() : m_init(false) //, m_guard() segfaults on exit (presumably called **too late** (singleton))
+no::Environment::Environment() : m_init(false) , m_gil{} // TODO does it still? segfaults on exit (presumably called **too late** (singleton))
 {
-  py::initialize_interpreter();
   // make the neworder module available in embedded python env
   m_self = new py::module(py::module::import("neworder"));
   // add to sys to ensure neworder module can be resolved

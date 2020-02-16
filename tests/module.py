@@ -38,9 +38,6 @@ def test():
 
   t.check(abs(np.mean(s) - 0.5) < 0.02)
 
-  f = no.lazy_eval("2 + 2")
-  t.check(f() == 4)
-
   # # TODO this overlaps/duplicates tests in op.py - reorganise
 
   # # test thinning algorithm for non-homogeneous Poisson process
@@ -78,7 +75,6 @@ def test():
   never = no.isnever(np.full(10, no.never()))
   no.log(never)
   t.check(np.all(never))
-
 
   # # DataFrame ops
 

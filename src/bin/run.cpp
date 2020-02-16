@@ -63,7 +63,6 @@ int run(int rank, int size, bool indep)
   {
     // Load (and exec) config file
     py::module config = py::module::import("config");
-    // Update the env accordingly
   
     bool do_checks = neworder.attr("do_checks").cast<bool>();
 
@@ -81,7 +80,7 @@ int run(int rank, int size, bool indep)
       % env.timeline().start() % env.timeline().dt() % env.timeline().checkpoints());
 
     // modifiers (exec)
-    no::CallbackArray modifierArray; 
+    no::CommandList modifierArray; 
     if (pycpp::has_attr(neworder, "modifiers"))
     {
       py::list modifiers = py::list(neworder.attr("modifiers"));
@@ -89,35 +88,35 @@ int run(int rank, int size, bool indep)
       modifierArray.reserve(n);
       for (int i = 0; i < n; ++i)
       {        
-        modifierArray.push_back(no::Callback::exec(modifiers[i].cast<std::string>()));
+        modifierArray.push_back(std::make_tuple(modifiers[i].cast<std::string>(), no::CommandType::Exec));
       }
     }
 
     // transitions (exec)
-    no::CallbackTable transitionTable; 
+    no::CommandDict transitionTable; 
     py::dict transitions = py::dict(neworder.attr("transitions")); //.items();
     for (const auto& kv: transitions)
     {
-      transitionTable.insert(std::make_pair(kv.first.cast<std::string>(), no::Callback::exec(kv.second.cast<std::string>())));
+      transitionTable.insert({kv.first.cast<std::string>(), {kv.second.cast<std::string>(), no::CommandType::Exec}});
     }
 
     // checks (eval)
-    no::CallbackTable checkTable; 
+    no::CommandDict checkTable; 
     if (do_checks)
     {
       py::dict checks = py::dict(neworder.attr("checks"));
       for (const auto& kv: checks)
       {
-        checkTable.insert(std::make_pair(kv.first.cast<std::string>(), no::Callback::eval(kv.second.cast<std::string>())));
+        checkTable.insert({kv.first.cast<std::string>(), {kv.second.cast<std::string>(), no::CommandType::Eval}});
       }
     }
     
     // execs
-    no::CallbackTable checkpointTable; 
+    no::CommandDict checkpointTable; 
     py::dict checkpoints = py::dict(neworder.attr("checkpoints"));
     for (const auto& kv: checkpoints)
     {
-      checkpointTable.insert(std::make_pair(kv.first.cast<std::string>(), no::Callback::exec(kv.second.cast<std::string>())));
+      checkpointTable.insert({kv.first.cast<std::string>(), {kv.second.cast<std::string>(), no::CommandType::Exec}});
     }
 
     // initialisations...
@@ -148,11 +147,14 @@ int run(int rank, int size, bool indep)
       neworder.attr(name.c_str()) = object;
     }
 
+    // ensure all the python runs in an with  neworder and the stuff we've initialised
+    no::Runtime runtime(py::module::import("neworder").attr("__dict__"), py::module::import("__main__").attr("__dict__"));
+
     // Apply any modifiers for this process
     if (!modifierArray.empty())
     {
-      no::log("t=%%(%%) modifier: %%"_s % env.timeline().time() % env.timeline().index() % modifierArray[env.rank()].code());
-      modifierArray[env.rank()]();
+      no::log("t=%%(%%) modifier: %%"_s % env.timeline().time() % env.timeline().index() % std::get<0>(modifierArray[env.rank()]));
+      runtime(modifierArray[env.rank()]);
     }
 
     // Loop with checkpoints
@@ -165,12 +167,12 @@ int run(int rank, int size, bool indep)
       for (auto it = transitionTable.begin(); it != transitionTable.end(); ++it)
       {
         no::log("t=%%(%%) transition: %% "_s % t % timeindex % it->first);
-        (it->second)();  
+        runtime(it->second);  
       }
       for (auto it = checkTable.begin(); it != checkTable.end(); ++it)
       {
         no::log("t=%%(%%) check: %% "_s % t % timeindex % it->first);
-        bool ok = it->second().cast<bool>();
+        bool ok = runtime(it->second).cast<bool>();
         if (!ok) 
         {
           throw std::runtime_error("check failed");
@@ -182,7 +184,7 @@ int run(int rank, int size, bool indep)
         {
           no::log("t=%%(%%) checkpoint: %%"_s % t % timeindex % it->first);   
           // Note: return value is ignored (exec not eval)
-          (it->second)();  
+          runtime(it->second);  
         }
       } 
     }

@@ -24,34 +24,23 @@ void log_obj(const py::object& msg)
 
 }
 
-no::Callback no::Callback::eval(const std::string& code)
+
+no::Runtime::Runtime(const py::object& _globals, const py::object& locals) : m_globals(_globals), m_locals(locals)
 {
-  return Callback(code, false);
 }
 
-no::Callback no::Callback::exec(const std::string& code)
-{
-  return Callback(code, true);
-}
-
-no::Callback::Callback(const std::string& code, bool exec/*, const std::string& locals*/) : m_exec(exec), m_code(code)
-{
-  // assuming they ref current env
-  m_globals = py::module::import("__main__").attr("__dict__");
-  m_locals = py::module::import("neworder").attr("__dict__");
-}
-
-py::object no::Callback::operator()() const 
+py::object no::Runtime::operator()(const std::
+tuple<std::string, CommandType>& cmd) const 
 {
   // evaluate the global/local namespaces at the last minute? or do they update dynamically?
-  if (m_exec)
+  if (std::get<1>(cmd) == CommandType::Exec)
   {
-    py::exec(m_code.c_str(), m_globals, m_locals);
+    py::exec(std::get<0>(cmd).c_str(), /*m_globals*/py::globals(), m_locals);
     return py::none();
   }
   else
   {
-    return py::eval(m_code.c_str(), m_globals, m_locals);
+    return py::eval(std::get<0>(cmd).c_str(), /*m_globals*/py::globals(), m_locals);
   }
 }
 
@@ -169,9 +158,6 @@ PYBIND11_EMBEDDED_MODULE(neworder, m)
           % mc.indep() % mc.seed();
       });
 
-  m.def("lazy_exec", no::Callback::exec);
-  m.def("lazy_eval", no::Callback::eval);
-
   // working on pandas df manipulation  
   m.def("transition", no::df::transition);
   m.def("directmod", no::df::directmod);
@@ -190,11 +176,11 @@ PYBIND11_EMBEDDED_MODULE(neworder, m)
   m.def("allgather", no::mpi::allgather_array, py::return_value_policy::take_ownership);
   m.def("sync", no::mpi::sync);
 
-  // Deferred eval/exec of Python code
-  py::class_<no::Callback>(m, "Callback"/*, py::no_init*/)
-    .def("__call__", &no::Callback::operator())
-    .def("__str__", &no::Callback::code)
-    ;
+  // // Deferred eval/exec of Python code
+  // py::class_<no::Callback>(m, "Callback"/*, py::no_init*/)
+  //   .def("__call__", &no::Callback::operator())
+  //   .def("__str__", &no::Callback::code)
+  //   ;
 
   // Example of wrapping an STL container
   // py::class_<std::vector<double>>("DVector", py::init<int>())
