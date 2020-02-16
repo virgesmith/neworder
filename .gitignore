@@ -6,6 +6,7 @@ src/**/*.so
 
 **/__pycache__
 
+.vscode/
 build/
 node_modules/
 
