@@ -2,7 +2,7 @@
 
 import neworder
 from helpers import *
-#from math import *
+from math import *
 
 # pointless class?
 class BS:

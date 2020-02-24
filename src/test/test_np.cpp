@@ -22,11 +22,12 @@ void test_np()
   //no::Environment& env = no::getenv();
 
   py::object module = py::module::import("neworder");
+  py::object root = py::module::import("__main__");
   no::Runtime runtime("neworder");
 
   // create an array and expose to python...
   np::array a = np::zeros<double>({3,3});
-  module.attr("a") = a;
+  root.attr("a") = a;
   CHECK(a.ndim() == 2);
   CHECK(a.size() == 9);
 

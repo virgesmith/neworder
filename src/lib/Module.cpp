@@ -32,10 +32,11 @@ no::Runtime::Runtime(const std::string& local_module) : m_local(local_module)
 py::object no::Runtime::operator()(const std::tuple<std::string, CommandType>& cmd) const 
 {
   // evaluate the local namespace at the last minute as they don't update dynamically?
-  py::dict locals;
+  py::dict locals = py::module::import("__main__").attr("__dict__");
   if (!m_local.empty())
   {
-    locals = py::module::import(m_local.c_str()).attr("__dict__");
+    //locals = py::module::import(m_local.c_str()).attr("__dict__");
+    locals[m_local.c_str()] = py::module::import(m_local.c_str());
   }
 
   if (std::get<1>(cmd) == CommandType::Exec)
@@ -71,8 +72,9 @@ void no::shell(/*const py::object& local*/)
     no::log("WARNING: shell disabled in parallel mode, ignoring");
     return;
   }
-  py::dict locals;
-  locals/*["neworder"]*/ = py::module::import("neworder").attr("__dict__");
+  py::dict locals = py::module::import("__main__").attr("__dict__");
+  //locals/*["neworder"]*/ = py::module::import("neworder").attr("__dict__");
+  locals["neworder"] = py::module::import("neworder");
   py::dict kwargs;
   kwargs["banner"] = py::str("[starting neworder debug shell]");
   kwargs["exitmsg"] = py::str("[exiting neworder debug shell]");

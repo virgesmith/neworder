@@ -44,7 +44,7 @@ void test_no()
   {
     CHECK(pycpp::has_attr(module, attrs[i]));
     // TODO why doesnt this work
-    CHECK(runtime({"'%%' in locals()"_s % attrs[i], no::CommandType::Eval}).cast<bool>());
+    CHECK(runtime({"'%%' in dir(neworder)"_s % attrs[i], no::CommandType::Eval}).cast<bool>());
     //CHECK(runtime({"hasattr(neworder, '%%')"_s % attrs[i], no::CommandType::Eval}).cast<bool>());
   }
 
@@ -53,9 +53,9 @@ void test_no()
   CHECK(pycpp::as_string(module.attr("never")()) == "nan");
 
   // Check diagnostics consistent
-  CHECK(runtime({"name() == '%%'"_s % no::module_name(), no::CommandType::Eval}).cast<bool>());
-  CHECK(runtime({"version() == '%%'"_s % no::module_version(), no::CommandType::Eval}).cast<bool>());
-  CHECK(runtime({"python() == '%%'"_s % no::python_version(), no::CommandType::Eval}).cast<bool>());
+  CHECK(runtime({"neworder.name() == '%%'"_s % no::module_name(), no::CommandType::Eval}).cast<bool>());
+  CHECK(runtime({"neworder.version() == '%%'"_s % no::module_version(), no::CommandType::Eval}).cast<bool>());
+  CHECK(runtime({"neworder.python() == '%%'"_s % no::python_version(), no::CommandType::Eval}).cast<bool>());
 
   double x = -1e10;
   CHECK(no::Timeline::distant_past() < x);

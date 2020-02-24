@@ -13,7 +13,6 @@ class Option():
   
   # TODO move somewhere more appropriate (market?)
   def greeks(self, pv):
-    neworder.sync()
     pvs = neworder.gather(pv, 0)
     if neworder.rank() == 0:
       neworder.log("PV=%f" % pvs[0])

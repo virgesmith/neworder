@@ -18,9 +18,12 @@ callput = "CALL"
 strike = 100.0   
 expiry = 0.75   
 
+# variables defined in the module are not accessible by the embedded environment
+
 # Using exact MC calc of GBM requires only 1 timestep 
 neworder.timeline = neworder.Timeline(0.0, expiry, [1])
 
+# rust requires nsims in root namespace (or modify transitions/checkpoints)
 neworder.nsims = 100000 # number of prices to simulate
 # #neworder.sync_streams = True # all procs use same RNG stream
 
@@ -53,10 +56,11 @@ neworder.modifiers = [
 neworder.transitions = { 
   # compute the option price
   # To use QRNG (Sobol), set quasi=True
-  "compute_mc_price": "pv = model.mc(option, market, nsims, quasi=False)"
+  # rust 
+  "compute_mc_price": "neworder.pv = model.mc(option, market, neworder.nsims, quasi=False)"
 }
 
 neworder.checkpoints = {
-  "compare_mc_price": "model.compare(pv, nsims, option, market)",
-  "compute_greeks": "option.greeks(pv)"
+  "compare_mc_price": "model.compare(neworder.pv, neworder.nsims, option, market)",
+  "compute_greeks": "option.greeks(neworder.pv)"
 }

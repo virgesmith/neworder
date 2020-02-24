@@ -63,6 +63,8 @@ int run(int rank, int size, bool indep)
   {
     // Load (and exec) config file
     py::module config = py::module::import("config");
+    // Load the root namespace
+    py::module root = py::module::import("__main__");
   
     bool do_checks = neworder.attr("do_checks").cast<bool>();
 
@@ -127,7 +129,7 @@ int run(int rank, int size, bool indep)
       const std::string& name = kv.first.cast<std::string>();
 
       // Note: 
-      kv.second.attr("module"); 
+      //kv.second.attr("module"); 
       // kv.second["module"];
       std::string modulename = kv.second["module"].cast<std::string>();
       std::string class_name = kv.second["class_"].cast<std::string>();
@@ -144,10 +146,11 @@ int run(int rank, int size, bool indep)
       py::object object = pycpp::Functor(class_, args, kwargs)();
 
       // taking a const ref here to stay results in an empty string, which is bizarre love triangle
-      neworder.attr(name.c_str()) = object;
+      // add object to root namespace
+      root.attr(name.c_str()) = object;
     }
 
-    // ensure all the python runs in an env with neworder and the stuff we've initialised
+    // ensure all the python runs in an env with neworder and the stuff we've initialised in the root namespace
     no::Runtime runtime("neworder");
 
     // Apply any modifiers for this process
