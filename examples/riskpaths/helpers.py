@@ -5,7 +5,9 @@ from bisect import bisect_left
 
 def partition(start, finish, step=1):
   """ Helper function to return an inclusive equal-spaced range, i.e. finish will be the last element """
-  return np.linspace(start, finish, (finish-start)/step + 1)
+  # ensure finish is always included
+  return np.append(np .arange(start, finish, step), finish)
+
 
 def interp(range, value):
   """ Equivalent to self-scheduling split """

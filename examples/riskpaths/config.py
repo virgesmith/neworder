@@ -21,6 +21,8 @@ import neworder
 
 population_size = 10000
 
+neworder.timeline = neworder.Timeline(0, 100, [1])
+
 # running/debug options
 neworder.log_level = 1
 neworder.do_checks = False
@@ -31,6 +33,7 @@ neworder.initialisations = {
 }
 
 neworder.transitions = {
+  "a": "import sys; neworder.log(sys.argv)",
   "status": "people.pregnancy()"
 }
 

@@ -51,9 +51,10 @@ class People():
   def age(self):
     # sample times
 
-    self.population["TimeOfDeath"] = neworder.first_arrival(self.mortality_hazard.Rate.values, neworder.timestep, len(self.population))
+    self.population["TimeOfDeath"] = neworder.mc.first_arrival(self.mortality_hazard.Rate.values, 1.0, len(self.population))
 
-    births = neworder.arrivals(self.fertility_hazard.Rate.values, neworder.timestep, 0.75, len(self.population))
+    #neworder.timeline.dt()
+    births = neworder.mc.arrivals(self.fertility_hazard.Rate.values, 1.0, 0.75, len(self.population))
     
     #neworder.log(births)
     for i in range(births.shape[1]):

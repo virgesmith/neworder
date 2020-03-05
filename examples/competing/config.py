@@ -8,12 +8,12 @@ neworder.MAX_AGE = 100.0
 
 # This is case-based model no timeline is required...
 # ... but we do need a delta-t between entries in fertility/mortality data
-neworder.timestep = 1.0
+neworder.timeline = neworder.Timeline.null() #1.0
 
 # Choose a simple linearly increasing mortality rate: 0.1% aged 0 to 2.5% aged 100
 fertility_hazard_file = "examples/shared/NewETHPOP_fertility.csv"
 mortality_hazard_file = "examples/shared/NewETHPOP_mortality.csv"
-population_size = 100000
+population_size = 10000
 lad = "E09000030"
 ethnicity = "WBI"
 

@@ -65,7 +65,14 @@ int run(int rank, int size, bool indep)
     py::module config = py::module::import("config");
     // Load the root namespace
     py::module root = py::module::import("__main__");
-  
+
+    // this works around an issue in matplotlib where it assumes sys.argv[0] exists
+    py::module sys = py::module::import("sys");
+    py::list argv(1);
+    argv[0] = py::str("neworder");
+    sys.attr("argv") = argv;
+    root.attr("sys") = sys;
+
     bool do_checks = neworder.attr("do_checks").cast<bool>();
 
     int log_level = neworder.attr("log_level").cast<int>();

@@ -112,11 +112,11 @@ class Schelling():
 
     # move unsatisfied to empty
     for i in range(min(len(unsat), len(empty))):
-      p = pop[unsat.ix[i,"x"], unsat.ix[i, "y"]]
-      pop[empty.ix[i,"x"], empty.ix[i, "y"]] = p
-      pop[unsat.ix[i,"x"], unsat.ix[i, "y"]] = 0
+      p = pop[unsat.iloc[i,"x"], unsat.iloc[i, "y"]]
+      pop[empty.iloc[i,"x"], empty.iloc[i, "y"]] = p
+      pop[unsat.iloc[i,"x"], unsat.iloc[i, "y"]] = 0
 
-    self.pop.append(pop)
+    self.pop.append(pop)  
 
     # plt.imshow(self.pop, cmap=self.cmap)
     # plt.pause(0.01)
