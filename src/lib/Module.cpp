@@ -130,6 +130,7 @@ PYBIND11_EMBEDDED_MODULE(neworder, m)
     .def("index", &no::Timeline::index)
     .def("time", &no::Timeline::time)
     .def("dt", &no::Timeline::dt)
+    .def("nsteps", &no::Timeline::nsteps)
     .def("__repr__", [](const no::Timeline& tl) {
         return "<neworder.Timeline start=%% end=%% checkpoints=%% index=%%>"_s 
           % tl.start() % tl.end() % tl.checkpoints() % tl.index();

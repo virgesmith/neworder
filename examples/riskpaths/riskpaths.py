@@ -118,4 +118,3 @@ class RiskPaths():
     #plt.savefig("./doc/examples/img/riskpaths.png")
     plt.show()
     #neworder.log(self.population)
-    pass

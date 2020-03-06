@@ -5,9 +5,10 @@ covid-19 case-based microsimulation
 import neworder
 
 # 28 days later
-neworder.timeline = neworder.Timeline(0, 28, [28])
+days = 100
+neworder.timeline = neworder.Timeline(0, days, [days])
 
-npeople = 20
+npeople = 10000
 
 # Checks to run during the simulation
 neworder.log_level = 1 # this doesnt do anything at the moment
@@ -22,5 +23,5 @@ neworder.transitions = {
 }
 
 neworder.checkpoints = {
-  "model": "neworder.log(model.pop)"
+  "model": "model.plot()"
 }
