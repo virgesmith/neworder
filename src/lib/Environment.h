@@ -5,7 +5,7 @@
 #include "MonteCarlo.h"
 
 #include "NewOrder.h"
-#include "numpy.h"
+#include "ArrayHelpers.h"
 
 #include <pybind11/embed.h>
 
@@ -83,7 +83,7 @@ private:
 
   // RNG sequence index
   //size_t m_seqno; use python version for now
-  //np::array m_sequence;
+  //py::array m_sequence;
 
   // MPI rank/size
   int m_rank;

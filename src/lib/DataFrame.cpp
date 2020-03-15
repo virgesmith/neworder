@@ -24,10 +24,10 @@ size_t interp(const std::vector<double>& cumprob, double x)
 // TODO one-off-
 // categories are all possible categorty labels. Order corresponds to row/col in matrix
 // matrix is a transition matrix
-void no::df::transition(np::array categories, np::array matrix, py::object &df, const std::string& colname)
+void no::df::transition(py::array categories, py::array matrix, py::object &df, const std::string& colname)
 {
   // Extract column from DF as np.array
-  np::array col = df.attr(colname.c_str());
+  py::array col = df.attr(colname.c_str());
 
   int m = categories.size();
 
@@ -49,7 +49,7 @@ void no::df::transition(np::array categories, np::array matrix, py::object &df, 
   for (int i = 0; i < m; ++i)
   {
     // point to beginning of row
-    double* p = np::begin<double>(matrix) + i;
+    double* p = no::begin<double>(matrix) + i;
     if (p[0] < 0.0 || p[0] > 1.0) 
       // % is misinterpreted. NB to find code run cppcheck --xml 2> cppcheck,xml to find codes 
       // cppcheck-suppress zerodiv 
@@ -71,7 +71,7 @@ void no::df::transition(np::array categories, np::array matrix, py::object &df, 
   std::map<int64_t, int> lookup;
   for (int i = 0; i < m; ++i)
   {
-    lookup[np::at<int64_t>(categories, i)] = i;
+    lookup[no::at<int64_t>(categories, i)] = i;
   }
 
   // no::log("row %% %% %% %%..."_s % p[0] % p[1] % p[2] % p[3]);
@@ -83,7 +83,7 @@ void no::df::transition(np::array categories, np::array matrix, py::object &df, 
   size_t n = col.size();
 
   Timer t;
-  np::array_t<double> r = no::getenv().mc().ustream(n);
+  py::array_t<double> r = no::getenv().mc().ustream(n);
   // if bottleneck, can access through
   // auto p = r.unchecked<1>();
   // x = p[i];
@@ -91,13 +91,13 @@ void no::df::transition(np::array categories, np::array matrix, py::object &df, 
   for (size_t i = 0; i < n; ++i)
   {
     // look up the index, ignoring values that havent been explicitly set in categories (like -1)
-    auto it = lookup.find(np::at<int64_t>(col, i));
+    auto it = lookup.find(no::at<int64_t>(col, i));
     if (it == lookup.end())
       continue;
     int64_t j = it->second;
-    int64_t k = interp(cumprobs[j], np::at<double>(r, i));
+    int64_t k = interp(cumprobs[j], no::at<double>(r, i));
     //no::log("interp %%:%% -> %%"_s % j % r[i] % k);
-    np::at<int64_t>(col, i) = np::at<int64_t>(categories, k);
+    no::at<int64_t>(col, i) = no::at<int64_t>(categories, k);
   }
   no::log("transition %% elapsed: %%"_s % n % t.elapsed_s());
 }
@@ -106,12 +106,12 @@ void no::df::transition(np::array categories, np::array matrix, py::object &df, 
 void no::df::directmod(py::object& df, const std::string& colname)
 {
   // .values? pd.Series -> np.array?
-  np::array arr = df.attr(colname.c_str());
+  py::array arr = df.attr(colname.c_str());
   size_t n = arr.size();
 
   for (size_t i = 0; i < n; ++i)
   {
-    np::at<int64_t>(arr, i) += 1;
+    no::at<int64_t>(arr, i) += 1;
   }
 }
 
@@ -119,9 +119,9 @@ void no::df::directmod(py::object& df, const std::string& colname)
 // void no::df::linked_change(py::object& df, const std::string& cat, const std::string& link_cat)
 // {
 //   // .values? pd.Series -> np.array?
-//   np::array arr0 = df.attr(cat.c_str()); // this is a reference 
+//   py::array arr0 = df.attr(cat.c_str()); // this is a reference 
 //   // .values? pd.Series -> np.array?
-//   np::array arr1 = df.attr(link_cat.c_str()); // this is a reference 
+//   py::array arr1 = df.attr(link_cat.c_str()); // this is a reference 
 
 //   throw std::runtime_error("ongoing dev (liam2-demo07?)");
 //   // for ()

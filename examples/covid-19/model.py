@@ -42,7 +42,7 @@ class Model:
                                     "tRecovered": np.nan,
                                     "tDeceased": np.nan })
     self.mild_onset_rate = 1.0 / mild_symptoms_onset_tmean
-    self.severe_onset_rate = 1.0 # / severe_symptoms_onset_tmean
+    self.severe_onset_rate = 1.0 / severe_symptoms_onset_tmean
     self.recover_mild_rate = 1.0 / mild_symptoms_recover_tmean
     self.recover_severe_rate = 1.0 / severe_symptoms_recover_tmean
     self.die_severe_rate = 1.0 / severe_symptoms_die_tmean
@@ -73,7 +73,6 @@ class Model:
       return
       
     # time of infection
-    #self.pop.loc[(self.pop.infected) & (self.pop.State == State.UNINFECTED), "tInfected"] = neworder.timeline.time()
     self.pop.loc[is_newly_infected.index, "tInfected"] = neworder.timeline.time()
     # current state
     self.pop.loc[is_newly_infected.index, "State"] = State.ASYMPTOMATIC
@@ -116,15 +115,11 @@ class Model:
   def plot(self):
     self.summary = self.summary.fillna(0)
     self.summary.index = range(1,len(self.summary)+1)
+    # force ordering for stacked bar chart
+    self.summary = self.summary[[State.UNINFECTED, State.ASYMPTOMATIC, State.MILD, State.SEVERE, State.RECOVERED, State.DECEASED]]
     neworder.log(self.summary)
-    #plt.plot(range(neworder.timeline.nsteps()+1), self.pinfect)
+    plt.plot(range(neworder.timeline.nsteps()+1), self.pinfect)
 
-    # b = [ self.pop.tMild[~neworder.isnever(self.pop.tMild.values)], 
-    #       self.pop.tSevere[~neworder.isnever(self.pop.tSevere.values)],
-    #       self.pop.tRecovered[~neworder.isnever(self.pop.tRecovered.values)],
-    #       self.pop.tDeceased[~neworder.isnever(self.pop.tDeceased.values)] ]
-
-    # plt.hist(b, bins=range(neworder.timeline.nsteps()+1), stacked=True)
     self.summary.plot(kind='bar', width=1.0, stacked=True)
 
     plt.show()

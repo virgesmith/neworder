@@ -8,7 +8,7 @@
 #include "Environment.h"
 
 #include "NewOrder.h"
-#include "numpy.h"
+#include "ArrayHelpers.h"
 
 #include <vector>
 #include <string>

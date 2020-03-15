@@ -1,12 +1,12 @@
 #pragma once
 
 #include "NewOrder.h"
-#include "numpy.h"
+#include <pybind11/numpy.h>
 // Data frame manipulation routines
 
 namespace no { namespace df {
 
-void transition(np::array categories, np::array matrix, py::object& df, const std::string& colname);
+void transition(py::array categories, py::array matrix, py::object& df, const std::string& colname);
 
 void directmod(py::object& df, const std::string& colname);
 

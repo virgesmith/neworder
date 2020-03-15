@@ -15,7 +15,7 @@ neworder.log_level = 1 # this doesnt do anything at the moment
 neworder.do_checks = False
 
 neworder.initialisations = {
-  "model": { "module": "model", "class_": "Model", "args": (npeople) }
+  "model": { "module": "model", "class_": "Model", "args": (npeople,) }
 }
 
 neworder.transitions = {

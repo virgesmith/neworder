@@ -11,6 +11,7 @@
 
 void test1(const std::string& modulename, const std::string& functionname, const std::vector<std::string>& args, const py::object& expected);
 void test_no();
+void test_mc();
 void test_env();
 void test_np();
 void test_mpi();
@@ -39,6 +40,7 @@ int run(int rank, int size, bool indep, int nmodules, const char* testmodules[])
 
 
     // module (C++) tests
+    test_mc();
     test_no();
     test_env();
     test_np(); 

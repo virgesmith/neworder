@@ -121,7 +121,7 @@ PYBIND11_EMBEDDED_MODULE(neworder, m)
   m.def("far_future", no::Timeline::far_future);
   m.def("never", no::Timeline::never);
   m.def("isnever", no::Timeline::isnever); // scalar 
-  m.def("isnever", no::nparray::isnever); // array
+  m.def("isnever", no::isnever); // array
 
   py::class_<no::Timeline>(m, "Timeline")
     .def(py::init<double, double, const std::vector<size_t>&>())
@@ -146,19 +146,19 @@ PYBIND11_EMBEDDED_MODULE(neworder, m)
     .def("ustream", &no::MonteCarlo::ustream)
     // explicitly give function type for overloads 
     .def("hazard", py::overload_cast<double, size_t>(&no::MonteCarlo::hazard), "simulate outcomes from a flat hazard rate")
-    .def("hazard", py::overload_cast<const np::array&>(&no::MonteCarlo::hazard), "simulate outcomes from hazard rates")
+    .def("hazard", py::overload_cast<const py::array&>(&no::MonteCarlo::hazard), "simulate outcomes from hazard rates")
     .def("stopping", py::overload_cast<double, size_t>(&no::MonteCarlo::stopping), "simulate stopping times from a flat hazard rate")
-    .def("stopping", py::overload_cast<const np::array&>(&no::MonteCarlo::stopping), "simulate stopping times from hazard rates")
+    .def("stopping", py::overload_cast<const py::array&>(&no::MonteCarlo::stopping), "simulate stopping times from hazard rates")
     .def("arrivals", &no::MonteCarlo::arrivals)
     .def("first_arrival", &no::MonteCarlo::first_arrival/*, py::arg("minval") = 0.0*/)
-    .def("first_arrival", [](no::MonteCarlo& mc, const np::array& lambda_t, double dt, size_t n) { 
+    .def("first_arrival", [](no::MonteCarlo& mc, const py::array& lambda_t, double dt, size_t n) { 
         return mc.first_arrival(lambda_t, dt, n, 0.0); 
       })
     .def("next_arrival", &no::MonteCarlo::next_arrival)
-    .def("next_arrival", [](no::MonteCarlo& mc, const np::array& startingpoints, const np::array& lambda_t, double dt, bool relative) { 
+    .def("next_arrival", [](no::MonteCarlo& mc, const py::array& startingpoints, const py::array& lambda_t, double dt, bool relative) { 
         return mc.next_arrival(startingpoints, lambda_t, dt, relative, 0.0); 
       })
-    .def("next_arrival", [](no::MonteCarlo& mc, const np::array& startingpoints, const np::array& lambda_t, double dt) { 
+    .def("next_arrival", [](no::MonteCarlo& mc, const py::array& startingpoints, const py::array& lambda_t, double dt) { 
         return mc.next_arrival(startingpoints, lambda_t, dt, false, 0.0); 
       })
     .def("__repr__", [](const no::MonteCarlo& mc) {

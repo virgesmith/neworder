@@ -3,7 +3,7 @@
 #include "Environment.h"
 //#include "Log.h"
 
-#include "numpy.h"
+#include "ArrayHelpers.h"
 
 #include <vector>
 #include <random>
@@ -17,6 +17,13 @@ int64_t compute_seed(int rank, int size, bool indep)
 {
   // ensure stream (in)dependence w.r.t. sequence and MPI rank/sizes
   return 77027473 * 0 + 19937 * size + rank * indep;  
+}
+
+// uniform [0,1)
+double dist(std::mt19937& mt)
+{
+  static const double SCALE = 1.0 / (1ull << 32);
+  return mt() * SCALE;
 }
 
 }
@@ -40,53 +47,51 @@ void no::MonteCarlo::reset()
 }
 
 
-NEWORDER_EXPORT np::array no::MonteCarlo::ustream(size_t n)
+NEWORDER_EXPORT py::array no::MonteCarlo::ustream(size_t n)
 {
-  std::uniform_real_distribution<> dist(0.0, 1.0);
-
-  return np::make_array<double>(n, [&](){ return dist(m_prng); });
+  return no::make_array<double>(n, [&](){ return dist(m_prng); });
 }
 
 // simple hazard constant probability 
-NEWORDER_EXPORT np::array no::MonteCarlo::hazard(double prob, size_t n)
+NEWORDER_EXPORT py::array no::MonteCarlo::hazard(double prob, size_t n)
 {
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
-  return np::make_array<int>(n, [&]() { return (dist(m_prng) < prob) ? 1 : 0; });
+  return no::make_array<int>(n, [&]() { return (dist(m_prng) < prob) ? 1 : 0; });
 }
 
 // hazard with varying probablities 
-np::array no::MonteCarlo::hazard(const np::array& prob)
+py::array no::MonteCarlo::hazard(const py::array& prob)
 {
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
-  return np::unary_op<double, double>(prob, [&](double p){ return dist(m_prng) < p ? 1 : 0; });
+  return no::unary_op<double, double>(prob, [&](double p){ return dist(m_prng) < p ? 1 : 0; });
 
 }
 
 // computes stopping times 
-NEWORDER_EXPORT np::array no::MonteCarlo::stopping(double prob, size_t n)
+NEWORDER_EXPORT py::array no::MonteCarlo::stopping(double prob, size_t n)
 {
   std::uniform_real_distribution<> dist(0.0, 1.0);
   double rprob = 1.0 / prob;
 
-  return np::make_array<double>(n, [&]() { return -::log(dist(m_prng)) * rprob; });
+  return no::make_array<double>(n, [&]() { return -::log(dist(m_prng)) * rprob; });
 }
 
-np::array no::MonteCarlo::stopping(const np::array& prob)
+py::array no::MonteCarlo::stopping(const py::array& prob)
 {
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
-  return np::unary_op<double, double>(prob, [&](double p) { return -::log(dist(m_prng)) / p; });
+  return no::unary_op<double, double>(prob, [&](double p) { return -::log(dist(m_prng)) / p; });
 }
 
 
 // multiple-arrival (0+) process 
-np::array no::MonteCarlo::arrivals(const np::array& lambda_t, double dt, double gap, size_t n)
+py::array no::MonteCarlo::arrivals(const py::array& lambda_t, double dt, double gap, size_t n)
 {
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
-  const double* pl = np::cbegin<double>(lambda_t);
+  const double* pl = no::cbegin<double>(lambda_t);
   size_t nl = lambda_t.size();
 
   // validate lambdas - but what exactly is valid?
@@ -128,9 +133,9 @@ np::array no::MonteCarlo::arrivals(const np::array& lambda_t, double dt, double 
     //no::log("%%: %%"_s % i % times[i]);
   }
 
-  np::array nptimes = np::empty<double>({n, imax- 1});
-  np::fill(nptimes, no::Timeline::never());
-  double* pa = np::begin<double>(nptimes);
+  py::array nptimes = no::empty<double>({n, imax- 1});
+  no::fill(nptimes, no::Timeline::never());
+  double* pa = no::begin<double>(nptimes);
 
   for (size_t i = 0; i < times.size(); ++i)
   {
@@ -144,19 +149,19 @@ np::array no::MonteCarlo::arrivals(const np::array& lambda_t, double dt, double 
   return nptimes;
 }
 
-np::array no::MonteCarlo::first_arrival(const np::array& lambda_t, double dt, size_t n, double minval)
+py::array no::MonteCarlo::first_arrival(const py::array& lambda_t, double dt, size_t n, double minval)
 {
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
-  const double* pl = np::cbegin<double>(lambda_t);
+  const double* pl = no::cbegin<double>(lambda_t);
   size_t nl = lambda_t.size();
 
   // What is the optimal lambda_u? For now largest value
   double lambda_u = *std::max_element(pl, pl + nl);
   double lambda_i;
 
-  np::array times = np::empty_1d_array<double>(n);
-  double* pt = np::begin<double>(times);
+  py::array times = no::empty_1d_array<double>(n);
+  double* pt = no::begin<double>(times);
   double tmax = (nl - 1) * dt;
 
   for (size_t i = 0; i < n; ++i)
@@ -181,13 +186,13 @@ np::array no::MonteCarlo::first_arrival(const np::array& lambda_t, double dt, si
 
 // next-arrival process - times of transition from a state arrived at at startingpoints to a subsequent state, with an optional deterministic minimum separation
 // if the state hasn't been arrived at (no::never())
-np::array no::MonteCarlo::next_arrival(const np::array& startingpoints, const np::array& lambda_t, double dt, bool relative, double minsep)
+py::array no::MonteCarlo::next_arrival(const py::array& startingpoints, const py::array& lambda_t, double dt, bool relative, double minsep)
 {
   size_t n = startingpoints.size();
 
   std::uniform_real_distribution<> dist(0.0, 1.0);
 
-  const double* pl = np::cbegin<double>(lambda_t);
+  const double* pl = no::cbegin<double>(lambda_t);
   size_t nl = lambda_t.size();
   double tmax = (nl - 1) * dt;
 
@@ -195,14 +200,14 @@ np::array no::MonteCarlo::next_arrival(const np::array& startingpoints, const np
   double lambda_u = *std::max_element(pl, pl + nl);
   double lambda_i;
 
-  np::array times = np::empty_1d_array<double>(n);
-  //np::array times = np::zero_1d_array<double>(n);
-  double* pt = np::begin<double>(times);
+  py::array times = no::empty_1d_array<double>(n);
+  //py::array times = no::zero_1d_array<double>(n);
+  double* pt = no::begin<double>(times);
 
   for (size_t i = 0; i < n; ++i)
   {
     // account for any deterministic time lag (e.g. 9 months between births)
-    double offset = np::at<double>(startingpoints, i) + minsep;
+    double offset = no::at<double>(startingpoints, i) + minsep;
     // skip if we haven't actually arrived at the state to transition from
     if (no::Timeline::isnever(offset))
     {

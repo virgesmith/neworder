@@ -238,12 +238,12 @@ py::object no::mpi::broadcast_obj(py::object& o, int rank)
 #endif
 }
 
-np::array no::mpi::gather_array(double x, int rank)
+py::array no::mpi::gather_array(double x, int rank)
 {
 #ifdef NEWORDER_MPI
   no::Environment& env = no::getenv();
-  np::array ret = np::empty_1d_array<double>(rank == env.rank() ? env.size() : 0);
-  double* p = (rank == env.rank()) ? np::begin<double>(ret) : nullptr;
+  py::array ret = no::empty_1d_array<double>(rank == env.rank() ? env.size() : 0);
+  double* p = (rank == env.rank()) ? no::begin<double>(ret) : nullptr;
   MPI_Gather(&x, 1, mpi_type_trait<double>::type, p, 1, mpi_type_trait<double>::type, rank, MPI_COMM_WORLD);
   return ret;
 #else
@@ -251,7 +251,7 @@ np::array no::mpi::gather_array(double x, int rank)
 #endif
 }
 
-double no::mpi::scatter_array(np::array x, int rank)
+double no::mpi::scatter_array(py::array x, int rank)
 {
 #ifdef NEWORDER_MPI
   no::Environment& env = no::getenv();
@@ -262,7 +262,7 @@ double no::mpi::scatter_array(np::array x, int rank)
   {
     if (x.size() < (size_t)env.size())
       throw std::runtime_error("scatter array size %% is smaller than MPI size (%%)"_s % x.size() % env.size());
-    p = np::begin<double>(x);
+    p = no::begin<double>(x);
   }
   MPI_Scatter(p, 1, mpi_type_trait<double>::type, &dest, 1, mpi_type_trait<double>::type, rank, MPI_COMM_WORLD);
   return dest;
@@ -271,7 +271,7 @@ double no::mpi::scatter_array(np::array x, int rank)
 #endif
 }
 
-np::array no::mpi::allgather_array(np::array source_dest)
+py::array no::mpi::allgather_array(py::array source_dest)
 {
 #ifdef NEWORDER_MPI
   no::Environment& env = no::getenv();
@@ -279,8 +279,8 @@ np::array no::mpi::allgather_array(np::array source_dest)
   if (source_dest.size() < (size_t)env.size())
     throw std::runtime_error("allgather array size %% is smaller than MPI size (%%)"_s % source_dest.size() % env.size());
   // take a copy of the soruce to avoid runtime error due to aliased buffers
-  double source = np::at<double>(source_dest, env.rank());
-  double* p = np::begin<double>(source_dest);
+  double source = no::at<double>(source_dest, env.rank());
+  double* p = no::begin<double>(source_dest);
   MPI_Allgather(&source, 1, mpi_type_trait<double>::type, p, 1, mpi_type_trait<double>::type, MPI_COMM_WORLD);
   return source_dest;
 #else

@@ -71,13 +71,13 @@ py::object receive_csv(int rank);
 py::object broadcast_obj(py::object& o, int rank);
 
 // Gather scalars from each process into a numpy array on process rank
-np::array gather_array(double x, int rank);
+py::array gather_array(double x, int rank);
 
 // Gather scalars from each process into a numpy array on process rank
-double scatter_array(np::array x, int rank);
+double scatter_array(py::array x, int rank);
 
 // TODO more efficient with references?
-np::array allgather_array(np::array source_dest);
+py::array allgather_array(py::array source_dest);
 
 template<typename T>
 void send(const T& data, int process)
