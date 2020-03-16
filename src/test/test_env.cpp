@@ -39,27 +39,27 @@ void test_env()
   py::array_t<double> h01_cpp = env.mc().ustream(2);
   py::array_t<double> h23_py = mc.attr("ustream")(2);
   // values should not match (0,1) != (2,3)
-  CHECK(no::at<double>(h01_cpp, 0) != no::at<double>(h23_py, 0));
-  CHECK(no::at<double>(h01_cpp, 1) != no::at<double>(h23_py, 1));
+  CHECK(no::at<double>(h01_cpp, {0}) != no::at<double>(h23_py, {0}));
+  CHECK(no::at<double>(h01_cpp, {1}) != no::at<double>(h23_py, {1}));
   // reset from C++
   env.mc().reset();
   // sample from python
   py::array_t<double> h01_py = mc.attr("ustream")(2);
   // values should now match (0,1) == (0,1)
-  CHECK(no::at<double>(h01_cpp, 0) == no::at<double>(h01_py, 0));
-  CHECK(no::at<double>(h01_cpp, 1) == no::at<double>(h01_py, 1));
+  CHECK(no::at<double>(h01_cpp, {0}) == no::at<double>(h01_py, {0}));
+  CHECK(no::at<double>(h01_cpp, {1}) == no::at<double>(h01_py, {1}));
   // sample from C++
   py::array_t<double> h23_cpp = env.mc().ustream(2);
   // values should match  
-  CHECK(no::at<double>(h23_cpp, 0) == no::at<double>(h23_py, 0));
-  CHECK(no::at<double>(h23_cpp, 1) == no::at<double>(h23_py, 1));
+  CHECK(no::at<double>(h23_cpp, {0}) == no::at<double>(h23_py, {0}));
+  CHECK(no::at<double>(h23_cpp, {1}) == no::at<double>(h23_py, {1}));
   // reset from python
   mc.attr("reset")();
   // sample from C++
   h01_cpp = env.mc().ustream(2);
   // values should still match (0,1) == (0,1)
-  CHECK(no::at<double>(h01_cpp, 0) == no::at<double>(h01_py, 0));
-  CHECK(no::at<double>(h01_cpp, 1) == no::at<double>(h01_py, 1));
+  CHECK(no::at<double>(h01_cpp, {0}) == no::at<double>(h01_py, {0}));
+  CHECK(no::at<double>(h01_cpp, {1}) == no::at<double>(h01_py, {1}));
 
   no::log("neworder env test complete");
 

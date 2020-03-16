@@ -49,38 +49,38 @@ void no::MonteCarlo::reset()
 
 NEWORDER_EXPORT py::array no::MonteCarlo::ustream(size_t n)
 {
-  return no::make_array<double>(n, [&](){ return dist(m_prng); });
+  return no::make_array<double>({n}, [&](){ return dist(m_prng); });
 }
 
 // simple hazard constant probability 
 NEWORDER_EXPORT py::array no::MonteCarlo::hazard(double prob, size_t n)
 {
-  std::uniform_real_distribution<> dist(0.0, 1.0);
+  //std::uniform_real_distribution<> dist(0.0, 1.0);
 
-  return no::make_array<int>(n, [&]() { return (dist(m_prng) < prob) ? 1 : 0; });
+  return no::make_array<int>({n}, [&]() { return (dist(m_prng) < prob) ? 1 : 0; });
 }
 
 // hazard with varying probablities 
 py::array no::MonteCarlo::hazard(const py::array& prob)
 {
-  std::uniform_real_distribution<> dist(0.0, 1.0);
+  //std::uniform_real_distribution<> dist(0.0, 1.0);
 
-  return no::unary_op<double, double>(prob, [&](double p){ return dist(m_prng) < p ? 1 : 0; });
+  return no::unary_op<int, double>(prob, [&](double p){ return dist(m_prng) < p ? 1 : 0; });
 
 }
 
 // computes stopping times 
 NEWORDER_EXPORT py::array no::MonteCarlo::stopping(double prob, size_t n)
 {
-  std::uniform_real_distribution<> dist(0.0, 1.0);
+  //std::uniform_real_distribution<> dist(0.0, 1.0);
   double rprob = 1.0 / prob;
 
-  return no::make_array<double>(n, [&]() { return -::log(dist(m_prng)) * rprob; });
+  return no::make_array<double>({n}, [&]() { return -::log(dist(m_prng)) * rprob; });
 }
 
 py::array no::MonteCarlo::stopping(const py::array& prob)
 {
-  std::uniform_real_distribution<> dist(0.0, 1.0);
+  //std::uniform_real_distribution<> dist(0.0, 1.0);
 
   return no::unary_op<double, double>(prob, [&](double p) { return -::log(dist(m_prng)) / p; });
 }
@@ -133,7 +133,7 @@ py::array no::MonteCarlo::arrivals(const py::array& lambda_t, double dt, double 
     //no::log("%%: %%"_s % i % times[i]);
   }
 
-  py::array nptimes = no::empty<double>({n, imax- 1});
+  py::array nptimes = no::empty<double>({n, imax - 1});
   no::fill(nptimes, no::Timeline::never());
   double* pa = no::begin<double>(nptimes);
 
@@ -160,7 +160,7 @@ py::array no::MonteCarlo::first_arrival(const py::array& lambda_t, double dt, si
   double lambda_u = *std::max_element(pl, pl + nl);
   double lambda_i;
 
-  py::array times = no::empty_1d_array<double>(n);
+  py::array times = no::empty_array<double>({n});
   double* pt = no::begin<double>(times);
   double tmax = (nl - 1) * dt;
 
@@ -200,14 +200,13 @@ py::array no::MonteCarlo::next_arrival(const py::array& startingpoints, const py
   double lambda_u = *std::max_element(pl, pl + nl);
   double lambda_i;
 
-  py::array times = no::empty_1d_array<double>(n);
-  //py::array times = no::zero_1d_array<double>(n);
+  py::array times = no::empty_array<double>({n});
   double* pt = no::begin<double>(times);
 
   for (size_t i = 0; i < n; ++i)
   {
     // account for any deterministic time lag (e.g. 9 months between births)
-    double offset = no::at<double>(startingpoints, i) + minsep;
+    double offset = no::at<double>(startingpoints, {i}) + minsep;
     // skip if we haven't actually arrived at the state to transition from
     if (no::Timeline::isnever(offset))
     {

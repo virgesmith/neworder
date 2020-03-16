@@ -38,7 +38,6 @@ int run(int rank, int size, bool indep, int nmodules, const char* testmodules[])
     test1("op", "mul", {"2", "3"}, py::int_(6));
     test1("op", "void", {"2", "3"}, py::none());
 
-
     // module (C++) tests
     test_mc();
     test_no();

@@ -69,9 +69,9 @@ void no::df::transition(py::array categories, py::array matrix, py::object &df, 
 
   // reverse catgory lookup
   std::map<int64_t, int> lookup;
-  for (int i = 0; i < m; ++i)
+  for (size_t i = 0; i < m; ++i)
   {
-    lookup[no::at<int64_t>(categories, i)] = i;
+    lookup[no::at<int64_t>(categories, {i})] = (int)i;
   }
 
   // no::log("row %% %% %% %%..."_s % p[0] % p[1] % p[2] % p[3]);
@@ -91,13 +91,13 @@ void no::df::transition(py::array categories, py::array matrix, py::object &df, 
   for (size_t i = 0; i < n; ++i)
   {
     // look up the index, ignoring values that havent been explicitly set in categories (like -1)
-    auto it = lookup.find(no::at<int64_t>(col, i));
+    auto it = lookup.find(no::at<int64_t>(col, {i}));
     if (it == lookup.end())
       continue;
     int64_t j = it->second;
-    int64_t k = interp(cumprobs[j], no::at<double>(r, i));
+    size_t k = interp(cumprobs[j], no::at<double>(r, {i}));
     //no::log("interp %%:%% -> %%"_s % j % r[i] % k);
-    no::at<int64_t>(col, i) = no::at<int64_t>(categories, k);
+    no::at<int64_t>(col, {i}) = no::at<int64_t>(categories, {k});
   }
   no::log("transition %% elapsed: %%"_s % n % t.elapsed_s());
 }
@@ -111,7 +111,7 @@ void no::df::directmod(py::object& df, const std::string& colname)
 
   for (size_t i = 0; i < n; ++i)
   {
-    no::at<int64_t>(arr, i) += 1;
+    no::at<int64_t>(arr, {i}) += 1;
   }
 }
 
