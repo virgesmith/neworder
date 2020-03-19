@@ -5,7 +5,7 @@ import neworder
 assert neworder.size() == 1
 
 # category 0 is empty
-gridsize = [40,50]
+gridsize = [100,125]
 categories = np.array([1.02, 0.19, 0.19, 0.6])
 # normalise
 categories = categories / sum(categories)

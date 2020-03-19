@@ -44,9 +44,9 @@ class People():
     # first filter out the already dead
     alive = self.population.loc[self.population.Alive].index
     # sample time of death
-    r = neworder.stopping(self.mortality_hazard.Rate.values[min(neworder.timeline.index()-1, self.max_rate_age)], len(alive))
+    r = neworder.mc.stopping(self.mortality_hazard.Rate.values[min(neworder.timeline.index()-1, self.max_rate_age)], len(alive))
     # select if death happens before next timestep...
-    dt = neworder.timestep
+    dt = neworder.timeline.dt()
     # at final timestep everybody dies (at some later time) so dt is infinite
     if neworder.timeline.time() == neworder.MAX_AGE:
       dt = neworder.far_future()
@@ -54,8 +54,8 @@ class People():
     newly_dead = alive[r<dt]
 
     # kill off those who die before next timestep
-    self.population.ix[newly_dead, "Alive"] = False
-    self.population.ix[newly_dead, "TimeOfDeath"] = self.population.ix[newly_dead, "Age"] + r[r<dt]
+    self.population.loc[newly_dead, "Alive"] = False
+    self.population.loc[newly_dead, "TimeOfDeath"] = self.population.loc[newly_dead, "Age"] + r[r<dt]
 
   def age(self):
     # kill off some people
@@ -63,7 +63,7 @@ class People():
 
     # age the living only
     alive = self.population.loc[self.population.Alive].index
-    self.population.ix[alive, "Age"] = self.population.ix[alive, "Age"] + neworder.timestep
+    self.population.loc[alive, "Age"] = self.population.loc[alive, "Age"] + neworder.timeline.dt()
 
   def calc_life_expectancy(self):  
     # ensure all people have died 
@@ -72,7 +72,7 @@ class People():
 
     # in this case we can just compute the mortality directly by modelling a non-homogeneous Poisson process and 
     # using the Lewis-Shedler algorithm
-    self.population["TimeOfDeathNHPP"] = neworder.first_arrival(self.mortality_hazard.Rate.values, neworder.timestep, len(self.population))
+    self.population["TimeOfDeathNHPP"] = neworder.mc.first_arrival(self.mortality_hazard.Rate.values, neworder.timeline.dt(), len(self.population))
 
     neworder.log("%f vs %f" % (np.mean(self.population.TimeOfDeath), np.mean(self.population.TimeOfDeathNHPP)))
     return np.mean(self.population.TimeOfDeath)

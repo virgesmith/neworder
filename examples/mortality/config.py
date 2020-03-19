@@ -37,7 +37,7 @@ neworder.transitions = {
 }
 
 neworder.checkpoints = {
-  "life_expectancy": "log(people.calc_life_expectancy())",
+  "life_expectancy": "neworder.log(people.calc_life_expectancy())",
   "plot": "people.plot()"
   #"shell": "shell()" # uncomment for debugging
 }

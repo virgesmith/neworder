@@ -12,6 +12,7 @@
 
 namespace no {
 
+// this should be faster than using initializer_list as the compiler can optimise better
 template<typename T, size_t D=1>
 T& at(py::array& a, const std::array<size_t, D>& index)
 {
@@ -53,24 +54,28 @@ const T& at(py::array& a, const std::array<size_t, 0>& index);
 template<typename T>
 T* begin(py::array& a)
 {
+  assert(a.itemsize() == sizeof(T));
   return (T*)a.request().ptr;
 }
 
 template<typename T>
 const T* cbegin(const py::array& a)
 {
+  assert(a.itemsize() == sizeof(T));
   return (const T*)a.request().ptr;
 }
 
 template<typename T>
 T* end(py::array& a)
 {
+  assert(a.itemsize() == sizeof(T));
   return (T*)a.request().ptr + a.size();
 }
 
 template<typename T>
 const T* cend(const py::array& a)
 {
+  assert(a.itemsize() == sizeof(T));
   return (const T*)a.request().ptr + a.size();
 }
 
@@ -145,11 +150,14 @@ py::array_t<R> binary_op(const py::array_t<A0>& arg0, A1 arg1, const std::functi
 template<typename R, typename A0, typename A1>
 py::array_t<R> binary_op(const py::array_t<A0>& arg0, const py::array_t<A1>& arg1, const std::function<R(A0, A1)>& f)
 {
-  assert(arg0.ndim() == arg1.ndim());
-  assert(arg0.size() == arg1.size());
+  if (arg0.ndim() != arg1.ndim())
+  {
+    throw std::runtime_error("binary_op: argments must have same dimension");
+  }
   for (size_t i = 0; i < arg0.ndim(); ++i)
   {
-    assert(arg0.shape()[i] == arg1.shape()[i]);
+    if (arg0.shape()[i] != arg1.shape()[i])
+      throw std::runtime_error("binary_op: argments must have same size");
   }
 
   py::array_t<R> result(std::vector<ssize_t>(arg0.shape(), arg0.shape() + arg0.ndim()));
@@ -184,5 +192,5 @@ T sum(const py::array_t<T>& a)
   T sum = 0;
   return std::accumulate(a.begin(), a.end(), sum);
 }
-
+  
 }
