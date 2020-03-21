@@ -4,8 +4,7 @@ covid-19 case-based microsimulation
 
 import neworder
 
-# 28 days later
-days = 100
+days = 180
 neworder.timeline = neworder.Timeline(0, days, [days])
 
 npeople = 10000
