@@ -1,4 +1,5 @@
 from enum import Enum
+import numpy as np
 
 class State(Enum):
   UNINFECTED = 0
@@ -9,18 +10,20 @@ class State(Enum):
   RECOVERED = 5
   DECEASED = 6
 
+NUMSTATES = 7
+ALLSTATES = np.array([State.UNINFECTED, State.ASYMPTOMATIC, State.MILD, State.SEVERE, State.CRITICAL, State.RECOVERED, State.DECEASED])
 INFECTIOUS = [State.ASYMPTOMATIC, State.MILD, State.SEVERE, State.CRITICAL]
 
 # params of poisson process transitions (1/mean)
-lambda_01 = 1/7.0 
-lambda_12 = 1/7.0
-lambda_15 = 1/7.0
-lambda_23 = 1/7.0
-lambda_25 = 1/7.0
-lambda_34 = 1/7.0
-lambda_35 = 1/7.0
-lambda_45 = 1/7.0
-lambda_46 = 1/7.0
+lambda_01 = 1.0 / 7.0 
+lambda_12 = 1.0 / 7.0
+lambda_15 = 1.0 / 7.0
+lambda_23 = 1.0 / 7.0
+lambda_25 = 1.0 / 7.0
+lambda_34 = 1.0 / 7.0
+lambda_35 = 1.0 / 7.0
+lambda_45 = 1.0 / 7.0
+lambda_46 = 1.0 / 7.0
 
 # probabilities
 contagiousness = 0.18 # ~f(INFECTED)

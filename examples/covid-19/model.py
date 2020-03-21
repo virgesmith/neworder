@@ -5,20 +5,13 @@ import neworder
 
 from matplotlib import pyplot as plt
 
-from data import *# State, INFECTIOUS
+from data import *
 
 # possible transitions (1):
 #        ----------------> 5
 #       /    /    /    /
 # 0 -> 1 -> 2 -> 3 -> 4 -> 6
 
-# TODO
-# possible transitions (2):
-#         ----------> 5
-#       /    /    /
-# 0 -> 1 -> 2 -> 3 <-
-#                 \  \  
-#                  -> 4 -> 6
 
 class Model:
   def __init__(self, npeople):
@@ -40,7 +33,7 @@ class Model:
 
     self.pinfect = np.zeros(neworder.timeline.nsteps()+1)
 
-    self.summary = pd.DataFrame()
+    self.summary = pd.DataFrame(columns = ALLSTATES)
 
   def step(self):
 
@@ -115,7 +108,7 @@ class Model:
 
     self.summary.plot(kind='bar', width=1.0, stacked=True)
 
-    neworder.log("Overall mortality: %.2f%" % (self.summary.tail(1)[State.DECEASED].values[0] / self.npeople * 100.0))
+    #neworder.log("Overall mortality: %.2f%" % (self.summary.tail(1)[State.DECEASED].values[0] / self.npeople * 100.0))
     plt.show()
 
 
