@@ -57,10 +57,10 @@ py::tuple get_or_empty(const py::handle& dict, const char* key)
 int run(int rank, int size, bool indep)
 {
   no::Environment& env = no::Environment::init(rank, size, indep);
-  py::object& neworder = env; 
   Timer timer;
   try
   {
+    py::object& neworder = env; 
     // Load (and exec) config file
     py::module config = py::module::import("config");
     // Load the root namespace

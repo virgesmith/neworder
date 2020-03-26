@@ -7,7 +7,7 @@ from matplotlib import pyplot as plt
 
 from data import *
 
-# possible transitions (1):
+# possible transitions:
 #        ----------------> 5
 #       /    /    /    /
 # 0 -> 1 -> 2 -> 3 -> 4 -> 6
@@ -16,84 +16,98 @@ from data import *
 class Model:
   def __init__(self, npeople):
     self.npeople = npeople
-    self.pop = pd.DataFrame(data = {"infected": False,
-                                    "State": [State.UNINFECTED] * npeople,  
+    self.pop = pd.DataFrame(data = {"State": [State.UNINFECTED] * npeople,  
                                     "tInfected": np.nan, 
                                     "tMild": np.nan, 
                                     "tSevere": np.nan, 
                                     "tCritical": np.nan, 
                                     "tRecovered": np.nan,
-                                    "tDeceased": np.nan })
+                                    "tFatal": np.nan })
 
-    # patient zero
-    self.pop.loc[0, "infected"] = True
-    self.pop.loc[0, "State"] = State.ASYMPTOMATIC
-    self.pop.loc[0, "tInfected"] = 0.0
-    self.pop.loc[0, "tMild"] = neworder.mc.stopping(lambda_01, 1)
+    self.r = R0 ** (neworder.timeline.dt() / g) - 1.0 # per-timestep growth rate
 
-    self.pinfect = np.zeros(neworder.timeline.nsteps()+1)
+    num_initial_infections = int(self.npeople * initial_infection_rate)
+    patients_zero = range(0,num_initial_infections)
+
+    # patient(s) zero & their outcomes
+    self.pop.loc[patients_zero, "State"] = State.ASYMPTOMATIC
+    self.pop.loc[patients_zero, "tInfected"] = 0.0
+    # onset of (mild) symptoms, or recovery
+    mild_disease, _ = self._transition(self.pop[0:num_initial_infections].index, "tInfected", [lambda_12, lambda_15], ["tMild", "tRecovered"])
+    # onset of severe symptoms, or recovery
+    severe_disease, _ = self._transition(mild_disease, "tMild", [lambda_23, lambda_25], ["tSevere", "tRecovered"])
+    # onset of critical symptoms, or recovery - TODO should be dependent on availability of medical
+    critical_disease, _ = self._transition(severe_disease, "tSevere", [lambda_34, lambda_35], ["tCritical", "tRecovered"])
+    # onset of death or recovery
+    self._transition(critical_disease, "tCritical", [lambda_46, lambda_45], ["tFatal", "tRecovered"])
+
+    self.infection_rate = np.zeros(neworder.timeline.nsteps()+1)
 
     self.summary = pd.DataFrame(columns = ALLSTATES)
 
+  def _transition(self, candidate_index, current_label, lambdas, labels):
+
+    #TODO >2 possible states?
+    #TODO C++ implementation?
+
+    # compute arrival times for first transition
+    t0 = neworder.mc.stopping(lambdas[0], len(candidate_index))
+    self.pop.loc[candidate_index, labels[0]] = self.pop.loc[candidate_index, current_label] + t0
+    # compute arrival times for second transition
+    t1 = neworder.mc.stopping(lambdas[1], len(candidate_index))
+    self.pop.loc[candidate_index, labels[1]] = self.pop.loc[candidate_index, current_label] + t1
+
+    # what actually happens is what happens first
+    # get indices for the 2 new states 
+    i0 = candidate_index.intersection(self.pop[self.pop[labels[0]] < self.pop[labels[1]]].index)
+    i1 = candidate_index.intersection(self.pop[self.pop[labels[0]] >= self.pop[labels[1]]].index)
+    # remove arrival times for the event that wasn't first
+    self.pop.loc[i1, labels[0]] = np.nan 
+    self.pop.loc[i0, labels[1]] = np.nan
+
+    return i0, i1
+
+
   def step(self):
 
-    propcontagious = len(self.pop[self.pop.State.isin(INFECTIOUS)])/len(self.pop)
-    pinfect = contagiousness * propcontagious
-    self.pinfect[neworder.timeline.index()] = pinfect
+    # expected rate of new infections
+    raw_infection_rate = len(self.pop[self.pop.State.isin(INFECTIOUS)]) * self.r / self.npeople
 
     # new infections
-    self.pop.infected = self.pop.infected | neworder.mc.hazard(pinfect, self.npeople) #[bool(s) for s in neworder.mc.hazard(pinfect, self.npeople)]
-    is_newly_infected = self.pop[(self.pop.infected) & (self.pop.State == State.UNINFECTED)]
-    new_infections = len(is_newly_infected.index)
-    neworder.log("new infections: %d" % new_infections)
-
-    if new_infections > 0:
+    h = neworder.mc.hazard(raw_infection_rate, self.npeople).astype(bool)
+    newly_infected = self.pop[h & (self.pop.State == State.UNINFECTED)]
+    #self.pop.loc[is_newly_infected.index, "State"] = State.ASYMPTOMATIC
+    # self.pop.infected = self.pop.infected | neworder.mc.hazard(pinfect, self.npeople) #[bool(s) for s in neworder.mc.hazard(pinfect, self.npeople)]
+    # is_newly_infected = self.pop[(self.pop.infected) & (self.pop.State == State.UNINFECTED)]
+    new_infections = len(newly_infected.index)
+    self.infection_rate[neworder.timeline.index()] = new_infections / self.npeople
+    neworder.log("eff infection rate %f new : %d" % (new_infections / self.npeople, new_infections))
       
+    if new_infections > 0:
       # time of infection
-      self.pop.loc[is_newly_infected.index, "tInfected"] = neworder.timeline.time()
-      # current state
-      self.pop.loc[is_newly_infected.index, "State"] = State.ASYMPTOMATIC
+      self.pop.loc[newly_infected.index, "tInfected"] = neworder.timeline.time()
+      
       # deal with disease progression in newly infected
-      # onset of (mild) symptoms
-      self.pop.loc[is_newly_infected.index, "tMild"] = self.pop.loc[is_newly_infected.index, "tInfected"] \
-                                                  + neworder.mc.stopping(lambda_12, new_infections)
-      # p(mild->severe)
-      h = neworder.mc.hazard(p_23, new_infections).astype(bool)
-      got_severe = is_newly_infected[h]
-      if len(got_severe) > self.npeople * beds_pct:
-        neworder.log("EXCEEDED CARE CAPACITY")
-      recover = is_newly_infected[np.logical_not(h)]
-      self.pop.loc[got_severe.index, "tSevere"] = self.pop.loc[got_severe.index, "tMild"] \
-                                                + neworder.mc.stopping(lambda_23, len(got_severe))
-      self.pop.loc[recover.index, "tRecovered"] = self.pop.loc[recover.index, "tMild"] \
-                                                + neworder.mc.stopping(lambda_25, len(recover))
+      
+      # onset of (mild) symptoms, or recovery
+      mild_disease, _ = self._transition(newly_infected.index, "tInfected", [lambda_12, lambda_15], ["tMild", "tRecovered"])
 
-      # p(severe->critical)
-      h = neworder.mc.hazard(p_34, len(got_severe.index)).astype(bool)
-      got_critical = got_severe[h]
-      if len(got_critical) > self.npeople * ccu_beds_pct:
-        neworder.log("EXCEEDED CRITICAL CARE CAPACITY")
-      recover = got_severe[np.logical_not(h)]
-      self.pop.loc[got_critical.index, "tCritical"] = self.pop.loc[got_critical.index, "tSevere"] \
-                                                + neworder.mc.stopping(lambda_34, len(got_critical))
-      self.pop.loc[recover.index, "tRecovered"] = self.pop.loc[recover.index, "tSevere"] \
-                                              + neworder.mc.stopping(lambda_35, len(recover))
+      # onset of severe symptoms, or recovery
+      severe_disease, _ = self._transition(mild_disease, "tMild", [lambda_23, lambda_25], ["tSevere", "tRecovered"])
 
-      # p(critical->deceased)
-      h = neworder.mc.hazard(p_46, len(got_critical.index)).astype(bool)
-      die = got_critical[h]
-      recover = got_critical[np.logical_not(h)]
-      self.pop.loc[die.index, "tDeceased"] = self.pop.loc[die.index, "tCritical"] \
-                                                + neworder.mc.stopping(lambda_46, len(die))
-      self.pop.loc[recover.index, "tRecovered"] = self.pop.loc[recover.index, "tCritical"] \
-                                              + neworder.mc.stopping(lambda_45, len(recover))
+      # onset of critical symptoms, or recovery - TODO should be dependent on availability of medical
+      critical_disease, _ = self._transition(severe_disease, "tSevere", [lambda_34, lambda_35], ["tCritical", "tRecovered"])
+
+      # onset of death or recovery
+      self._transition(critical_disease, "tCritical", [lambda_46, lambda_45], ["tFatal", "tRecovered"])
 
       # update statuses
+      self.pop.loc[self.pop.tInfected < neworder.timeline.time(), "State"] = State.ASYMPTOMATIC
       self.pop.loc[self.pop.tMild < neworder.timeline.time(), "State"] = State.MILD
       self.pop.loc[self.pop.tSevere < neworder.timeline.time(), "State"] = State.SEVERE
       self.pop.loc[self.pop.tCritical < neworder.timeline.time(), "State"] = State.CRITICAL
       self.pop.loc[self.pop.tRecovered < neworder.timeline.time(), "State"] = State.RECOVERED
-      self.pop.loc[self.pop.tDeceased < neworder.timeline.time(), "State"] = State.DECEASED
+      self.pop.loc[self.pop.tFatal < neworder.timeline.time(), "State"] = State.DECEASED
     
     self.summary = self.summary.append(self.pop.State.value_counts())
 
@@ -102,14 +116,16 @@ class Model:
     self.summary.index = range(1,len(self.summary)+1)
     # force ordering for stacked bar chart
     self.summary = self.summary[[State.UNINFECTED, State.ASYMPTOMATIC, State.MILD, State.SEVERE, State.CRITICAL, State.RECOVERED, State.DECEASED]]
-    neworder.log(len(self.summary))
-    plt.plot(range(neworder.timeline.nsteps()+1), self.pinfect)
+    neworder.log(self.summary)
+    plt.plot(range(neworder.timeline.nsteps()+1), self.infection_rate)
     #plt.plot(range(1,neworder.timeline.nsteps()+1), self.summary[State.DECEASED])
 
     self.summary.plot(kind='bar', width=1.0, stacked=True)
 
-    #neworder.log("Overall mortality: %.2f%" % (self.summary.tail(1)[State.DECEASED].values[0] / self.npeople * 100.0))
+    neworder.log(self.summary.tail(1)[State.DECEASED].values[0] / self.npeople * 100.0)
+    neworder.log("Overall mortality: %f%%" % (self.summary.tail(1)[State.DECEASED].values[0] / self.npeople * 100.0))
     plt.show()
+    #self.pop.to_csv("pop.csv", index=False)
 
 
 

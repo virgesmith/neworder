@@ -5,7 +5,7 @@ Markov chain continuous vs discrete
 import neworder
 
 days = 28
-dt = 0.5
+dt = 0.1
 neworder.timeline = neworder.Timeline(0, days, [int(days/dt)])
 
 npeople = 10000
