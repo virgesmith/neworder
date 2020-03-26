@@ -30,9 +30,7 @@ mu_35 = 5  # t(SEVERE->RECOVERED)
 mu_46 = 3  # t(CRITICAL->DECEASED)
 mu_45 = 3  # t(CRITICAL->RECOVERED)
 
-
 # params of poisson process transitions (1/mean)
-#lambda_01 = 1.0 / 7.0 
 lambda_12 = 1.0 / mu_12
 lambda_15 = 1.0 / mu_15
 lambda_23 = 1.0 / mu_23
@@ -43,6 +41,5 @@ lambda_45 = 1.0 / mu_45
 lambda_46 = 1.0 / mu_46
 
 # nonlinearities
-contagiousness = 0.18 # ~f(INFECTED)
 beds_pct = 0.01 # hospital beds per capita
 ccu_beds_pct = 0.0005 # critical care beds per capital

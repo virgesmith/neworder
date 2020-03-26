@@ -45,10 +45,14 @@ public:
   py::array first_arrival(const py::array& lambda_t, double dt, size_t n, double minval);
 
   // given an array of arrival times at one state, sample times of arrival of subsequent event optionally with a minumum separation minsep
-  // relative = true means lambda_t is relative to the stating point *plus minsep*
+  // relative = true means lambda_t is relative to the starting point *plus minsep*
   py::array next_arrival(const py::array& startingpoints, const py::array& lambda_t, double dt, bool relative, double minsep);
 
 private:
+
+  // Use this over std::uniform_real_distribution as can make C++ and rust implementations produce identical streams
+  double u01();
+
   bool m_indep;
   int64_t m_seed;
   std::mt19937 m_prng;

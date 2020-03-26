@@ -78,7 +78,6 @@ void no::df::transition(py::array categories, py::array matrix, py::object &df, 
   // no::log("col %% %% %% %%..."_s % p[0] % p[m] % p[2*m] % p[3*m]);
 
   // std::mt19937& prng = no::getenv().prng();
-  // std::uniform_real_distribution<> dist(0.0, 1.0);
 
   size_t n = col.size();
 

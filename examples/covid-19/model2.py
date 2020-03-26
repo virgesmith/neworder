@@ -26,11 +26,6 @@ class Model:
                                     "tRecovered": np.nan,
                                     "tDeceased": np.nan })
 
-    # patient zero
-    self.pop.loc[0, "State"] = State.ASYMPTOMATIC
-    self.pop.loc[0, "tInfected"] = 0.0 # neworder.timeline.time()
-    self.pop.loc[0, "tMild"] = neworder.mc.stopping(lambda_01, 1)
-
     # probabilities that are a function of the overall state,
     self.p_infect = np.zeros(neworder.timeline.nsteps()+1)
     self.p_critical = np.zeros(neworder.timeline.nsteps()+1)
@@ -40,38 +35,55 @@ class Model:
 
     self.transitions = np.zeros((NUMSTATES,NUMSTATES))
     # from uninfected
-    dt = 1.0
-    propcontagious = len(self.pop[self.pop.State.isin(INFECTIOUS)])/len(self.pop)
-    p01 = 10.0 * propcontagious   
 
-    self.transitions[0,0] = 1 - p01 * dt
-    self.transitions[1,0] = p01 * dt
+    dt = neworder.timeline.dt()
+
+    self.r = R0 ** (dt / g) - 1.0 # per-timestep growth rate
+
+    num_initial_infections = int(self.npeople * initial_infection_rate)
+    patients_zero = range(0,num_initial_infections)
+    # patients zero
+    self.pop.loc[patients_zero, "State"] = State.ASYMPTOMATIC
+    self.pop.loc[patients_zero, "tInfected"] = 0.0 # neworder.timeline.time()
+
+    # self.transitions[0,0] = 1 - p01 * dt
+    # self.transitions[1,0] = p01 * dt
+    #self.transitions[1,1] = 1.0
+    self.transitions[2,2] = 1.0
+    self.transitions[3,3] = 1.0
+    self.transitions[4,4] = 1.0
+
     # from asymptomatic
-    self.transitions[1,1] = 1 - p_12 * dt - p_15 * dt
-    self.transitions[2,1] = p_12 * dt
-    self.transitions[5,1] = p_15 * dt
+    self.transitions[State.ASYMPTOMATIC, State.ASYMPTOMATIC] = 1 - lambda_12 * dt - lambda_15 * dt
+    self.transitions[2,1] = lambda_12 * dt
+    self.transitions[5,1] = lambda_15 * dt
     # from mild
-    self.transitions[2,2] = 1 - p_23 * dt - p_25 * dt
-    self.transitions[3,2] = p_23 * dt
-    self.transitions[5,2] = p_25 * dt
-    # from severe
-    self.transitions[3,3] = 1 - p_34 * dt - p_35 * dt
-    self.transitions[4,3] = p_34 * dt
-    self.transitions[5,3] = p_35 * dt
-    # from critical
-    p_43 = 0.1
-    self.transitions[3,4] = p_43 * dt
-    self.transitions[4,4] = 1 - p_43 * dt - p_46 * dt
-    self.transitions[6,4] = p_46 * dt
+    self.transitions[2,2] = 1 - lambda_23 * dt - lambda_25 * dt
+    self.transitions[3,2] = lambda_23 * dt
+    self.transitions[5,2] = lambda_25 * dt
+    # from severe   
+    self.transitions[3,3] = 1 - lambda_34 * dt - lambda_35 * dt
+    self.transitions[4,3] = lambda_34 * dt
+    self.transitions[5,3] = lambda_35 * dt
+    # from critical 
+    # TODO
+    self.transitions[5,4] = lambda_46 * dt
+    self.transitions[4,4] = 1 - lambda_45 * dt - lambda_46 * dt
+    self.transitions[6,4] = lambda_45 * dt
     # from recovered/dead
     self.transitions[5,5] = 1.0
     self.transitions[6,6] = 1.0
 
+    #neworder.log(self.transitions)
     #self.transitions = np.transpose(self.transitions)
 
   def step(self):
-    # neworder.log(self.transitions)
-    # neworder.log(self.transitions.sum(1))
+    raw_infection_rate = len(self.pop[self.pop.State.isin(INFECTIOUS)]) * self.r / self.npeople
+
+    self.p_infect[neworder.timeline.index()] = raw_infection_rate
+    self.transitions[0,0] = 1 - raw_infection_rate * neworder.timeline.dt()
+    self.transitions[1,0] = raw_infection_rate * neworder.timeline.dt()
+
     neworder.transition(ALLSTATES, self.transitions, self.pop, "State")
     self.summary = self.summary.append(self.pop.State.value_counts())
 
@@ -80,6 +92,8 @@ class Model:
     self.summary.index = range(1,len(self.summary)+1)
     # force ordering for stacked bar chart
     #self.summary = self.summary[[State.UNINFECTED, State.ASYMPTOMATIC, State.MILD, State.SEVERE, State.CRITICAL, State.RECOVERED, State.DECEASED]]
+
+    neworder.log(self.summary)
 
     self.summary.plot(kind='bar', width=1.0, stacked=True)
     plt.show()

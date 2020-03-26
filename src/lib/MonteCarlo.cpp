@@ -19,13 +19,6 @@ int64_t compute_seed(int rank, int size, bool indep)
   return 77027473 * 0 + 19937 * size + rank * indep;  
 }
 
-// uniform [0,1)
-double dist(std::mt19937& mt)
-{
-  static const double SCALE = 1.0 / (1ull << 32);
-  return mt() * SCALE;
-}
-
 }
 
 no::MonteCarlo::MonteCarlo(int rank, int size, bool indep) 
@@ -46,51 +39,47 @@ void no::MonteCarlo::reset()
   m_prng.seed(m_seed); 
 }
 
+// uniform [0,1)
+double no::MonteCarlo::u01()
+{
+  static const double SCALE = 1.0 / (1ull << 32);
+  return m_prng() * SCALE;
+}
 
 NEWORDER_EXPORT py::array no::MonteCarlo::ustream(size_t n)
 {
-  return no::make_array<double>({n}, [&](){ return dist(m_prng); });
+  return no::make_array<double>({n}, [&](){ return u01(); });
 }
 
 // simple hazard constant probability 
 NEWORDER_EXPORT py::array no::MonteCarlo::hazard(double prob, size_t n)
 {
-  //std::uniform_real_distribution<> dist(0.0, 1.0);
-
-  return no::make_array<int>({n}, [&]() { return (dist(m_prng) < prob) ? 1 : 0; });
+  return no::make_array<int>({n}, [&]() { return (u01() < prob) ? 1 : 0; });
 }
 
 // hazard with varying probablities 
 py::array no::MonteCarlo::hazard(const py::array& prob)
 {
-  //std::uniform_real_distribution<> dist(0.0, 1.0);
-
-  return no::unary_op<int, double>(prob, [&](double p){ return dist(m_prng) < p ? 1 : 0; });
-
+  return no::unary_op<int, double>(prob, [&](double p){ return u01() < p ? 1 : 0; });
 }
 
 // computes stopping times 
 NEWORDER_EXPORT py::array no::MonteCarlo::stopping(double prob, size_t n)
 {
-  //std::uniform_real_distribution<> dist(0.0, 1.0);
   double rprob = 1.0 / prob;
 
-  return no::make_array<double>({n}, [&]() { return -::log(dist(m_prng)) * rprob; });
+  return no::make_array<double>({n}, [&]() { return -::log(u01()) * rprob; });
 }
 
 py::array no::MonteCarlo::stopping(const py::array& prob)
 {
-  //std::uniform_real_distribution<> dist(0.0, 1.0);
-
-  return no::unary_op<double, double>(prob, [&](double p) { return -::log(dist(m_prng)) / p; });
+  return no::unary_op<double, double>(prob, [&](double p) { return -::log(u01()) / p; });
 }
 
 
 // multiple-arrival (0+) process 
 py::array no::MonteCarlo::arrivals(const py::array& lambda_t, double dt, double gap, size_t n)
 {
-  std::uniform_real_distribution<> dist(0.0, 1.0);
-
   const double* pl = no::cbegin<double>(lambda_t);
   size_t nl = lambda_t.size();
 
@@ -117,7 +106,7 @@ py::array no::MonteCarlo::arrivals(const py::array& lambda_t, double dt, double 
     {
       do 
       {
-        pt += -::log(dist(m_prng)) / lambda_u;
+        pt += -::log(u01()) / lambda_u;
         // final entry in lambda_t is flat extrapolated...
         lambda_i = pl[ std::min((size_t)(pt / dt), nl-1) ];
         if (pt > tmax && lambda_i == 0.0)
@@ -125,7 +114,7 @@ py::array no::MonteCarlo::arrivals(const py::array& lambda_t, double dt, double 
           pt = no::Timeline::never();
           break;
         }
-      } while (dist(m_prng) > lambda_i / lambda_u);
+      } while (u01() > lambda_i / lambda_u);
       times[i].push_back(pt);
       pt += gap;
     } while (pt < tmax);
@@ -151,8 +140,6 @@ py::array no::MonteCarlo::arrivals(const py::array& lambda_t, double dt, double 
 
 py::array no::MonteCarlo::first_arrival(const py::array& lambda_t, double dt, size_t n, double minval)
 {
-  std::uniform_real_distribution<> dist(0.0, 1.0);
-
   const double* pl = no::cbegin<double>(lambda_t);
   size_t nl = lambda_t.size();
 
@@ -170,7 +157,7 @@ py::array no::MonteCarlo::first_arrival(const py::array& lambda_t, double dt, si
     pt[i] = minval;
     do 
     {
-      pt[i] += -::log(dist(m_prng)) / lambda_u;
+      pt[i] += -::log(u01()) / lambda_u;
       // final entry in lambda_t is flat extrapolated...
       lambda_i = pl[ std::min((size_t)(pt[i] / dt), nl-1) ];
       // deal with open case (event not certain to happen)
@@ -179,7 +166,7 @@ py::array no::MonteCarlo::first_arrival(const py::array& lambda_t, double dt, si
         pt[i] = no::Timeline::never();
         break;
       }
-    } while (dist(m_prng) > lambda_i / lambda_u);
+    } while (u01() > lambda_i / lambda_u);
   }
   return times;
 }
@@ -189,8 +176,6 @@ py::array no::MonteCarlo::first_arrival(const py::array& lambda_t, double dt, si
 py::array no::MonteCarlo::next_arrival(const py::array& startingpoints, const py::array& lambda_t, double dt, bool relative, double minsep)
 {
   size_t n = startingpoints.size();
-
-  std::uniform_real_distribution<> dist(0.0, 1.0);
 
   const double* pl = no::cbegin<double>(lambda_t);
   size_t nl = lambda_t.size();
@@ -217,7 +202,7 @@ py::array no::MonteCarlo::next_arrival(const py::array& startingpoints, const py
     pt[i] = relative ? 0.0 : offset;
     do 
     {
-      pt[i] += -::log(dist(m_prng)) / lambda_u;
+      pt[i] += -::log(u01()) / lambda_u;
       // final entry in lambda_t is flat extrapolated...
       lambda_i = pl[ std::min((size_t)(pt[i] / dt), nl-1) ];
       if (pt[i] > tmax && lambda_i == 0.0)
@@ -225,7 +210,7 @@ py::array no::MonteCarlo::next_arrival(const py::array& startingpoints, const py
         pt[i] = no::Timeline::never();
         break;
       }
-    } while (dist(m_prng) > lambda_i / lambda_u);
+    } while (u01() > lambda_i / lambda_u);
     // restore offset if required
     pt[i] += relative ? offset : 0.0;
   }
