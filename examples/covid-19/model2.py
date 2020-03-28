@@ -46,54 +46,97 @@ class Model:
     self.pop.loc[patients_zero, "State"] = State.ASYMPTOMATIC
     self.pop.loc[patients_zero, "tInfected"] = 0.0 # neworder.timeline.time()
 
-    # self.transitions[0,0] = 1 - p01 * dt
-    # self.transitions[1,0] = p01 * dt
-    #self.transitions[1,1] = 1.0
-    self.transitions[2,2] = 1.0
-    self.transitions[3,3] = 1.0
-    self.transitions[4,4] = 1.0
+    self.infection_rate = np.zeros(neworder.timeline.nsteps()+1)
 
     # from asymptomatic
-    self.transitions[State.ASYMPTOMATIC, State.ASYMPTOMATIC] = 1 - lambda_12 * dt - lambda_15 * dt
-    self.transitions[2,1] = lambda_12 * dt
-    self.transitions[5,1] = lambda_15 * dt
+    self.transitions[State.ASYMPTOMATIC,State.ASYMPTOMATIC] = 1 - lambda_12 * dt - lambda_15 * dt
+    self.transitions[State.MILD,        State.ASYMPTOMATIC] = lambda_12 * dt
+    self.transitions[State.RECOVERED,   State.ASYMPTOMATIC] = lambda_15 * dt
     # from mild
-    self.transitions[2,2] = 1 - lambda_23 * dt - lambda_25 * dt
-    self.transitions[3,2] = lambda_23 * dt
-    self.transitions[5,2] = lambda_25 * dt
+    self.transitions[State.MILD,        State.MILD]         = 1 - lambda_23 * dt - lambda_25 * dt
+    self.transitions[State.SEVERE,      State.MILD]         = lambda_23 * dt
+    self.transitions[State.RECOVERED,   State.MILD]         = lambda_25 * dt
     # from severe   
-    self.transitions[3,3] = 1 - lambda_34 * dt - lambda_35 * dt
-    self.transitions[4,3] = lambda_34 * dt
-    self.transitions[5,3] = lambda_35 * dt
+    self.transitions[State.SEVERE,      State.SEVERE]       = 1 - lambda_34 * dt - lambda_35 * dt
+    self.transitions[State.CRITICAL,    State.SEVERE]       = lambda_34 * dt
+    self.transitions[State.RECOVERED,   State.SEVERE]       = lambda_35 * dt
     # from critical 
-    # TODO
-    self.transitions[5,4] = lambda_46 * dt
-    self.transitions[4,4] = 1 - lambda_45 * dt - lambda_46 * dt
-    self.transitions[6,4] = lambda_45 * dt
+    # TODO back to severe?
+    self.transitions[State.CRITICAL,    State.CRITICAL]     = 1 - lambda_45 * dt - lambda_46 * dt
+    self.transitions[State.RECOVERED,   State.CRITICAL]     = lambda_45 * dt
+    self.transitions[State.DECEASED,    State.CRITICAL]     = lambda_46 * dt
     # from recovered/dead
-    self.transitions[5,5] = 1.0
-    self.transitions[6,6] = 1.0
+    self.transitions[State.RECOVERED,   State.RECOVERED]    = 1.0
+    self.transitions[State.DECEASED,    State.DECEASED]     = 1.0
+
+
+    self.severe_care_cap = self.npeople * beds_pct
+    self.critical_care_cap = self.npeople * ccu_beds_pct
 
     #neworder.log(self.transitions)
     #self.transitions = np.transpose(self.transitions)
 
-  def step(self):
-    raw_infection_rate = len(self.pop[self.pop.State.isin(INFECTIOUS)]) * self.r / self.npeople
+  def _update_t(self, previous_states, new_state, new_state_label):
+    index = self.pop[(previous_states != new_state) & (self.pop.State == new_state)].index
+    self.pop.loc[index, new_state_label] = neworder.timeline.time()
+    return index
 
+  def step(self):
+
+    previous_state = self.pop.State.copy()
+
+    if len(self.pop[self.pop.State == State.SEVERE]) > self.severe_care_cap:
+      neworder.log("Non-CCU capcity exceeded")
+    if len(self.pop[self.pop.State == State.CRITICAL]) > self.critical_care_cap:
+      neworder.log("CCU capcity exceeded")
+      
+    self.severe_care_cap = self.npeople * beds_pct
+    self.critical_care_cap = self.npeople * ccu_beds_pct
+
+    dt = neworder.timeline.dt()
+
+    # adjust infection transition
+    raw_infection_rate = len(self.pop[self.pop.State.isin(INFECTIOUS)]) * self.r / self.npeople
     self.p_infect[neworder.timeline.index()] = raw_infection_rate
-    self.transitions[0,0] = 1 - raw_infection_rate * neworder.timeline.dt()
-    self.transitions[1,0] = raw_infection_rate * neworder.timeline.dt()
+    self.transitions[State.UNINFECTED,State.UNINFECTED] = 1 - raw_infection_rate * neworder.timeline.dt()
+    self.transitions[State.ASYMPTOMATIC, State.UNINFECTED] = raw_infection_rate * neworder.timeline.dt()
+
+    # adjust severe->recovery transition according to bed capacity - make recovery less likely
+    severe_adj = max(1.0, len(self.pop[self.pop.State == State.SEVERE]) / self.severe_care_cap) 
+    self.transitions[State.SEVERE,      State.SEVERE]       = 1 - lambda_34 * dt - lambda_35 * dt * severe_adj
+    self.transitions[State.CRITICAL,    State.SEVERE]       = lambda_34 * dt
+    self.transitions[State.RECOVERED,   State.SEVERE]       = lambda_35 * dt * severe_adj
+
+    # adjust critical->recovery transition according to ccu bed capacity - make recovery less likely
+    critical_adj = max(1.0, len(self.pop[self.pop.State == State.CRITICAL]) / self.severe_care_cap) 
+    self.transitions[State.DECEASED,   State.CRITICAL]      = lambda_46 * dt
+    self.transitions[State.CRITICAL,    State.CRITICAL]     = 1 - lambda_45 * dt * critical_adj - lambda_46 * dt
+    self.transitions[State.RECOVERED,    State.CRITICAL]    = lambda_45 * dt * critical_adj
 
     neworder.transition(ALLSTATES, self.transitions, self.pop, "State")
     self.summary = self.summary.append(self.pop.State.value_counts())
 
-  def plot(self):
+    uninfected = self.pop[(previous_state == State.UNINFECTED)].index
+    new_infections = self._update_t(previous_state, State.ASYMPTOMATIC, "tInfected")
+    self._update_t(previous_state, State.MILD, "tMild")
+    self._update_t(previous_state, State.SEVERE, "tSevere")
+    self._update_t(previous_state, State.CRITICAL, "tCritical")
+    self._update_t(previous_state, State.DECEASED, "tDeceased")
+
+    # infection rate amongst those previously uninfected
+    neworder.log("effective infection rate %.2f%% new : %d" % (100.0 * len(new_infections) / len(uninfected), len(new_infections)))
+    self.infection_rate[neworder.timeline.index()] = len(new_infections) / len(uninfected)
+
+  def finalise(self):
+
+    deaths = sum(~neworder.isnever(self.pop.tDeceased.values))
+    # simple measure of test coverage 100% or severe and above, 25% of mild
+    observed_cases = sum(~neworder.isnever(self.pop.tSevere.values)) + 0.25 * sum(~neworder.isnever(self.pop.tMild.values))
+
+    neworder.log("Mortality: observed = %.2f%%, actual = %.f%%" % (100.0 * deaths / observed_cases, 100.0 * deaths / self.npeople))
+
     self.summary = self.summary.fillna(0)
     self.summary.index = range(1,len(self.summary)+1)
-    # force ordering for stacked bar chart
-    #self.summary = self.summary[[State.UNINFECTED, State.ASYMPTOMATIC, State.MILD, State.SEVERE, State.CRITICAL, State.RECOVERED, State.DECEASED]]
+    # use the string representations of thobserved_casese int enums
+    self.summary.rename(columns={s: State(s).name for s in self.summary.columns.values}, inplace=True) 
 
-    neworder.log(self.summary)
-
-    self.summary.plot(kind='bar', width=1.0, stacked=True)
-    plt.show()

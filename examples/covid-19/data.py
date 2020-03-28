@@ -1,7 +1,7 @@
-from enum import Enum
+from enum import IntEnum
 import numpy as np
 
-class State(Enum):
+class State(IntEnum):
   UNINFECTED = 0
   ASYMPTOMATIC = 1
   MILD = 2
@@ -14,12 +14,12 @@ NUMSTATES = 7
 ALLSTATES = np.array([State.UNINFECTED, State.ASYMPTOMATIC, State.MILD, State.SEVERE, State.CRITICAL, State.RECOVERED, State.DECEASED])
 INFECTIOUS = [State.ASYMPTOMATIC, State.MILD, State.SEVERE, State.CRITICAL]
 
+# For clearer column names
 
 initial_infection_rate = 0.001
-# convert to a probability over dt: R0^(-g/dt)-1
+# convert to a probability over dt: R0^(dt/g)-1
 R0 = 2.5
 g = 5 # days, generation length for R0 
-
 
 mu_12 = 5  # t(ASYMPTOMATIC->MILD)
 mu_15 = 10 # t(ASYMPTOMATIC->RECOVERED)
@@ -41,5 +41,6 @@ lambda_45 = 1.0 / mu_45
 lambda_46 = 1.0 / mu_46
 
 # nonlinearities
-beds_pct = 0.01 # hospital beds per capita
-ccu_beds_pct = 0.0005 # critical care beds per capital
+beds_pct = 10/100000 # hospital beds per capita
+ccu_beds_pct = 6/100000 # critical care beds per capital
+

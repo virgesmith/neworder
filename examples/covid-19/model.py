@@ -22,7 +22,7 @@ class Model:
                                     "tSevere": np.nan, 
                                     "tCritical": np.nan, 
                                     "tRecovered": np.nan,
-                                    "tFatal": np.nan })
+                                    "tDeceased": np.nan })
 
     self.r = R0 ** (neworder.timeline.dt() / g) - 1.0 # per-timestep growth rate
 
@@ -39,7 +39,7 @@ class Model:
     # onset of critical symptoms, or recovery - TODO should be dependent on availability of medical
     critical_disease, _ = self._transition(severe_disease, "tSevere", [lambda_34, lambda_35], ["tCritical", "tRecovered"])
     # onset of death or recovery
-    self._transition(critical_disease, "tCritical", [lambda_46, lambda_45], ["tFatal", "tRecovered"])
+    self._transition(critical_disease, "tCritical", [lambda_46, lambda_45], ["tDeceased", "tRecovered"])
 
     self.infection_rate = np.zeros(neworder.timeline.nsteps()+1)
 
@@ -74,15 +74,16 @@ class Model:
     raw_infection_rate = len(self.pop[self.pop.State.isin(INFECTIOUS)]) * self.r / self.npeople
 
     # new infections
+    uninfected = self.pop.State == State.UNINFECTED
     h = neworder.mc.hazard(raw_infection_rate, self.npeople).astype(bool)
     newly_infected = self.pop[h & (self.pop.State == State.UNINFECTED)]
     #self.pop.loc[is_newly_infected.index, "State"] = State.ASYMPTOMATIC
     # self.pop.infected = self.pop.infected | neworder.mc.hazard(pinfect, self.npeople) #[bool(s) for s in neworder.mc.hazard(pinfect, self.npeople)]
     # is_newly_infected = self.pop[(self.pop.infected) & (self.pop.State == State.UNINFECTED)]
     new_infections = len(newly_infected.index)
-    self.infection_rate[neworder.timeline.index()] = new_infections / self.npeople
-    neworder.log("eff infection rate %f new : %d" % (new_infections / self.npeople, new_infections))
-      
+    self.infection_rate[neworder.timeline.index()] = new_infections / sum(uninfected)
+    neworder.log("eff infection rate %.2f%% new : %d" % (100.0 * new_infections / sum(uninfected), new_infections))
+
     if new_infections > 0:
       # time of infection
       self.pop.loc[newly_infected.index, "tInfected"] = neworder.timeline.time()
@@ -99,7 +100,7 @@ class Model:
       critical_disease, _ = self._transition(severe_disease, "tSevere", [lambda_34, lambda_35], ["tCritical", "tRecovered"])
 
       # onset of death or recovery
-      self._transition(critical_disease, "tCritical", [lambda_46, lambda_45], ["tFatal", "tRecovered"])
+      self._transition(critical_disease, "tCritical", [lambda_46, lambda_45], ["tDeceased", "tRecovered"])
 
       # update statuses
       self.pop.loc[self.pop.tInfected < neworder.timeline.time(), "State"] = State.ASYMPTOMATIC
@@ -107,25 +108,24 @@ class Model:
       self.pop.loc[self.pop.tSevere < neworder.timeline.time(), "State"] = State.SEVERE
       self.pop.loc[self.pop.tCritical < neworder.timeline.time(), "State"] = State.CRITICAL
       self.pop.loc[self.pop.tRecovered < neworder.timeline.time(), "State"] = State.RECOVERED
-      self.pop.loc[self.pop.tFatal < neworder.timeline.time(), "State"] = State.DECEASED
+      self.pop.loc[self.pop.tDeceased < neworder.timeline.time(), "State"] = State.DECEASED
     
     self.summary = self.summary.append(self.pop.State.value_counts())
 
-  def plot(self):
+  def finalise(self):
+ 
+    deaths = sum(~neworder.isnever(self.pop.tDeceased.values))
+    # simple measure of test coverage
+    observed_cases = sum(~neworder.isnever(self.pop.tSevere.values)) + 0.25 * sum(~neworder.isnever(self.pop.tMild.values))
+
+    neworder.log("Mortality: observed = %.2f%%, actual = %.f%%" % (100.0 * deaths / observed_cases, 100.0 * deaths / self.npeople))
+ 
+    # format the summary table
     self.summary = self.summary.fillna(0)
     self.summary.index = range(1,len(self.summary)+1)
-    # force ordering for stacked bar chart
-    self.summary = self.summary[[State.UNINFECTED, State.ASYMPTOMATIC, State.MILD, State.SEVERE, State.CRITICAL, State.RECOVERED, State.DECEASED]]
-    neworder.log(self.summary)
-    plt.plot(range(neworder.timeline.nsteps()+1), self.infection_rate)
-    #plt.plot(range(1,neworder.timeline.nsteps()+1), self.summary[State.DECEASED])
+    # use the string representations of the int enums
+    self.summary.rename(columns={s: State(s).name for s in self.summary.columns.values}, inplace=True) 
 
-    self.summary.plot(kind='bar', width=1.0, stacked=True)
-
-    neworder.log(self.summary.tail(1)[State.DECEASED].values[0] / self.npeople * 100.0)
-    neworder.log("Overall mortality: %f%%" % (self.summary.tail(1)[State.DECEASED].values[0] / self.npeople * 100.0))
-    plt.show()
-    #self.pop.to_csv("pop.csv", index=False)
 
 
 

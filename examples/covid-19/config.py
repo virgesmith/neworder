@@ -15,8 +15,9 @@ neworder.log_level = 1 # this doesnt do anything at the moment
 neworder.do_checks = False
 
 neworder.initialisations = {
-  "model": { "module": "model", "class_": "Model", "args": (npeople,) }
-  #"model": { "module": "model2", "class_": "Model", "args": (npeople,) }
+  #"model": { "module": "model", "class_": "Model", "args": (npeople,) },
+  "model": { "module": "model2", "class_": "Model", "args": (npeople,) },
+  "graphics": { "module": "graphics", "class_": "Graphics", "args": () }
 }
 
 neworder.transitions = {
@@ -24,5 +25,6 @@ neworder.transitions = {
 }
 
 neworder.checkpoints = {
-  "model": "model.plot()"
+  "finalise": "model.finalise()",
+  "graphics": "graphics.plot(model)"
 }
