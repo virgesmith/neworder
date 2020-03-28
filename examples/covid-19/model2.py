@@ -47,6 +47,7 @@ class Model:
     self.pop.loc[patients_zero, "tInfected"] = 0.0 # neworder.timeline.time()
 
     self.infection_rate = np.zeros(neworder.timeline.nsteps()+1)
+    self.mortality_rate = np.zeros(neworder.timeline.nsteps()+1)
 
     # from asymptomatic
     self.transitions[State.ASYMPTOMATIC,State.ASYMPTOMATIC] = 1 - lambda_12 * dt - lambda_15 * dt
@@ -69,7 +70,6 @@ class Model:
     self.transitions[State.RECOVERED,   State.RECOVERED]    = 1.0
     self.transitions[State.DECEASED,    State.DECEASED]     = 1.0
 
-
     self.severe_care_cap = self.npeople * beds_pct
     self.critical_care_cap = self.npeople * ccu_beds_pct
 
@@ -82,6 +82,11 @@ class Model:
     return index
 
   def step(self):
+
+    # implement social distancing
+    if neworder.timeline.time() == social_distancing_policy[0]:
+      self.r = self.r * social_distancing_policy[1]
+      neworder.log("Social distancing implemented: r changed to %.2f%%" % (self.r * 100.0))
 
     previous_state = self.pop.State.copy()
 
@@ -103,15 +108,15 @@ class Model:
 
     # adjust severe->recovery transition according to bed capacity - make recovery less likely
     severe_adj = max(1.0, len(self.pop[self.pop.State == State.SEVERE]) / self.severe_care_cap) 
-    self.transitions[State.SEVERE,      State.SEVERE]       = 1 - lambda_34 * dt - lambda_35 * dt * severe_adj
+    self.transitions[State.SEVERE,      State.SEVERE]       = 1 - lambda_34 * dt - lambda_35 * dt / severe_adj
     self.transitions[State.CRITICAL,    State.SEVERE]       = lambda_34 * dt
-    self.transitions[State.RECOVERED,   State.SEVERE]       = lambda_35 * dt * severe_adj
+    self.transitions[State.RECOVERED,   State.SEVERE]       = lambda_35 * dt / severe_adj
 
     # adjust critical->recovery transition according to ccu bed capacity - make recovery less likely
-    critical_adj = max(1.0, len(self.pop[self.pop.State == State.CRITICAL]) / self.severe_care_cap) 
+    critical_adj = max(1.0, len(self.pop[self.pop.State == State.CRITICAL]) / self.critical_care_cap) 
     self.transitions[State.DECEASED,   State.CRITICAL]      = lambda_46 * dt
-    self.transitions[State.CRITICAL,    State.CRITICAL]     = 1 - lambda_45 * dt * critical_adj - lambda_46 * dt
-    self.transitions[State.RECOVERED,    State.CRITICAL]    = lambda_45 * dt * critical_adj
+    self.transitions[State.CRITICAL,    State.CRITICAL]     = 1 - lambda_45 * dt / critical_adj - lambda_46 * dt
+    self.transitions[State.RECOVERED,    State.CRITICAL]    = lambda_45 * dt / critical_adj
 
     neworder.transition(ALLSTATES, self.transitions, self.pop, "State")
     self.summary = self.summary.append(self.pop.State.value_counts())
@@ -121,11 +126,12 @@ class Model:
     self._update_t(previous_state, State.MILD, "tMild")
     self._update_t(previous_state, State.SEVERE, "tSevere")
     self._update_t(previous_state, State.CRITICAL, "tCritical")
-    self._update_t(previous_state, State.DECEASED, "tDeceased")
+    new_deaths = self._update_t(previous_state, State.DECEASED, "tDeceased")
 
     # infection rate amongst those previously uninfected
     neworder.log("effective infection rate %.2f%% new : %d" % (100.0 * len(new_infections) / len(uninfected), len(new_infections)))
     self.infection_rate[neworder.timeline.index()] = len(new_infections) / len(uninfected)
+    self.mortality_rate[neworder.timeline.index()] = len(new_deaths) / len(self.pop[self.pop.State != State.DECEASED])
 
   def finalise(self):
 

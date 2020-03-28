@@ -12,6 +12,7 @@ class Graphics():
     model.summary.index = range(1,len(model.summary)+1)
     # force ordering for stacked bar chart
     plt.plot(range(neworder.timeline.nsteps()+1), model.infection_rate)
+    plt.plot(range(neworder.timeline.nsteps()+1), model.mortality_rate)
     #plt.plot(range(1,neworder.timeline.nsteps()+1), self.summary[State.DECEASED])
 
     model.summary.plot(kind='bar', width=1.0, stacked=True)

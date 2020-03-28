@@ -42,6 +42,7 @@ class Model:
     self._transition(critical_disease, "tCritical", [lambda_46, lambda_45], ["tDeceased", "tRecovered"])
 
     self.infection_rate = np.zeros(neworder.timeline.nsteps()+1)
+    self.mortality_rate = np.zeros(neworder.timeline.nsteps()+1)
 
     self.summary = pd.DataFrame(columns = ALLSTATES)
 

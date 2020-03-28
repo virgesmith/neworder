@@ -23,12 +23,12 @@ g = 5 # days, generation length for R0
 
 mu_12 = 5  # t(ASYMPTOMATIC->MILD)
 mu_15 = 10 # t(ASYMPTOMATIC->RECOVERED)
-mu_23 = 16 # t(MILD->SEVERE)
-mu_25 = 4  # t(MILD->RECOVERED)
-mu_34 = 5  # t(SEVERE->CRITICAL)
+mu_23 = 18 # t(MILD->SEVERE)
+mu_25 = 6  # t(MILD->RECOVERED)
+mu_34 = 15  # t(SEVERE->CRITICAL)
 mu_35 = 5  # t(SEVERE->RECOVERED)
-mu_46 = 3  # t(CRITICAL->DECEASED)
-mu_45 = 3  # t(CRITICAL->RECOVERED)
+mu_46 = 10  # t(CRITICAL->DECEASED)
+mu_45 = 6  # t(CRITICAL->RECOVERED)
 
 # params of poisson process transitions (1/mean)
 lambda_12 = 1.0 / mu_12
@@ -41,6 +41,8 @@ lambda_45 = 1.0 / mu_45
 lambda_46 = 1.0 / mu_46
 
 # nonlinearities
-beds_pct = 10/100000 # hospital beds per capita
-ccu_beds_pct = 6/100000 # critical care beds per capital
+beds_pct = 200/100000 # hospital beds per capita
+ccu_beds_pct = 16/100000 # critical care beds per capital
 
+# social distancing in terms of implementation time and reduction to r 
+social_distancing_policy = (60.0, 0.5)
