@@ -75,5 +75,18 @@ def test():
   t.check(np.nanmin(b) > np.nanmin(a) + dt)
   t.check(np.nanmax(b) < np.nanmax(a) + dt + 10.0)
 
+  no.mc.reset()
+  a = no.mc.first_arrival(np.array([0.1, 0.2, 0.3]), 1.0, 6, 0.0)
+  t.check(len(a) == 6)
+  # only works for single-process
+  if no.size() == 1:
+    # these are the rust values... 
+    t.check_eq(a[0], 3.6177811673165667)
+    t.check_eq(a[1], 0.6896205251312125)
+    t.check_eq(a[2], 3.610216282947799)
+    t.check_eq(a[3], 7.883336832344425)
+    t.check_eq(a[4], 6.461894711350323)
+    t.check_eq(a[5], 2.8566436418145944)
+
   return not t.any_failed
 

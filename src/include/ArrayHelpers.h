@@ -187,6 +187,13 @@ py::array zeros(const std::initializer_list<size_t>& shape)
 }
 
 template<typename T>
+py::array ones(const std::initializer_list<size_t>& shape)
+{
+  py::array_t<T> a(shape);
+  return fill(a, T(1));
+}
+
+template<typename T>
 T sum(const py::array_t<T>& a)
 {
   T sum = 0;

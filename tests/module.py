@@ -97,4 +97,10 @@ def test():
   # df3 = no.append(df,df2)
   # t.check(len(df3) == len(df) + len(df2)) 
 
+  x = np.zeros(1)
+  p = no.logistic(x)
+  t.check(no.logistic(x) == np.ones(1) * 0.5)
+  t.check(no.logit(p) == x)
+  #t.check(no.isnever(np.ones(1))[0] == False)
+
   return not t.any_failed

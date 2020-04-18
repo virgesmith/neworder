@@ -2,9 +2,7 @@ dist: bionic
 
 cache: packages
 
-sudo: true
-
-matrix:
+jobs:
   include:
 
     # - name: venv_py3

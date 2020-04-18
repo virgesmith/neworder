@@ -149,4 +149,11 @@ void test_np()
   // py::array n1 = no::nparray::isnever(v1);
   // CHECK(!n1[0]);
 
+  py::array x = no::zeros<double>({1});
+  py::array p = no::logistic(x);
+  CHECK(no::at<double>(p, {0}) == 0.5);
+
+  py::array x2 = no::logit(p);
+  CHECK(no::at<double>(x2, {0}) == 0.0);
+
 }
