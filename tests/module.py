@@ -99,6 +99,9 @@ def test():
 
   x = np.zeros(1)
   p = no.logistic(x)
+  t.check(p == no.logistic(x, 0.0))
+  t.check(p == no.logistic(x, 0.0, 1.0))
+
   t.check(no.logistic(x) == np.ones(1) * 0.5)
   t.check(no.logit(p) == x)
   #t.check(no.isnever(np.ones(1))[0] == False)

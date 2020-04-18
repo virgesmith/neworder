@@ -16,7 +16,7 @@ template<typename T> T sum(const py::array& x)
 } 
 
 // logistic function f(x) (TODO? offset x0 slope k: 1/(1+exp(-k(x-x0))))
-py::array logistic(const py::array& x); //, double x0 = 0.0, double k = 0.0);
+py::array logistic(const py::array& x, double x0, double k);
 
 // logit function
 py::array logit(const py::array& x);

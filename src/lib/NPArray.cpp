@@ -8,9 +8,8 @@ NEWORDER_EXPORT py::array no::isnever(const py::array& x)
   return no::unary_op<bool, double>(x, Timeline::isnever);
 }
 
-NEWORDER_EXPORT py::array no::logistic(const py::array& x)//, double x0, double k)
+NEWORDER_EXPORT py::array no::logistic(const py::array& x, double x0, double k)
 {
-  double k = 1.0; double x0 = 0.0;
   return no::unary_op<double, double>(x, [&](double x) { return 1.0 / (1.0 + exp(-k*(x-x0))); });
 }
 

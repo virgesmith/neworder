@@ -150,7 +150,7 @@ void test_np()
   // CHECK(!n1[0]);
 
   py::array x = no::zeros<double>({1});
-  py::array p = no::logistic(x);
+  py::array p = no::logistic(x, 0.0, 1.0);
   CHECK(no::at<double>(p, {0}) == 0.5);
 
   py::array x2 = no::logit(p);

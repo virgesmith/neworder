@@ -121,11 +121,18 @@ PYBIND11_EMBEDDED_MODULE(neworder, m)
   m.def("far_future", no::Timeline::far_future);
   m.def("never", no::Timeline::never);
   m.def("isnever", no::Timeline::isnever); // scalar 
-  m.def("isnever", no::isnever/*, py::return_value_policy::take_ownership*/); // array
+  m.def("isnever", no::isnever); // array
 
   // statistical utils
-  m.def("logistic", no::logistic/*, py::return_value_policy::take_ownership*/);
-  m.def("logit", no::logit/*, py::return_value_policy::take_ownership*/);
+      // .def("first_arrival", [](no::MonteCarlo& mc, const py::array& lambda_t, double dt, size_t n) { 
+      //   return mc.first_arrival(lambda_t, dt, n, 0.0); 
+      // })
+
+  // this version defaults x0, k args 
+  m.def("logistic", no::logistic);
+  m.def("logistic", [](const py::array& a, double x0) { return no::logistic(a, x0, 1.0); });
+  m.def("logistic", [](const py::array& a) { return no::logistic(a, 0.0, 1.0); });
+  m.def("logit", no::logit);
 
   py::class_<no::Timeline>(m, "Timeline")
     .def(py::init<double, double, const std::vector<size_t>&>())
