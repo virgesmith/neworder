@@ -71,11 +71,11 @@ public:
 
 private:
 
-  // global interpreter lock (NB this is a singleton)
-  py::scoped_interpreter m_gil; 
-
   // flag to check whether init has been called
   bool m_init;
+
+  // global interpreter lock (NB this is a singleton)
+  py::scoped_interpreter m_gil; 
 
   // Singletons only
   Environment();

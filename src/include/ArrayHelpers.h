@@ -12,9 +12,12 @@
 
 namespace no {
 
+template<size_t D>
+using Index_t = std::array<py::ssize_t, D>;
+
 // this should be faster than using initializer_list as the compiler can optimise better
 template<typename T, size_t D=1>
-T& at(py::array& a, const std::array<size_t, D>& index)
+T& at(py::array& a, const Index_t<D>& index)
 {
   assert(a.ndim() == D);
   T* buf = (T*)a.request().ptr;
@@ -29,11 +32,11 @@ T& at(py::array& a, const std::array<size_t, D>& index)
 
 // no impl for D=0
 template<typename T>
-T& at(py::array& a, const std::array<size_t, 0>& index);
+T& at(py::array& a, const Index_t<0>& index);
 
 
 template<typename T, size_t D=1>
-const T& at(const py::array& a, const std::array<size_t, D>& index)
+const T& at(const py::array& a, const Index_t<D>& index)
 {
   assert(a.ndim() == D);
   T* buf = (T*)a.request().ptr;
@@ -48,7 +51,7 @@ const T& at(const py::array& a, const std::array<size_t, D>& index)
 
 // no impl for D=0
 template<typename T>
-const T& at(py::array& a, const std::array<size_t, 0>& index);
+const T& at(py::array& a, const Index_t<0>& index);
 
 
 template<typename T>
@@ -81,7 +84,7 @@ const T* cend(const py::array& a)
 
 // Uninitialised 1d array
 template<typename T, size_t D=1>
-py::array empty_array(const std::array<size_t, D>& d)
+py::array empty_array(const Index_t<D>& d)
 {
   return py::array_t<T>(d);
 }
@@ -89,7 +92,7 @@ py::array empty_array(const std::array<size_t, D>& d)
 // Create a 1d array, initialising with a function
 // e.g. "ones" is make_array<double>(n, [](){ return 1.0; })
 template<typename T, size_t D=1>
-py::array make_array(const std::array<size_t, D>& n, const std::function<T()>& f)
+py::array make_array(const Index_t<D>& n, const std::function<T()>& f)
 {
   py::array a = empty_array<T>(n); 
   std::generate(begin<T>(a), end<T>(a), f);
@@ -111,7 +114,7 @@ py::array_t<R> unary_op(const py::array_t<A>& arg, const std::function<R(A)>& f)
 
   const A* p = (const A*)arg.request().ptr;
   R* r = (R*)result.request().ptr;
-  for (size_t i = 0; i < arg.size(); ++i)
+  for (py::ssize_t i = 0; i < arg.size(); ++i)
   {
     r[i] = f(p[i]);
   }
@@ -121,11 +124,11 @@ py::array_t<R> unary_op(const py::array_t<A>& arg, const std::function<R(A)>& f)
 template<typename R, typename A0, typename A1>
 py::array_t<R> binary_op(A0 arg0, const py::array_t<A1>& arg1, const std::function<R(A0, A1)>& f)
 {
-  py::array_t<R> result(std::vector<ssize_t>(arg1.shape(), arg1.shape() + arg1.ndim()));
+  py::array_t<R> result(std::vector<py::ssize_t>(arg1.shape(), arg1.shape() + arg1.ndim()));
   const A1* p = (const A1*)arg1.request().ptr;
   R* r = (R*)result.request().ptr;
 
-  for (size_t i = 0; i < arg1.size(); ++i)
+  for (py::ssize_t i = 0; i < arg1.size(); ++i)
   {
     r[i] = f(arg0, p[i]);
   }
@@ -135,12 +138,12 @@ py::array_t<R> binary_op(A0 arg0, const py::array_t<A1>& arg1, const std::functi
 template<typename R, typename A0, typename A1>
 py::array_t<R> binary_op(const py::array_t<A0>& arg0, A1 arg1, const std::function<R(A0, A1)>& f)
 {
-  py::array_t<R> result(std::vector<ssize_t>(arg0.shape(), arg0.shape() + arg0.ndim()));
+  py::array_t<R> result(std::vector<ssize_t>{arg0.shape(), arg0.shape() + arg0.ndim()});
 
   const A0* p = (const A0*)arg0.request().ptr;
   R* r = (R*)result.request().ptr;
 
-  for (size_t i = 0; i < arg0.size(); ++i)
+  for (py::ssize_t i = 0; i < arg0.size(); ++i)
   {
     r[i] = f(p[i], arg1);
   }
@@ -154,7 +157,7 @@ py::array_t<R> binary_op(const py::array_t<A0>& arg0, const py::array_t<A1>& arg
   {
     throw std::runtime_error("binary_op: argments must have same dimension");
   }
-  for (size_t i = 0; i < arg0.ndim(); ++i)
+  for (py::ssize_t i = 0; i < arg0.ndim(); ++i)
   {
     if (arg0.shape()[i] != arg1.shape()[i])
       throw std::runtime_error("binary_op: argments must have same size");
@@ -166,7 +169,7 @@ py::array_t<R> binary_op(const py::array_t<A0>& arg0, const py::array_t<A1>& arg
   const A1* p1 = (const A1*)arg1.request().ptr;
   R* r = (R*)result.request().ptr;
 
-  for (size_t i = 0; i < arg0.size(); ++i)
+  for (py::ssize_t i = 0; i < arg0.size(); ++i)
   {
     r[i] = f(p0[i], p1[i]);
   }
@@ -184,13 +187,6 @@ py::array zeros(const std::initializer_list<size_t>& shape)
 {
   py::array_t<T> a(shape);
   return fill(a, T(0));
-}
-
-template<typename T>
-py::array ones(const std::initializer_list<size_t>& shape)
-{
-  py::array_t<T> a(shape);
-  return fill(a, T(1));
 }
 
 template<typename T>

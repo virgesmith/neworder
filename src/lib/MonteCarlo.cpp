@@ -46,13 +46,13 @@ double no::MonteCarlo::u01()
   return m_prng() * SCALE;
 }
 
-NEWORDER_EXPORT py::array no::MonteCarlo::ustream(size_t n)
+NEWORDER_EXPORT py::array no::MonteCarlo::ustream(py::ssize_t n)
 {
   return no::make_array<double>({n}, [&](){ return u01(); });
 }
 
 // simple hazard constant probability 
-NEWORDER_EXPORT py::array no::MonteCarlo::hazard(double prob, size_t n)
+NEWORDER_EXPORT py::array no::MonteCarlo::hazard(double prob, py::ssize_t n)
 {
   return no::make_array<int>({n}, [&]() { return (u01() < prob) ? 1 : 0; });
 }
@@ -64,7 +64,7 @@ py::array no::MonteCarlo::hazard(const py::array& prob)
 }
 
 // computes stopping times 
-NEWORDER_EXPORT py::array no::MonteCarlo::stopping(double prob, size_t n)
+NEWORDER_EXPORT py::array no::MonteCarlo::stopping(double prob, py::ssize_t n)
 {
   double rprob = 1.0 / prob;
 
@@ -147,7 +147,7 @@ py::array no::MonteCarlo::first_arrival(const py::array& lambda_t, double dt, si
   double lambda_u = *std::max_element(pl, pl + nl);
   double lambda_i;
 
-  py::array times = no::empty_array<double>({n});
+  py::array times = no::empty_array<double>({static_cast<py::ssize_t>(n)});
   double* pt = no::begin<double>(times);
   double tmax = (nl - 1) * dt;
 
@@ -175,7 +175,7 @@ py::array no::MonteCarlo::first_arrival(const py::array& lambda_t, double dt, si
 // if the state hasn't been arrived at (no::never())
 py::array no::MonteCarlo::next_arrival(const py::array& startingpoints, const py::array& lambda_t, double dt, bool relative, double minsep)
 {
-  size_t n = startingpoints.size();
+  py::ssize_t n = startingpoints.size();
 
   const double* pl = no::cbegin<double>(lambda_t);
   size_t nl = lambda_t.size();
@@ -188,7 +188,7 @@ py::array no::MonteCarlo::next_arrival(const py::array& startingpoints, const py
   py::array times = no::empty_array<double>({n});
   double* pt = no::begin<double>(times);
 
-  for (size_t i = 0; i < n; ++i)
+  for (py::ssize_t i = 0; i < n; ++i)
   {
     // account for any deterministic time lag (e.g. 9 months between births)
     double offset = no::at<double>(startingpoints, {i}) + minsep;

@@ -54,12 +54,12 @@ public:
   static double far_future();
 
 private:
-  std::vector<size_t> m_checkpoints;
-
   double m_start; 
   double m_end;
 
   size_t m_index; // index of current time
+  
+  std::vector<size_t> m_checkpoints;
 };
 
 }

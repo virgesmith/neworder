@@ -75,9 +75,9 @@ void test_np()
   CHECK(runtime({"a[2,3] == 1.1", no::CommandType::Eval}).cast<bool>());  
 
   // modifying using index
-  for (size_t i = 0; i < a.shape()[0]; ++i)
+  for (py::ssize_t i = 0; i < a.shape()[0]; ++i)
   {
-    for (size_t j = 0; j < a.shape()[1]; ++j)
+    for (py::ssize_t j = 0; j < a.shape()[1]; ++j)
     no::at<double, 2>(a, {i,j}) = (double)(i*10+j);
   }
   CHECK(runtime({"a[0,0] == 0.0", no::CommandType::Eval}).cast<bool>());  
@@ -100,7 +100,7 @@ void test_np()
   // Can't modify DF values directly as 2d-array (it copies), need to select individual columns
   py::array v = df.attr("PID" );
   CHECK(no::at<int64_t>(v, {0}) == 0);
-  CHECK(no::at<int64_t>(v, {(size_t)v.size()-1}) == v.size()-1);
+  CHECK(no::at<int64_t>(v, {v.size()-1}) == v.size()-1);
   // increment each value
   for (int64_t* p = no::begin<int64_t>(v); p != no::end<int64_t>(v); ++p) *p += 1;
   // check python sees update

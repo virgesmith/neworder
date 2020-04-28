@@ -24,16 +24,16 @@ public:
   void reset();
 
   // Uniform random [0,1) fed from the environment's PRNG stream
-  py::array ustream(size_t n);
+  py::array ustream(py::ssize_t n);
 
   // single-prob hazard 
-  py::array hazard(double prob, size_t n);
+  py::array hazard(double prob, py::ssize_t n);
 
   // vector hazard 
   py::array hazard(const py::array& prob);
 
   // compute stopping times 
-  py::array stopping(double prob, size_t n);
+  py::array stopping(double prob, py::ssize_t n);
 
   // vector stopping 
   py::array stopping(const py::array& prob);

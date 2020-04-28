@@ -29,7 +29,7 @@ void no::df::transition(py::array categories, py::array matrix, py::object &df, 
   // Extract column from DF as np.array
   py::array col = df.attr(colname.c_str());
 
-  int m = categories.size();
+  py::ssize_t m = categories.size();
 
   // check matrix is 2d, square & categories len = matrix len
   if (matrix.ndim() != 2)
@@ -69,9 +69,9 @@ void no::df::transition(py::array categories, py::array matrix, py::object &df, 
 
   // reverse catgory lookup
   std::map<int64_t, int> lookup;
-  for (size_t i = 0; i < m; ++i)
+  for (py::ssize_t i = 0; i < m; ++i)
   {
-    lookup[no::at<int64_t>(categories, {i})] = (int)i;
+    lookup[no::at<int64_t>(categories, {i})] = (int64_t)i;
   }
 
   // no::log("row %% %% %% %%..."_s % p[0] % p[1] % p[2] % p[3]);
@@ -79,7 +79,7 @@ void no::df::transition(py::array categories, py::array matrix, py::object &df, 
 
   // std::mt19937& prng = no::getenv().prng();
 
-  size_t n = col.size();
+  py::ssize_t n = col.size();
 
   Timer t;
   py::array_t<double> r = no::getenv().mc().ustream(n);
@@ -87,14 +87,14 @@ void no::df::transition(py::array categories, py::array matrix, py::object &df, 
   // auto p = r.unchecked<1>();
   // x = p[i];
 
-  for (size_t i = 0; i < n; ++i)
+  for (py::ssize_t i = 0; i < n; ++i)
   {
     // look up the index, ignoring values that havent been explicitly set in categories (like -1)
     auto it = lookup.find(no::at<int64_t>(col, {i}));
     if (it == lookup.end())
       continue;
     int64_t j = it->second;
-    size_t k = interp(cumprobs[j], no::at<double>(r, {i}));
+    py::ssize_t k = interp(cumprobs[j], no::at<double>(r, {i}));
     //no::log("interp %%:%% -> %%"_s % j % r[i] % k);
     no::at<int64_t>(col, {i}) = no::at<int64_t>(categories, {k});
   }
@@ -106,9 +106,9 @@ void no::df::directmod(py::object& df, const std::string& colname)
 {
   // .values? pd.Series -> np.array?
   py::array arr = df.attr(colname.c_str());
-  size_t n = arr.size();
+  py::ssize_t n = arr.size();
 
-  for (size_t i = 0; i < n; ++i)
+  for (py::ssize_t i = 0; i < n; ++i)
   {
     no::at<int64_t>(arr, {i}) += 1;
   }
