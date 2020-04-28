@@ -12,12 +12,9 @@ else
 $(info Building in virtualenv: $(VIRTUAL_ENV))
 endif
 
-# python3.8+ needs an extra arg "--embed" to resolve lib deps correctly, but this arg breaks previous versions
-# TODO make work for any version >= 3.8
+# python3.8 on ubuntu 20.04 (but not on travis) needs an extra arg "--embed" to resolve lib deps correctly, but this arg breaks previous versions
 PY_CFG_EXTRA_ARG =
-ifneq (,$(findstring 3.8, $(shell python --version)))
-  PY_CFG_EXTRA_ARG += --embed
-endif
+#PY_CFG_EXTRA_ARG += --embed
 PY_CFG=python3-config
 
 # also set (CXXFLAGS below) NEWORDER_MPI to prevent skipping of MPI-specific code
