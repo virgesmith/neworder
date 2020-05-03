@@ -15,7 +15,7 @@ endif
 # python3.8 on ubuntu 20.04 (but not on travis) needs an extra arg "--embed" to resolve lib deps correctly, but this arg breaks previous versions
 PY_CFG_EXTRA_ARG =
 #PY_CFG_EXTRA_ARG += --embed
-PY_CFG=python3-config
+PY_CFG=python-config
 
 # Query python env/pybind11 for compile and link settings
 CXXFLAGS = $(shell $(PY_CFG) --cflags) 

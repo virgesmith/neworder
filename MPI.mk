@@ -15,7 +15,7 @@ endif
 # python3.8 on ubuntu 20.04 (but not on travis) needs an extra arg "--embed" to resolve lib deps correctly, but this arg breaks previous versions
 PY_CFG_EXTRA_ARG =
 #PY_CFG_EXTRA_ARG += --embed
-PY_CFG=python3-config
+PY_CFG=python-config
 
 # also set (CXXFLAGS below) NEWORDER_MPI to prevent skipping of MPI-specific code
 CXX=mpic++
