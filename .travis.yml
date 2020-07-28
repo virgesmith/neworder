@@ -35,7 +35,7 @@ jobs:
         conda create -q -n test-environment python=3.7
         source activate test-environment      
       install:
-        - conda install gxx_linux-64 mpich numpy pandas pybind11
+        - conda install gxx_linux-64 openssl mpich numpy pandas pybind11
       script:
       - |
         make PY_CFG=python3-config && make test
