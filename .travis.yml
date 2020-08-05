@@ -80,9 +80,9 @@ jobs:
       - make && make test
       - make -f MPI.mk && make -f MPI.mk test
 
-  # allow_failures:
-  #   - python: 3.7
-  #   - python: 3.8
+  allow_failures:
+    - conda_py3
+#    - python: 3.8
 
 warnings_are_errors: false
 
@@ -90,4 +90,3 @@ notifications:
   email:
     on_success: change
     on_failure: change
-#  slack: spenser-workspace:QzyXfMnQd5tUJaFZPK6Psl4M
