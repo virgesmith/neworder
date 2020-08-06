@@ -42,10 +42,7 @@ jobs:
         make -f MPI.mk && make -f MPI.mk test
 
     - language: python
-      python: 
-        - "3.6"
-        - "3.7"
-        - "3.8"
+      python: 3.6
       before_install:
       - sudo apt-get update
       - sudo apt-get -y install build-essential mpich libmpich-dev
@@ -54,8 +51,8 @@ jobs:
       script:
       # - python setup.py build
       # - python setup.py test
-      - make PY_CFG=python-config PY_CFG_EXTRA_ARG= && make test
-      - make PY_CFG=python-config PY_CFG_EXTRA_ARG= -f MPI.mk && make -f MPI.mk test
+      - make PY_CFG=python-config PY_CFG_EXTRA_ARG="" && make test
+      - make PY_CFG=python-config PY_CFG_EXTRA_ARG="" -f MPI.mk && make -f MPI.mk test
 
   allow_failures:
     - name: conda_py3
