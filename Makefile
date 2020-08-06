@@ -21,6 +21,9 @@ PY_CFG_LINK_ARG=--embed
 $(info PY_CFG=$(PY_CFG))
 $(info PY_CFG_LINK_ARG=$(PY_CFG_LINK_ARG))
 
+$(info $(shell $(PY_CFG) --ldflags $(PY_CFG_LINK_ARG)))
+
+
 # Query python env/pybind11 for compile and link settings
 CXXFLAGS = $(shell $(PY_CFG) --cflags) 
 CXXFLAGS += $(shell python -m pybind11 --includes)
