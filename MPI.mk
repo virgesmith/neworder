@@ -13,7 +13,6 @@ $(info Building in virtualenv: $(VIRTUAL_ENV))
 endif
 
 # python3.8 on ubuntu 20.04 (but not on travis) needs an extra arg "--embed" to resolve lib deps correctly, but this arg breaks previous versions
-# python3.8 on ubuntu 20.04 (but not on travis) needs an extra arg "--embed" to resolve lib deps correctly, but this arg breaks previous versions
 PY_CFG=python3-config
 # might need to be "python-config", and
 PY_CFG_LINK_ARG=--embed

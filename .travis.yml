@@ -58,7 +58,7 @@ jobs:
       python: 3.7
       before_install: 
       - sudo apt-get update
-      - sudo apt-get -y install build-essential mpich libmpich-dev
+      - sudo apt-get -y install build-essential mpich libmpich-dev python3.7-dev 
       install: 
       - pip install pybind11 numpy pandas
       script:
@@ -71,7 +71,7 @@ jobs:
       python: 3.8
       before_install:
       - sudo apt-get update
-      - sudo apt-get -y install build-essential mpich libmpich-dev
+      - sudo apt-get -y install build-essential mpich libmpich-dev python3.8-dev 
       install: 
       - pip install pybind11 numpy pandas
       script:
@@ -80,8 +80,8 @@ jobs:
       - make PY_CFG=python3-config && make test
       - make PY_CFG=python3-config -f MPI.mk && make -f MPI.mk test
 
-  allow_failures:
-    - name: conda_py3
+#  allow_failures:
+#    - name: conda_py3
 #    - python: 3.8
 
 warnings_are_errors: false
