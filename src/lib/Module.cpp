@@ -3,6 +3,7 @@
 
 #include "Version.h"
 #include "Timeline.h"
+#include "Model.h"
 #include "Environment.h"
 #include "Inspect.h"
 #include "MonteCarlo.h"
@@ -142,11 +143,19 @@ PYBIND11_EMBEDDED_MODULE(neworder, m)
     .def("time", &no::Timeline::time)
     .def("dt", &no::Timeline::dt)
     .def("nsteps", &no::Timeline::nsteps)
+    .def("next", &no::Timeline::next)
+    .def("at_end", &no::Timeline::at_end)
     .def("__repr__", [](const no::Timeline& tl) {
         return "<neworder.Timeline start=%% end=%% checkpoints=%% index=%%>"_s 
           % tl.start() % tl.end() % tl.checkpoints() % tl.index();
       }
     );
+
+  // Microsimulation (or ABM) model class
+  py::class_<no::Model>(m, "Model")
+    .def(py::init<no::Timeline&, const py::dict&, const py::dict&, const py::dict&, const py::dict&>())
+    .def("timeline", &no::Model::timeline, py::return_value_policy::reference)
+    .def("run", &no::Model::run);
 
   // MC
   py::class_<no::MonteCarlo>(m, "MonteCarlo")
