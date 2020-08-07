@@ -19,9 +19,8 @@ PY_CFG=python3-config
 PY_CFG_LINK_ARG=--embed
 # might need to be "" on different platforms, override as necessary, e.g. make PY_CFG=python-config PY_CFG_LINK_ARG=
 
-$(info PY_CFG=$(PY_CFG))
-$(info PY_CFG_LINK_ARG=$(PY_CFG_LINK_ARG))
-
+$(info PY_CFG=$(PY_CFG) $(PY_CFG_LINK_ARG))
+$(info $(shell $(PY_CFG) --ldflags $(PY_CFG_LINK_ARG)))
 # also set (CXXFLAGS below) NEWORDER_MPI to prevent skipping of MPI-specific code
 CXX=mpic++
 SUFFIX := _mpi

@@ -56,7 +56,7 @@ jobs:
 
     - language: python
       python: 3.7
-      before_install:
+      before_install: 
       - sudo apt-get update
       - sudo apt-get -y install build-essential mpich libmpich-dev
       install: 
@@ -64,8 +64,8 @@ jobs:
       script:
       # - python setup.py build
       # - python setup.py test
-      - make PY_CFG=python3-config && make test
-      - make PY_CFG=python3-config -f MPI.mk && make -f MPI.mk test
+      - make PY_CFG=python-config PY_CFG_LINK_ARG="" && make test
+      - make PY_CFG=python-config PY_CFG_LINK_ARG="" -f MPI.mk && make -f MPI.mk test
 
     - language: python
       python: 3.8
