@@ -4,18 +4,16 @@ import neworder
 from helpers import *
 from math import *
 
-# pointless class?
-class BS:
-  def __init__(self):
-    pass
+# Subclass neworder.Model
+class BlackScholes(neworder.Model):
+  def __init__(self, timeline, initialisations, modifiers, transitions, checks, checkpoints, nsims=100000):
+    super().__init__(timeline, initialisations, modifiers, transitions, checks, checkpoints)
+    self.nsims = nsims
 
-  def mc(self, option, market, nsims, quasi=False):
+  def mc(self, option, market):
     # get the time from the environment
-    dt = neworder.timeline.time()
-    if quasi:
-      normals = nstream_q(nsims)
-    else:
-      normals = nstream(nsims)
+    dt = self.timeline().time()
+    normals = nstream(self.nsims)
     # compute underlying prices at dt
     underlyings = market.spot * np.exp((market.rate - market.divy - 0.5 * market.vol * market.vol) * dt + normals * market.vol * sqrt(dt))
     # compute option prices at dt
@@ -35,6 +33,7 @@ class BS:
     q = market.divy
     T = option.expiry
     vol = market.vol
+
     srt = vol * sqrt(T)
     rqs2t = (r - q + 0.5 * vol * vol) * T
     d1 = (log(S/K) + rqs2t) / srt
@@ -47,10 +46,10 @@ class BS:
     else:
       return -S * df * norm_cdf(-d1) + K * df * norm_cdf(-d2)
 
-  def compare(self, pv_mc, nsims, option, market):
+  def compare(self, pv_mc, option, market):
     """ Compare MC price to analytic """
     ref = self.analytic(option, market)
     err = pv_mc / ref - 1.0
     neworder.log("mc: {:.6f} / ref: {:.6f} err={:.2%}".format(pv_mc, ref, err))
     # relative error should be within O(1/(sqrt(sims))) of analytic solution
-    return True if abs(err) <= 2.0/sqrt(nsims) else False
+    return True if abs(err) <= 2.0/sqrt(self.nsims) else False

@@ -7,60 +7,59 @@ are the option itself, and the underlying stock (essentially the market) that go
 import numpy as np
 import neworder
 
+from option import Option
+from market import Market
+from black_scholes import BlackScholes 
+
 # market data
 spot = 100.0 # underlying spot price
 rate = 0.02  # risk-free interest rate
 divy = 0.01  # (continuous) dividend yield
 vol = 0.2    # stock volatility
 
-# (European) option data
+# (European) option instrument data
 callput = "CALL" 
 strike = 100.0   
 expiry = 0.75   
 
-# variables defined in the module are not accessible by the embedded environment
-
-# Using exact MC calc of GBM requires only 1 timestep 
-neworder.timeline = neworder.Timeline(0.0, expiry, [1])
-
-# rust requires nsims in root namespace (or modify transitions/checkpoints)
-neworder.nsims = 100000 # number of prices to simulate
-# #neworder.sync_streams = True # all procs use same RNG stream
-
-neworder.log_level = 1
-neworder.do_checks = False
-# # no per-timestep checks implemented since there is only one timestep
-neworder.checks = { }
-
-# use 4 identical sims with perturbations
+# use 4 identical sims with perturbations to compute market sensitivities (a.k.a. Greeks)
 assert neworder.size() == 4 and not neworder.mc.indep(), "This example requires 4 processes with identical RNG streams"
 
+# Using exact MC calc of GBM requires only 1 timestep 
+timeline = neworder.Timeline(0.0, expiry, [1])
+
+# rust requires nsims in root namespace (or modify transitions/checkpoints)
+nsims = 100000 # number of prices to simulate
+
+#neworder.log_level = 1
+
+# create an array for the results from each model run 
 neworder.pv = np.zeros(neworder.size())
 
 # initialisation
-neworder.initialisations = {
-  "market": { "module": "market", "class_": "Market", "args": (spot, rate, divy, vol) },
-  "option": { "module": "option", "class_": "Option", "args": (callput, strike, expiry) },
-  # TODO import module without creating a class instance?
-  "model": { "module": "black_scholes", "class_": "BS", "args": () } # thread 'main' panicked at 'called `Option::unwrap()` on a `None` value', src/main.rs:110:16
+initialisations = {
+  "market": Market(spot, rate, divy, vol),
+  "option": Option(callput, strike, expiry)
 }
 
 # process-specific modifiers (for sensitivities)
-neworder.modifiers = [
+modifiers = [
   "pass", # base valuation
-  "market.spot = market.spot * 1.01", # delta up bump
-  "market.spot = market.spot * 0.99", # delta up bump
+  "market.spot = market.spot * 1.01", # delta/gamma up bump
+  "market.spot = market.spot * 0.99", # delta/gamma down bump
   "market.vol = market.vol + 0.001" # 10bp upward vega
 ]
 
-neworder.transitions = { 
-  # compute the option price
-  # To use QRNG (Sobol), set quasi=True
-  # rust 
-  "compute_mc_price": "neworder.pv = model.mc(option, market, neworder.nsims, quasi=False)"
+transitions = { 
+  # compute the option price using a Monte-Carlo simulation
+  "compute_mc_price": "neworder.pv = neworder.model.mc(option, market)"
 }
 
-neworder.checkpoints = {
-  "compare_mc_price": "model.compare(neworder.pv, neworder.nsims, option, market)",
+checkpoints = {
+  # compare the MC price to the analytic solution
+  "compare_mc_price": "neworder.model.compare(neworder.pv, option, market)",
+  # compute some market risk
   "compute_greeks": "option.greeks(neworder.pv)"
 }
+
+neworder.model = BlackScholes(timeline, modifiers, initialisations, transitions, {}, checkpoints, nsims)

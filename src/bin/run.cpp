@@ -240,7 +240,7 @@ int run(int rank, int size, bool indep)
 
     no::Model& model = neworder.attr("model").cast<no::Model&>(); 
 
-    model.run();
+    model.run(env);
   }
   catch(std::exception& e)
   {

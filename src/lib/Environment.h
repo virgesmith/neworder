@@ -67,8 +67,6 @@ public:
   operator py::object&() { return *m_self; } 
   operator const py::object&() const { return *m_self; } 
 
-  no::Timeline& timeline();
-
 private:
 
   // flag to check whether init has been called
@@ -96,9 +94,6 @@ private:
 
   // TODO work out why this segfaults if the dtor is called (even on exit)
   py::module* m_self;
-
-  // pointer to python-instantiated object
-  no::Timeline* m_timeline;
 
   // pointer to MC object initialised 
   no::MonteCarlo* m_mc; 

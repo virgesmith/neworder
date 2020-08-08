@@ -1,54 +1,35 @@
-""" Hello World
-The simplest functional neworder configuration
-Serves as a skeleton for user projects
+""" 
+Hello World
+A very simple neworder model to introduce the basic concepts and workflow.
+It constructs a greeter object, which 
+- gets the user's name
+- says hello 
 """
 
-# for shared arrays
-#import numpy as np
-# Expose the enviroment to python
+# Expose the neworder enviroment to python
 import neworder
 
-# Checks to run during the simulation
 # neworder.log_level = 1 # this doesnt do anything at the moment
-# neworder.do_checks = True
-# checks only called once since there is only one timestep
+
+# In this example we don't have a discrete timeline, 
+# but we needs to explicitly specify that this is the case
+timeline = neworder.Timeline.null()
+
+# Checks, if specified, are run after every timestep during the simulation
 checks = {
   # a do nothing-check purely for illustration - checks must evaluate to boolean 
   # Ony eval-able expressions allowed here.
   "eval": "True",
-  #"exec": "a=True" # will fail, assigment is not eval-able
 }
 
-# empty timeline needs to be explicitly specifed
-timeline = neworder.Timeline.null()
-# microsim.set_initialisations({
-#   "greeter": { "module": "greet", "class_": "Greet", "args": ("Namaste", "Bonjour", "Hola", "Annyeonghaseyo") }
-# })
+# Initialisation - construct an instance of the Greet class
+from greet import Greet # allowed because PYTHONPATH is set explicitly to the directory
+initialisations = { "greeter": Greet("Namaste", "Bonjour", "Hola", "Annyeonghaseyo") }
 
-# no timeline is required in this example, but it would typically look like this:
-#neworder.timeline = neworder.Timeline(2020, 2030, [10])
-
-# Initialisation - construct an instance of Greet
-#
-# This creates an object called "greeter" within the neworder module, which is an instance of 
-# the class Greet from the "greet" module and is initialised with some parameters.
-# The pure python equivalent to the above is:
-#   import greet
-#   import neworder
-#   neworder.greeter = greet.Greet("Namaste", "Bonjour", "Hola", "Annyeonghaseyo")
-# args must be a tuple or a single value
-# kwargs must be a dict, e.g. add
-# ..., kwargs = { ... } }
-# neworder.initialisations = {
-#   "greeter": { "module": "greet", "class_": "Greet", "args": ("Namaste", "Bonjour", "Hola", "Annyeonghaseyo") }
-# }
 
 # The "transition" in this case fetches the current username from the os
-# Note that the code is exec'd not eval'd: any return value is discarded
 transitions = { 
-  #"locals": "neworder.log('t=%f(%d)' % (neworder.timeline.time(), neworder.timeline.index()))",
   "who": "greeter.set_name()"
-  #"exec": "a=1" # won't fail. a  namespace?
 }
 
 # Say hello when the empty simulation is done
@@ -58,22 +39,18 @@ transitions = {
 # neworder.greeter()
 # TODO control over order of execution...list of tuples?
 checkpoints = {
-  #"exec": "b=a+1", # exec - shouldn't fail. a, b are in neworder namespace, and already initialised
-  #"print": "print(b)",
   "say_hello" : "greeter()",
 }
-
-from greet import Greet # allowed because PYTHONPATH is set explicitly to the directory
-initialisations = { "greeter": Greet("Namaste", "Bonjour", "Hola", "Annyeonghaseyo") }
 
 # this model could extend the builtin one
 class HelloWorld(neworder.Model):
   def __init__(self, *args):
     super().__init__(*args)
 
-
+# construct the model
 neworder.model = HelloWorld(
   timeline,
+  [], # no modifiers
   initialisations,
   transitions,
   checks,

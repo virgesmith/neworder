@@ -85,24 +85,24 @@ void no::shell(/*const py::object& local*/)
 }
 
 
-// TODO move? (this is called from run.cpp but not exposed to python) 
-void no::set_timeline(const py::tuple& spec) 
-{
-  // Format is: (start, end, [checkpoints])
-  if (py::len(spec) != 3) {
-    throw std::runtime_error("invalid timeline specification, should be (start, end, [checkpoints])");
-  }
-  double start = spec[0].cast<double>();
-  double end = spec[1].cast<double>();
-  py::list cp = py::list(spec[2]);
-  size_t n = py::len(cp);
-  std::vector<size_t> checkpoint_times(n);
-  for (size_t i = 0; i < n; ++i)
-  {
-    checkpoint_times[i] = cp[i].cast<size_t>();
-  }
-  getenv().timeline() = Timeline(start, end, checkpoint_times);
-}
+// // TODO move? (this is called from run.cpp but not exposed to python) 
+// void no::set_timeline(const py::tuple& spec) 
+// {
+//   // Format is: (start, end, [checkpoints])
+//   if (py::len(spec) != 3) {
+//     throw std::runtime_error("invalid timeline specification, should be (start, end, [checkpoints])");
+//   }
+//   double start = spec[0].cast<double>();
+//   double end = spec[1].cast<double>();
+//   py::list cp = py::list(spec[2]);
+//   size_t n = py::len(cp);
+//   std::vector<size_t> checkpoint_times(n);
+//   for (size_t i = 0; i < n; ++i)
+//   {
+//     checkpoint_times[i] = cp[i].cast<size_t>();
+//   }
+//   getenv().timeline() = Timeline(start, end, checkpoint_times);
+// }
 
 
 // python-visible log function defined above
@@ -153,9 +153,12 @@ PYBIND11_EMBEDDED_MODULE(neworder, m)
 
   // Microsimulation (or ABM) model class
   py::class_<no::Model>(m, "Model")
-    .def(py::init<no::Timeline&, const py::dict&, const py::dict&, const py::dict&, const py::dict&>())
+    .def(py::init<no::Timeline&, const py::list&, const py::dict&, const py::dict&, const py::dict&, const py::dict&>())
     .def("timeline", &no::Model::timeline, py::return_value_policy::reference)
-    .def("run", &no::Model::run);
+    .def("modifiers", &no::Model::modifiers, py::return_value_policy::reference)
+    .def("transitions", &no::Model::transitions, py::return_value_policy::reference)
+    .def("checks", &no::Model::checks, py::return_value_policy::reference)
+    .def("checkpoints", &no::Model::checkpoints, py::return_value_policy::reference);
 
   // MC
   py::class_<no::MonteCarlo>(m, "MonteCarlo")
