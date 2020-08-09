@@ -22,11 +22,6 @@ no::Environment& no::Environment::init(int rank, int size, bool indep)
   env.m_rank = rank;
   env.m_size = size;
 
-  // int64_t seed = compute_seed(rank, size, indep);
-  // // stored in python
-  // neworder.attr("INDEP") = indep;
-  // neworder.attr("SEED") = seed;
-
   // singleton, so don't need to worry about freeing memory
   env.m_mc = new MonteCarlo(rank, size, indep);
   neworder.attr("mc") = env.m_mc;
