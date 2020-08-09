@@ -11,8 +11,8 @@ import seaborn as sns
 
 class People(neworder.Model):
   """ A simple aggregration of Persons each represented as a row in a data frame """
-  def __init__(self, timeline, initialisations, transitions, checks, checkpoints, mortality_hazard_file, n, max_age):
-    super().__init__(timeline, [], initialisations, transitions, checks, checkpoints)
+  def __init__(self, timeline, transitions, checks, checkpoints, mortality_hazard_file, n, max_age):
+    super().__init__(timeline, [], transitions, checks, checkpoints)
     # initialise cohort      
     # assert False
     # filter by location, ethnicity and gender

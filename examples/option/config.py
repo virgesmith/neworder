@@ -37,15 +37,13 @@ nsims = 100000 # number of prices to simulate
 neworder.pv = np.zeros(neworder.size())
 
 # initialisation
-initialisations = {
-  "market": Market(spot, rate, divy, vol),
-  "option": Option(callput, strike, expiry)
-}
+market = Market(spot, rate, divy, vol)
+option = Option(callput, strike, expiry)
 
 # process-specific modifiers (for sensitivities)
 modifiers = [
   "pass", # base valuation
-  "market.spot = market.spot * 1.01", # delta/gamma up bump
+  "neworder.shell(); market.spot = market.spot * 1.01", # delta/gamma up bump
   "market.spot = market.spot * 0.99", # delta/gamma down bump
   "market.vol = market.vol + 0.001" # 10bp upward vega
 ]
@@ -62,4 +60,6 @@ checkpoints = {
   "compute_greeks": "option.greeks(neworder.pv)"
 }
 
-neworder.model = BlackScholes(timeline, modifiers, initialisations, transitions, {}, checkpoints, nsims)
+neworder.model = BlackScholes(timeline, modifiers, transitions, {}, checkpoints, nsims)
+
+neworder.log(dir())

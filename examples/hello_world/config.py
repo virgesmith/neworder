@@ -1,57 +1,56 @@
 """ 
 Hello World
 A very simple neworder model to introduce the basic concepts and workflow.
-It constructs a greeter object, which 
-- gets the user's name
-- says hello 
+It subclasses neworder.Model adding methods to 
+- gets the user's name, which is called during the "simulation"
+- say hello, which is called at the end of the "simulation".
 """
 
 # Expose the neworder enviroment to python
 import neworder
 
-# neworder.log_level = 1 # this doesnt do anything at the moment
-
 # In this example we don't have a discrete timeline, 
-# but we needs to explicitly specify that this is the case
+# but we need to explicitly specify that this is the case
+# a null timeline corresponds to a single instantaneous transition
 timeline = neworder.Timeline.null()
 
 # Checks, if specified, are run after every timestep during the simulation
 checks = {
   # a do nothing-check purely for illustration - checks must evaluate to boolean 
-  # Ony eval-able expressions allowed here.
+  # check-expressions must evaluate to a boolean.
   "eval": "True",
 }
 
-# Initialisation - construct an instance of the Greet class
-from greet import Greet # allowed because PYTHONPATH is set explicitly to the directory
-initialisations = { "greeter": Greet("Namaste", "Bonjour", "Hola", "Annyeonghaseyo") }
-
-
 # The "transition" in this case fetches the current username from the os
 transitions = { 
-  "who": "greeter.set_name()"
+  "who": "neworder.model.set_name()"
 }
 
-# Say hello when the empty simulation is done
-#
-# equivalent to 
-# import neworder
-# neworder.greeter()
-# TODO control over order of execution...list of tuples?
+neworder.log(dir())
+
+# Say hello when the (empty) simulation is done
 checkpoints = {
-  "say_hello" : "greeter()",
+  "say_hello" : "neworder.model()"
 }
 
-# this model could extend the builtin one
+import os
+# this model extends the builtin one by adding the set_name and __call__ methods
 class HelloWorld(neworder.Model):
   def __init__(self, *args):
     super().__init__(*args)
+    self.name = "unknown"
 
+  # Gets username
+  def set_name(self):
+    self.name = os.getlogin()
+
+  def __call__(self):
+    neworder.log("Hello %s" % self.name)
+  
 # construct the model
 neworder.model = HelloWorld(
   timeline,
   [], # no modifiers
-  initialisations,
   transitions,
   checks,
   checkpoints

@@ -9,14 +9,11 @@
 
 no::Model::Model(Timeline& timeline, 
   const py::list& modifiers, 
-  const py::dict& initialisations, 
   const py::dict& transitions,
   const py::dict& checks,
   const py::dict& checkpoints) 
   : m_timeline(timeline)
   { 
-    py::module root = py::module::import("__main__");
-
     // modifiers (exec)
     int n = py::len(modifiers);
 
@@ -24,14 +21,6 @@ no::Model::Model(Timeline& timeline,
     for (int i = 0; i < n; ++i)
     {        
       m_modifiers.push_back(std::make_tuple(modifiers[i].cast<std::string>(), no::CommandType::Exec));
-    }
-
-    // add the initialised objects 
-    for (const auto& kv: initialisations)
-    {
-      no::log("initialise: registered object '%%'"_s % kv.first.cast<std::string>());
-      const std::string& name = kv.first.cast<std::string>();
-      root.attr(name.c_str()) = kv.second;
     }
 
     // transitions (exec)

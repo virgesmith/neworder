@@ -5,7 +5,7 @@ population_size = 100
 p_trans = 0.01
 
 # must be MPI enabled
-assert neworder.size() > 1
+assert neworder.size() > 1, "This configuration requires MPI"
 
 timeline = neworder.Timeline(0, 100, [100])
 
@@ -15,8 +15,10 @@ timeline = neworder.Timeline(0, 100, [100])
 from test import Test
 # initialisation
 initialisations = {
-  "test": Test(p_trans, population_size)
+#  "test": Test(p_trans, population_size)
 }
+
+test = Test(p_trans, population_size)
 
 transitions = {
   "test": "test.test()",
@@ -27,5 +29,6 @@ checkpoints = {
   "stats": "test.stats()",
 }
 
-neworder.model = neworder.Model(timeline, [], initialisations, transitions, {}, checkpoints)
+neworder.model = neworder.Model(timeline, [], transitions, {}, checkpoints)
 
+neworder.shell()

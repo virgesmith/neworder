@@ -12,10 +12,10 @@
 //   return PyCallable_Check(o.ptr());
 // }
 
-// bool pycpp::has_attr(const py::object& o, const char* attr_name)
-// {
-//   return PyObject_HasAttrString(o.ptr(), attr_name);
-// }
+bool pycpp::has_attr(const py::object& o, const char* attr_name)
+{
+  return PyObject_HasAttrString(o.ptr(), attr_name);
+}
 
 // // string repr
 // std::string pycpp::as_string(PyObject* obj)

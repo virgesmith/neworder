@@ -16,9 +16,7 @@ npeople = 10000
 from model import DiseaseModel
 from graphics import Graphics
 
-initialisations = {
-  "graphics": Graphics() 
-}
+  # "graphics": Graphics() 
 
 transitions = {
   "model": "neworder.model.step()"
@@ -26,7 +24,7 @@ transitions = {
 
 checkpoints = {
   "finalise": "neworder.model.finalise()",
-  "graphics": "graphics.plot(neworder.model)"
+  "graphics": "Graphics().plot(neworder.model)"
 }
 
-neworder.model = DiseaseModel(timeline, [], initialisations, transitions, {}, checkpoints, npeople=npeople)
+neworder.model = DiseaseModel(timeline, [], transitions, {}, checkpoints, npeople=npeople)

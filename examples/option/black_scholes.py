@@ -6,8 +6,8 @@ from math import *
 
 # Subclass neworder.Model
 class BlackScholes(neworder.Model):
-  def __init__(self, timeline, initialisations, modifiers, transitions, checks, checkpoints, nsims=100000):
-    super().__init__(timeline, initialisations, modifiers, transitions, checks, checkpoints)
+  def __init__(self, timeline, modifiers, transitions, checks, checkpoints, nsims=100000):
+    super().__init__(timeline, modifiers, transitions, checks, checkpoints)
     self.nsims = nsims
 
   def mc(self, option, market):

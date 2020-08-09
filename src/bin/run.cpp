@@ -223,8 +223,10 @@ int run(int rank, int size, bool indep)
   try
   {
     py::object& neworder = env; 
-    // Load (and exec) config file
-    py::module config = py::module::import("config");
+    // Load (and exec) config file, importing all its symbols into the root namespace
+    // TODO can this be done in pybind11?
+    //py::module config = py::module::import("config"); // ~ "import config"
+    py::exec("from config import *");
     // Load the root namespace
     py::module root = py::module::import("__main__");
 
@@ -236,7 +238,7 @@ int run(int rank, int size, bool indep)
     root.attr("sys") = sys;
 
     // ensure all the python runs in an env with neworder and the stuff we've initialised in the root namespace
-    no::Runtime runtime("neworder");
+    //no::Runtime runtime("neworder");
 
     no::Model& model = neworder.attr("model").cast<no::Model&>(); 
 

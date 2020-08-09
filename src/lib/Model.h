@@ -13,7 +13,6 @@ class NEWORDER_EXPORT Model
 public:
   Model(Timeline& timeline, 
         const py::list& modifiers, 
-        const py::dict& initialisations, 
         const py::dict& transitions,
         const py::dict& checks,
         const py::dict& checkpoints);

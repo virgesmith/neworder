@@ -14,18 +14,13 @@ timeline = neworder.Timeline(0.0, max_age, [int(max_age)])
 
 # Choose a simple linearly increasing mortality rate: 0.1% aged 0 to 2.5% aged 100
 mortality_hazard_file = "examples/shared/NewETHPOP_mortality.csv"
-population_size = 10000
+population_size = 100000
 
 from people import People
  
 # running/debug options
 checks = { 
   "alive": "neworder.model.prop_alive()"
-}
-
-# initialisation, this creates the population but doesnt assign a time of death
-initialisations = {
-  # nothing to initialise (other than the model itself)
 }
 
 # transitions: simply samples time of death for each individual
@@ -38,4 +33,4 @@ checkpoints = {
   "plot": "neworder.model.plot()"
 }
 
-neworder.model = People(timeline, initialisations, transitions, checks, checkpoints, mortality_hazard_file, population_size, max_age)
+neworder.model = People(timeline, transitions, checks, checkpoints, mortality_hazard_file, population_size, max_age)

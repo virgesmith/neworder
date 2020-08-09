@@ -10,13 +10,9 @@ import subprocess
 #import numpy as np
 import neworder
 
-
-# neworder.log_level = 1 
-
 # null timeline
 timeline = neworder.Timeline.null()
-# nothing to initialise
-initialisations = {}
+
 # nothing to transition
 transitions = {}
 
@@ -50,7 +46,6 @@ class Diagnostics(neworder.Model):
 neworder.model = Diagnostics(
   timeline,
   [], 
-  initialisations,
   transitions,
   {},
   checkpoints
