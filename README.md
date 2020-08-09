@@ -122,14 +122,15 @@ __NB the following are works-in-progress and subject to change, the documentatio
 
 __NB note also some of the examples are getting quite complex as they evolve closer to real models - they will be separated in due course__
 
-The microsimulation framework expects a directory containing some python modules. There must be a module called [config.py] that, minimally:
-- describes how to initialise model object(s), defined in the other module(s).
-- defines a timeline and a timestep. The timeline can be broken into multiple chunks, the end of each of which is considered a _checkpoint_.
+The microsimulation framework expects a directory containing one or more python modules. There must be a module called [config.py] that, minimally, initialises a `neworder.Model` object. This entails:
+
+- defining a timeline over which the model runs. The timeline can be broken into multiple chunks, the end of each of which is considered a _checkpoint_.
+- describes, optionally, local modifications to the data or model (for a multiprocess run only).
 - describes what (if any) checks to run after each timestep.
 - defines the _transitions_ that the population are subject to during the timeline.
-- describes what to do with the simulated population data at each checkpoint.   
+- describes what to do with the simulated population data at each checkpoint.
 
-All of these are entirely user-definable. The checks, transitions and checkpoints can be empty
+The neworder runtime will automatically execute the model once constructed.
 
 To run an example, type 
 ```bash
@@ -138,6 +139,8 @@ $ ./run_example.sh <name> [size [-c]]
 which will run the model defined in the directory `./examples/<name>`, running optionally over `size` processes, which can be set to use identical RNG streams with the `-c` flag.
 
 ## Hello World
+
+TODO update and move
 
 This example is a simple illustration of the structure required, and how it fits together. All the files are extensively commented. and it can be used as a skeleton for new project. 
 

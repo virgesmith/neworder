@@ -10,13 +10,18 @@
 
 import pandas as pd
 import numpy as np
-from matplotlib import pyplot as plt
+#from matplotlib import pyplot as plt
 
 import neworder
 from data import *
 
-class Model:
-  def __init__(self, npeople):
+class DiseaseModel(neworder.Model):
+  def __init__(self, *args, npeople=0):
+
+    super().__init__(*args)
+
+    n = self.timeline().nsteps()
+
     self.npeople = npeople
     self.pop = pd.DataFrame(data = {"State": [State.UNINFECTED] * npeople,  
                                     "tInfected": np.nan, 
@@ -27,16 +32,16 @@ class Model:
                                     "tDeceased": np.nan })
 
     # probabilities that are a function of the overall state,
-    self.p_infect = np.zeros(neworder.timeline.nsteps()+1)
-    self.p_critical = np.zeros(neworder.timeline.nsteps()+1)
-    self.p_die = np.zeros(neworder.timeline.nsteps()+1)
+    self.p_infect = np.zeros(n+1)
+    self.p_critical = np.zeros(n+1)
+    self.p_die = np.zeros(n+1)
     
     self.summary = pd.DataFrame(columns = ALLSTATES)
 
     self.transitions = np.zeros((NUMSTATES,NUMSTATES))
     # from uninfected
 
-    dt = neworder.timeline.dt()
+    dt = self.timeline().dt()
 
     self.r = R0 ** (dt / g) - 1.0 # per-timestep growth rate
 
@@ -44,11 +49,12 @@ class Model:
     patients_zero = range(0,num_initial_infections)
     # patients zero
     self.pop.loc[patients_zero, "State"] = State.ASYMPTOMATIC
-    self.pop.loc[patients_zero, "tInfected"] = 0.0 # neworder.timeline.time()
+    self.pop.loc[patients_zero, "tInfected"] = 0.0 # self.timeline().time()
 
-    self.infection_rate = np.zeros(neworder.timeline.nsteps()+1)
-    self.mortality_rate = np.zeros(neworder.timeline.nsteps()+1)
+    self.infection_rate = np.zeros(n+1)
+    self.mortality_rate = np.zeros(n+1)
 
+    # from uninfected
     # from asymptomatic
     self.transitions[State.ASYMPTOMATIC,State.ASYMPTOMATIC] = 1 - lambda_12 * dt - lambda_15 * dt
     self.transitions[State.MILD,        State.ASYMPTOMATIC] = lambda_12 * dt
@@ -73,18 +79,18 @@ class Model:
     self.severe_care_cap = self.npeople * beds_pct
     self.critical_care_cap = self.npeople * ccu_beds_pct
 
-    #neworder.log(self.transitions)
     #self.transitions = np.transpose(self.transitions)
+    neworder.log(self.transitions)
 
   def _update_t(self, previous_states, new_state, new_state_label):
     index = self.pop[(previous_states != new_state) & (self.pop.State == new_state)].index
-    self.pop.loc[index, new_state_label] = neworder.timeline.time()
+    self.pop.loc[index, new_state_label] = self.timeline().time()
     return index
 
   def step(self):
 
     # implement social distancing
-    if neworder.timeline.time() == social_distancing_policy[0]:
+    if self.timeline().time() == social_distancing_policy[0]:
       self.r = self.r * social_distancing_policy[1]
       neworder.log("Social distancing implemented: r changed to %.2f%%" % (self.r * 100.0))
 
@@ -98,13 +104,13 @@ class Model:
     self.severe_care_cap = self.npeople * beds_pct
     self.critical_care_cap = self.npeople * ccu_beds_pct
 
-    dt = neworder.timeline.dt()
+    dt = self.timeline().dt()
 
     # adjust infection transition
     raw_infection_rate = len(self.pop[self.pop.State.isin(INFECTIOUS)]) * self.r / self.npeople
-    self.p_infect[neworder.timeline.index()] = raw_infection_rate
-    self.transitions[State.UNINFECTED,State.UNINFECTED] = 1 - raw_infection_rate * neworder.timeline.dt()
-    self.transitions[State.ASYMPTOMATIC, State.UNINFECTED] = raw_infection_rate * neworder.timeline.dt()
+    self.p_infect[self.timeline().index()] = raw_infection_rate
+    self.transitions[State.UNINFECTED,State.UNINFECTED] = 1 - raw_infection_rate * dt
+    self.transitions[State.ASYMPTOMATIC, State.UNINFECTED] = raw_infection_rate * dt
 
     # adjust severe->recovery transition according to bed capacity - make recovery less likely
     severe_adj = max(1.0, len(self.pop[self.pop.State == State.SEVERE]) / self.severe_care_cap) 
@@ -130,8 +136,8 @@ class Model:
 
     # infection rate amongst those previously uninfected
     neworder.log("effective infection rate %.2f%% new : %d" % (100.0 * len(new_infections) / len(uninfected), len(new_infections)))
-    self.infection_rate[neworder.timeline.index()] = len(new_infections) / len(uninfected)
-    self.mortality_rate[neworder.timeline.index()] = len(new_deaths) / len(self.pop[self.pop.State != State.DECEASED])
+    self.infection_rate[self.timeline().index()] = len(new_infections) / len(uninfected)
+    self.mortality_rate[self.timeline().index()] = len(new_deaths) / len(self.pop[self.pop.State != State.DECEASED])
 
   def finalise(self):
 
