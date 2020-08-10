@@ -5,65 +5,55 @@
 #include "Timer.h"
 #include "Log.h"
 #include "Environment.h"
+#include "Inspect.h"
 
 
-no::Model::Model(Timeline& timeline, 
-  const py::list& modifiers, 
-  const py::dict& transitions,
-  const py::dict& checks,
-  const py::dict& checkpoints) 
+no::Model::Model(Timeline& timeline) 
   : m_timeline(timeline)
   { 
-    // modifiers (exec)
-    int n = py::len(modifiers);
-
-    m_modifiers.reserve(n);
-    for (int i = 0; i < n; ++i)
-    {        
-      m_modifiers.push_back(std::make_tuple(modifiers[i].cast<std::string>(), no::CommandType::Exec));
-    }
-
-    // transitions (exec)
-    for (const auto& kv: transitions)
-    {
-      no::log("registered transition %%: %%"_s % kv.first.cast<std::string>() % kv.second.cast<std::string>());
-      m_transitions.insert({kv.first.cast<std::string>(), {kv.second.cast<std::string>(), no::CommandType::Exec}});
-    }
-
-    // checks (eval)
-    for (const auto& kv: checks)
-    {
-      no::log("registered check %%: %%"_s % kv.first.cast<std::string>() % kv.second.cast<std::string>());
-      m_checks.insert({kv.first.cast<std::string>(), {kv.second.cast<std::string>(), no::CommandType::Eval}});
-    }
-    
-    // execs
-    for (const auto& kv: checkpoints)
-    {
-      no::log("registered checkpoint %%: %%"_s % kv.first.cast<std::string>() % kv.second.cast<std::string>());
-      m_checkpoints.insert({kv.first.cast<std::string>(), {kv.second.cast<std::string>(), no::CommandType::Exec}});
-    }
   }
 
-void no::Model::run(const no::Environment& env) 
+
+void no::Model::modify(int)
+{
+  // verbose only
+  no::log("defaulted to Model::modify()");
+}
+
+void no::Model::transition()
+{
+  throw std::runtime_error("Model.transition() method must be overridden");
+}
+
+bool no::Model::check()
+{
+  // verbose only
+  no::log("defaulted to Model::check()");
+  return true;
+}
+
+void no::Model::checkpoint()
+{
+  throw std::runtime_error("Model.checkpoint() method must be overridden");
+}
+
+
+void no::Model::run(py::object& model_subclass, const no::Environment& env) 
 {
   no::Runtime runtime("neworder");
   Timer timer;
 
-  no::log("starting microsimulation. start time=%%, timestep=%%, checkpoint(s) at %%"_s 
+  int rank = env.rank();
+
+  const std::string& subclass_name = py::str(model_subclass).cast<std::string>();
+
+  no::log("starting model run. start time=%%, timestep=%%, checkpoint(s) at %%"_s 
     % m_timeline.start() % m_timeline.dt() % m_timeline.checkpoints());
 
-  // Apply any modifiers for this process
-  if (!m_modifiers.empty())
-  {
-    if (m_modifiers.size() != (size_t)env.size()) 
-    {
-      throw std::runtime_error("modifier array size (%%) not consistent with number of processes (%%)"_s % m_modifiers.size() % env.size());
-    }
-    no::log("applying process-specific modifier: %%"_s % std::get<0>(m_modifiers[env.rank()]));
-    runtime(m_modifiers[env.rank()]);
-  }
-  
+  // apply the modifier, if implemented in the derived class 
+  no::log("t=%%(%%) calling: %%.modify(%%)"_s % m_timeline.time() % m_timeline.index() % subclass_name % rank);
+  model_subclass.attr("modify")(rank);
+
   // Loop with checkpoints
   while (!m_timeline.at_end())
   {
@@ -71,31 +61,22 @@ void no::Model::run(const no::Environment& env)
     double t = m_timeline.time();
     int timeindex = m_timeline.index();
 
-    for (auto it = m_transitions.begin(); it != m_transitions.end(); ++it)
+    no::log("t=%%(%%) calling %%.transition()"_s % t % timeindex % subclass_name );
+    model_subclass.attr("transition")();
+
+    // call the modifier if implemented
+//    if (pycpp::has_attr(model_subclass, "check"))
     {
-      no::log("t=%%(%%) transition: %% "_s % t % timeindex % it->first);
-      runtime(it->second);  
-    }
-    for (auto it = m_checks.begin(); it != m_checks.end(); ++it)
-    {
-      no::log("t=%%(%%) check: %% "_s % t % timeindex % it->first);
-      bool ok = runtime(it->second).cast<bool>();
-      if (!ok) 
-      {
-        throw std::runtime_error("check failed: %s"_s % it->first);
-      }  
+      no::log("t=%%(%%) calling %%.check()"_s % t % timeindex % subclass_name );
+      model_subclass.attr("check")();
     }
     if (m_timeline.at_checkpoint())
     {
-      for (auto it = m_checkpoints.begin(); it != m_checkpoints.end(); ++it)
-      {
-        no::log("t=%%(%%) checkpoint: %%"_s % t % timeindex % it->first);   
-        // Note: return value is ignored (exec not eval)
-        runtime(it->second);  
-      }
+      no::log("t=%%(%%) calling %%.checkpoint()"_s % t % timeindex % subclass_name );
+      model_subclass.attr("checkpoint")();
     } 
   }
   no::log("SUCCESS exec time=%%s"_s % timer.elapsed_s());
-
 }
+
 

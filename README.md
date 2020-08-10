@@ -121,6 +121,15 @@ If a timeline is not defined, a single set of transitions is executed.
 
 __NB the following are works-in-progress and subject to change, the documentation may not reflect the current code__
 
+Examples that work post refactor of config:
+- hello_world
+- diagnostics
+- test
+- mortality
+- disease
+- option
+- Schelling
+
 __NB note also some of the examples are getting quite complex as they evolve closer to real models - they will be separated in due course__
 
 The microsimulation framework expects a directory containing one or more python modules. There must be a module called [config.py] that, minimally, initialises a `neworder.Model` object. This entails:

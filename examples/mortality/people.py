@@ -9,12 +9,15 @@ import seaborn as sns
 
 # A more "pythonic" approach using pandas DataFrames
 
+
+
 class People(neworder.Model):
   """ A simple aggregration of Persons each represented as a row in a data frame """
-  def __init__(self, timeline, transitions, checks, checkpoints, mortality_hazard_file, n, max_age):
-    super().__init__(timeline, [], transitions, checks, checkpoints)
+  def __init__(self, mortality_hazard_file, n, max_age):
+    # This is case-based model the timeline refers to the age of the cohort
+    timeline = neworder.Timeline(0.0, max_age, [int(max_age)])
+    super().__init__(timeline)
     # initialise cohort      
-    # assert False
     # filter by location, ethnicity and gender
     self.mortality_hazard = ethpop.create(pd.read_csv(mortality_hazard_file), "E09000030", truncate85=False).reset_index()
 
@@ -30,6 +33,23 @@ class People(neworder.Model):
                                          "TimeOfDeath": np.zeros(n)})
 
     self.max_age = max_age
+
+
+  def transition(self):
+    # kill off some people
+    self.die()
+
+    # age the living only
+    alive = self.population.loc[self.population.Alive].index
+    self.population.loc[alive, "Age"] = self.population.loc[alive, "Age"] + self.timeline().dt()
+
+  def check(self):
+    self.prop_alive()
+    return True
+
+  def checkpoint(self):
+    neworder.log(self.calc_life_expectancy())
+    self.plot()
 
   def plot(self, filename=None):
     # dump the population out
@@ -63,27 +83,18 @@ class People(neworder.Model):
     self.population.loc[newly_dead, "Alive"] = False
     self.population.loc[newly_dead, "TimeOfDeath"] = self.population.loc[newly_dead, "Age"] + r[r<dt]
 
-  def age(self):
-    # kill off some people
-    self.die()
-
-    # age the living only
-    alive = self.population.loc[self.population.Alive].index
-    self.population.loc[alive, "Age"] = self.population.loc[alive, "Age"] + self.timeline().dt()
-
   def calc_life_expectancy(self):  
     # ensure all people have died 
     assert np.sum(self.population.Alive) == 0
-    #self.dump("./population.csv")
 
-    # in this case we can just compute the mortality directly by modelling a non-homogeneous Poisson process and 
+    # in this case we can also compute the mortality directly by modelling a non-homogeneous Poisson process 
     # using the Lewis-Shedler algorithm
     self.population["TimeOfDeathNHPP"] = neworder.mc.first_arrival(self.mortality_hazard.Rate.values, self.timeline().dt(), len(self.population))
 
+    # compare the discrete simulation value against the more direct computation
     neworder.log("%f vs %f" % (np.mean(self.population.TimeOfDeath), np.mean(self.population.TimeOfDeathNHPP)))
     return np.mean(self.population.TimeOfDeath)
 
   def prop_alive(self):  
     # # compute mean
     neworder.log("pct alive = %f" % (100.0 * np.mean(self.population.Alive)))
-    return True

@@ -153,12 +153,13 @@ PYBIND11_EMBEDDED_MODULE(neworder, m)
 
   // Microsimulation (or ABM) model class
   py::class_<no::Model>(m, "Model")
-    .def(py::init<no::Timeline&, const py::list&, const py::dict&, const py::dict&, const py::dict&>())
+    .def(py::init<no::Timeline&>())
     .def("timeline", &no::Model::timeline, py::return_value_policy::reference)
-    .def("modifiers", &no::Model::modifiers, py::return_value_policy::reference)
-    .def("transitions", &no::Model::transitions, py::return_value_policy::reference)
-    .def("checks", &no::Model::checks, py::return_value_policy::reference)
-    .def("checkpoints", &no::Model::checkpoints, py::return_value_policy::reference);
+    .def("modify", &no::Model::modify)
+    .def("transition", &no::Model::transition)
+    .def("check", &no::Model::check)
+    .def("checkpoint", &no::Model::checkpoint);
+    // NB the all-important run function is not exposed to python
 
   // MC
   py::class_<no::MonteCarlo>(m, "MonteCarlo")

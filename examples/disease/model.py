@@ -1,24 +1,30 @@
 
-""" 2nd attempt at model """
+""" 
+Infectious disease case-based microsimulation model 
+Pathways are Poisson processes
 
-# possible transitions (2):
-#         ----------> 5
-#       /    /    /
-# 0 -> 1 -> 2 -> 3 <-
-#                 \  \  
-#                  -> 4 -> 6
+possible state transitions:
+        ----------> 5
+      /    /    /
+0 -> 1 -> 2 -> 3 <-
+                \  \  
+                 -> 4 -> 6
+
+(see data.py for explanation of values)
+"""
 
 import pandas as pd
 import numpy as np
-#from matplotlib import pyplot as plt
 
 import neworder
+
 from data import *
+from graphics import Graphics
 
 class DiseaseModel(neworder.Model):
-  def __init__(self, *args, npeople=0):
+  def __init__(self, days, dt, npeople):
 
-    super().__init__(*args)
+    super().__init__(neworder.Timeline(0, days, [int(days/dt)]))
 
     n = self.timeline().nsteps()
 
@@ -80,7 +86,14 @@ class DiseaseModel(neworder.Model):
     self.critical_care_cap = self.npeople * ccu_beds_pct
 
     #self.transitions = np.transpose(self.transitions)
-    neworder.log(self.transitions)
+    #neworder.log(self.transitions)
+
+  def transition(self):
+    self.step()
+
+  def checkpoint(self):
+    self.finalise()
+    Graphics().plot(self)
 
   def _update_t(self, previous_states, new_state, new_state_label):
     index = self.pop[(previous_states != new_state) & (self.pop.State == new_state)].index
@@ -152,3 +165,11 @@ class DiseaseModel(neworder.Model):
     # use the string representations of thobserved_casese int enums
     self.summary.rename(columns={s: State(s).name for s in self.summary.columns.values}, inplace=True) 
 
+
+
+# initialise the model
+days = 180
+dt = 1
+npeople = 10000
+
+neworder.model = DiseaseModel(days, dt, npeople)

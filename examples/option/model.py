@@ -25,9 +25,6 @@ expiry = 0.75
 # use 4 identical sims with perturbations to compute market sensitivities (a.k.a. Greeks)
 assert neworder.size() == 4 and not neworder.mc.indep(), "This example requires 4 processes with identical RNG streams"
 
-# Using exact MC calc of GBM requires only 1 timestep 
-timeline = neworder.Timeline(0.0, expiry, [1])
-
 # rust requires nsims in root namespace (or modify transitions/checkpoints)
 nsims = 100000 # number of prices to simulate
 
@@ -40,26 +37,5 @@ neworder.pv = np.zeros(neworder.size())
 market = Market(spot, rate, divy, vol)
 option = Option(callput, strike, expiry)
 
-# process-specific modifiers (for sensitivities)
-modifiers = [
-  "pass", # base valuation
-  "neworder.shell(); market.spot = market.spot * 1.01", # delta/gamma up bump
-  "market.spot = market.spot * 0.99", # delta/gamma down bump
-  "market.vol = market.vol + 0.001" # 10bp upward vega
-]
+neworder.model = BlackScholes(option, market, nsims)
 
-transitions = { 
-  # compute the option price using a Monte-Carlo simulation
-  "compute_mc_price": "neworder.pv = neworder.model.mc(option, market)"
-}
-
-checkpoints = {
-  # compare the MC price to the analytic solution
-  "compare_mc_price": "neworder.model.compare(neworder.pv, option, market)",
-  # compute some market risk
-  "compute_greeks": "option.greeks(neworder.pv)"
-}
-
-neworder.model = BlackScholes(timeline, modifiers, transitions, {}, checkpoints, nsims)
-
-neworder.log(dir())

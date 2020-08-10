@@ -1,85 +1,87 @@
-import pandas as pd
-from matplotlib import pyplot as plt
+# DEPRECATED, use people.py
 
-import neworder
-import ethpop
+# import pandas as pd
+# from matplotlib import pyplot as plt
 
-class Person():
+# import neworder
+# import ethpop
 
-  def __init__(self):
-    """ Person::Start() """
-    self.alive = True
-    self.age = 0.0
-    #self.time = 0.0
+# class Person():
 
-    self.time_mortality = neworder.far_future()
+#   def __init__(self):
+#     """ Person::Start() """
+#     self.alive = True
+#     self.age = 0.0
+#     #self.time = 0.0
 
-  def finish(self):
-    """ Person::Finish() """
-    pass
+#     self.time_mortality = neworder.far_future()
 
-  # def state(self, t):
-  #   """ Returns the person's state (alive/dead) at age t """
-  #   return self.alive
+#   def finish(self):
+#     """ Person::Finish() """
+#     pass
 
-  def inc_age(self, mortality_hazard):
-    self.time_mortality_event(mortality_hazard)
-    if self.alive:
-      self.age = self.age + neworder.timestep
+#   # def state(self, t):
+#   #   """ Returns the person's state (alive/dead) at age t """
+#   #   return self.alive
 
-  def time_mortality_event(self, mortality_hazard):
-    """ TIME Person::timeMortalityEvent() """
-    t = neworder.stopping(mortality_hazard.Rate.values[min(neworder.timeline.index()-1, 101)], 1)[0]
-    # TODO fix
-    if t < neworder.timeline.index() or self.age >= neworder.timeline.time() - span[-1] - neworder.timeline.index():
-      self.mortality_event(t)
-    #neworder.log("TOD=%f" % self.time_mortality)
+#   def inc_age(self, mortality_hazard):
+#     self.time_mortality_event(mortality_hazard)
+#     if self.alive:
+#       self.age = self.age + neworder.timestep
 
-  def mortality_event(self, t):
-    self.alive = False
-    self.time_mortality = self.age + t 
-    #neworder.log("died @ %f aged %f" % (t, self.age))
-    self.finish()
+#   def time_mortality_event(self, mortality_hazard):
+#     """ TIME Person::timeMortalityEvent() """
+#     t = neworder.stopping(mortality_hazard.Rate.values[min(neworder.timeline.index()-1, 101)], 1)[0]
+#     # TODO fix
+#     if t < neworder.timeline.index() or self.age >= neworder.timeline.time() - span[-1] - neworder.timeline.index():
+#       self.mortality_event(t)
+#     #neworder.log("TOD=%f" % self.time_mortality)
 
-class People():
-  """ A simple aggregration of Person """
-  def __init__(self, mortality_hazard_file, n):
+#   def mortality_event(self, t):
+#     self.alive = False
+#     self.time_mortality = self.age + t 
+#     #neworder.log("died @ %f aged %f" % (t, self.age))
+#     self.finish()
 
-    self.mortality_hazard = ethpop.create(pd.read_csv(mortality_hazard_file), "E09000030", truncate85=False).reset_index()
+# class People():
+#   """ A simple aggregration of Person """
+#   def __init__(self, mortality_hazard_file, n):
 
-    self.mortality_hazard = self.mortality_hazard[(self.mortality_hazard.NewEthpop_ETH=="WBI") 
-                                                & (self.mortality_hazard.DC1117EW_C_SEX==1)]
+#     self.mortality_hazard = ethpop.create(pd.read_csv(mortality_hazard_file), "E09000030", truncate85=False).reset_index()
 
-    self.max_rate_age = max(self.mortality_hazard.DC1117EW_C_AGE) - 1
-    # initialise population
-    self.population = [ Person() for _ in range(n) ]
-    self.life_expectancy = 0.0
+#     self.mortality_hazard = self.mortality_hazard[(self.mortality_hazard.NewEthpop_ETH=="WBI") 
+#                                                 & (self.mortality_hazard.DC1117EW_C_SEX==1)]
 
-  def age(self):
-    [p.inc_age(self.mortality_hazard) for p in self.population]
+#     self.max_rate_age = max(self.mortality_hazard.DC1117EW_C_AGE) - 1
+#     # initialise population
+#     self.population = [ Person() for _ in range(n) ]
+#     self.life_expectancy = 0.0
 
-  def calc_life_expectancy(self):  
+#   def age(self):
+#     [p.inc_age(self.mortality_hazard) for p in self.population]
 
-    #neworder.log("prop_alive=%f" % self.prop_alive())
-    assert sum([p.alive for p in self.population]) == 0
-    # compute mean
-    le = 0.0
-    n = 0
-    for p in self.population:
-      if not p.alive:
-        le = le + p.time_mortality
-        n = n + 1
-    return le / n
-    #self.life_expectancy = sum([p.time_mortality for p in self.population]) / len(self.population)
-    #return self.life_expectancy
+#   def calc_life_expectancy(self):  
 
-  def prop_alive(self):  
-    # # compute mean
-    neworder.log(sum([p.alive for p in self.population]) / len(self.population))
-    return True
+#     #neworder.log("prop_alive=%f" % self.prop_alive())
+#     assert sum([p.alive for p in self.population]) == 0
+#     # compute mean
+#     le = 0.0
+#     n = 0
+#     for p in self.population:
+#       if not p.alive:
+#         le = le + p.time_mortality
+#         n = n + 1
+#     return le / n
+#     #self.life_expectancy = sum([p.time_mortality for p in self.population]) / len(self.population)
+#     #return self.life_expectancy
 
-  def plot(self, filename=None):
-    # dump the population out
-    #self.population.to_csv(filename, index=False)
-    plt.hist([p.time_mortality for p in self.population], self.max_rate_age)
-    plt.show()
+#   def prop_alive(self):  
+#     # # compute mean
+#     neworder.log(sum([p.alive for p in self.population]) / len(self.population))
+#     return True
+
+#   def plot(self, filename=None):
+#     # dump the population out
+#     #self.population.to_csv(filename, index=False)
+#     plt.hist([p.time_mortality for p in self.population], self.max_rate_age)
+#     plt.show()

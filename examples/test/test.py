@@ -3,8 +3,9 @@ import pandas as pd
 
 import neworder
 
-class Test():
-  def __init__(self, p, n):
+class Test(neworder.Model):
+  def __init__(self, timeline, p, n):
+    super().__init__(timeline)
     # states
     self.s = np.array(range(neworder.size()))
     # transition matrix 
@@ -14,9 +15,7 @@ class Test():
     # all begin with unique id and state = rank
     self.pop = pd.DataFrame({"id": np.array(range(neworder.rank() * n, neworder.rank() * n + n)), "state": np.full(n, neworder.rank()) })
 
-    #neworder.log(self.p)
-
-  def test(self):
+  def transition(self):
     # generate some movement
     neworder.transition(self.s, self.p, self.pop, "state")
 
@@ -37,7 +36,7 @@ class Test():
         #neworder.log("received %d immigrants from %d" % (len(immigrants), s))
         self.pop = self.pop.append(immigrants)
 
-  def stats(self):
+  def checkpoint(self):
     neworder.sync()
     neworder.log("len(pop)=%d" % len(self.pop))
 
