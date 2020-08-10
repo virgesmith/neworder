@@ -128,7 +128,6 @@ Examples that work post refactor of config:
 - mortality
 - disease
 - option
-- Schelling
 
 __NB note also some of the examples are getting quite complex as they evolve closer to real models - they will be separated in due course__
 
