@@ -119,7 +119,7 @@ If a timeline is not defined, a single set of transitions is executed.
 
 # Examples
 
-__NB the following are works-in-progress and subject to change, the documentation may not reflect the current code__
+__NB the following are works-in-progress and subject to change, and the documentation may not reflect the current code__
 
 Examples that work post refactor of config:
 - hello_world
@@ -128,10 +128,16 @@ Examples that work post refactor of config:
 - mortality
 - disease
 - option
+- schelling
+- riskpaths
+- competing
+
+
+Examples that don't, or havent been tested, have been moved out of the examples folder.
 
 __NB note also some of the examples are getting quite complex as they evolve closer to real models - they will be separated in due course__
 
-The microsimulation framework expects a directory containing one or more python modules. There must be a module called [config.py] that, minimally, initialises a `neworder.Model` object. This entails:
+The microsimulation framework expects a directory containing one or more python modules. There must be a module called [model.py] that, minimally, initialises a user-defined subclass of `neworder.Model` object. This entails:
 
 - defining a timeline over which the model runs. The timeline can be broken into multiple chunks, the end of each of which is considered a _checkpoint_.
 - describes, optionally, local modifications to the data or model (for a multiprocess run only).

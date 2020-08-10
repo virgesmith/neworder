@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ScenarioView>
+	<General Language="EN" LongNames="1" SortedGroups="0" Parsed="1" MaximizeChild="0"></General>
+	<TreeView GroupView="0" Type="411">DurationOfLife</TreeView>
+	<TreeExpansions>
+		<TreeExpansion>TABLES</TreeExpansion>
+		<TreeExpansion>PARAMETER_FILES|PersonCore</TreeExpansion>
+		<TreeExpansion>PARAMETER_FILES</TreeExpansion>
+	</TreeExpansions>
+	<ParameterSymbols></ParameterSymbols>
+	<ExportGeneral NoSE="1" NoCV="1" TableType="EXCEL_ONESHEET" Sparse="0" Lines="66"></ExportGeneral>
+	<ExportSubSamples>
+		<ExportSubSample Value="0">0</ExportSubSample>
+		<ExportSubSample Value="0">1</ExportSubSample>
+		<ExportSubSample Value="0">2</ExportSubSample>
+		<ExportSubSample Value="0">3</ExportSubSample>
+		<ExportSubSample Value="0">4</ExportSubSample>
+		<ExportSubSample Value="0">5</ExportSubSample>
+		<ExportSubSample Value="0">6</ExportSubSample>
+		<ExportSubSample Value="0">7</ExportSubSample>
+		<ExportSubSample Value="0">8</ExportSubSample>
+		<ExportSubSample Value="0">9</ExportSubSample>
+		<ExportSubSample Value="0">10</ExportSubSample>
+		<ExportSubSample Value="0">11</ExportSubSample>
+		<ExportSubSample Value="0">12</ExportSubSample>
+		<ExportSubSample Value="0">13</ExportSubSample>
+		<ExportSubSample Value="0">14</ExportSubSample>
+		<ExportSubSample Value="0">15</ExportSubSample>
+	</ExportSubSamples>
+	<ExportTables>
+		<ExportTable Present="1">DurationOfLife</ExportTable>
+	</ExportTables>
+</ScenarioView>

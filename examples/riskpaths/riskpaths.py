@@ -10,11 +10,13 @@ from data import UnionState
 from data import Parity
 import data
 
-class RiskPaths():
-  def __init__(self, n):
+class RiskPaths(neworder.Model):
+  def __init__(self, timeline, n):
+
+    super().__init__(timeline)
 
     # initialise population - time of death only 
-    self.population = pd.DataFrame(data={"TimeOfDeath": neworder.mc.first_arrival(data.mortality_rate, neworder.timeline.dt(), n, 0.0),
+    self.population = pd.DataFrame(data={"TimeOfDeath": neworder.mc.first_arrival(data.mortality_rate, timeline.dt(), n, 0.0),
                                          "TimeOfPregnancy": np.full(n, neworder.never()),
                                          "Parity": np.full(n, Parity.CHILDLESS),
                                          "Unions": np.zeros(n, dtype=int),
@@ -42,6 +44,15 @@ class RiskPaths():
 
     neworder.log("RiskPaths initialised")
       
+
+  def transition(self):
+    #"a": "import sys; neworder.log(sys.argv)",
+    self.pregnancy()
+
+  def checkpoint(self):
+    self.stats()
+    self.plot()
+
   def pregnancy(self):
     # We're interested in the first pregnancy that occurs for each individual
     # fmin ignores nan (np.minimum is a problem as it doesnt deal with nan well)
@@ -109,12 +120,10 @@ class RiskPaths():
           self.population.T_Union2Start[~neworder.isnever(self.population.T_Union2Start.values)],
           self.population.T_Union2End[~neworder.isnever(self.population.T_Union2End.values)] ]
 
-    # workaround for tkinter init error 
-    # import sys
-    # sys.argv = ["neworder"]
-
     plt.hist(b, bins=range(100), stacked=True)
     plt.hist(self.population.TimeOfPregnancy[~neworder.isnever(self.population.TimeOfPregnancy.values)], range(100), color='purple')
+    plt.legend(["Union 1 starts", "Union 1 ends", "Union 2 starts", "Union 2 ends", "Pregnancy"])
+    plt.xlabel("Age (y)")
+    plt.ylabel("Frequency")
     #plt.savefig("./doc/examples/img/riskpaths.png")
     plt.show()
-    #neworder.log(self.population)

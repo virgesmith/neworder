@@ -25,6 +25,9 @@ class HelloWorld(neworder.Model):
     In this example we don't have an explicit timeline, 
     We create a null timeline, corresponding to a single instantaneous transition,
     and initialised the base class with this 
+
+    NB it is *essential* to initialise the base class with a timeline, even if its null. 
+    Failing to do so will result in UNDEFINED BEHAVIOUR
     """
     super().__init__(neworder.Timeline.null())
     self.name = "unknown"

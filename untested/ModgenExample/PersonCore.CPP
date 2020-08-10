@@ -1,0 +1,123 @@
+﻿#include "model.h"
+static int HaveAGoodDay;
+namespace mm {
+#line 1 "C:/Users/sabourin/Desktop/Chapter 1/ModgenExample/PersonCore.mpp"
+//LABEL(PersonCore, EN) Core functionality of the Person actor
+
+/* NOTE(PersonCore, EN)
+	This module contains the basic information which defines the Person case.
+*/
+
+//parameters 
+//{
+//	//EN Annual hazard of death
+//	double MortalityHazard;
+//	/* NOTE(MortalityHazard, EN)
+//		A constant hazard of death results in an exponential
+//		survival function.
+//	*/
+//};
+
+//actor Person            //EN Individual
+//{
+//	// The variables time and age are automatically defined by Modgen.
+//	// Model-specific labels and notes are supplied below.
+//
+//	//LABEL(Person.time, EN) Time
+//	/*NOTE(Person.time, EN)
+//		Time is a continuous quantity in this model.
+//		A unit of time is a year.
+//	*/
+//
+//	//LABEL(Person.age, EN) Age
+//	/*NOTE(Person.age, EN)
+//		Age is a continuous quantity in this model.
+//		A unit of age is a year.
+//	*/
+//
+//	//EN Alive
+//	logical alive = {TRUE};
+//	/*NOTE(Person.alive, EN)
+//		Set to TRUE when the actor starts, and to FALSE just before the actor finishes.
+//		Since the numeric value of TRUE is 1 and FALSE is 0, this variable
+//		can also be used to count actors in tables.
+//	*/
+//
+//
+//	
+//	event timeMortalityEvent, MortalityEvent;	//EN Mortality event
+//
+//	//LABEL(Person.Start, EN) Starts the actor
+//	void Start();
+//
+//	//LABEL(Person.Finish, EN) Finishes the actor
+//	void Finish();
+//};
+
+/*NOTE(Person.MortalityEvent, EN)
+	This event implements a constant hazard of death.
+*/
+
+// The time function of MortalityEvent
+TIME Person::timeMortalityEvent()
+{
+	TIME tEventTime = TIME_INFINITE;
+
+	// Draw a random waiting time to death from an exponential distribution
+	// based on the constant hazard MortalityHazard.
+	tEventTime = WAIT( - TIME( log( RandUniform(1) ) / gprParam->MortalityHazard ) );
+
+	return tEventTime;
+}
+
+// The implement function of MortalityEvent
+void Person::MortalityEvent()
+{
+	 poStateFunctions->Set_alive(  FALSE );
+
+	// Remove the actor from the simulation.
+	Finish();
+}
+
+/*NOTE(Person.Start, EN)
+	The Start function initializes actor variables before simulation
+	of the actor commences.
+*/
+void Person::Start()
+{ if (__finished) {StartAfterFinish(); return; }; StartSpecial1();
+	// Modgen initializes all actor variables
+	// before the code in this function is executed.
+
+	 poStateFunctions->Set_age(  0, true );
+	 poStateFunctions->Set_time(  0, true );
+
+	// After the code in this function is executed,
+	// Modgen initializes events and tables for the actor.
+	// Modgen also outputs starting values to the tracking file if requested.
+StartSpecial2();}
+
+/*NOTE(Person.Finish, EN)
+	The Finish function terminates the simulation of an actor.
+*/
+void Person::Finish()
+{
+	// After the code in this function is executed,
+	// Modgen removes the actor from tables and from the simulation.
+	// Modgen also recuperates any memory used by the actor.
+if (__finished) {	DoubleFinish(case_seed);	return; } else __finished = TRUE;FinishSpecial();}
+
+/*NOTE(DurationOfLife, EN)
+	This table contains statistics related to the duration of life.
+*/
+//table Person DurationOfLife //EN Duration of Life
+//{
+//	{
+//		value_in(alive),				//EN Population size
+//		min_value_out(duration()),		//EN Minimum duration of life decimals=4
+//		max_value_out(duration()),		//EN Maximum duration of life decimals=4
+//		duration() / value_in(alive)	//EN Life expectancy decimals=4
+//
+//	}	//EN Demographic characteristics
+//};
+
+} // namespace 

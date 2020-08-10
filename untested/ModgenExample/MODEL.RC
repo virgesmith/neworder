@@ -1,0 +1,4 @@
+#ifndef APSTUDIO_INVOKED
+#include "modgen.rc"
+#endif
+ParseInfo Model DISCARDABLE "PARSE.INF"

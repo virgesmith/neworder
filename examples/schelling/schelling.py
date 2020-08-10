@@ -10,7 +10,7 @@ import matplotlib.animation as animation
 class Schelling(neworder.Model):
   def __init__(self, timeline, gridsize, categories, similarity):
 
-    # NB missing this line ended up with memory corruption, bad_alloc thrown
+    # NB missing this line ended up with memory corruption
     super().__init__(timeline)
 
     # category 0 is empty cell
