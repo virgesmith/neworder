@@ -4,37 +4,63 @@ import neworder
 from helpers import *
 from math import *
 
-# pointless class?
-class BS:
-  def __init__(self):
-    pass
+# Subclass neworder.Model
+class BlackScholes(neworder.Model):
+  def __init__(self, option, market, nsims=100000):
 
-  def mc(self, option, market, nsims, quasi=False):
+    # Using exact MC calc of GBM requires only 1 timestep 
+    timeline = neworder.Timeline(0.0, option.expiry, [1])
+    super().__init__(timeline)
+
+    self.option = option
+    self.market = market
+    self.nsims = nsims
+
+  def modify(self, rank):
+    # hmmm....
+    if rank == 1:
+      self.market.spot = self.market.spot * 1.01 # delta/gamma up bump
+    elif rank == 2:
+      self.market.spot = self.market.spot * 0.99 # delta/gamma down bump
+    elif rank == 3:
+      self.market.vol = self.market.vol + 0.001 # 10bp upward vega
+
+  def transition(self):
+    neworder.pv = self.mc()
+
+  def checkpoint(self):
+    self.compare(neworder.pv)
+    # compute some market risk
+    self.option.greeks(neworder.pv)
+
+  def mc(self):
     # get the time from the environment
-    dt = neworder.timeline.time()
-    if quasi:
-      normals = nstream_q(nsims)
-    else:
-      normals = nstream(nsims)
+    dt = self.timeline().time()
+    normals = nstream(self.nsims)
     # compute underlying prices at dt
-    underlyings = market.spot * np.exp((market.rate - market.divy - 0.5 * market.vol * market.vol) * dt + normals * market.vol * sqrt(dt))
+    S = self.market.spot
+    r = self.market.rate
+    q = self.market.divy
+    sigma = self.market.vol
+    underlyings = S * np.exp((r - q - 0.5 * sigma * sigma) * dt + normals * sigma * sqrt(dt))
     # compute option prices at dt
-    if option.callput == "CALL":
-      fv = (underlyings - option.strike).clip(min=0.0).mean()
+    if self.option.callput == "CALL":
+      fv = (underlyings - self.option.strike).clip(min=0.0).mean()
     else:
-      fv = (option.strike - underlyings).clip(min=0.0).mean()
+      fv = (self.option.strike - underlyings).clip(min=0.0).mean()
 
     # discount back to val date
-    return fv * exp(-market.rate * dt)
+    return fv * exp(-r * dt)
 
-  def analytic(self, option, market):
+  def analytic(self):
     """ Compute Black-Scholes European option price """
-    S = market.spot
-    K = option.strike
-    r = market.rate
-    q = market.divy
-    T = option.expiry
-    vol = market.vol
+    S = self.market.spot
+    K = self.option.strike
+    r = self.market.rate
+    q = self.market.divy
+    T = self.option.expiry
+    vol = self.market.vol
+
     srt = vol * sqrt(T)
     rqs2t = (r - q + 0.5 * vol * vol) * T
     d1 = (log(S/K) + rqs2t) / srt
@@ -42,15 +68,15 @@ class BS:
     df = exp(-r * T)
     qf = exp(-q * T)
 
-    if option.callput == "CALL":
+    if self.option.callput == "CALL":
       return S * qf * norm_cdf(d1) - K * df * norm_cdf(d2)
     else:
       return -S * df * norm_cdf(-d1) + K * df * norm_cdf(-d2)
 
-  def compare(self, pv_mc, nsims, option, market):
+  def compare(self, pv_mc):
     """ Compare MC price to analytic """
-    ref = self.analytic(option, market)
+    ref = self.analytic()
     err = pv_mc / ref - 1.0
     neworder.log("mc: {:.6f} / ref: {:.6f} err={:.2%}".format(pv_mc, ref, err))
     # relative error should be within O(1/(sqrt(sims))) of analytic solution
-    return True if abs(err) <= 2.0/sqrt(nsims) else False
+    return True if abs(err) <= 2.0/sqrt(self.nsims) else False

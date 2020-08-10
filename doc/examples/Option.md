@@ -24,46 +24,92 @@ We can easily frame a derivative derivative pricing problem in terms of a micros
 
 For this simple option we can also compute an analytic fair value under the Black-Scholes model, and use this to determine the accuracy of the Monte-Carlo simulation. We also demonstrate the capabilities neworder has in terms of sensitivity analysis.
 
-The [config.py](../../examples/option/config.py) file: 
-- defines a simple timeline [0, T] corresponding to [valuation date, expiry date] and a single timestep.
-- sets the parameters for the market and the option, and describes how to initialise the [market](../../examples/option/market.py) and [option](../../examples/option/option.py) objects with these parameters.
-- describes the 'modifiers' for each process: the perturbations applied to the market data in order to calculate the option price sensitivity to that market data
-- defines the "transition", which in this case is simply running the Monte-Carlo simulation from time zero to time T.
-- checks the Monte-Carlo result against the analytic formula and displays the price and the random error.
-- finally, gathers the results from the other processes and computes some sensitivities.
+## Implementation
 
-The file [black_scholes.py](../../examples/option/black_scholes.py) implements the both analytic option formula and the Monte-Carlo simulation, with [helpers.py](../../examples/option/helpers.py) providing some additional functionality. 
+We use an implementation of the Monte-Carlo technique described above, and also, for comparision, the analytic solution. 
+
+Additionally, we compute some market risk: sensitivities to the underlying price and volatility. In order to do this we need to run the simulation multiple times with perturbations to market data. To eliminate random noise we also want to use identical random streams in each simulation.
+
+We run the model over 4 processes in the MPI framework to achieve this:
+
+```
+$ ./run_example.sh option 4 -c
+```
+where the `-c` flag ensures the random streams are identical.
+
+The [config.py](../../examples/option/config.py) file: 
+- sets the parameters for the market and the option, and describes how to initialise the [market](../../examples/option/market.py) and [option](../../examples/option/option.py) objects with these parameters.
+
+- defines a simple timeline [0, T] corresponding to [valuation date, expiry date] and a single timestep, which is al we require for this example.
+
+- describes the 'modifiers' for each process: the perturbations applied to the market data in order to calculate the option price sensitivity to that market data. In this case we bump the spot up and down and the volatility up, allowing calculation of delta, gamma and vega.
+
+- defines the "transition", which in this case is simply running the Monte-Carlo simulation in one step from time zero to time T.
+
+- and finally the "checkpoints" run at the end of the timeline: 
+  - check the Monte-Carlo result against the analytic formula and displays the price and the random error.
+  - process 0 gathers the results from the other processes and computes the sensitivities described above.
+
+The file [black_scholes.py](../../examples/option/black_scholes.py) implements the Model (by subclassing `neworder.Model`), with both analytic option formula and the Monte-Carlo simulation, with [helpers.py](../../examples/option/helpers.py) providing some additional functionality. 
 
 The simulation must be run with 4 processes and, to eliminate Monte-Carlo noise from the sensitivities, with each process using identical random number streams (the -c flag): 
 
 ```bash
 $ ./run_example.sh option 4 -c
-[no 3/4] env: seed=79748 python 3.6.5 (default, Apr  1 2018, 05:46:30)  [GCC 7.3.0]
-[no 3/4] starting microsimulation t=0.000000
-[no 3/4] initialising market
-[no 3/4] initialising option
-[no 1/4] env: seed=79748 python 3.6.5 (default, Apr  1 2018, 05:46:30)  [GCC 7.3.0]
-[no 1/4] starting microsimulation t=0.000000
-[no 1/4] initialising market
-[no 1/4] initialising option
-[no 2/4] env: seed=79748 python 3.6.5 (default, Apr  1 2018, 05:46:30)  [GCC 7.3.0]
-[no 2/4] starting microsimulation t=0.000000
-[no 2/4] initialising market
-[no 2/4] initialising option
-[no 0/4] env: seed=79748 python 3.6.5 (default, Apr  1 2018, 05:46:30)  [GCC 7.3.0]
-[no 0/4] starting microsimulation t=0.000000
-[no 0/4] initialising market
-[no 0/4] initialising option
-[no 3/4] initialising model
-[no 3/4] applying modifier: exec("market.vol = market.vol + 0.001")
-[no 3/4] t=0.750000: compute_mc_price
-...
-[no 2/4] SUCCESS
-[no 3/4] SUCCESS
-[no 1/4] SUCCESS
-[py 0/4] PV=7.213875
-[py 0/4] delta=0.548820
-[py 0/4] gamma=0.022923
-[py 0/4] vega 10bp=0.034061
-[no 0/4] SUCCESS
+[no 2/4] neworder 0.0.0 env: mc=(indep:0, seed:79748) python 3.8.2 (default, Jul 16 2020, 14:00:26)  [GCC 9.3.0]
+[no 1/4] neworder 0.0.0 env: mc=(indep:0, seed:79748) python 3.8.2 (default, Jul 16 2020, 14:00:26)  [GCC 9.3.0]
+[no 0/4] neworder 0.0.0 env: mc=(indep:0, seed:79748) python 3.8.2 (default, Jul 16 2020, 14:00:26)  [GCC 9.3.0]
+[no 3/4] neworder 0.0.0 env: mc=(indep:0, seed:79748) python 3.8.2 (default, Jul 16 2020, 14:00:26)  [GCC 9.3.0]
+[no 1/4] initialise: registered object 'market'
+[no 1/4] initialise: registered object 'option'
+[no 1/4] registered transition compute_mc_price: neworder.pv = neworder.model.mc(option, market)
+[no 1/4] registered checkpoint compare_mc_price: neworder.model.compare(neworder.pv, option, market)
+[no 1/4] registered checkpoint compute_greeks: option.greeks(neworder.pv)
+[no 1/4] starting microsimulation. start time=0.000000, timestep=0.750000, checkpoint(s) at [1]
+[no 1/4] applying process-specific modifier: market.spot = market.spot * 1.01
+[no 1/4] t=0.750000(1) transition: compute_mc_price 
+[no 3/4] initialise: registered object 'market'
+[no 3/4] initialise: registered object 'option'
+[no 3/4] registered transition compute_mc_price: neworder.pv = neworder.model.mc(option, market)
+[no 3/4] registered checkpoint compare_mc_price: neworder.model.compare(neworder.pv, option, market)
+[no 3/4] registered checkpoint compute_greeks: option.greeks(neworder.pv)
+[no 3/4] starting microsimulation. start time=0.000000, timestep=0.750000, checkpoint(s) at [1]
+[no 3/4] applying process-specific modifier: market.vol = market.vol + 0.001
+[no 3/4] t=0.750000(1) transition: compute_mc_price 
+[no 2/4] initialise: registered object 'market'
+[no 2/4] initialise: registered object 'option'
+[no 2/4] registered transition compute_mc_price: neworder.pv = neworder.model.mc(option, market)
+[no 2/4] registered checkpoint compare_mc_price: neworder.model.compare(neworder.pv, option, market)
+[no 2/4] registered checkpoint compute_greeks: option.greeks(neworder.pv)
+[no 2/4] starting microsimulation. start time=0.000000, timestep=0.750000, checkpoint(s) at [1]
+[no 2/4] applying process-specific modifier: market.spot = market.spot * 0.99
+[no 2/4] t=0.750000(1) transition: compute_mc_price 
+[no 0/4] initialise: registered object 'market'
+[no 0/4] initialise: registered object 'option'
+[no 0/4] registered transition compute_mc_price: neworder.pv = neworder.model.mc(option, market)
+[no 0/4] registered checkpoint compare_mc_price: neworder.model.compare(neworder.pv, option, market)
+[no 0/4] registered checkpoint compute_greeks: option.greeks(neworder.pv)
+[no 0/4] starting microsimulation. start time=0.000000, timestep=0.750000, checkpoint(s) at [1]
+[no 0/4] applying process-specific modifier: pass
+[no 0/4] t=0.750000(1) transition: compute_mc_price 
+[no 3/4] t=0.750000(1) checkpoint: compare_mc_price
+[py 3/4] mc: 7.244002 / ref: 7.235288 err=0.12%
+[no 3/4] t=0.750000(1) checkpoint: compute_greeks
+[no 1/4] t=0.750000(1) checkpoint: compare_mc_price
+[py 1/4] mc: 7.768708 / ref: 7.760108 err=0.11%
+[no 1/4] t=0.750000(1) checkpoint: compute_greeks
+[no 1/4] SUCCESS exec time=0.026183s
+[no 3/4] SUCCESS exec time=0.025125s
+[no 2/4] t=0.750000(1) checkpoint: compare_mc_price
+[py 2/4] mc: 6.673223 / ref: 6.665127 err=0.12%
+[no 2/4] t=0.750000(1) checkpoint: compute_greeks
+[no 2/4] SUCCESS exec time=0.028023s
+[no 0/4] t=0.750000(1) checkpoint: compare_mc_price
+[py 0/4] mc: 7.209954 / ref: 7.201286 err=0.12%
+[no 0/4] t=0.750000(1) checkpoint: compute_greeks
+[py 0/4] PV=7.209954
+[py 0/4] delta=0.547743
+[py 0/4] gamma=0.022023
+[py 0/4] vega 10bp=0.034048
+[no 0/4] SUCCESS exec time=0.027773s
 ```

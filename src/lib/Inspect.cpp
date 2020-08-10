@@ -7,10 +7,10 @@
 #include <iostream>
 
 
-bool pycpp::callable(const py::object& o) 
-{
-  return PyCallable_Check(o.ptr());
-}
+// bool pycpp::callable(const py::object& o) 
+// {
+//   return PyCallable_Check(o.ptr());
+// }
 
 bool pycpp::has_attr(const py::object& o, const char* attr_name)
 {

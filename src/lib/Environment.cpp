@@ -22,11 +22,6 @@ no::Environment& no::Environment::init(int rank, int size, bool indep)
   env.m_rank = rank;
   env.m_size = size;
 
-  // int64_t seed = compute_seed(rank, size, indep);
-  // // stored in python
-  // neworder.attr("INDEP") = indep;
-  // neworder.attr("SEED") = seed;
-
   // singleton, so don't need to worry about freeing memory
   env.m_mc = new MonteCarlo(rank, size, indep);
   neworder.attr("mc") = env.m_mc;
@@ -35,9 +30,6 @@ no::Environment& no::Environment::init(int rank, int size, bool indep)
 
   // set init flag
   env.m_init = true;
-
-  // initialised in python code
-  env.m_timeline = nullptr;
 
   return env;
 }
@@ -149,11 +141,4 @@ std::string no::Environment::python_version()
     std::replace(version_string.begin(), version_string.end(), '\n', ' ');
   }
   return version_string;
-}
-
-no::Timeline& no::Environment::timeline()
-{ 
-  // get ref to python object 
-  if (!m_timeline) m_timeline = m_self->attr("timeline").cast<no::Timeline*>(); 
-  return *m_timeline;
 }

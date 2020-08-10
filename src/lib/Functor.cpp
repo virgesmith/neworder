@@ -1,4 +1,4 @@
-
+#if 0
 #include "Functor.h"
 
 #include "Inspect.h"
@@ -29,3 +29,4 @@ py::object pycpp::Functor::operator()() const
     return m_func(*m_args, **m_kwargs);
 }
 
+#endif

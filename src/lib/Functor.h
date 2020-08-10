@@ -1,5 +1,7 @@
 #pragma once
 
+#if 0
+
 // Functor.h
 
 #include "Inspect.h"
@@ -31,3 +33,5 @@ private:
 typedef std::map<std::string, Functor> FunctionTable;
 
 }
+
+#endif

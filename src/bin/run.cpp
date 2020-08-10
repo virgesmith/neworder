@@ -4,6 +4,7 @@
 #include "Functor.h"
 #include "Environment.h"
 #include "Module.h"
+#include "Model.h"
 #include "Log.h"
 #include "Timer.h"
 
@@ -28,6 +29,7 @@ void append_model_paths(const char* paths[], size_t n)
   setenv("PYTHONPATH", pythonpath.c_str(), 1);
 }
 
+#if 0
 namespace {
 
 py::tuple get_or_empty(const py::handle& dict, const char* key)
@@ -199,6 +201,49 @@ int run(int rank, int size, bool indep)
       } 
     }
     no::log("SUCCESS exec time=%%s"_s % timer.elapsed_s());
+  }
+  catch(std::exception& e)
+  {
+    std::cerr << "%%ERROR:%%"_s % env.context() % e.what() << std::endl;
+    return 1;
+  }
+  catch(...)
+  {
+    std::cerr << "%%ERROR: (unknown exception)"_s % env.context() << std::endl;
+    return 1;
+  }
+  return 0;
+}
+#endif
+
+int run(int rank, int size, bool indep)
+{
+  no::Environment& env = no::Environment::init(rank, size, indep);
+  Timer timer;
+  try
+  {
+    py::object& neworder = env; 
+    // Load (and exec) config file, importing all its symbols into the root namespace
+    // TODO can this be done in pybind11?
+    // py::module config = py::module::import("model"); // ~ "import model"
+    py::exec("from model import *");
+    // Load the root namespace
+    py::module root = py::module::import("__main__");
+
+    // this works around an issue in matplotlib where it assumes sys.argv[0] exists
+    py::module sys = py::module::import("sys");
+    py::list argv(1);
+    argv[0] = py::str("neworder");
+    sys.attr("argv") = argv;
+    root.attr("sys") = sys;
+
+    // the C++ base class instance
+    no::Model& model = neworder.attr("model").cast<no::Model&>();
+    // the python subclass instance
+    py::object model_subclass = neworder.attr("model");
+
+    // need a py::object to access derived methods
+    model.run(model_subclass, env);
   }
   catch(std::exception& e)
   {

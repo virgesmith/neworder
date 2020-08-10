@@ -94,8 +94,9 @@ The framework provides:
 Where possible, the functionality available in existing python libraries should be used. The framework specifically does not provide:
 - arrays: use numpy wherever possible. The framework can access numpy arrays directly. 
 - data frames: use pandas wherever possible. Data frames are accessible in the framework via numpy arrays.
+- visualisation: use e.g. matplotlib
 
-That said, the model developer should avoid loops in python code - its an interpreted language and loops will be executed much more slowly than compiled code.
+That said, the model developer should avoid loops in python code - it is an interpreted language and loops will be executed much more slowly than compiled code.
 
 The section below lists minimal requirements that must be met, and those that - if specified - will be used:
 
@@ -118,106 +119,39 @@ If a timeline is not defined, a single set of transitions is executed.
 
 # Examples
 
-__NB the following are works-in-progress and subject to change, the documentation may not reflect the current code__
+__NB the following are works-in-progress and subject to change, and the documentation may not reflect the current code__
+
+Examples that work post refactor of config:
+- hello_world
+- diagnostics
+- test
+- mortality
+- disease
+- option
+- schelling
+- riskpaths
+- competing
+
+
+Examples that don't, or havent been tested, have been moved out of the examples folder.
 
 __NB note also some of the examples are getting quite complex as they evolve closer to real models - they will be separated in due course__
 
-The microsimulation framework expects a directory containing some python modules. There must be a module called [config.py] that, minimally:
-- describes how to initialise model object(s), defined in the other module(s).
-- defines a timeline and a timestep. The timeline can be broken into multiple chunks, the end of each of which is considered a _checkpoint_.
+The microsimulation framework expects a directory containing one or more python modules. There must be a module called [model.py] that, minimally, initialises a user-defined subclass of `neworder.Model` object. This entails:
+
+- defining a timeline over which the model runs. The timeline can be broken into multiple chunks, the end of each of which is considered a _checkpoint_.
+- describes, optionally, local modifications to the data or model (for a multiprocess run only).
 - describes what (if any) checks to run after each timestep.
 - defines the _transitions_ that the population are subject to during the timeline.
-- describes what to do with the simulated population data at each checkpoint.   
+- describes what to do with the simulated population data at each checkpoint.
 
-All of these are entirely user-definable. The checks, transitions and checkpoints can be empty
+The neworder runtime will automatically execute the model once constructed.
 
 To run an example, type 
 ```bash
 $ ./run_example.sh <name> [size [-c]]
 ```
 which will run the model defined in the directory `./examples/<name>`, running optionally over `size` processes, which can be set to use identical RNG streams with the `-c` flag.
-
-## Hello World
-
-This example is a simple illustration of the structure required, and how it fits together. All the files are extensively commented. and it can be used as a skeleton for new project. 
-
-The output from *neworder* is prefixed with a source identifier in square brackets, containing the following information for debugging purposes:
-- Source of message: `no` if logged from the framework itself, `py` if logged from python code (via the `neworder.log()` function).
-- the process id ('rank' in MPI parlance) and the total number of processes ('size' in MPI parlance) - in serial mode these default to 0/1.
-
-
-```bash
-$ ./run_example.sh hello_world
-[no 0/1] env: seed=19937 python 3.6.7 (default, Oct 22 2018, 11:32:17)  [GCC 8.2.0]
-[no 0/1] starting microsimulation. timestep=0.000000, checkpoint(s) at [1]
-[no 0/1] t=0.000000(0) initialise: greeter
-[no 0/1] t=0.000000(1) transition: who
-[no 0/1] t=0.000000(1) check: eval
-[no 0/1] t=0.000000(1) checkpoint: say_hello
-[py 0/1] Hello neworder_user
-[no 0/1] SUCCESS exec time=0.005971s
-```
-### Understanding the workflow and the output
-
-Typically, defining a timeline for the model is necessary but not compulsory. By default the start time and timestep is zero, and there is a single timestep. This example doesn't require a timeline. The [config.py](examples/hello_world/config.py) file does include a comment illustrating how a timeline would be defined.
-
-The environment initialises, indicating the random seed and the python version used:
-```
-[no 0/1] env: seed=19937 python 3.6.6 (default, Sep 12 2018, 18:26:19)  [GCC 8.0.1 20180414 (experimental) [trunk revision 259383]]
-[no 0/1] starting microsimulation...
-```
-As no timeline has been specified, we just have single timestep and a single checkpoint (the end). The model is initialised:
-```
-[no 0/1] t=0.000000 initialise: greeter
-```
-...an object is constructed and assigned to the variable `greeter`. In [config.py](examples/hello_world/config.py), from the module `greet`, construct an object of type `Greet`, passing no parameters:
-```
-neworder.initialisations = {
-  "greeter": { "module": "greet", "class_": "Greet", "parameters": [] }
-}
-```
-The time loop now increments, and the transitions are processed:
-```
-[no 0/1] t=1.000000 transition: who
-```
-The transition named 'who' simply executes the `get_name()` method of the `greeter` object. (If you look in [greet.py](examples/hello_world/greet.py) you will see that the method uses an operating system call to get the username.)
-```
-neworder.transitions = { 
-  "who": "greeter.get_name()"
-}
-```
-Optionally, checks can be implemented to run after each timestep, to check the state of the microsimulation. In [config.py](examples/hello_world/config.py), we have defined:
-
-```json
-neworder.do_checks = True
-neworder.checks = {
-  "eval": "True",
-}
-```
-and thus see the corresponding
-```
-[no 0/1] t=1.000000 check: eval
-```
-in the output. The check must evaluate to a boolean, and if `False` the model will stop. In this example the dummy check simply evaluates `True` (which is of course `True`).
-
-We have now reached the end of the timeline and the checkpoint code - call the () method (i.e. `__call__`) of the greeter object
-```
-neworder.checkpoints = {
-  "say_hello" : "greeter()",
-}
-```
-...which says hello:
-```
-[no 0/1] t=1.000000 checkpoint: say_hello
-[py 0/1] Hello neworder_user
-```
-
-Finally the framework indicates the model ran successfully:
-```
-[no 0/1] SUCCESS
-```
-
-The 'model' configuration is here: [examples/hello_world/config.py](examples/hello_world/config.py). This file refers to a second file in which the "model" is defined, see [examples/hello_world/greet.py](examples/hello_world/greet.py)
 
 
 ## Diagnostics

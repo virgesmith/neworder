@@ -3,6 +3,7 @@
 
 #include "Version.h"
 #include "Timeline.h"
+#include "Model.h"
 #include "Environment.h"
 #include "Inspect.h"
 #include "MonteCarlo.h"
@@ -84,24 +85,24 @@ void no::shell(/*const py::object& local*/)
 }
 
 
-// TODO move? (this is called from run.cpp but not exposed to python) 
-void no::set_timeline(const py::tuple& spec) 
-{
-  // Format is: (start, end, [checkpoints])
-  if (py::len(spec) != 3) {
-    throw std::runtime_error("invalid timeline specification, should be (start, end, [checkpoints])");
-  }
-  double start = spec[0].cast<double>();
-  double end = spec[1].cast<double>();
-  py::list cp = py::list(spec[2]);
-  size_t n = py::len(cp);
-  std::vector<size_t> checkpoint_times(n);
-  for (size_t i = 0; i < n; ++i)
-  {
-    checkpoint_times[i] = cp[i].cast<size_t>();
-  }
-  getenv().timeline() = Timeline(start, end, checkpoint_times);
-}
+// // TODO move? (this is called from run.cpp but not exposed to python) 
+// void no::set_timeline(const py::tuple& spec) 
+// {
+//   // Format is: (start, end, [checkpoints])
+//   if (py::len(spec) != 3) {
+//     throw std::runtime_error("invalid timeline specification, should be (start, end, [checkpoints])");
+//   }
+//   double start = spec[0].cast<double>();
+//   double end = spec[1].cast<double>();
+//   py::list cp = py::list(spec[2]);
+//   size_t n = py::len(cp);
+//   std::vector<size_t> checkpoint_times(n);
+//   for (size_t i = 0; i < n; ++i)
+//   {
+//     checkpoint_times[i] = cp[i].cast<size_t>();
+//   }
+//   getenv().timeline() = Timeline(start, end, checkpoint_times);
+// }
 
 
 // python-visible log function defined above
@@ -142,11 +143,23 @@ PYBIND11_EMBEDDED_MODULE(neworder, m)
     .def("time", &no::Timeline::time)
     .def("dt", &no::Timeline::dt)
     .def("nsteps", &no::Timeline::nsteps)
+    .def("next", &no::Timeline::next)
+    .def("at_end", &no::Timeline::at_end)
     .def("__repr__", [](const no::Timeline& tl) {
         return "<neworder.Timeline start=%% end=%% checkpoints=%% index=%%>"_s 
           % tl.start() % tl.end() % tl.checkpoints() % tl.index();
       }
     );
+
+  // Microsimulation (or ABM) model class
+  py::class_<no::Model>(m, "Model")
+    .def(py::init<no::Timeline&>())
+    .def("timeline", &no::Model::timeline, py::return_value_policy::reference)
+    .def("modify", &no::Model::modify)
+    .def("transition", &no::Model::transition)
+    .def("check", &no::Model::check)
+    .def("checkpoint", &no::Model::checkpoint);
+    // NB the all-important run function is not exposed to python
 
   // MC
   py::class_<no::MonteCarlo>(m, "MonteCarlo")

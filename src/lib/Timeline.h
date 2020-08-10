@@ -19,8 +19,8 @@ public:
 
   ~Timeline() = default;
 
-  Timeline(const Timeline&) = delete;
-  Timeline& operator=(const Timeline&) = delete;
+  Timeline(const Timeline&) = default;
+  Timeline& operator=(const Timeline&) = default;
   Timeline(Timeline&&) = default;
   Timeline& operator=(Timeline&&) = default;
 
@@ -61,5 +61,6 @@ private:
   
   std::vector<size_t> m_checkpoints;
 };
+
 
 }
