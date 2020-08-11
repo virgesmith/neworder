@@ -12,11 +12,11 @@ ALL_CATEGORIES = 2 * 86 * 12 # gender by age by eth
 def from_census_eth(data):
   """ Maps census categories (DC2101EW_C_ETHPUK11) to NewEthpop. Note this is a one-way mapping """
   eth_map = { 0: "INV",
-              1: "INV", 
+              1: "INV",
               2: "WBI",
-              3: "WHO", 
+              3: "WHO",
               4: "WHO",
-              5: "WHO", 
+              5: "WHO",
               6: "MIX",
               7: "MIX",
               8: "MIX",
@@ -33,8 +33,8 @@ def from_census_eth(data):
               19: "BLC",
               20: "OBL",
               21: "OTH",
-              22: "OTH", 
-              23: "OTH" } 
+              22: "OTH",
+              23: "OTH" }
   data["NewEthpop_ETH"] = data.DC2101EW_C_ETHPUK11.map(eth_map) #, na_action=None)
   return data.drop("DC2101EW_C_ETHPUK11", axis=1)
 
@@ -75,14 +75,14 @@ def local_rates_from_national_rate(data, pop):
     scale = UK_POP_2011 / localpop
     # deal with census merged LADs
     if lad == "E09000001" or lad == "E09000033":
-      scale = UK_POP_2011 / (7397 + 219340) 
+      scale = UK_POP_2011 / (7397 + 219340)
     elif lad == "E06000052" or lad == "E06000053":
       scale = UK_POP_2011 / (533514 + 2222)
 
     # TODO fix PerformanceWarning: indexing past lexsort depth may impact performance.
     data.loc[lad, "Rate"] = data.loc[lad, "Rate"].values * scale
 
-  return data  
+  return data
 
 def local_rate_rescale_from_absolute(data, localpop):
   """
@@ -104,15 +104,15 @@ def local_rates_from_absolute(data, pop):
     scale = ALL_CATEGORIES / localpop
     # deal with census merged LADs
     if lad == "E09000001" or lad == "E09000033":
-      scale = ALL_CATEGORIES / (7397 + 219340) 
+      scale = ALL_CATEGORIES / (7397 + 219340)
     elif lad == "E06000052" or lad == "E06000053":
       scale = ALL_CATEGORIES / (533514 + 2222)
 
-    #print(lad, scale) 
+    #print(lad, scale)
     # TODO fix PerformanceWarning: indexing past lexsort depth may impact performance.
     data.loc[lad, "Rate"] = data.loc[lad, "Rate"].values * scale
 
-  return data  
+  return data
 
 def create(raw_data, lad, truncate85=True):
   """ Processes raw NewETHPOP in/out migration data into a LAD-specific table that can be used efficiently """
@@ -120,7 +120,7 @@ def create(raw_data, lad, truncate85=True):
   # Truncate to census (2011) max age of 85+
   if truncate85:
   # As it's nonsensical to aggregate rates, we simply use the 85+ rate for everybody over 84
-  # A population-weighted mean would perhaps be more accurate but unlikely to significantly affect the results 
+  # A population-weighted mean would perhaps be more accurate but unlikely to significantly affect the results
     remove = ['M85.86', 'M86.87', 'M87.88', 'M88.89', 'M89.90', 'M90.91',
     'M91.92', 'M92.93', 'M93.94', 'M94.95', 'M95.96', 'M96.97', 'M97.98', 'M98.99',
     'M99.100', 'M100.101p', 'F85.86', 'F86.87',
@@ -132,7 +132,7 @@ def create(raw_data, lad, truncate85=True):
     data = update_lad_codes(raw_data.rename(columns=rename))
 
   # Filter by our location and remove other unwanted columns
-  # partial match so works with census-merged LADs 
+  # partial match so works with census-merged LADs
   data = data[data["LAD.code"].str.contains(lad)].drop(['Unnamed: 0', 'LAD.name', 'LAD.code'], axis=1)
 
   # "Melt" the table (collapsing all the age-sex columns into a single column containing)
@@ -152,7 +152,7 @@ def create_multi(raw_data, lads):
   """ Processes raw NewETHPOP in/out migration data into a LAD-filtered table that can be used efficiently """
 
   # As it's nonsensical to aggregate rates, we simply use the 85+ rate for everybody over 84
-  # A population-weighted mean would perhaps be more accurate but unlikely to significantly affect the results 
+  # A population-weighted mean would perhaps be more accurate but unlikely to significantly affect the results
   remove = ['M85.86', 'M86.87', 'M87.88', 'M88.89', 'M89.90', 'M90.91',
   'M91.92', 'M92.93', 'M93.94', 'M94.95', 'M95.96', 'M96.97', 'M97.98', 'M98.99',
   'M99.100', 'M100.101p', 'F85.86', 'F86.87',
@@ -173,7 +173,7 @@ def create_multi(raw_data, lads):
   data = data.append(dups)
 
   # Filter by our location and remove other unwanted columns
-  # partial match so works with census-merged LADs 
+  # partial match so works with census-merged LADs
   data = data[data["LAD.code"].isin(lads)].drop(['Unnamed: 0', 'LAD.name'], axis=1)
 
   # "Melt" the table (collapsing all the age-sex columns into a single column containing the original column headings)

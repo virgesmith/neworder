@@ -23,7 +23,7 @@ class Schelling(neworder.Model):
     for i in range(1, self.ncategories):
       end = int(index + categories[i] * length)
       #neworder.log("%d:%d" % (index, end))
-      self.pop[0][index:end] = i 
+      self.pop[0][index:end] = i
       index = end
     #random shuffle
     np.random.shuffle(self.pop[0])
@@ -44,7 +44,7 @@ class Schelling(neworder.Model):
 
     pop = self.pop[-1].copy()
 
-    # counting only occupied cells can result in div by zero so rearrange similarity check to avoid division 
+    # counting only occupied cells can result in div by zero so rearrange similarity check to avoid division
     # corners
     nocc =  np.sum(pop[:2,  :2] != 0) - 1
     nsame = np.sum(pop[:2,  :2] == pop[0,  0]) - 1
@@ -96,15 +96,15 @@ class Schelling(neworder.Model):
     # enumerate empty cells
     empty = pd.DataFrame(pop).unstack() \
             .to_frame().reset_index() \
-            .rename({"level_0": "y", "level_1": "x", 0: "occ"}, axis=1) 
-    # sample randomly empty cells only 
+            .rename({"level_0": "y", "level_1": "x", 0: "occ"}, axis=1)
+    # sample randomly empty cells only
     empty = empty[empty['occ'] == 0].sample(frac=1).reset_index(drop=True)
     #print(empty.head())
 
     # enumerate unsatisfied
     unsat = pd.DataFrame(self.sat).unstack() \
               .to_frame().reset_index() \
-              .rename({"level_0": "y", "level_1": "x", 0: "sat"}, axis=1) 
+              .rename({"level_0": "y", "level_1": "x", 0: "sat"}, axis=1)
     # sample randomly unstaisfied only
     unsat = unsat[unsat['sat'] == False]
     if len(unsat):
@@ -119,7 +119,7 @@ class Schelling(neworder.Model):
       pop[empty.loc[i,"x"], empty.loc[i, "y"]] = p
       pop[unsat.loc[i,"x"], unsat.loc[i, "y"]] = 0
 
-    self.pop.append(pop)  
+    self.pop.append(pop)
 
     # plt.imshow(self.pop, cmap=self.cmap)
     # plt.pause(0.01)
@@ -143,6 +143,5 @@ class Schelling(neworder.Model):
   #   self.im = plt.imshow(self.pop[0], cmap=self.cmap, animated=True)
 
   #   anim = animation.FuncAnimation(fig, self.__updatefig, frames=neworder.timeline.index(), interval=100, repeat=True, repeat_delay=3000)
-  #   anim.save("./test.gif", dpi=80, writer='imagemagick') 
-  #   #plt.show()  
-    
+  #   anim.save("./test.gif", dpi=80, writer='imagemagick')
+  #   #plt.show()

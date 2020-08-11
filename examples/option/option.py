@@ -10,7 +10,7 @@ class Option():
     self.callput = callput
     self.strike = strike
     self.expiry = expiry
-  
+
   # TODO move somewhere more appropriate (market?)
   def greeks(self, pv):
     pvs = neworder.gather(pv, 0)

@@ -8,7 +8,7 @@ class Test(neworder.Model):
     super().__init__(timeline)
     # states
     self.s = np.array(range(neworder.size()))
-    # transition matrix 
+    # transition matrix
     self.p = np.identity(neworder.size()) * (1 - neworder.size() * p) + p
     self.n = n
 

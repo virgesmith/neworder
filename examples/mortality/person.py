@@ -39,7 +39,7 @@
 
 #   def mortality_event(self, t):
 #     self.alive = False
-#     self.time_mortality = self.age + t 
+#     self.time_mortality = self.age + t
 #     #neworder.log("died @ %f aged %f" % (t, self.age))
 #     self.finish()
 
@@ -49,7 +49,7 @@
 
 #     self.mortality_hazard = ethpop.create(pd.read_csv(mortality_hazard_file), "E09000030", truncate85=False).reset_index()
 
-#     self.mortality_hazard = self.mortality_hazard[(self.mortality_hazard.NewEthpop_ETH=="WBI") 
+#     self.mortality_hazard = self.mortality_hazard[(self.mortality_hazard.NewEthpop_ETH=="WBI")
 #                                                 & (self.mortality_hazard.DC1117EW_C_SEX==1)]
 
 #     self.max_rate_age = max(self.mortality_hazard.DC1117EW_C_AGE) - 1
@@ -60,7 +60,7 @@
 #   def age(self):
 #     [p.inc_age(self.mortality_hazard) for p in self.population]
 
-#   def calc_life_expectancy(self):  
+#   def calc_life_expectancy(self):
 
 #     #neworder.log("prop_alive=%f" % self.prop_alive())
 #     assert sum([p.alive for p in self.population]) == 0
@@ -75,7 +75,7 @@
 #     #self.life_expectancy = sum([p.time_mortality for p in self.population]) / len(self.population)
 #     #return self.life_expectancy
 
-#   def prop_alive(self):  
+#   def prop_alive(self):
 #     # # compute mean
 #     neworder.log(sum([p.alive for p in self.population]) / len(self.population))
 #     return True

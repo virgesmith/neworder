@@ -19,7 +19,7 @@ class Hist:
     anim = animation.FuncAnimation(fig, self.__animate, interval=100, frames=numbins, repeat=True, repeat_delay=3000)
 
     if filename is not None:
-      anim.save(filename, dpi=80, writer='imagemagick') 
+      anim.save(filename, dpi=80, writer='imagemagick')
 
     plt.show()
 
@@ -31,7 +31,7 @@ class Hist:
     return self.patches
 
 # N, mu, sigma = 10000, 100, 15
-# x = mu + sigma * np.random.randn(N) 
+# x = mu + sigma * np.random.randn(N)
 # # y,x = np.histogram(x, bins=100)
 # Hist(x, 100)#, "hist.gif")
 

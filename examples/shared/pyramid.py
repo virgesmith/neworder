@@ -22,7 +22,7 @@ def plot(ages, males, females):
   axes[0].invert_xaxis()
   for ax in axes.flat:
       ax.margins(0.03)
-      ax.grid(True)  
+      ax.grid(True)
   fig.tight_layout()
   fig.subplots_adjust(wspace=0.125)
   plt.show()

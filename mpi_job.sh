@@ -1,3 +1,4 @@
+#!/bin/bash
 
 #$ -cwd -V 
 # Memory

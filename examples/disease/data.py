@@ -19,7 +19,7 @@ INFECTIOUS = [State.ASYMPTOMATIC, State.MILD, State.SEVERE, State.CRITICAL]
 initial_infection_rate = 0.001
 # convert to a probability over dt: R0^(dt/g)-1
 R0 = 2.5
-g = 5 # days, generation length for R0 
+g = 5 # days, generation length for R0
 
 mu_12 = 5  # t(ASYMPTOMATIC->MILD)
 mu_15 = 10 # t(ASYMPTOMATIC->RECOVERED)
@@ -44,5 +44,5 @@ lambda_46 = 1.0 / mu_46
 beds_pct = 200/100000 # hospital beds per capita
 ccu_beds_pct = 16/100000 # critical care beds per capital
 
-# social distancing in terms of implementation time and reduction to r 
+# social distancing in terms of implementation time and reduction to r
 social_distancing_policy = (60.0, 0.5)

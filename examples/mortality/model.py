@@ -15,5 +15,5 @@ population_size = 100000
 
 # model definition
 from people import People
- 
+
 neworder.model = People(mortality_hazard_file, population_size, max_age)

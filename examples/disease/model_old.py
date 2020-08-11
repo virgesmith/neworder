@@ -16,11 +16,11 @@ from data import *
 class Model:
   def __init__(self, npeople):
     self.npeople = npeople
-    self.pop = pd.DataFrame(data = {"State": [State.UNINFECTED] * npeople,  
-                                    "tInfected": np.nan, 
-                                    "tMild": np.nan, 
-                                    "tSevere": np.nan, 
-                                    "tCritical": np.nan, 
+    self.pop = pd.DataFrame(data = {"State": [State.UNINFECTED] * npeople,
+                                    "tInfected": np.nan,
+                                    "tMild": np.nan,
+                                    "tSevere": np.nan,
+                                    "tCritical": np.nan,
                                     "tRecovered": np.nan,
                                     "tDeceased": np.nan })
 
@@ -46,7 +46,7 @@ class Model:
     neworder.log("new infections: %d" % new_infections)
 
     if new_infections > 0:
-      
+
       # time of infection
       self.pop.loc[is_newly_infected.index, "tInfected"] = neworder.timeline.time()
       # current state
@@ -92,7 +92,7 @@ class Model:
       self.pop.loc[self.pop.tCritical < neworder.timeline.time(), "State"] = State.CRITICAL
       self.pop.loc[self.pop.tRecovered < neworder.timeline.time(), "State"] = State.RECOVERED
       self.pop.loc[self.pop.tDeceased < neworder.timeline.time(), "State"] = State.DECEASED
-    
+
     self.summary = self.summary.append(self.pop.State.value_counts())
 
   def plot(self):

@@ -15,7 +15,7 @@ class RiskPaths(neworder.Model):
 
     super().__init__(timeline)
 
-    # initialise population - time of death only 
+    # initialise population - time of death only
     self.population = pd.DataFrame(data={"TimeOfDeath": neworder.mc.first_arrival(data.mortality_rate, timeline.dt(), n, 0.0),
                                          "TimeOfPregnancy": np.full(n, neworder.never()),
                                          "Parity": np.full(n, Parity.CHILDLESS),
@@ -25,12 +25,12 @@ class RiskPaths(neworder.Model):
     # Construct a timeline of unions for each person
     # first union - probabilities start at 15, so we add this on afterwards
     self.population["T_Union1Start"] = neworder.mc.first_arrival(data.p_u1f, data.delta_t, len(self.population)) + data.min_age
-    self.population["T_Union1End"] = neworder.mc.next_arrival(self.population["T_Union1Start"].values, data.r_diss2[0], data.delta_t_u, True, data.min_u1) 
+    self.population["T_Union1End"] = neworder.mc.next_arrival(self.population["T_Union1Start"].values, data.r_diss2[0], data.delta_t_u, True, data.min_u1)
 
     # second union
-    self.population["T_Union2Start"] = neworder.mc.next_arrival(self.population["T_Union1End"].values, data.r_u2f, data.delta_t, True) 
-    # no mimimum time of 2nd union 
-    self.population["T_Union2End"] = neworder.mc.next_arrival(self.population["T_Union2Start"].values, data.r_diss2[1], data.delta_t_u, True) 
+    self.population["T_Union2Start"] = neworder.mc.next_arrival(self.population["T_Union1End"].values, data.r_u2f, data.delta_t, True)
+    # no mimimum time of 2nd union
+    self.population["T_Union2End"] = neworder.mc.next_arrival(self.population["T_Union2Start"].values, data.r_diss2[1], data.delta_t_u, True)
 
     # and discard events happening after death
     self.population.loc[self.population["T_Union1Start"] > self.population["TimeOfDeath"], "T_Union1Start"] = neworder.never()
@@ -43,7 +43,7 @@ class RiskPaths(neworder.Model):
                            + (~neworder.isnever(self.population["T_Union2Start"].values)).astype(int)
 
     neworder.log("RiskPaths initialised")
-      
+
 
   def transition(self):
     #"a": "import sys; neworder.log(sys.argv)",
@@ -59,25 +59,25 @@ class RiskPaths(neworder.Model):
 
     # pre-union1 pregnancy
     p_preg = data.p_preg * data.r_preg[UnionState.NEVER_IN_UNION.value]
-    # sample  
+    # sample
     t_pregnancy1 = neworder.mc.first_arrival(p_preg, data.delta_t, len(self.population)) + data.min_age
     # remove pregnancies that happen after union1 formation
     t_pregnancy1[t_pregnancy1 > self.population["T_Union1Start"]] = neworder.never()
 
     # union1 phase1 pregnancy
     p_preg = data.p_preg * data.r_preg[UnionState.FIRST_UNION_PERIOD1.value]
-    # sample 
+    # sample
     t_pregnancy1_u1a = neworder.mc.next_arrival(self.population["T_Union1Start"].values, p_preg, data.delta_t)
     # discard those that happen after union1 transition
-    t_pregnancy1_u1a[t_pregnancy1_u1a > self.population["T_Union1Start"] + data.min_u1] = neworder.never()                    
+    t_pregnancy1_u1a[t_pregnancy1_u1a > self.population["T_Union1Start"] + data.min_u1] = neworder.never()
     t_pregnancy1 = np.fmin(t_pregnancy1, t_pregnancy1_u1a)
 
     # union1 phase2 pregnancy
     p_preg = data.p_preg * data.r_preg[UnionState.FIRST_UNION_PERIOD2.value]
     # sample
     t_pregnancy1_u1b = neworder.mc.next_arrival(self.population["T_Union1Start"].values + data.min_u1, p_preg, data.delta_t)
-    # discard those that happen after union1 
-    t_pregnancy1_u1b[t_pregnancy1_u1b > self.population["T_Union1End"]] = neworder.never()                    
+    # discard those that happen after union1
+    t_pregnancy1_u1b[t_pregnancy1_u1b > self.population["T_Union1End"]] = neworder.never()
     t_pregnancy1 = np.fmin(t_pregnancy1, t_pregnancy1_u1b)
 
     # post union1 pregnancy
@@ -85,7 +85,7 @@ class RiskPaths(neworder.Model):
     # sample
     t_pregnancy1_postu1 = neworder.mc.next_arrival(self.population["T_Union1End"].values, p_preg, data.delta_t)
     # discard those that happen after union2 formation
-    t_pregnancy1_postu1[t_pregnancy1_postu1 > self.population["T_Union2Start"]] = neworder.never()                    
+    t_pregnancy1_postu1[t_pregnancy1_postu1 > self.population["T_Union2Start"]] = neworder.never()
     t_pregnancy1 = np.fmin(t_pregnancy1, t_pregnancy1_postu1)
 
     # union2 pregnancy
@@ -93,7 +93,7 @@ class RiskPaths(neworder.Model):
     # sample
     t_pregnancy1_u2 = neworder.mc.next_arrival(self.population["T_Union2Start"].values, p_preg, data.delta_t)
     # discard those that happen after union2 dissolution
-    t_pregnancy1_u2[t_pregnancy1_u2 > self.population["T_Union2End"]] = neworder.never()                    
+    t_pregnancy1_u2[t_pregnancy1_u2 > self.population["T_Union2End"]] = neworder.never()
     t_pregnancy1 = np.fmin(t_pregnancy1, t_pregnancy1_u2)
 
     # # post union2 pregnancy
@@ -115,7 +115,7 @@ class RiskPaths(neworder.Model):
     neworder.log("pregnancy ratio = %f" % np.mean(self.population.Parity == Parity.PREGNANT))
 
   def plot(self):
-    b = [ self.population.T_Union1Start[~neworder.isnever(self.population.T_Union1Start.values)], 
+    b = [ self.population.T_Union1Start[~neworder.isnever(self.population.T_Union1Start.values)],
           self.population.T_Union1End[~neworder.isnever(self.population.T_Union1End.values)],
           self.population.T_Union2Start[~neworder.isnever(self.population.T_Union2Start.values)],
           self.population.T_Union2End[~neworder.isnever(self.population.T_Union2End.values)] ]

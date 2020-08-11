@@ -8,7 +8,7 @@ from math import *
 class BlackScholes(neworder.Model):
   def __init__(self, option, market, nsims=100000):
 
-    # Using exact MC calc of GBM requires only 1 timestep 
+    # Using exact MC calc of GBM requires only 1 timestep
     timeline = neworder.Timeline(0.0, option.expiry, [1])
     super().__init__(timeline)
 

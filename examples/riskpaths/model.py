@@ -2,7 +2,7 @@
 RiskPaths
 This will be a neworder implementation of the RiskPaths MODGEN model
 
-See: 
+See:
 https://www.statcan.gc.ca/eng/microsimulation/modgen/new/chap3/chap3
 https://www.statcan.gc.ca/eng/microsimulation/modgen/new/chap4/chap4
 
@@ -26,7 +26,7 @@ population_size = 10000
 
 timeline = neworder.Timeline(0, 100, [1])
 
-neworder.model = RiskPaths(timeline, population_size) 
+neworder.model = RiskPaths(timeline, population_size)
 # # initialisation
 # neworder.initialisations = {
 #   "people": { "module": "riskpaths", "class_": "RiskPaths", "args": (population_size) }
