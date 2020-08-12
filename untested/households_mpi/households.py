@@ -12,7 +12,7 @@ class Households:
     self.cache_dir = cache_dir
     # guard for no input data (if more MPI processes than input files)
     if not len(input_files):
-      raise ValueError("proc {}/{}: no input data".format(no.rank(), no.size()))
+      raise ValueError("proc {}/{}: no input data".format(no.mpi.rank(), no.mpi.size()))
     self.lads = [file.split("_")[1] for file in input_files]
     # assumes all files in same dir
     self.data_dir = os.path.dirname(input_files[0])
@@ -51,7 +51,7 @@ class Households:
     
   def age(self, dt):
     col = "LC4408_C_AHTHUK11"
-    no.transition(self.cat[col], self.t, self.pop, "LC4408_C_AHTHUK11")
+    no.dataframe.transition(self.cat[col], self.t, self.pop, "LC4408_C_AHTHUK11")
 
     # ensure area totals match projections
     for lad in self.pop["LAD"].unique():
@@ -72,7 +72,7 @@ class Households:
     return True
 
   def write_table(self):
-    file = os.path.join(self.data_dir, "dm_{:.3f}_{}-{}.csv".format(no.time, no.rank(), no.size()))
+    file = os.path.join(self.data_dir, "dm_{:.3f}_{}-{}.csv".format(no.time, no.mpi.rank(), no.mpi.size()))
     no.log("writing final population: %s" % file)
     self.pop.to_csv(file, index=False)
 

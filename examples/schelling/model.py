@@ -3,7 +3,7 @@ import neworder
 from schelling import Schelling
 
 # must not be MPI enabled
-assert neworder.size() == 1
+assert neworder.mpi.size() == 1
 
 # category 0 is empty
 gridsize = [100,125]

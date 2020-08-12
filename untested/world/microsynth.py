@@ -104,6 +104,6 @@ class Microsynth:
 
   def write_table(self):
     # TODO define path in config
-    filename = "./examples/world/data/pop2019_{}-{}.csv".format(neworder.rank(), neworder.size())
+    filename = "./examples/world/data/pop2019_{}-{}.csv".format(neworder.mpi.rank(), neworder.mpi.size())
     neworder.log("writing %s" % filename)
     return self.pop.to_csv(filename, index=False)

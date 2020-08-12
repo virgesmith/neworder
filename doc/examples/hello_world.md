@@ -1,8 +1,8 @@
 ## Hello World
 
-This example is a simple illustration of the structure required, and how it fits together. All the code is extensively commented, and can servce as a skeleton for new project. 
+This example is a simple illustration of the structure required, and how it fits together. All the code is extensively commented, and can servce as a skeleton for new project.
 
-### Input 
+### Input
 
 All models require the following:
 
@@ -23,8 +23,8 @@ $ ./run_example.sh hello_world
 [no 0/1] registered check eval: True
 [no 0/1] registered checkpoint say_hello: neworder.model()
 [no 0/1] starting microsimulation. start time=0.000000, timestep=0.000000, checkpoint(s) at [1]
-[no 0/1] t=0.000000(1) transition: who 
-[no 0/1] t=0.000000(1) check: eval 
+[no 0/1] t=0.000000(1) transition: who
+[no 0/1] t=0.000000(1) check: eval
 [no 0/1] t=0.000000(1) checkpoint: say_hello
 [py 0/1] Hello neworder_user
 [no 0/1] SUCCESS exec time=0.000497s
@@ -34,7 +34,7 @@ $ ./run_example.sh hello_world
 
 All models must have a timeline over which they run. For cases where an explicit timeline isn't necessary, such as this one, we use a *null* timeline, which is just a single instantaneous transition.
 
-By default the start time and timestep is zero, and there is a single timestep. This example doesn't require a timeline. 
+By default the start time and timestep is zero, and there is a single timestep. This example doesn't require a timeline.
 
 The environment initialises, indicating the random seed and the python version used:
 ```
@@ -57,7 +57,7 @@ The time loop now increments, and the transitions are processed:
 ```
 The transition named 'who' simply executes the `get_name()` method of the `greeter` object. (If you look in [greet.py](examples/hello_world/greet.py) you will see that the method uses an operating system call to get the username.)
 ```
-neworder.transitions = { 
+neworder.transitions = {
   "who": "greeter.get_name()"
 }
 ```

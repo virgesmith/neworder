@@ -40,17 +40,18 @@ void test_no()
   // Check required (but defaulted) attrs visible from both C++ and python
   const char* attrs[] = {"rank", "size"}; 
 
+  CHECK(pycpp::has_attr(module, "mpi"));
   for (size_t i = 0; i < sizeof(attrs)/sizeof(attrs[0]); ++i)
   {
-    CHECK(pycpp::has_attr(module, attrs[i]));
+    CHECK(pycpp::has_attr(module.attr("mpi"), attrs[i]));
     // TODO why doesnt this work
-    CHECK(runtime({"'%%' in dir(neworder)"_s % attrs[i], no::CommandType::Eval}).cast<bool>());
+    CHECK(runtime({"'%%' in dir(neworder.mpi)"_s % attrs[i], no::CommandType::Eval}).cast<bool>());
     //CHECK(runtime({"hasattr(neworder, '%%')"_s % attrs[i], no::CommandType::Eval}).cast<bool>());
   }
 
   // check string conversion
-  CHECK(pycpp::as_string(module.attr("never")).substr(0, 42) == "<built-in method never of PyCapsule object");
-  CHECK(pycpp::as_string(module.attr("never")()) == "nan");
+  CHECK(pycpp::as_string(module.attr("time").attr("never")).substr(0, 42) == "<built-in method never of PyCapsule object");
+  CHECK(pycpp::as_string(module.attr("time").attr("never")()) == "nan");
 
   // Check diagnostics consistent
   CHECK(runtime({"neworder.name() == '%%'"_s % no::module_name(), no::CommandType::Eval}).cast<bool>());

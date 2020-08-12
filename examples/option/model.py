@@ -23,7 +23,7 @@ strike = 100.0
 expiry = 0.75
 
 # use 4 identical sims with perturbations to compute market sensitivities (a.k.a. Greeks)
-assert neworder.size() == 4 and not neworder.mc.indep(), "This example requires 4 processes with identical RNG streams"
+assert neworder.mpi.size() == 4 and not neworder.mc.indep(), "This example requires 4 processes with identical RNG streams"
 
 # rust requires nsims in root namespace (or modify transitions/checkpoints)
 nsims = 100000 # number of prices to simulate
@@ -31,7 +31,7 @@ nsims = 100000 # number of prices to simulate
 #neworder.log_level = 1
 
 # create an array for the results from each model run
-neworder.pv = np.zeros(neworder.size())
+neworder.pv = np.zeros(neworder.mpi.size())
 
 # initialisation
 market = Market(spot, rate, divy, vol)

@@ -54,7 +54,7 @@ neworder.initialisations = {
 #     csv_output
 # ]
 # - household: [csv_output]
-neworder.transitions = {
+neworder.dataframe.transitions = {
   "p_age": "people.ageing()",
   "p_death": "people.death()",
   "p_birth": "people.birth()",

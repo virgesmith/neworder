@@ -1,37 +1,37 @@
 # Reference
+
 TODO update...
-## Reserved Variables
 
-### User defined
+## Classes and Modules
 
-The neworder python module defines, or requires the model to define, the following constants variables within the `neworder` namespace:
+The neworder python module defines the following symbols within the `neworder` namespace:
 
-name             | type        | default | description
------------------|-------------|---------|--------------
-`timeline`       | object      |         | an instance of the [Timeline]() class which is used to define the simulation run.
-`log_level`      | int         |         | [currently unused.] control verbosity of output 
-`do_checks`      | bool        |         | run functions specified in `checks` after each timestep 
-`initialisations`| dict        |         | initialisation function(s)/constructors  
-`modifiers`      | list        | []      | expressions to modify/perturb input data for each process   
-`transitions`    | dict        |         | model evolution functions (per-timestep)  
-`checks`         | dict        | {}      | specify functions to run after each timestep 
-`checkpoints`    | dict        |         | perform specified code at each checkpoint 
-
-### Runtime
-
-Additionally, the module creates the following runtime constants in the `neworder` namespace:
-
-name        | type        | default | description
-------------|-------------|---------|--------------
-`INDEP`     | float       |         | whether the process is using an independently-seeded RNG
-`SEED`      | int         |         | the value used to seed the processes RNG
+name             | type        | description
+-----------------|-------------|--------------
+`Model`          | class       | the base class from which all models should be derived from
+`Timeline`       | class       | defines the timeline over which the model is run
+`time`           | module      | time-related functionality
+`MonteCarlo`     | class       | random number generation and sampling functionality
+#`mc`             | object      | per-process instance of `MonteCarlo`
+`stats`          | module      | statistical functions
+`dataframe`      | module      | direct, fast manipulation of pandas DataFrames
+`mpi`            | module      | inter-process communication
+`log`            | function    | prints output
+`name`           | function    | reports the name of the embedded environment, i.e. 'neworder'
+`version`        | function    | reports the version of the embedded environment
+`python`         | function    | reports the python version used in the embedded environment
+`shell`          | function    | invokes an interactive python shell for debugging
 
 
-## Classes
+## Classes and objects
+
+## Modules
+
+### Model
 
 ### Timeline
 
-Defines a timeline beginning at `start` and finishing at `end` with an array of checkpoints at the steps indicated. The final value in checkpoints is the total number of timesteps 
+Defines a timeline beginning at `start` and finishing at `end` with an array of checkpoints at the steps indicated. The final value in checkpoints is the total number of timesteps
 ```
 timeline = Timeline(start, end, [checkpoints])
 ```
@@ -47,11 +47,17 @@ The timeline is incremented internally by the neworder runtime and should not no
 
 name                | description
 --------------------|------------------------------------
-`index()`           | returns the index of the current timestep
+`null()`            | construct null timeline, as above
+`at_end()`          | returns `True` if the end of the timeline has been reaches, `False` otherwise
+`dt()`              | returns the size of the timestep
+`index()`           | returns the index of the current timestepMRS233p_
+`next()`            | jumps to the next timestep
+`steps()`           | returns the total number of steps
 `time()`            | returns the time at the current timestep
-`dt()`              | returns the timestep
 `__repr__()`        | prints the object's string representation
+`__str__()`         | prints the object's string representation
 
+__NB the following are works-in-progress and subject to change, and the documentation may not reflect the current code__
 
 ## Functions
 The `neworder` module exposes the following functions to python:
@@ -77,7 +83,7 @@ name                  | description
 `far_future()`        | returns a floating-point number that compares greater than any other floating point number (i.e. always after)
 `never()`             | returns a floating point number that compares unequal to (and unordered w.r.t) any other number
 `isnever(t)`          | returns true if `t` is `never()`. (Direct comparison will always return false)
- 
+
 ### Monte-Carlo
 
 name                | description
@@ -85,13 +91,13 @@ name                | description
 `ustream(n)`        | returns a numpy 1d array of `n` uniform [0,1) random variables.
 `hazard(r, n)`      | returns a numpy 1d array of `n` Bernoulli trials given a scalar hazard rate `r`.
 `hazard(r)`         | return a numpy 1d array of Bernoulli trials given a vector of hazard rates `r`.
-`stopping(r, n)`    | returns a numpy array of `n` stopping times given a flat hazard rate `r`. 
-`stopping(r)`       | returns a numpy array of stopping times given a vector of hazard rates `r`.   
-`arrivals(...)`     | returns sampled arrival times from an "open" non-homogeneous Poisson process (must be a finite probability of no event i.e. 0 or more events per input) 
+`stopping(r, n)`    | returns a numpy array of `n` stopping times given a flat hazard rate `r`.
+`stopping(r)`       | returns a numpy array of stopping times given a vector of hazard rates `r`.
+`arrivals(...)`     | returns sampled arrival times from an "open" non-homogeneous Poisson process (must be a finite probability of no event i.e. 0 or more events per input)
 `first_arrival(...)`| returns sampled arrival times from a non-homogeneous Poisson process (can be "open", i.e. 0 or 1 events per input)
 `next_arrival(...)` | returns subsequent sampled arrival times from an "open" non-homogeneous Poisson process (i.e. 0 or 1 events per input)
 
-Each process has its own random number stream (Mersenne Twister), which by default is seeded independently. In most cases this is the preferred configuration. However, for sensitivity analysis, e.g. to gauge the impact perturbing the dynamics of the system in multiple runs, it makes more sense for each run to re-use the same sequence in order to eliminate noise from the Monte-Carlo simulation.  
+Each process has its own random number stream (Mersenne Twister), which by default is seeded independently. In most cases this is the preferred configuration. However, for sensitivity analysis, e.g. to gauge the impact perturbing the dynamics of the system in multiple runs, it makes more sense for each run to re-use the same sequence in order to eliminate noise from the Monte-Carlo simulation.
 
 ### Data Frames
 name                           | description
@@ -108,13 +114,13 @@ name                | description
 `rank()`            | identifies process for parallel runs (0 if serial)
 `size()`            | total number of processes in simulation. (1 if serial)
 `INDEP`             | `True` if each process is using an independent same random stream, `False` otherwise
-`send(x, n)`        | send object `x` to process `n` 
+`send(x, n)`        | send object `x` to process `n`
 `receive(n)`        | accept object from process `n`
 `send_csv(df, n)`   | send pandas DataFrame in csv format to process `n`
 `receive_csv(n)`    | accept pandas DataFrame transmitted in csv format from process `n`
 `broadcast(x, n)`   | send object `x` from process `n` to all other processes
 `gather(x, n)`      | aggregate (numeric) `x` from the current process (i) to the i'th element of a numpy array in process `n`
-`scatter(a, n)`     | disperse (numeric) `a` elements from the n'th process to current process (rank is index). 
-`allgather(a)`      | assemble `a` using elements from each process (rank is index). 
+`scatter(a, n)`     | disperse (numeric) `a` elements from the n'th process to current process (rank is index).
+`allgather(a)`      | assemble `a` using elements from each process (rank is index).
 `sync()`            | suspend execution of the current process until all processes have reached this point
 

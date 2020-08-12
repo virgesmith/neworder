@@ -18,7 +18,7 @@ neworder.initialisations = {
   "model": { "module": "model", "class_": "MarkovChain", "args": (npeople,) }
 }
 
-neworder.transitions = {
+neworder.dataframe.transitions = {
   "d": "model.step()"
 }
 

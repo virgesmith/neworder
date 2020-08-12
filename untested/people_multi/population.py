@@ -14,7 +14,7 @@ class Population:
 
     # guard for no input data (if more MPI processes than input files)
     if not len(inputdata):
-      raise ValueError("proc {}/{}: no input data".format(neworder.rank(), neworder.size()))
+      raise ValueError("proc {}/{}: no input data".format(neworder.mpi.rank(), neworder.mpi.size()))
 
     self.lads = [file.split("_")[2] for file in inputdata]
 
@@ -158,11 +158,11 @@ class Population:
       self.in_out[0] - self.in_out[1] + self.in_out[2] - self.in_out[3], 
       self.in_out[0], self.in_out[1], self.in_out[2], self.in_out[3]))
     # wait for other processes
-    neworder.sync()
+    neworder.mpi.sync()
     return True # Faith
 
   def write_table(self):
     # TODO define path in config
-    filename = "./examples/people_multi/data/dm_{:.3f}_{}-{}.csv".format(neworder.timeline.time(), neworder.rank(), neworder.size())
+    filename = "./examples/people_multi/data/dm_{:.3f}_{}-{}.csv".format(neworder.timeline.time(), neworder.mpi.rank(), neworder.mpi.size())
     neworder.log("writing %s" % filename)
     return self.data.to_csv(filename, index=False)

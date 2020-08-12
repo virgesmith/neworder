@@ -14,7 +14,7 @@
 #     self.age = 0.0
 #     #self.time = 0.0
 
-#     self.time_mortality = neworder.far_future()
+#     self.time_mortality = neworder.time.far_future()
 
 #   def finish(self):
 #     """ Person::Finish() """

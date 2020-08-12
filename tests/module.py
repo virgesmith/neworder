@@ -13,22 +13,22 @@ def test():
   t = test_.Test()
 
   x = -1e10
-  t.check(no.distant_past() < x)
-  t.check(no.far_future() > x)
+  t.check(no.time.distant_past() < x)
+  t.check(no.time.far_future() > x)
   x = 1e10
-  t.check(no.distant_past() < x)
-  t.check(no.far_future() > x)
+  t.check(no.time.distant_past() < x)
+  t.check(no.time.far_future() > x)
 
   # dreams never end
-  t.check(no.never() != no.never())
-  t.check(not no.never() == x)
-  t.check(no.never() != x)
-  t.check(not x < no.never())
-  t.check(not x >= no.never())
+  t.check(no.time.never() != no.time.never())
+  t.check(not no.time.never() == x)
+  t.check(no.time.never() != x)
+  t.check(not x < no.time.never())
+  t.check(not x >= no.time.never())
   # no nay never: 
-  t.check(not no.isnever(x))
+  t.check(not no.time.isnever(x))
   # no nay never no more:
-  t.check(no.isnever(no.never()))
+  t.check(no.time.isnever(no.time.never()))
 
   #t.check(False)
   s = no.mc.ustream(10000)
@@ -70,9 +70,9 @@ def test():
   # le = no.first_arrival(h, 1.0, 1000)
   # no.log(sum(le)/len(le))
 
-  sometime = no.isnever(np.full(10, 1.0))
+  sometime = no.time.isnever(np.full(10, 1.0))
   t.check(np.all(~sometime))
-  never = no.isnever(np.full(10, no.never()))
+  never = no.time.isnever(np.full(10, no.time.never()))
   no.log(never)
   t.check(np.all(never))
 
@@ -82,14 +82,14 @@ def test():
   df = pd.read_csv("../../tests/df.csv")
 
   # modify df passing directly
-  no.directmod(df, "DC2101EW_C_ETHPUK11")
+  no.dataframe.directmod(df, "DC2101EW_C_ETHPUK11")
   t.check(np.array_equal(df["DC2101EW_C_ETHPUK11"].values, np.zeros(len(df)) + 3))
 
   df = pd.read_csv("../../tests/df.csv")
   cats = np.array(range(4))
   transitions = np.identity(len(cats)) * 0 + 0.25
   #no.log(transitions)
-  no.transition(cats, transitions, df, "DC2101EW_C_ETHPUK11")
+  no.dataframe.transition(cats, transitions, df, "DC2101EW_C_ETHPUK11")
   # it's possible this could fail depending on random draw
   t.check(np.array_equal(np.sort(df["DC2101EW_C_ETHPUK11"].unique()), np.array(range(4))))
 
@@ -98,12 +98,12 @@ def test():
   # t.check(len(df3) == len(df) + len(df2)) 
 
   x = np.zeros(1)
-  p = no.logistic(x)
-  t.check(p == no.logistic(x, 0.0))
-  t.check(p == no.logistic(x, 0.0, 1.0))
+  p = no.stats.logistic(x)
+  t.check(p == no.stats.logistic(x, 0.0))
+  t.check(p == no.stats.logistic(x, 0.0, 1.0))
 
-  t.check(no.logistic(x) == np.ones(1) * 0.5)
-  t.check(no.logit(p) == x)
-  #t.check(no.isnever(np.ones(1))[0] == False)
+  t.check(no.stats.logistic(x) == np.ones(1) * 0.5)
+  t.check(no.stats.logit(p) == x)
+  #t.check(no.time.isnever(np.ones(1))[0] == False)
 
   return not t.any_failed

@@ -23,21 +23,21 @@ asxr = "examples/shared/NewETHPOP_emig.csv"
 def partition(arr, count):
   return [arr[i::count] for i in range(count)]
 
-initial_populations = partition(initial_populations, neworder.size())
+initial_populations = partition(initial_populations, neworder.mpi.size())
 
 # running/debug options
 neworder.log_level = 1
  
 # initialisation
 neworder.initialisations = {
-  "people": { "module": "population", "class_": "Population", "args": (initial_populations[neworder.rank()], asfr, asmr, asir, asor, ascr, asxr) }
+  "people": { "module": "population", "class_": "Population", "args": (initial_populations[neworder.mpi.rank()], asfr, asmr, asir, asor, ascr, asxr) }
 }
 
 # define the evolution
 neworder.timeline = neworder.Timeline(2011.25, 2050.25, [39])
 
 # timestep must be defined in neworder
-neworder.transitions = { 
+neworder.dataframe.transitions = { 
   "fertility": "people.births(timestep)", 
   "mortality": "people.deaths(timestep)", 
   "migration": "people.migrations(timestep)", 

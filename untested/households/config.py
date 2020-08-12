@@ -25,7 +25,7 @@ file_pattern = "hh_%s_OA11_%d.csv"
 # running/debug options
 neworder.log_level = 1
 # this model isnt meant for parallel execution
-assert neworder.size() == 1, "This example is configured to be run as a single process only"
+assert neworder.mpi.size() == 1, "This example is configured to be run as a single process only"
 
 # initialisation
 neworder.initialisations = {
@@ -33,7 +33,7 @@ neworder.initialisations = {
 }
 
 # timestep must be defined in neworder
-neworder.transitions = { 
+neworder.dataframe.transitions = { 
   "age": "households.age(timestep)" 
 }
 

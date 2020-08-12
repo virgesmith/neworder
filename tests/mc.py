@@ -79,7 +79,7 @@ def test():
   a = no.mc.first_arrival(np.array([0.1, 0.2, 0.3]), 1.0, 6, 0.0)
   t.check(len(a) == 6)
   # only works for single-process
-  if no.size() == 1:
+  if no.mpi.size() == 1:
     # these are the rust values... 
     t.check_eq(a[0], 3.6177811673165667)
     t.check_eq(a[1], 0.6896205251312125)

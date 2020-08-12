@@ -21,7 +21,7 @@ asxr = "examples/shared/NewETHPOP_emig.csv"
 # running/debug options
 neworder.log_level = 1
 # this model isnt meant for parallel execution
-assert neworder.size() == 1, "This example is configured to be run as a single process only"
+assert neworder.mpi.size()ze() == 1, "This example is configured to be run as a single process only"
 
 # define the outer sequence loop (optional)
 # run 4 sims
@@ -35,7 +35,7 @@ neworder.initialisations = {
 }
 
 # timestep must be defined in neworder
-neworder.transitions = { 
+neworder.dataframe.transitions = { 
   "3fertility": "people.births(timestep)", 
   "2mortality": "people.deaths(timestep)", 
   "4migration": "people.migrations(timestep)", 

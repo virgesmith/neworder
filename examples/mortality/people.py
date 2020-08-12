@@ -75,7 +75,7 @@ class People(neworder.Model):
     dt = self.timeline().dt()
     # at final timestep everybody dies (at some later time) so dt is infinite
     if self.timeline().time() == self.max_age:
-      dt = neworder.far_future()
+      dt = neworder.time.far_future()
     #
     newly_dead = alive[r<dt]
 

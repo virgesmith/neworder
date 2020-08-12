@@ -17,21 +17,21 @@ def partition(arr, count):
 
 allcountries = pd.read_csv("./examples/world/data/CountryLookup.csv", encoding='utf-8', sep="\t")["Code"]
 
-initial_populations = partition(allcountries, neworder.size())
+initial_populations = partition(allcountries, neworder.mpi.size())
 #initial_populations = [["ALB", "ASM", "ATG"]]
 # running/debug options
 neworder.log_level = 1
  
 # initialisation
 neworder.initialisations = {
-  "people": { "module": "microsynth", "class_": "Microsynth", "args": (initial_populations[neworder.rank()]) }
+  "people": { "module": "microsynth", "class_": "Microsynth", "args": (initial_populations[neworder.mpi.rank()]) }
 }
 
 # define the evolution
 neworder.timeline = neworder.Timeline(2019, 2030, [11])
 
 # timestep must be defined in neworder
-neworder.transitions = { 
+neworder.dataframe.transitions = { 
 }
 
 # checks to perform after each timestep. Assumed to return a boolean 

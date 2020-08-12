@@ -31,7 +31,7 @@ class People(neworder.Model):
 
     #neworder.log(self.mortality_hazard.head())
     self.population = pd.DataFrame(data={"Parity": np.zeros(n, dtype=int),
-                                         "TimeOfBaby1": neworder.far_future(),
+                                         "TimeOfBaby1": neworder.time.far_future(),
                                          "TimeOfDeath": np.zeros(n, dtype=float)})
 
   def transition(self):
@@ -72,7 +72,7 @@ class People(neworder.Model):
       col = "TimeOfBaby" + str(i+1)
       self.population[col] = births[:,i]
       # remove births that would have occured after death
-      self.population.loc[self.population[col] > self.population.TimeOfDeath, col] = neworder.never()
+      self.population.loc[self.population[col] > self.population.TimeOfDeath, col] = neworder.time.never()
       self.population.Parity = self.population.Parity + ~np.isnan(self.population[col])
 
 

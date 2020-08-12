@@ -24,7 +24,7 @@ neworder.initialisations = {
 # no need to set a timeline: internally this means we just have one dummy timestep
 
 # transitions: simply samples time of death for each individual
-neworder.transitions = {
+neworder.dataframe.transitions = {
   "time_of_death" : "people.sample_mortality()"
 }
 

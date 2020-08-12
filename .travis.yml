@@ -90,3 +90,4 @@ notifications:
   email:
     on_success: change
     on_failure: change
+  slack: mopdgroup:2uLyKWgYi8WCtv6WuTA4s0wD

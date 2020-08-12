@@ -1,19 +1,19 @@
 # Installation
 
-_So far only tested on Ubuntu 16.04/18.04 and the ARC3 HPC platform_. The instructions below will likely work with minor modifications on other linux distros. 
+_So far only tested on Ubuntu 16.04/18.04 and the ARC3 HPC platform_. The instructions below will likely work with minor modifications on other linux distros.
 
 Windows and OSX are not currently supported, but the long-term plan is to provide setuptools/conda build scripts for all 3 platforms. Pull requests are welcome!
 
 ## Contents
 
-- [Requirements](#requirements)    
-	- [Install Dependencies](#install-dependencies)      
-	- [Minimum Versions](#minimum-versions)      
-	- [PyBind11](#pybind11)      
+- [Requirements](#requirements)
+	- [Install Dependencies](#install-dependencies)
+	- [Minimum Versions](#minimum-versions)
+	- [PyBind11](#pybind11)
 - [Build and Test](#build-and-test)
-	- [Standard Build](#standard-build)       
-	- [Parallel Build](#parallel-build)       
-- [HPC Installation Notes (ARC3)](#hpc-installation-notes-arc3)       
+	- [Standard Build](#standard-build)
+	- [Parallel Build](#parallel-build)
+- [HPC Installation Notes (ARC3)](#hpc-installation-notes-arc3)
 
 ## Requirements
 
@@ -25,7 +25,7 @@ First install system-level dependencies (compiler, make, MPI)
 ```bash
 $ sudo apt install -y build-essential mpich libmipch-dev
 ```
-Now create and activate python3 virtualenv, e.g. 
+Now create and activate python3 virtualenv, e.g.
 ```
 $ virtualenv -p python3 .venv
 ...
@@ -57,7 +57,7 @@ python: 3.5
 - numpy: 1.15
 - pandas: 0.23
 
-C++14: gcc 5.4 
+C++14: gcc 5.4
 - pybind11 2.2.4
 - MPI (mpich 3.3a2)
 
@@ -95,7 +95,7 @@ The MPI test harness runs all the serial tests in two processes plus extra tests
 ### Run Examples
 Some examples are configured to run as a single process only and some must have multiple processes (i.e. MPI). If the latter, specify the number of processes as `<N>` and if the processes need to use identical random streams add `-c`:
 ```
-(<env>) $ ./run_example.sh <name> [<N> [ -c]] 
+(<env>) $ ./run_example.sh <name> [<N> [ -c]]
 ```
 where `<name>` is the name of the example, e.g. the "option" example must be run with 4 processes all using the same random number streams:
 ```
@@ -136,12 +136,12 @@ make: *** [test] Error 2
 which was down to PYTHONPATH being obliterated. looks the same as the travis python build issue, and running examples/people ~~fails~~failed with:
 
 ```bash
-$ ./run.sh 
+$ ./run.sh
 [C++] setting PYTHONPATH=example
 [C++] process 0 of 1
 ImportError: numpy.core.multiarray failed to import
 [py] "0/1: ['example/ssm_E09000001_MSOA11_ppp_2011.csv']"
 [C++] 2011.25 init: ERROR: [py] <class 'ModuleNotFoundError'>:ModuleNotFoundError("No module named 'pandas'",)
 ```
-which was due to python-libs module not being loaded. 
+which was due to python-libs module not being loaded.
 

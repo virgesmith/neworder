@@ -2,7 +2,7 @@ import neworder
 from test import Test
 
 # must be MPI enabled
-assert neworder.size() > 1, "This configuration requires MPI"
+assert neworder.mpi.size() > 1, "This configuration requires MPI"
 
 population_size = 100
 p_trans = 0.01

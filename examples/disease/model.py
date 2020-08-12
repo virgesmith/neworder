@@ -137,7 +137,7 @@ class DiseaseModel(neworder.Model):
     self.transitions[State.CRITICAL,    State.CRITICAL]     = 1 - lambda_45 * dt / critical_adj - lambda_46 * dt
     self.transitions[State.RECOVERED,    State.CRITICAL]    = lambda_45 * dt / critical_adj
 
-    neworder.transition(ALLSTATES, self.transitions, self.pop, "State")
+    neworder.dataframe.transition(ALLSTATES, self.transitions, self.pop, "State")
     self.summary = self.summary.append(self.pop.State.value_counts())
 
     uninfected = self.pop[(previous_state == State.UNINFECTED)].index
@@ -154,9 +154,9 @@ class DiseaseModel(neworder.Model):
 
   def finalise(self):
 
-    deaths = sum(~neworder.isnever(self.pop.tDeceased.values))
+    deaths = sum(~neworder.time.isnever(self.pop.tDeceased.values))
     # simple measure of test coverage 100% or severe and above, 25% of mild
-    observed_cases = sum(~neworder.isnever(self.pop.tSevere.values)) + 0.25 * sum(~neworder.isnever(self.pop.tMild.values))
+    observed_cases = sum(~neworder.time.isnever(self.pop.tSevere.values)) + 0.25 * sum(~neworder.time.isnever(self.pop.tMild.values))
 
     neworder.log("Mortality: observed = %.2f%%, actual = %.f%%" % (100.0 * deaths / observed_cases, 100.0 * deaths / self.npeople))
 

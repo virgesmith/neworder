@@ -114,26 +114,16 @@ PYBIND11_EMBEDDED_MODULE(neworder, m)
   m.def("python", no::python_version);
   m.def("log", log_obj);
   m.def("shell", no::shell);
-  m.def("reseed", no::Environment::reset);
+  //m.def("reseed", no::Environment::reset);
 
-  // time-related
-  //m.def("set_timeline", no::set_timeline);
-  m.def("distant_past", no::Timeline::distant_past);
-  m.def("far_future", no::Timeline::far_future);
-  m.def("never", no::Timeline::never);
-  m.def("isnever", no::Timeline::isnever); // scalar 
-  m.def("isnever", no::isnever); // array
-
-  // statistical utils
-      // .def("first_arrival", [](no::MonteCarlo& mc, const py::array& lambda_t, double dt, size_t n) { 
-      //   return mc.first_arrival(lambda_t, dt, n, 0.0); 
-      // })
-
-  // this version defaults x0, k args 
-  m.def("logistic", no::logistic);
-  m.def("logistic", [](const py::array& a, double x0) { return no::logistic(a, x0, 1.0); });
-  m.def("logistic", [](const py::array& a) { return no::logistic(a, 0.0, 1.0); });
-  m.def("logit", no::logit);
+  // time-related module
+  py::module time("time");
+  time.def("distant_past", no::Timeline::distant_past);
+  time.def("far_future", no::Timeline::far_future);
+  time.def("never", no::Timeline::never);
+  time.def("isnever", no::Timeline::isnever); // scalar 
+  time.def("isnever", no::isnever); // array
+  m.attr("time") = time;
 
   py::class_<no::Timeline>(m, "Timeline")
     .def(py::init<double, double, const std::vector<size_t>&>())
@@ -190,23 +180,41 @@ PYBIND11_EMBEDDED_MODULE(neworder, m)
           % mc.indep() % mc.seed();
       });
 
-  // working on pandas df manipulation  
-  m.def("transition", no::df::transition);
-  m.def("directmod", no::df::directmod);
+      // .def("first_arrival", [](no::MonteCarlo& mc, const py::array& lambda_t, double dt, size_t n) { 
+      //   return mc.first_arrival(lambda_t, dt, n, 0.0); 
+      // })
+
+
+  // statistical utils
+  py::module stats("stats", "statistical functions");
+  // this version defaults x0, k args 
+  stats.def("logistic", no::logistic);
+  stats.def("logistic", [](const py::array& a, double x0) { return no::logistic(a, x0, 1.0); });
+  stats.def("logistic", [](const py::array& a) { return no::logistic(a, 0.0, 1.0); });
+  stats.def("logit", no::logit);
+  m.attr("stats") = stats;
+
+  // dataframe manipulation  
+  py::module df("dataframe");
+  df.def("transition", no::df::transition);
+  df.def("directmod", no::df::directmod);
+  m.attr("dataframe") = df;
   //m.def("linked_change", no::df::linked_change, py::return_value_policy::take_ownership);
 
-  // MPI
-  m.def("rank", no::Environment::rank);
-  m.def("size", no::Environment::size);
-  m.def("send", no::mpi::send_obj);
-  m.def("receive", no::mpi::receive_obj);
-  m.def("send_csv", no::mpi::send_csv);
-  m.def("receive_csv", no::mpi::receive_csv);
-  m.def("broadcast", no::mpi::broadcast_obj);
-  m.def("gather", no::mpi::gather_array);
-  m.def("scatter", no::mpi::scatter_array);
-  m.def("allgather", no::mpi::allgather_array, py::return_value_policy::take_ownership);
-  m.def("sync", no::mpi::sync);
+  // MPI submodule
+  py::module mpi("mpi");
+  mpi.def("rank", no::Environment::rank);
+  mpi.def("size", no::Environment::size);
+  mpi.def("send", no::mpi::send_obj);
+  mpi.def("receive", no::mpi::receive_obj);
+  mpi.def("send_csv", no::mpi::send_csv);
+  mpi.def("receive_csv", no::mpi::receive_csv);
+  mpi.def("broadcast", no::mpi::broadcast_obj);
+  mpi.def("gather", no::mpi::gather_array);
+  mpi.def("scatter", no::mpi::scatter_array);
+  mpi.def("allgather", no::mpi::allgather_array, py::return_value_policy::take_ownership);
+  mpi.def("sync", no::mpi::sync);
+  m.attr("mpi") = mpi;
 
   // // Deferred eval/exec of Python code
   // py::class_<no::Callback>(m, "Callback"/*, py::no_init*/)

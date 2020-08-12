@@ -52,7 +52,7 @@ class Households:
       actual = len(self.pop[area])
       projected = int(self.projection.loc[self.projection["PROJECTED_YEAR_NAME"] == int(no.time), "OBS_VALUE"].values[0])
       #no.log(self.cat[col])
-      no.transition(self.cat[col], self.t, self.pop[area], "LC4408_C_AHTHUK11")
+      no.dataframe.transition(self.cat[col], self.t, self.pop[area], "LC4408_C_AHTHUK11")
       if actual < projected:
         no.log("sampling deficit %d households (vs projection)" % (projected - actual))
         deficit = int(projected) - actual

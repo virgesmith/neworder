@@ -10,7 +10,7 @@ import test as test_
 def test():
   t = test_.Test()
 
-  if neworder.size() == 1:
+  if neworder.mpi.size() == 1:
     neworder.log("Skipping MPI tests")
     return True
   
@@ -18,7 +18,7 @@ def test():
   t.check(not neworder.mc.indep())
 
   u = neworder.mc.ustream(1000)
-  v = neworder.broadcast(u, 0)
+  v = neworder.mpi.broadcast(u, 0)
   # u == v for all processes
 
   t.check(np.array_equal(u, v))

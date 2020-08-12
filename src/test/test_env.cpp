@@ -26,8 +26,9 @@ void test_env()
 
   CHECK(env.rank() == 0);
   CHECK(env.size() == 1);
-  CHECK(neworder.attr("rank")().cast<int>() == 0);
-  CHECK(neworder.attr("size")().cast<int>() == 1);
+  CHECK(pycpp::has_attr(neworder, "mpi"))
+  CHECK(neworder.attr("mpi").attr("rank")().cast<int>() == 0);
+  CHECK(neworder.attr("mpi").attr("size")().cast<int>() == 1);
 
   const py::object& mc = neworder.attr("mc"); 
   CHECK(env.mc().indep());

@@ -53,7 +53,7 @@ class MarkovChain:
     self.csummary = self.csummary.append(self.cont.State.value_counts())
 
     # update discrete
-    neworder.transition(ALLSTATES, self.t, self.disc, "State")
+    neworder.dataframe.transition(ALLSTATES, self.t, self.disc, "State")
     self.dsummary = self.dsummary.append(self.disc.State.value_counts())
 
   def plot(self):
