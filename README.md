@@ -21,7 +21,7 @@ All this does however require that model developers are comfortable coding in py
 
 ## Contents
 
-__NB the code has been refactored the documentation needs updating - it may not reflect the current code__
+__NB the code has been refactored and some of the documentation needs updating__
 
 - [Key Features](#key-features)
   - [Data and Performance](#data-and-performance)
@@ -146,6 +146,7 @@ Examples that work post refactor of config:
 - schelling
 - riskpaths
 - competing
+- people
 
 Examples that don't, or havent been tested, have been moved into the `untested` folder.
 
@@ -267,6 +268,7 @@ $ time ./run_example.sh people
 [py 0/1] writing ./examples/people/dm_E08000021_2050.250.csv
 [no 0/1] SUCCESS
 ```
+
 This 40 year simulation of a population of about 280,000 more than doubling (no exogenous constraints) executed in about 25s on a single core on a desktop machine.
 
 ### Parallel Execution
@@ -302,6 +304,7 @@ RiskPaths is a well-known MODGEN model that is primarily used for teaching purpo
 Counts of transitions by age: first pregnancy (purple), beginning of first union (blue), end of first union (ochre), start of second union (green), end of second union (red).
 
 See also:
+
 - the [model configuration](examples/riskpaths/config.py)
 - the [model implementation](examples/riskpaths/riskpaths.py), and
 - the [input data](examples/riskpaths/data.py)
