@@ -26,12 +26,12 @@ class BlackScholes(neworder.Model):
       self.market.vol = self.market.vol + 0.001 # 10bp upward vega
 
   def transition(self):
-    neworder.pv = self.simulate()
+    self.pv = self.simulate()
 
   def checkpoint(self):
-    self.compare(neworder.pv)
+    self.compare()
     # compute some market risk
-    self.option.greeks(neworder.pv)
+    self.greeks()
 
   def simulate(self):
     # get the time from the environment
@@ -73,10 +73,21 @@ class BlackScholes(neworder.Model):
     else:
       return -S * df * norm_cdf(-d1) + K * df * norm_cdf(-d2)
 
-  def compare(self, pv_mc):
+  def compare(self):
     """ Compare MC price to analytic """
     ref = self.analytic()
-    err = pv_mc / ref - 1.0
-    neworder.log("mc: {:.6f} / ref: {:.6f} err={:.2%}".format(pv_mc, ref, err))
+    err = self.pv / ref - 1.0
+    neworder.log("mc: {:.6f} / ref: {:.6f} err={:.2%}".format(self.pv, ref, err))
     # relative error should be within O(1/(sqrt(sims))) of analytic solution
     return True if abs(err) <= 2.0/sqrt(self.nsims) else False
+
+  def greeks(self):
+    # get all the results
+    pvs = neworder.mpi.gather(self.pv, 0)
+    # compute sensitivities on rank 0
+    if neworder.mpi.rank() == 0:
+      neworder.log("gathered results: %s" % pvs)
+      neworder.log("PV=%f" % pvs[0])
+      neworder.log("delta=%f" % ((pvs[1] - pvs[2])/2))
+      neworder.log("gamma=%f" % ((pvs[1] - 2*pvs[0] + pvs[2])))
+      neworder.log("vega 10bp=%f" % (pvs[3] - pvs[0]))

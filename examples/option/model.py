@@ -30,12 +30,10 @@ nsims = 100000 # number of prices to simulate
 
 #neworder.log_level = 1
 
-# create an array for the results from each model run
-neworder.pv = np.zeros(neworder.mpi.size())
-
 # initialisation
 market = Market(spot, rate, divy, vol)
 option = Option(callput, strike, expiry)
 
-neworder.model = BlackScholes(option, market, nsims)
+bs_mc = BlackScholes(option, market, nsims)
 
+neworder.run(bs_mc)

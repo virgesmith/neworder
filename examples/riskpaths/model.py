@@ -26,10 +26,6 @@ population_size = 10000
 
 timeline = neworder.Timeline(0, 100, [1])
 
-neworder.model = RiskPaths(timeline, population_size)
-# # initialisation
-# neworder.initialisations = {
-#   "people": { "module": "riskpaths", "class_": "RiskPaths", "args": (population_size) }
-# }
+riskpaths = RiskPaths(timeline, population_size)
 
-
+neworder.run(riskpaths)

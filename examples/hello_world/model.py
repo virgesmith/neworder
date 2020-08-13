@@ -70,6 +70,7 @@ class HelloWorld(neworder.Model):
     neworder.log("Hello %s" % self.name)
 
 # construct the model
-neworder.model = HelloWorld()
+hello_world = HelloWorld()
 
-
+# run the model
+neworder.run(hello_world)

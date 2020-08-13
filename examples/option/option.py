@@ -11,11 +11,3 @@ class Option():
     self.strike = strike
     self.expiry = expiry
 
-  # TODO move somewhere more appropriate (market?)
-  def greeks(self, pv):
-    pvs = neworder.mpi.gather(pv, 0)
-    if neworder.mpi.rank() == 0:
-      neworder.log("PV=%f" % pvs[0])
-      neworder.log("delta=%f" % ((pvs[1] - pvs[2])/2))
-      neworder.log("gamma=%f" % ((pvs[1] - 2*pvs[0] + pvs[2])))
-      neworder.log("vega 10bp=%f" % (pvs[3] - pvs[0]))

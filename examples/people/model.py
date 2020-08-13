@@ -26,5 +26,6 @@ assert neworder.mpi.size() == 1, "This example is configured to be run as a sing
 # define the evolution timeline
 timeline = neworder.Timeline(2011, 2021, [7,10])
 
-neworder.model = Population(timeline, initial_population, asfr, asmr, asir, asor, ascr, asxr)
+population = Population(timeline, initial_population, asfr, asmr, asir, asor, ascr, asxr)
 
+neworder.run(population)

@@ -106,13 +106,6 @@ void test_np()
   // check python sees update
   // CHECK(runtime({"df.PID[0] == 1", no::CommandType::Eval}).cast<bool>());
   // CHECK(runtime({"df.PID[len(df)-1] == len(df)", no::CommandType::Eval}).cast<bool>());
-  // v[0] = "MOVED!";
-  // check changed
-  // CHECK(no::Callback::eval("df.Changed[0] == 'MOVED!'")());
-  // // check unchanged
-  // CHECK(no::Callback::eval("df.Changed[1] == 'E02000001'")());
-
-  //no::Callback::exec("import pandas as pd;import neworder;neworder.log(neworder.df.head())")();
 
   py::array in = no::zeros<double>({9});
   // UnaryArrayFunc f(1.0, 2.75);

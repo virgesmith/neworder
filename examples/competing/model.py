@@ -18,5 +18,6 @@ population_size = 100000
 lad = "E09000030"
 ethnicity = "WBI"
 
-neworder.model = People(timeline, fertility_hazard_file, mortality_hazard_file, lad, ethnicity, population_size)
+pop = People(timeline, fertility_hazard_file, mortality_hazard_file, lad, ethnicity, population_size)
 
+neworder.run(pop)

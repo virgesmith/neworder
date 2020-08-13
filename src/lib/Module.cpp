@@ -84,27 +84,6 @@ void no::shell(/*const py::object& local*/)
   /* py::object interpreter = */py::module::import("code").attr("interact")(/**py::tuple(),*/ **kwargs);
 }
 
-
-// // TODO move? (this is called from run.cpp but not exposed to python) 
-// void no::set_timeline(const py::tuple& spec) 
-// {
-//   // Format is: (start, end, [checkpoints])
-//   if (py::len(spec) != 3) {
-//     throw std::runtime_error("invalid timeline specification, should be (start, end, [checkpoints])");
-//   }
-//   double start = spec[0].cast<double>();
-//   double end = spec[1].cast<double>();
-//   py::list cp = py::list(spec[2]);
-//   size_t n = py::len(cp);
-//   std::vector<size_t> checkpoint_times(n);
-//   for (size_t i = 0; i < n; ++i)
-//   {
-//     checkpoint_times[i] = cp[i].cast<size_t>();
-//   }
-//   getenv().timeline() = Timeline(start, end, checkpoint_times);
-// }
-
-
 // python-visible log function defined above
 PYBIND11_EMBEDDED_MODULE(neworder, m)
 {
@@ -114,16 +93,15 @@ PYBIND11_EMBEDDED_MODULE(neworder, m)
   m.def("python", no::python_version);
   m.def("log", log_obj);
   m.def("shell", no::shell);
-  //m.def("reseed", no::Environment::reset);
+  m.def("run", no::Model::run);
 
   // time-related module
-  py::module time("time");
-  time.def("distant_past", no::Timeline::distant_past);
-  time.def("far_future", no::Timeline::far_future);
-  time.def("never", no::Timeline::never);
-  time.def("isnever", no::Timeline::isnever); // scalar 
-  time.def("isnever", no::isnever); // array
-  m.attr("time") = time;
+  m.attr("time") = py::module("time")
+    .def("distant_past", no::Timeline::distant_past)
+    .def("far_future", no::Timeline::far_future)
+    .def("never", no::Timeline::never)
+    .def("isnever", no::Timeline::isnever) // scalar 
+    .def("isnever", no::isnever); // array
 
   py::class_<no::Timeline>(m, "Timeline")
     .def(py::init<double, double, const std::vector<size_t>&>())
@@ -180,48 +158,38 @@ PYBIND11_EMBEDDED_MODULE(neworder, m)
           % no::getenv().indep() % mc.seed();
       });
 
-      // .def("first_arrival", [](no::MonteCarlo& mc, const py::array& lambda_t, double dt, size_t n) { 
-      //   return mc.first_arrival(lambda_t, dt, n, 0.0); 
-      // })
+    // .def("first_arrival", [](no::MonteCarlo& mc, const py::array& lambda_t, double dt, size_t n) { 
+    //   return mc.first_arrival(lambda_t, dt, n, 0.0); 
+    // })
 
 
   // statistical utils
-  py::module stats("stats", "statistical functions");
-  // this version defaults x0, k args 
-  stats.def("logistic", no::logistic);
-  stats.def("logistic", [](const py::array& a, double x0) { return no::logistic(a, x0, 1.0); });
-  stats.def("logistic", [](const py::array& a) { return no::logistic(a, 0.0, 1.0); });
-  stats.def("logit", no::logit);
-  m.attr("stats") = stats;
-
+  m.attr("stats") = py::module("stats", "statistical functions")
+    .def("logistic", no::logistic)  // this version defaults x0, k args 
+    .def("logistic", [](const py::array& a, double x0) { return no::logistic(a, x0, 1.0); })
+    .def("logistic", [](const py::array& a) { return no::logistic(a, 0.0, 1.0); })
+    .def("logit", no::logit);
+ 
   // dataframe manipulation  
-  py::module df("dataframe");
-  df.def("transition", no::df::transition);
-  df.def("directmod", no::df::directmod);
-  m.attr("dataframe") = df;
-  //m.def("linked_change", no::df::linked_change, py::return_value_policy::take_ownership);
+  m.attr("dataframe") = py::module("dataframe", "direct manipulations of dataframes")
+    .def("transition", no::df::transition)
+    .def("directmod", no::df::directmod);
+    //.def("linked_change", no::df::linked_change, py::return_value_policy::take_ownership);
 
   // MPI submodule
-  py::module mpi("mpi");
-  mpi.def("rank", no::Environment::rank);
-  mpi.def("size", no::Environment::size);
-  mpi.def("indep", no::Environment::indep);
-  mpi.def("send", no::mpi::send_obj);
-  mpi.def("receive", no::mpi::receive_obj);
-  mpi.def("send_csv", no::mpi::send_csv);
-  mpi.def("receive_csv", no::mpi::receive_csv);
-  mpi.def("broadcast", no::mpi::broadcast_obj);
-  mpi.def("gather", no::mpi::gather_array);
-  mpi.def("scatter", no::mpi::scatter_array);
-  mpi.def("allgather", no::mpi::allgather_array, py::return_value_policy::take_ownership);
-  mpi.def("sync", no::mpi::sync);
-  m.attr("mpi") = mpi;
-
-  // // Deferred eval/exec of Python code
-  // py::class_<no::Callback>(m, "Callback"/*, py::no_init*/)
-  //   .def("__call__", &no::Callback::operator())
-  //   .def("__str__", &no::Callback::code)
-  //   ;
+  m.attr("mpi") = py::module("mpi", "multiprocess communication")
+    .def("rank", no::Environment::rank)
+    .def("size", no::Environment::size)
+    .def("indep", no::Environment::indep)
+    .def("send", no::mpi::send_obj)
+    .def("receive", no::mpi::receive_obj)
+    .def("send_csv", no::mpi::send_csv)
+    .def("receive_csv", no::mpi::receive_csv)
+    .def("broadcast", no::mpi::broadcast_obj)
+    .def("gather", no::mpi::gather_array)
+    .def("scatter", no::mpi::scatter_array)
+    .def("allgather", no::mpi::allgather_array, py::return_value_policy::take_ownership)
+    .def("sync", no::mpi::sync);
 
   // Example of wrapping an STL container
   // py::class_<std::vector<double>>("DVector", py::init<int>())

@@ -222,7 +222,6 @@ int run(int rank, int size, bool indep)
   Timer timer;
   try
   {
-    py::object& neworder = env; 
     // Load (and exec) model definition file, importing all its symbols into the root namespace
     // TODO can this be done in pybind11?
     // py::module config = py::module::import("model"); // ~ "import model"
@@ -238,12 +237,12 @@ int run(int rank, int size, bool indep)
     root.attr("sys") = sys;
 
     // the C++ base class instance
-    no::Model& model = neworder.attr("model").cast<no::Model&>();
+    //no::Model& model = neworder.attr("model").cast<no::Model&>();
     // the python subclass instance
-    py::object model_subclass = neworder.attr("model");
+    // py::object model_subclass = neworder.attr("model");
 
-    // need a py::object to access derived methods
-    model.run(model_subclass, env);
+    // // need a py::object to access derived methods
+    // model.run(model_subclass, env);
   }
   catch(std::exception& e)
   {

@@ -14,4 +14,6 @@ similarity = 0.5
 
 timeline = neworder.Timeline(0, 500, [5000])
 
-neworder.model = Schelling(timeline, gridsize, categories, similarity)
+schelling = Schelling(timeline, gridsize, categories, similarity)
+
+neworder.run(schelling)

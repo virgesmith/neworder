@@ -172,4 +172,6 @@ days = 180
 dt = 1
 npeople = 10000
 
-neworder.model = DiseaseModel(days, dt, npeople)
+disease_model = DiseaseModel(days, dt, npeople)
+
+neworder.run(disease_model)

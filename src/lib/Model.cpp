@@ -39,28 +39,30 @@ void no::Model::checkpoint()
 }
 
 
-void no::Model::run(py::object& model_subclass, const no::Environment& env) 
+void no::Model::run(py::object& model_subclass) 
 {
+  // extract the base class
+  no::Model& base = model_subclass.cast<no::Model&>();
   no::Runtime runtime("neworder");
   Timer timer;
 
-  int rank = env.rank();
+  int rank = no::getenv().rank();
 
   const std::string& subclass_name = py::str(model_subclass).cast<std::string>();
 
   no::log("starting model run. start time=%%, timestep=%%, checkpoint(s) at %%"_s 
-    % m_timeline.start() % m_timeline.dt() % m_timeline.checkpoints());
+    % base.timeline().start() % base.m_timeline.dt() % base.timeline().checkpoints());
 
   // apply the modifier, if implemented in the derived class 
-  no::log("t=%%(%%) calling: %%.modify(%%)"_s % m_timeline.time() % m_timeline.index() % subclass_name % rank);
+  no::log("t=%%(%%) calling: %%.modify(%%)"_s % base.timeline().time() % base.timeline().index() % subclass_name % rank);
   model_subclass.attr("modify")(rank);
 
   // Loop with checkpoints
-  while (!m_timeline.at_end())
+  while (!base.timeline().at_end())
   {
-    m_timeline.next(); 
-    double t = m_timeline.time();
-    int timeindex = m_timeline.index();
+    base.timeline().next(); 
+    double t = base.timeline().time();
+    int timeindex = base.timeline().index();
 
     no::log("t=%%(%%) calling %%.transition()"_s % t % timeindex % subclass_name );
     model_subclass.attr("transition")();
@@ -71,7 +73,7 @@ void no::Model::run(py::object& model_subclass, const no::Environment& env)
       no::log("t=%%(%%) calling %%.check()"_s % t % timeindex % subclass_name );
       model_subclass.attr("check")();
     }
-    if (m_timeline.at_checkpoint())
+    if (base.timeline().at_checkpoint())
     {
       no::log("t=%%(%%) calling %%.checkpoint()"_s % t % timeindex % subclass_name );
       model_subclass.attr("checkpoint")();

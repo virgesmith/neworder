@@ -8,4 +8,6 @@ population_size = 100
 p_trans = 0.01
 timeline = neworder.Timeline(0, 100, [100])
 
-neworder.model = Test(timeline, p_trans, population_size)
+test_model = Test(timeline, p_trans, population_size)
+
+neworder.run(test_model)

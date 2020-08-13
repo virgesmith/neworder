@@ -32,7 +32,8 @@ class Diagnostics(neworder.Model):
 
 
 # construct the model
-neworder.model = Diagnostics()
+model = Diagnostics()
 
+neworder.run(model)
 
 

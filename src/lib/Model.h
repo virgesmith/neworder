@@ -21,7 +21,7 @@ public:
   Model(Model&&) = delete;
   Model& operator=(Model&&) = delete;
 
-  void run(py::object& subclass, const Environment& env);
+  static void run(py::object& subclass);
 
   // getters
   Timeline& timeline() { return m_timeline; }
