@@ -17,7 +17,7 @@ class Test(neworder.Model):
 
   def transition(self):
     # generate some movement
-    neworder.dataframe.transition(self.s, self.p, self.pop, "state")
+    neworder.dataframe.transition(self, self.s, self.p, self.pop, "state")
 
     # send migrants
     for s in range(neworder.mpi.size()):

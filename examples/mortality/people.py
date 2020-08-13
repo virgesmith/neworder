@@ -70,7 +70,7 @@ class People(neworder.Model):
     # first filter out the already dead
     alive = self.population.loc[self.population.Alive].index
     # sample time of death
-    r = neworder.mc.stopping(self.mortality_hazard.Rate.values[min(self.timeline().index()-1, self.max_rate_age)], len(alive))
+    r = self.mc().stopping(self.mortality_hazard.Rate.values[min(self.timeline().index()-1, self.max_rate_age)], len(alive))
     # select if death happens before next timestep...
     dt = self.timeline().dt()
     # at final timestep everybody dies (at some later time) so dt is infinite
@@ -89,7 +89,7 @@ class People(neworder.Model):
 
     # in this case we can also compute the mortality directly by modelling a non-homogeneous Poisson process
     # using the Lewis-Shedler algorithm
-    self.population["TimeOfDeathNHPP"] = neworder.mc.first_arrival(self.mortality_hazard.Rate.values, self.timeline().dt(), len(self.population))
+    self.population["TimeOfDeathNHPP"] = self.mc().first_arrival(self.mortality_hazard.Rate.values, self.timeline().dt(), len(self.population))
 
     # compare the discrete simulation value against the more direct computation
     neworder.log("%f vs %f" % (np.mean(self.population.TimeOfDeath), np.mean(self.population.TimeOfDeathNHPP)))

@@ -223,7 +223,7 @@ int run(int rank, int size, bool indep)
   try
   {
     py::object& neworder = env; 
-    // Load (and exec) config file, importing all its symbols into the root namespace
+    // Load (and exec) model definition file, importing all its symbols into the root namespace
     // TODO can this be done in pybind11?
     // py::module config = py::module::import("model"); // ~ "import model"
     py::exec("from model import *");

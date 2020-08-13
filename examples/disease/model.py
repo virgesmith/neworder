@@ -137,7 +137,7 @@ class DiseaseModel(neworder.Model):
     self.transitions[State.CRITICAL,    State.CRITICAL]     = 1 - lambda_45 * dt / critical_adj - lambda_46 * dt
     self.transitions[State.RECOVERED,    State.CRITICAL]    = lambda_45 * dt / critical_adj
 
-    neworder.dataframe.transition(ALLSTATES, self.transitions, self.pop, "State")
+    neworder.dataframe.transition(self, ALLSTATES, self.transitions, self.pop, "State")
     self.summary = self.summary.append(self.pop.State.value_counts())
 
     uninfected = self.pop[(previous_state == State.UNINFECTED)].index

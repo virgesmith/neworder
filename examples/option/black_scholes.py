@@ -26,17 +26,17 @@ class BlackScholes(neworder.Model):
       self.market.vol = self.market.vol + 0.001 # 10bp upward vega
 
   def transition(self):
-    neworder.pv = self.mc()
+    neworder.pv = self.simulate()
 
   def checkpoint(self):
     self.compare(neworder.pv)
     # compute some market risk
     self.option.greeks(neworder.pv)
 
-  def mc(self):
+  def simulate(self):
     # get the time from the environment
     dt = self.timeline().time()
-    normals = nstream(self.nsims)
+    normals = nstream(self.mc().ustream(self.nsims))
     # compute underlying prices at dt
     S = self.market.spot
     r = self.market.rate

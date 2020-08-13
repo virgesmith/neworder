@@ -2,6 +2,7 @@
 
 #include "NewOrder.h"
 #include "Timeline.h"
+#include "MonteCarlo.h"
 #include "Module.h"
 
 namespace no {
@@ -24,6 +25,7 @@ public:
 
   // getters
   Timeline& timeline() { return m_timeline; }
+  MonteCarlo& mc() { return m_monteCarlo; }
 
   // functions to override
   virtual void modify(int rank); // optional, parallel runs only
@@ -33,7 +35,7 @@ public:
 
 private:
   Timeline m_timeline;
-  // TODO add MonteCarlo
+  MonteCarlo m_monteCarlo;
 
 };
 

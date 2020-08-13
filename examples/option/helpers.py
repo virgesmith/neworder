@@ -6,11 +6,13 @@ import scipy.stats
 
 import neworder
 
-def nstream(n):
+# TODO move this functionality into C++
+
+def nstream(u):
   """ Return a vector of n normally distributed pseudorandom variates (mean zero unity variance) """
-  return scipy.stats.norm.ppf(neworder.mc.ustream(n))
+  return scipy.stats.norm.ppf(u)
 
 def norm_cdf(x):
-  """ Compute the inverse normal cumulatve density funtion """
+  """ Compute the normal cumulatve density funtion """
   return (1.0 + erf(x / sqrt(2.0))) / 2.0
 

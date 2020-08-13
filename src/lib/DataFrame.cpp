@@ -1,6 +1,8 @@
 
 #include "DataFrame.h"
 
+#include "Model.h"
+#include "MonteCarlo.h"
 #include "Timer.h"
 #include "MPIComms.h"
 
@@ -22,9 +24,9 @@ size_t interp(const std::vector<double>& cumprob, double x)
 
 
 // TODO one-off-
-// categories are all possible categorty labels. Order corresponds to row/col in matrix
+// categories are all possible category labels. Order corresponds to row/col in matrix
 // matrix is a transition matrix
-void no::df::transition(py::array categories, py::array matrix, py::object &df, const std::string& colname)
+void no::df::transition(no::Model& model, py::array categories, py::array matrix, py::object &df, const std::string& colname)
 {
   // Extract column from DF as np.array
   py::array col = df.attr(colname.c_str());
@@ -82,7 +84,8 @@ void no::df::transition(py::array categories, py::array matrix, py::object &df, 
   py::ssize_t n = col.size();
 
   Timer t;
-  py::array_t<double> r = no::getenv().mc().ustream(n);
+  // define a base model to init the MC engine
+  py::array_t<double> r = model.mc().ustream(n);
   // if bottleneck, can access through
   // auto p = r.unchecked<1>();
   // x = p[i];
@@ -102,7 +105,7 @@ void no::df::transition(py::array categories, py::array matrix, py::object &df, 
 }
 
 // example of directly modifying a DF?
-void no::df::directmod(py::object& df, const std::string& colname)
+void no::df::directmod(no::Model& model, py::object& df, const std::string& colname)
 {
   // .values? pd.Series -> np.array?
   py::array arr = df.attr(colname.c_str());

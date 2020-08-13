@@ -9,15 +9,16 @@
 
 
 no::Model::Model(Timeline& timeline) 
-  : m_timeline(timeline)
-  { 
-  }
+  : m_timeline(timeline), m_monteCarlo()
+{ 
+  no::log("model init: mc={indep:%%, seed:%%}"_s % no::getenv().indep() % m_monteCarlo.seed());
+}
 
 
 void no::Model::modify(int)
 {
   // verbose only
-  no::log("defaulted to Model::modify()");
+  no::log("defaulted to no-op Model::modify()");
 }
 
 void no::Model::transition()
@@ -28,7 +29,7 @@ void no::Model::transition()
 bool no::Model::check()
 {
   // verbose only
-  no::log("defaulted to Model::check()");
+  no::log("defaulted to no-op Model::check()");
   return true;
 }
 

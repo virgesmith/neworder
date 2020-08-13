@@ -13,21 +13,21 @@
 namespace {
 
 // compute the RNG seed
-int64_t compute_seed(int rank, int size, bool indep)
+int64_t compute_seed()
 {
+  int rank = no::getenv().rank();
+  int size = no::getenv().size();
+  bool indep = no::getenv().indep();
   // ensure stream (in)dependence w.r.t. sequence and MPI rank/sizes
   return 77027473 * 0 + 19937 * size + rank * indep;  
 }
 
 }
 
-no::MonteCarlo::MonteCarlo(int rank, int size, bool indep) 
-  : m_indep(indep), m_seed(compute_seed(rank, size, indep)), m_prng(m_seed) { }
+//
+no::MonteCarlo::MonteCarlo() 
+  : m_seed(compute_seed()), m_prng(m_seed) { }
 
-bool no::MonteCarlo::indep() const 
-{ 
-  return m_indep; 
-}
 
 int64_t no::MonteCarlo::seed() const 
 { 

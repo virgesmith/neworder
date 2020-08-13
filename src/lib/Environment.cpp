@@ -12,7 +12,7 @@ no::Environment& no::Environment::init(int rank, int size, bool indep)
 {
   // make our rank/size visible to python
   Environment& env = no::getenv();
-  py::object& neworder = env; // env as python module
+  //py::object& neworder = env; // env as python module
 
   // // to "share" scalars across C++ and python, use the py::extract<> object
   // env.m_self->attr("rank") = rank;
@@ -22,14 +22,16 @@ no::Environment& no::Environment::init(int rank, int size, bool indep)
   env.m_rank = rank;
   env.m_size = size;
 
-  // singleton, so don't need to worry about freeing memory
-  env.m_mc = new MonteCarlo(rank, size, indep);
-  neworder.attr("mc") = env.m_mc;
+  // set whether each process has independent RNG streams
+  env.m_indep = indep;
 
-  no::log("neworder %% env: mc=(indep:%%, seed:%%) python %%"_s % module_version() % indep % env.m_mc->seed() % python_version());
+  // TODO verbose flag
+  env.m_verbose = true;
 
   // set init flag
   env.m_init = true;
+
+  no::log("neworder %%/python %% env={indep:%%, verbose:%%}"_s % module_version() % python_version() % env.m_indep % env.m_verbose );
 
   return env;
 }
@@ -69,7 +71,7 @@ void no::Environment::reset()
 {
   if (!no::getenv().m_init)
     throw std::runtime_error("accessing %% before init called"_s % __FUNCTION__);
-  no::getenv().m_mc->reset();
+  //no::getenv().m_mc->reset();
 }
 
 
@@ -80,10 +82,10 @@ std::string no::Environment::context(int ctx) const
 }
 
 
-no::MonteCarlo& no::Environment::mc() const
-{
-  return *m_mc;
-}
+// no::MonteCarlo& no::Environment::mc() const
+// {
+//   return *m_mc;
+// }
 
 // Note this does not fully initialise, do not construct directly, use the static init function
 no::Environment::Environment() : m_init(false) , m_gil{} // TODO does it still? segfaults on exit (presumably called **too late** (singleton))

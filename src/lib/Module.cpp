@@ -145,16 +145,16 @@ PYBIND11_EMBEDDED_MODULE(neworder, m)
   py::class_<no::Model>(m, "Model")
     .def(py::init<no::Timeline&>())
     .def("timeline", &no::Model::timeline, py::return_value_policy::reference)
+    .def("mc", &no::Model::mc, py::return_value_policy::reference)
     .def("modify", &no::Model::modify)
     .def("transition", &no::Model::transition)
     .def("check", &no::Model::check)
     .def("checkpoint", &no::Model::checkpoint);
-    // NB the all-important run function is not exposed to python
+    // NB the all-important run function is not exposed to python, it can only be executed by the embedded runtime
 
   // MC
   py::class_<no::MonteCarlo>(m, "MonteCarlo")
   //.def(py::init<uint32_t>()); // no ctor visible to python  
-    .def("indep", &no::MonteCarlo::indep)
     .def("seed", &no::MonteCarlo::seed)  
     .def("reset", &no::MonteCarlo::reset)  
     .def("ustream", &no::MonteCarlo::ustream)
@@ -177,7 +177,7 @@ PYBIND11_EMBEDDED_MODULE(neworder, m)
       })
     .def("__repr__", [](const no::MonteCarlo& mc) {
         return "<neworder.MonteCarlo indep=%% seed=%%>"_s 
-          % mc.indep() % mc.seed();
+          % no::getenv().indep() % mc.seed();
       });
 
       // .def("first_arrival", [](no::MonteCarlo& mc, const py::array& lambda_t, double dt, size_t n) { 
@@ -205,6 +205,7 @@ PYBIND11_EMBEDDED_MODULE(neworder, m)
   py::module mpi("mpi");
   mpi.def("rank", no::Environment::rank);
   mpi.def("size", no::Environment::size);
+  mpi.def("indep", no::Environment::indep);
   mpi.def("send", no::mpi::send_obj);
   mpi.def("receive", no::mpi::receive_obj);
   mpi.def("send_csv", no::mpi::send_csv);

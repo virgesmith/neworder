@@ -4,6 +4,7 @@
 #include "test.h"
 
 #include "MonteCarlo.h"
+#include "Environment.h"
 
 #include <vector>
 #include <string>
@@ -13,9 +14,13 @@
 
 void test_mc()
 {
-  no::MonteCarlo mc(0, 1, 19937); 
+  // skip this if in parallel mode
+  if (no::getenv().size() != 1)
+    return;
+    
+  no::MonteCarlo mc; 
   CHECK(mc.seed() == 19937);
-  CHECK(mc.indep());
+  CHECK(no::getenv().indep());
   py::array a = mc.ustream(5);
   no::log(a);
   CHECK(fabs(no::at<double>(a,{0}) - 0.33778882725164294) < 1e-8);

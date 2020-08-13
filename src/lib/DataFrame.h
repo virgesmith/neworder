@@ -4,11 +4,15 @@
 #include <pybind11/numpy.h>
 // Data frame manipulation routines
 
-namespace no { namespace df {
+namespace no { 
 
-void transition(py::array categories, py::array matrix, py::object& df, const std::string& colname);
+class Model;
 
-void directmod(py::object& df, const std::string& colname);
+namespace df {
+
+void transition(no::Model& model, py::array categories, py::array matrix, py::object& df, const std::string& colname);
+
+void directmod(no::Model& model, py::object& df, const std::string& colname);
 
 //void linked_change(py::object& df, const std::string& cat, const std::string& link_cat);
 

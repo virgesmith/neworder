@@ -15,9 +15,8 @@ namespace no {
 class MonteCarlo
 {
 public:
-  MonteCarlo(int rank, int size, bool indep);
-
-  bool indep() const;
+  // seeds rng using rank/size/indep from environment
+  MonteCarlo();
 
   int64_t seed() const;
 
@@ -53,7 +52,6 @@ private:
   // Use this over std::uniform_real_distribution as can make C++ and rust implementations produce identical streams
   double u01();
 
-  bool m_indep;
   int64_t m_seed;
   std::mt19937 m_prng;
 };

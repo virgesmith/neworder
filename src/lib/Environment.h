@@ -54,14 +54,17 @@ public:
   // independent streams (per rank)? 
   static bool indep();
 
+  // logging level
+  static bool verbose();
+
   // returns "py/no rank/size"
   std::string context(int ctx = CPP) const;
 
   // reset the RNG stream sequence to the original seed 
   static void reset();
 
-  // Access the RNG stream (one per env)
-  no::MonteCarlo& mc() const;
+  // // Access the RNG stream (one per env)
+  // no::MonteCarlo& mc() const;
 
   // returns the neworder env as a python object 
   operator py::object&() { return *m_self; } 
@@ -79,24 +82,21 @@ private:
   Environment();
   friend Environment& Global::instance<Environment>();
 
-  // RNG sequence index
-  //size_t m_seqno; use python version for now
-  //py::array m_sequence;
-
   // MPI rank/size
   int m_rank;
   int m_size;
-  // set to false to make all processes use the same seed
+
+  // MC mode (false means all processes use the same stream)
   bool m_indep;
 
-  // seed not directly visible to python
-  int64_t m_seed;
+  // log level
+  bool m_verbose;
+
+  // // seed not directly visible to python
+  // int64_t m_seed;
 
   // TODO work out why this segfaults if the dtor is called (even on exit)
   py::module* m_self;
-
-  // pointer to MC object initialised 
-  no::MonteCarlo* m_mc; 
 };
 
 // syntactic sugar

@@ -30,8 +30,10 @@ def test():
   # no nay never no more:
   t.check(no.time.isnever(no.time.never()))
 
-  #t.check(False)
-  s = no.mc.ustream(10000)
+  # construct a base model
+  model = no.Model(no.Timeline.null())
+
+  s = model.mc().ustream(10000)
   t.check(isinstance(s, np.ndarray))
 
   t.check(len(s) == 10000)
@@ -82,14 +84,14 @@ def test():
   df = pd.read_csv("../../tests/df.csv")
 
   # modify df passing directly
-  no.dataframe.directmod(df, "DC2101EW_C_ETHPUK11")
+  no.dataframe.directmod(model, df, "DC2101EW_C_ETHPUK11")
   t.check(np.array_equal(df["DC2101EW_C_ETHPUK11"].values, np.zeros(len(df)) + 3))
 
   df = pd.read_csv("../../tests/df.csv")
   cats = np.array(range(4))
   transitions = np.identity(len(cats)) * 0 + 0.25
   #no.log(transitions)
-  no.dataframe.transition(cats, transitions, df, "DC2101EW_C_ETHPUK11")
+  no.dataframe.transition(model, cats, transitions, df, "DC2101EW_C_ETHPUK11")
   # it's possible this could fail depending on random draw
   t.check(np.array_equal(np.sort(df["DC2101EW_C_ETHPUK11"].unique()), np.array(range(4))))
 
