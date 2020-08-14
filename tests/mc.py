@@ -83,7 +83,7 @@ def test():
   t.check(len(a) == 6)
   # only works for single-process
   if no.mpi.size() == 1:
-    # these are the rust values... 
+    # these are the rust values...
     t.check_eq(a[0], 3.6177811673165667)
     t.check_eq(a[1], 0.6896205251312125)
     t.check_eq(a[2], 3.610216282947799)

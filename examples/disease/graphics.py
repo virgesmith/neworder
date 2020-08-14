@@ -1,7 +1,6 @@
 
 from matplotlib import pyplot as plt
 
-import neworder
 import seaborn as sns
 
 class Graphics():

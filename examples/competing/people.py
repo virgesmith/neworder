@@ -4,7 +4,6 @@ import pandas as pd
 from matplotlib import pyplot as plt
 import neworder
 import ethpop
-import animation
 
 # A more "pythonic" approach using pandas DataFrames
 

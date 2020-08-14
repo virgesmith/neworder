@@ -1,10 +1,8 @@
 
-from math import erf, sqrt, log, exp
+from math import erf, sqrt
 import numpy as np
 # for inverse cumulative normal
 import scipy.stats
-
-import neworder
 
 # TODO move this functionality into C++
 

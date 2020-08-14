@@ -1,7 +1,6 @@
 """ MPI tests """
 
 import numpy as np
-import pandas as pd
 import neworder
 
 import test as test_
@@ -17,7 +16,7 @@ def test():
   # base model for testing MC engine
   model = neworder.Model(neworder.Timeline.null())
   neworder.log(model)
-  
+
   # test ustream/sequence
   t.check(not neworder.mpi.indep())
 

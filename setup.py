@@ -3,7 +3,6 @@
 
 import os
 import glob
-import warnings
 from setuptools import Extension, setup
 from setuptools.command.build_ext import build_ext
 import pybind11
@@ -38,8 +37,8 @@ def version():
 # # python3.6-config --ldflags
 # # -L/usr/lib/python3.6/config-3.6m-x86_64-linux-gnu -L/usr/lib -lpython3.6m -lpthread -ldl  -lutil -lm  -Xlinker -export-dynamic -Wl,-O1 -Wl,-Bsymbolic-functions
 
-# library_dirs = ["/usr/lib/python3.6/config-3.6m-x86_64-linux-gnu", "/usr/lib"] 
-# libraries = ["python3.6m", "pthread", "dl", "util", "m"] 
+# library_dirs = ["/usr/lib/python3.6/config-3.6m-x86_64-linux-gnu", "/usr/lib"]
+# libraries = ["python3.6m", "pthread", "dl", "util", "m"]
 # extra_link_args = ["-Xlinker", "-export-dynamic", "-Wl,-O1", "-Wl,-Bsymbolic-functions"]
 
 # TODO MPI build?

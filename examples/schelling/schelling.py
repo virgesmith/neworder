@@ -5,7 +5,6 @@ import neworder
 
 import matplotlib.pyplot as plt
 from matplotlib import colors
-import matplotlib.animation as animation
 
 class Schelling(neworder.Model):
   def __init__(self, timeline, gridsize, categories, similarity):

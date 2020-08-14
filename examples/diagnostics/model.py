@@ -4,10 +4,8 @@ Prints diagnostic info and drops into an interactive shell
 """
 
 import os
-import sys
 import subprocess
 import neworder
-
 
 class Diagnostics(neworder.Model):
   """
@@ -23,7 +21,7 @@ class Diagnostics(neworder.Model):
     binary = "target/debug/neworder" if (neworder.name() == "neworder.rs") else "src/bin/neworder"
     all_libs = subprocess.getoutput("ldd %s" % binary).replace("\t", "").split("\n")
     neworder.log("Loaded libs:")
-    [neworder.log("  %s" % s) for _, s in enumerate(all_libs)]
+    for _, s in enumerate(all_libs): neworder.log("  %s" % s) 
     neworder.log("PYTHONPATH=%s" % os.getenv("PYTHONPATH"))
     neworder.log("Globals: %s" % dir())
 

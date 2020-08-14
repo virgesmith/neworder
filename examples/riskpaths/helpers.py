@@ -9,10 +9,10 @@ def partition(start, finish, step=1):
   return np.append(np .arange(start, finish, step), finish)
 
 
-def interp(range, value):
+def interp(rng, value):
   """ Equivalent to self-scheduling split """
   # TODO check behaviour outside range is same
-  idx = bisect_left(range, value)
+  idx = bisect_left(rng, value)
   # if idx == len(range)
   #   idx = idx - 1
   return idx

@@ -1,7 +1,6 @@
 """
 Competing risks - fertility & mortality
 """
-import numpy as np
 import neworder
 
 from people import People

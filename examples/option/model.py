@@ -4,7 +4,6 @@ The main vanishing point of this example is to illustrate how different objects 
 are the option itself, and the underlying stock (essentially the market) that governs its price.
 """
 
-import numpy as np
 import neworder
 
 from option import Option

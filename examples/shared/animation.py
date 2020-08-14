@@ -1,26 +1,23 @@
-import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
-
 class Hist:
-  def __init__(self, data, numbins, filename=None):
+  def __init__(self, data, numbins):
 
     fig, ax = plt.subplots()
-    # TODO histtype='barstacked'
     # see https://matplotlib.org/api/_as_gen/matplotlib.pyplot.hist.html
-    self.n, bins, self.patches = plt.hist(data, numbins, facecolor='black')
+    self.n, _bins, self.patches = plt.hist(data, numbins, facecolor='black')
 
     ax.set_title("Case-based mortality microsim (%d people)" % len(data))
     ax.set_xlabel("Age at Death")
     ax.set_ylabel("Persons")
 
-    frames = numbins+1
-    anim = animation.FuncAnimation(fig, self.__animate, interval=100, frames=numbins, repeat=True, repeat_delay=3000)
+    self.anim = animation.FuncAnimation(fig, self.__animate, interval=100, frames=numbins, repeat=True, repeat_delay=3000)
 
-    if filename is not None:
-      anim.save(filename, dpi=80, writer='imagemagick')
+  def save(self, filename):
+    self.anim.save(filename, dpi=80, writer='imagemagick')
 
+  def show(self):
     plt.show()
 
   def __animate(self, frameno):

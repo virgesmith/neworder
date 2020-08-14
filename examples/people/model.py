@@ -2,7 +2,6 @@
 """ config.py
 Microsimulation config
 """
-import numpy as np
 import neworder
 
 from population import Population

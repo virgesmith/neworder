@@ -1,10 +1,6 @@
 """
-Helper functions for formatting NewETHPOP fetility, mortality and migration data
+Helper functions for formatting NewETHPOP fertility, mortality and migration data
 """
-
-import pandas as pd
-import numpy as np
-#import humanleague as hl
 
 UK_POP_2011 = 62740000.0
 ALL_CATEGORIES = 2 * 86 * 12 # gender by age by eth

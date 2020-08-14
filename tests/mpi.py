@@ -22,7 +22,7 @@ def test():
   if neworder.mpi.size() == 1:
     neworder.log("Skipping MPI tests")
     return True
-  
+
   t.check(send_recv(True))
   t.check(send_recv(10))
   t.check(send_recv(10.01))
@@ -95,9 +95,9 @@ def test():
   # broadcast u1 from 1
   neworder.mpi.broadcast(u1,1)
   # proc 0 should have 2 different random arrays
-  # proc 1 should have zeros and a random array  
+  # proc 1 should have zeros and a random array
   t.check(not np.array_equal(u0, u1))
-  
+
   # check independent streams
   u = model.mc().ustream(1000)
   v = neworder.mpi.broadcast(u, root)

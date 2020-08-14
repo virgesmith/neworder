@@ -2,8 +2,6 @@
 Defines a simple market with a single underlying
 """
 
-import neworder
-
 # TODO make named tuple?
 class Market():
   """ This is just a simple container for market data """

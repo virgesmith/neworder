@@ -25,7 +25,7 @@ def test():
   t.check(no.time.never() != x)
   t.check(not x < no.time.never())
   t.check(not x >= no.time.never())
-  # no nay never: 
+  # no nay never:
   t.check(not no.time.isnever(x))
   # no nay never no more:
   t.check(no.time.isnever(no.time.never()))
@@ -61,7 +61,7 @@ def test():
   # l = no.first_arrival(h, 1.0, 10000)
   # no.log("TODO NHPP appears broken: %f" % np.mean(l))
 
-  # # this also tests a zero hazard rate 
+  # # this also tests a zero hazard rate
   # h = np.array([i/3000 for i in range(100)])
   # #no.log(h)
   # le = no.first_arrival(h, 1.0, 10000)
@@ -80,7 +80,7 @@ def test():
 
   # # DataFrame ops
 
-  # modify df passing column 
+  # modify df passing column
   df = pd.read_csv("../../tests/df.csv")
 
   # modify df passing directly
@@ -97,7 +97,7 @@ def test():
 
   # df2 = df.copy()
   # df3 = no.append(df,df2)
-  # t.check(len(df3) == len(df) + len(df2)) 
+  # t.check(len(df3) == len(df) + len(df2))
 
   x = np.zeros(1)
   p = no.stats.logistic(x)

@@ -3,9 +3,9 @@ Chapter 1
 This is based on the model in Chapter 2, "The Life Table" from the Belanger & Sabourin book
 See https://www.microsimulationandpopulationdynamics.com/
 """
-#import numpy as np
 import neworder
-import people
+from people import People
+from plot import plot
 
 max_age = 100.0
 
@@ -13,9 +13,8 @@ max_age = 100.0
 mortality_hazard_file = "examples/shared/NewETHPOP_mortality.csv"
 population_size = 100000
 
-# model definition
-from people import People
-
 mortality = People(mortality_hazard_file, population_size, max_age)
 
 neworder.run(mortality)
+
+plot(mortality.population)

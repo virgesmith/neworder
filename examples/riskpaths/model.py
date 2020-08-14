@@ -16,8 +16,6 @@ https://www.statcan.gc.ca/eng/microsimulation/modgen/new/chap4/chap4
   available at www.statcan.gc.ca/microsimulation/modgen/modgen-eng.htm'
 
 """
-import numpy as np
-
 import neworder
 
 from riskpaths import RiskPaths

@@ -24,7 +24,7 @@ def test():
   trans = np.identity(len(cats))
   no.dataframe.transition(model, cats, trans, df, "DC2101EW_C_ETHPUK11")
 
-  t.check(len(df["DC2101EW_C_ETHPUK11"].unique()) == 1 and df["DC2101EW_C_ETHPUK11"].unique()[0] == 2) 
+  t.check(len(df["DC2101EW_C_ETHPUK11"].unique()) == 1 and df["DC2101EW_C_ETHPUK11"].unique()[0] == 2)
 
   # NOTE transition matrix interpreted as being COLUMN MAJOR due to pandas DataFrame storing data in column-major order
 
@@ -32,13 +32,13 @@ def test():
   trans[2,2] = 0.0
   trans[3,2] = 1.0
   no.dataframe.transition(model, cats, trans, df, "DC2101EW_C_ETHPUK11")
-  t.check(len(df["DC2101EW_C_ETHPUK11"].unique()) == 1 and df["DC2101EW_C_ETHPUK11"].unique()[0] == 3) 
+  t.check(len(df["DC2101EW_C_ETHPUK11"].unique()) == 1 and df["DC2101EW_C_ETHPUK11"].unique()[0] == 3)
 
   # ~half of 3->0
   trans[0,3] = 0.5
   trans[3,3] = 0.5
   no.dataframe.transition(model, cats, trans, df, "DC2101EW_C_ETHPUK11")
-  t.check(np.array_equal(np.sort(df["DC2101EW_C_ETHPUK11"].unique()), np.array([0, 3]))) 
+  t.check(np.array_equal(np.sort(df["DC2101EW_C_ETHPUK11"].unique()), np.array([0, 3])))
 
   return not t.any_failed
 
@@ -55,11 +55,11 @@ def test():
 #   t = np.identity(len(c))
 
 #   # [ 3  5  1  2 -1  4]
-#   t = np.array([[0.9,  0.05, 0.05, 0.0,  0.0,  0.0], 
-#                 [0.05, 0.9,  0.04, 0.01, 0.0,  0.0], 
-#                 [0.0,  0.05, 0.9,  0.05, 0.0,  0.0], 
-#                 [0.0,  0.0,  0.05, 0.9,  0.05, 0.0], 
-#                 [0.1,  0.1,  0.1,  0.1,  0.5,  0.1], 
+#   t = np.array([[0.9,  0.05, 0.05, 0.0,  0.0,  0.0],
+#                 [0.05, 0.9,  0.04, 0.01, 0.0,  0.0],
+#                 [0.0,  0.05, 0.9,  0.05, 0.0,  0.0],
+#                 [0.0,  0.0,  0.05, 0.9,  0.05, 0.0],
+#                 [0.1,  0.1,  0.1,  0.1,  0.5,  0.1],
 #                 [0.0,  0.0,  0.00, 0.0,  0.2,  0.8]])
 
 #   #print(t[1]) # horz

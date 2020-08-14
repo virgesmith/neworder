@@ -1,15 +1,8 @@
 
 import numpy as np
 import pandas as pd
-from matplotlib import pyplot as plt
 import neworder
 import ethpop
-import animation
-import seaborn as sns
-
-# A more "pythonic" approach using pandas DataFrames
-
-
 
 class People(neworder.Model):
   """ A simple aggregration of Persons each represented as a row in a data frame """
@@ -34,11 +27,9 @@ class People(neworder.Model):
 
     self.max_age = max_age
 
-
   def transition(self):
     # kill off some people
     self.die()
-
     # age the living only
     alive = self.population.loc[self.population.Alive].index
     self.population.loc[alive, "Age"] = self.population.loc[alive, "Age"] + self.timeline().dt()
@@ -49,20 +40,6 @@ class People(neworder.Model):
 
   def checkpoint(self):
     neworder.log(self.calc_life_expectancy())
-    self.plot()
-
-  def plot(self, filename=None):
-    # dump the population out
-    #self.population.to_csv(filename, index=False)
-    #sns.set()
-    y1, x1 = np.histogram(self.population.TimeOfDeathNHPP, int(max(self.population.Age)))
-    plt.plot(x1[1:], y1)
-    y2, x2 = np.histogram(self.population.TimeOfDeath, int(max(self.population.Age)))
-    plt.plot(x2[1:], y2)
-    plt.title("Mortality model sampling algorithm comparison")
-    plt.legend(["Continuous", "Discrete"])
-    animation.Hist(self.population.TimeOfDeathNHPP, int(max(self.population.Age)), filename)
-    plt.show()
 
   def die(self):
     # using indexes to subset data as cannot store a reference to a subset of the dataframe (it just copies)

@@ -48,7 +48,7 @@ def test():
   t.check(isinstance(sv, np.ndarray))
   t.check(len(sv) == 5)
 
-  # Non-homogeneous Poisson process (time-dependent hazard) 
+  # Non-homogeneous Poisson process (time-dependent hazard)
   nhpp = model.mc().first_arrival(np.array([0.1, 0.2, 0.3, 0.4, 0.5]), 1.0, 10, 0.0)
   t.check(isinstance(nhpp, np.ndarray))
   t.check(len(nhpp) == 10)

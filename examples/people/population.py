@@ -41,7 +41,7 @@ class Population(neworder.Model):
     #self.out_migration.Rate = 0.05
     self.immigration.Rate = 0.01
     self.emigration.Rate = 0.005
- 
+
     # use this to identify people (uniquely only within this table)
     self.counter = len(self.data)
 
@@ -50,7 +50,7 @@ class Population(neworder.Model):
     self.data["Age"] = self.data.DC1117EW_C_AGE - self.mc().ustream(len(self.data))
     self.data = ethpop.from_census_eth(self.data)
 
-  def transition(self): 
+  def transition(self):
     self.births()
     self.deaths()
     self.migrations()
@@ -88,7 +88,7 @@ class Population(neworder.Model):
     # Finally append newborns to main population and adjust counter
     self.data = self.data.append(newborns)
     self.counter = self.counter + len(newborns)
-  
+
   def deaths(self):
     # neworder.log("deaths({:.3f})".format(self.timeline().dt()))
 
@@ -101,10 +101,10 @@ class Population(neworder.Model):
 
     # Finally remove deceased from table
     self.data = self.data[h!=1]
-    
+
   def migrations(self):
 
-    # internal immigration: 
+    # internal immigration:
     # - assign the rates to the incumbent popultion appropriately by age,sex,ethnicity
     # - randomly sample this population, clone and append
     in_rates = self.data.join(self.in_migration, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].values
@@ -112,7 +112,7 @@ class Population(neworder.Model):
     # in-migration should be sampling from the whole population ex-LAD, instead do an approximation by scaling up the LAD population
     # NOTE this is wrong for a number of reasons esp. as it cannot sample category combinations that don't already exist in the LAD
     h_in = self.mc().hazard(in_rates * self.timeline().dt())
-    
+
     incoming = self.data[h_in == 1].copy()
 
     # Append incomers to main population and adjust counter
@@ -124,7 +124,7 @@ class Population(neworder.Model):
     self.data = self.data.append(incoming)
     self.counter = self.counter + len(incoming)
 
-    # internal emigration: 
+    # internal emigration:
     out_rates = self.data.join(self.out_migration, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].values
     h_out = self.mc().hazard(out_rates * self.timeline().dt())
     # remove outgoing migrants
@@ -170,8 +170,8 @@ class Population(neworder.Model):
     """ State of the nation """
     check(self.data)
     neworder.log("check OK: time={:.3f} size={} mean_age={:.2f}, pct_female={:.2f} net_migration={} ({}-{}+{}-{})" \
-      .format(self.timeline().time(), self.size(), self.mean_age(), 100.0 * self.gender_split(), 
-      self.in_out[0] - self.in_out[1] + self.in_out[2] - self.in_out[3], 
+      .format(self.timeline().time(), self.size(), self.mean_age(), 100.0 * self.gender_split(),
+      self.in_out[0] - self.in_out[1] + self.in_out[2] - self.in_out[3],
       self.in_out[0], self.in_out[1], self.in_out[2], self.in_out[3]))
     return True # Faith
 

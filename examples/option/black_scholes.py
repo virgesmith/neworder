@@ -1,8 +1,8 @@
 """ Black-Scholes model implementations: analytic and MC """
 
 import neworder
+from math import exp, log
 from helpers import *
-from math import *
 
 # Subclass neworder.Model
 class BlackScholes(neworder.Model):
