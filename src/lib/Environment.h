@@ -37,7 +37,7 @@ public:
   Environment& operator=(const Environment&&) = delete;
 
   // Use this function to create the base environemt
-  static Environment& init(int rank, int size, bool indep = true);
+  static Environment& init(int rank, int size, bool indep = true, bool verbose = true);
 
   // check for errors in the python env (use after catching py::error_already_set)
   static std::string get_error() noexcept;

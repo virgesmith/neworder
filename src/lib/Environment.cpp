@@ -8,7 +8,7 @@
 
 
 // This function must be used to init the environment
-no::Environment& no::Environment::init(int rank, int size, bool indep)
+no::Environment& no::Environment::init(int rank, int size, bool indep, bool verbose)
 {
   // make our rank/size visible to python
   Environment& env = no::getenv();
@@ -26,7 +26,7 @@ no::Environment& no::Environment::init(int rank, int size, bool indep)
   env.m_indep = indep;
 
   // TODO verbose flag
-  env.m_verbose = true;
+  env.m_verbose = verbose;
 
   // set init flag
   env.m_init = true;

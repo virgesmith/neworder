@@ -24,5 +24,5 @@ int main(int argc, const char* argv[])
 
   MPIResource mpi(&argc, &argv);
 
-  run(mpi.rank(), mpi.size(), indep);
+  run(mpi.rank(), mpi.size(), indep, true);
 }

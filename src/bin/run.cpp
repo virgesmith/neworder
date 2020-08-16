@@ -216,9 +216,9 @@ int run(int rank, int size, bool indep)
 }
 #endif
 
-int run(int rank, int size, bool indep)
+int run(int rank, int size, bool indep, bool verbose)
 {
-  no::Environment& env = no::Environment::init(rank, size, indep);
+  no::Environment& env = no::Environment::init(rank, size, indep, verbose);
   Timer timer;
   try
   {
