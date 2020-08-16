@@ -1,114 +1,150 @@
-# this can interfere with virtualenv?
-##!/usr/bin/env python3
+#!/usr/bin/env python3
 
 import os
 import glob
-from setuptools import Extension, setup
+from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
-import pybind11
+import sys
+import setuptools
 
-def readme():
-  with open('README.md') as f:
-    return f.read()
+# see https://github.com/pybind/python_example
+
 
 def version():
-  import neworder
-  return neworder.__version__
+  """ This is now the single source of version info """
+  return "1.0.0"
 
-# def list_files(dirs, exts, exclude=[]):
-#   files = []
-#   if isinstance(exclude, str):
-#     exclude = [exclude]
-#   for directory in dirs:
-#     for ext in exts:
-#       files.extend(glob.glob(os.path.join(directory, "*." + ext)))
-#   [f in files and files.remove(f) for f in exclude]
-#   return files
+def list_files(dirs, exts, exclude=[]):
+  files = []
+  if isinstance(exclude, str):
+    exclude = [exclude]
+  for directory in dirs:
+    for ext in exts:
+      files.extend(glob.glob(os.path.join(directory, "*." + ext)))
+  [f in files and files.remove(f) for f in exclude]
+  return files
 
-# define_macros = [('MAJOR_VERSION', version().split(".")[0]),
-#                   ('MINOR_VERSION', version().split(".")[1]),
-#                   ('PATCH_VERSION', version().split(".")[2]),
-#                   ('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')
-#                 ]
-# include_path = ["src/include", "src/lib", pybind11.get_include()]
-# base_compiler_args = ["-O2", "-Werror", "-Wno-error=deprecated-declarations", "-fPIC", "-std=c++14", "-pedantic"]
+def cxxflags():
 
-# # TODO linker settings from:
-# # python3.6-config --ldflags
-# # -L/usr/lib/python3.6/config-3.6m-x86_64-linux-gnu -L/usr/lib -lpython3.6m -lpthread -ldl  -lutil -lm  -Xlinker -export-dynamic -Wl,-O1 -Wl,-Bsymbolic-functions
+  return [
+    "-pthread", 
+    "-Wno-unused-result", 
+    "-Wsign-compare", 
+    "-fstack-protector-strong", 
+    "-Wformat", 
+    "-Werror=format-security", 
+    "-Wdate-time", 
+    "-fPIC", 
+    "-std=c++17", 
+    "-fvisibility=hidden"
+  ]
 
-# library_dirs = ["/usr/lib/python3.6/config-3.6m-x86_64-linux-gnu", "/usr/lib"]
-# libraries = ["python3.6m", "pthread", "dl", "util", "m"]
-# extra_link_args = ["-Xlinker", "-export-dynamic", "-Wl,-O1", "-Wl,-Bsymbolic-functions"]
+#def ld_flags():
 
-# TODO MPI build?
+def defines():
+  v = version().split(".")
+  return [ 
+    ("NEWORDER_VERSION_MAJOR", v[0]),
+    ("NEWORDER_VERSION_MINOR", v[1]),
+    ("NEWORDER_VERSION_PATCH", v[2])
+  ]
 
-# neworderlib = Extension(
-#   'libneworder',
-#   define_macros = define_macros,
-#   extra_compile_args = ['-shared'] + base_compiler_args,
-#   sources = list_files(["src/lib"], ["cpp"]),
-#   depends = list_files(["src/include", "src/lib"], ["h"]),
-#   include_dirs = include_path,
-#   library_dirs = library_dirs,
-#   libraries = libraries,
-#   extra_link_args = extra_link_args
-# )
+class get_pybind_include(object):
+  """Helper class to determine the pybind11 include path
 
-# neworderbin = Extension(
-#   'neworder', 
-#   define_macros = define_macros,
-#   extra_compile_args = base_compiler_args,
-#   sources = list_files(["src/bin"], ["cpp"], exclude="src/bin/main_mpi.cpp"),
-#   depends = list_files(["src/include", "src/lib", "src/bin"], ["h"]),
-#   include_dirs = include_path,
-#   library_dirs = library_dirs,
-#   libraries = libraries,
-#   extra_link_args = extra_link_args
-# )
+  The purpose of this class is to postpone importing pybind11
+  until it is actually installed, so that the ``get_include()``
+  method can be invoked. """
 
-# newordertest = Extension(
-#   'newordertest', 
-#   define_macros = define_macros,
-#   extra_compile_args = base_compiler_args,
-#   sources = list_files(["src/test"], ["cpp"], exclude="src/test/main_mpi.cpp"),
-#   depends = list_files(["src/include", "src/lib", "src/test"], ["h"]),
-#   include_dirs = include_path,
-#   library_dirs = library_dirs,
-#   libraries = libraries,
-#   extra_link_args = extra_link_args
-# )
+  def __str__(self):
+    import pybind11
+    return pybind11.get_include()
 
-# use make for now
-dummy = Extension("dummy", [])
 
-class BuildBinaries(build_ext):
-  def run(self):
-    # NOTE: this picks up the OS lib (there isn't one in the venv)
-    os.system("make PY_CFG=python3-config -j4")
-    os.system("make PY_CFG=python3-config -f MPI.mk -j4")
+ext_modules = [
+  Extension(
+    'neworder',
+    # Sort input source files to ensure bit-for-bit reproducible builds
+    # (https://github.com/pybind/python_example/pull/53)
+    sources=list_files(['src/lib'], ["cpp"]),
+    define_macros=defines(),
+    include_dirs=[
+      "./src/include",
+      "./src/lib",
+      # Path to pybind11 headers
+      get_pybind_include(),
+    ],
+    extra_compile_args=cxxflags(),
+    depends=list_files(["src/include", "src/lib"], ["h"]),
+    language='c++'
+  ),
+]
 
-# TODO run test binary
 
-import unittest
-def test_suite():
-  test_loader = unittest.TestLoader()
-  test_suite = test_loader.discover('tests', pattern='test_wrapper.py')
-  return test_suite
+# # # cf http://bugs.python.org/issue26689
+# def has_flag(compiler, flagname):
+#   """Return a boolean indicating whether a flag name is supported on
+#   the specified compiler.
+#   """
+#   import tempfile
+#   import os
+#   with tempfile.NamedTemporaryFile('w', suffix='.cpp', delete=False) as f:
+#       f.write('int main (int argc, char **argv) { return 0; }')
+#       fname = f.name
+#   try:
+#       compiler.compile([fname], extra_postargs=[flagname])
+#   except setuptools.distutils.errors.CompileError:
+#       return False
+#   finally:
+#       try:
+#           os.remove(fname)
+#       except OSError:
+#           pass
+#   return True
+
+
+
+
+class BuildExt(build_ext):
+  """A custom build extension for adding compiler-specific options."""
+  c_opts = {
+      'msvc': ['/EHsc'],
+      'unix': [],
+  }
+  l_opts = {
+      'msvc': [],
+      'unix': [],
+  }
+
+  if sys.platform == 'darwin':
+    darwin_opts = ['-stdlib=libc++', '-mmacosx-version-min=10.7']
+    c_opts['unix'] += darwin_opts
+    l_opts['unix'] += darwin_opts
+
+  def build_extensions(self):
+    ct = self.compiler.compiler_type
+    opts = self.c_opts.get(ct, [])
+    link_opts = self.l_opts.get(ct, [])
+    # if ct == 'unix':
+    #   if True: #has_flag(self.compiler, '-fvisibility=hidden'):
+    #     opts.append('-fvisibility=hidden')
+
+    # for ext in self.extensions:
+    #   ext.define_macros = [('VERSION_INFO', '"{}"'.format(self.distribution.get_version()))]
+    #   ext.extra_compile_args = opts
+    #   ext.extra_link_args = link_opts
+    build_ext.build_extensions(self)
 
 setup(
-  name = 'neworder',
-  version = version(),
-  description = 'Parallel Generic Microsimulation Framework',
-  author = 'Andrew P Smith',
-  author_email = 'a.p.smith@leeds.ac.uk',
-  url = 'http://github.com/virgesmith/neworder',
-  long_description = readme(),
-  long_description_content_type="text/markdown",
-  cmdclass = {'build_ext': BuildBinaries},
-  ext_modules = [dummy],
-  #ext_scripts = [neworderbin, newordertest],
-  setup_requires=['numpy', 'pybind11'],
-  install_requires=[],
-  test_suite='setup.test_suite'
+    name='neworder',
+    version=version(),
+    author='Andrew P Smith',
+    author_email='a.p.smith@leeds.ac.uk',
+    url='https://github.com/virgesmith/neworder',
+    description='A microsimulation framework',
+    long_description='',
+    ext_modules=ext_modules,
+    setup_requires=['pybind11>=2.5.0'],
+    cmdclass={'build_ext': BuildExt},
+    zip_safe=False,
 )

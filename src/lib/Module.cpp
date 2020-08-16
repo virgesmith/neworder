@@ -68,6 +68,7 @@ std::string no::python_version()
 
 void no::shell(/*const py::object& local*/)
 {
+#ifdef NEWORDER_EMBEDDED
   if (no::getenv().size() != 1) 
   {
     no::log("WARNING: shell disabled in parallel mode, ignoring");
@@ -82,10 +83,15 @@ void no::shell(/*const py::object& local*/)
   kwargs["local"] = locals; 
   //kwargs["local"] = py::handle(PyObject_Dir(py::module::import("neworder").ptr()));
   /* py::object interpreter = */py::module::import("code").attr("interact")(/**py::tuple(),*/ **kwargs);
+#endif
 }
 
 // python-visible log function defined above
+#ifdef NEWORDER_EMBEDDED
 PYBIND11_EMBEDDED_MODULE(neworder, m)
+#else
+PYBIND11_MODULE(neworder, m)
+#endif
 {
   // utility/diagnostics
   m.def("name", no::module_name);

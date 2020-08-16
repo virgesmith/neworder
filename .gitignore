@@ -30,3 +30,4 @@ examples/people_multi/data
 
 .eggs/
 *.egg-info/
+junk

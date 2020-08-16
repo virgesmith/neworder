@@ -67,6 +67,7 @@ bool no::Environment::indep()
   return no::getenv().m_indep;
 }
 
+// TODO remove
 void no::Environment::reset()
 {
   if (!no::getenv().m_init)
@@ -87,6 +88,7 @@ std::string no::Environment::context(int ctx) const
 //   return *m_mc;
 // }
 
+#ifdef NEWORDER_EMBEDDED
 // Note this does not fully initialise, do not construct directly, use the static init function
 no::Environment::Environment() : m_init(false) , m_gil{} // TODO does it still? segfaults on exit (presumably called **too late** (singleton))
 {
@@ -96,6 +98,11 @@ no::Environment::Environment() : m_init(false) , m_gil{} // TODO does it still? 
   py::dict sys_modules = py::module::import("sys").attr("modules");
   sys_modules["neworder"] = *m_self;
 } 
+#else
+no::Environment::Environment() : m_init(false) // TODO does it still? segfaults on exit (presumably called **too late** (singleton))
+{
+} 
+#endif
 
 no::Environment::~Environment() 
 {

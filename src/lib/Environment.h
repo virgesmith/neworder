@@ -75,8 +75,10 @@ private:
   // flag to check whether init has been called
   bool m_init;
 
+#ifdef NEWORDER_EMBEDDED
   // global interpreter lock (NB this is a singleton)
   py::scoped_interpreter m_gil; 
+#endif
 
   // Singletons only
   Environment();
