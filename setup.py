@@ -11,8 +11,9 @@ import setuptools
 
 
 def version():
-  """ This is now the single source of version info """
-  return "1.0.0"
+  """ The file VERSION in the project root is now the single source of version info """
+  with open("VERSION") as fd:
+    return fd.readline().strip("\n")
 
 def list_files(dirs, exts, exclude=[]):
   files = []

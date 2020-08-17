@@ -60,12 +60,6 @@ public:
   // returns "py/no rank/size"
   std::string context(int ctx = CPP) const;
 
-  // reset the RNG stream sequence to the original seed 
-  static void reset();
-
-  // // Access the RNG stream (one per env)
-  // no::MonteCarlo& mc() const;
-
   // returns the neworder env as a python object 
   operator py::object&() { return *m_self; } 
   operator const py::object&() const { return *m_self; } 

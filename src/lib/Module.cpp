@@ -100,6 +100,11 @@ PYBIND11_MODULE(neworder, m)
   m.def("log", log_obj);
   m.def("shell", no::shell);
   m.def("run", no::Model::run);
+#ifdef NEWORDER_EMBEDDED
+  m.def("embedded", [](){ return true; });
+#else
+  m.def("embedded", [](){ return false; });
+#endif
 
   // time-related module
   m.attr("time") = py::module("time")
@@ -187,6 +192,7 @@ PYBIND11_MODULE(neworder, m)
     .def("rank", no::Environment::rank)
     .def("size", no::Environment::size)
     .def("indep", no::Environment::indep)
+#ifdef NEWORDER_EMBEDDED
     .def("send", no::mpi::send_obj)
     .def("receive", no::mpi::receive_obj)
     .def("send_csv", no::mpi::send_csv)
@@ -196,6 +202,12 @@ PYBIND11_MODULE(neworder, m)
     .def("scatter", no::mpi::scatter_array)
     .def("allgather", no::mpi::allgather_array, py::return_value_policy::take_ownership)
     .def("sync", no::mpi::sync);
+  // do-nothing for embedded more (init already done)
+  m.def("module_init", [](int, int, bool, bool) { } );
+#else
+    ;
+  m.def("module_init", [](int r, int s, bool c, bool v) { no::Environment::init(r, s, c, v); } );
+#endif
 
   // Example of wrapping an STL container
   // py::class_<std::vector<double>>("DVector", py::init<int>())

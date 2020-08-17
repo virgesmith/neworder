@@ -7,8 +7,11 @@ It subclasses neworder.Model adds implements a toy model which
 """
 
 # Expose the neworder enviroment to python
-import neworder
 import os
+import neworder
+
+# does nothing in embedded mode
+neworder.module_init(0, 1, True, True)
 
 class HelloWorld(neworder.Model):
   """

@@ -31,8 +31,11 @@ no::Environment& no::Environment::init(int rank, int size, bool indep, bool verb
   // set init flag
   env.m_init = true;
 
-  no::log("neworder %%/python %% env={indep:%%, verbose:%%}"_s % module_version() % python_version() % env.m_indep % env.m_verbose );
-
+#ifdef NEWORDER_EMBEDDED
+  no::log("neworder %%/embedded python %% env={indep:%%, verbose:%%}"_s % module_version() % python_version() % env.m_indep % env.m_verbose );
+#else
+  no::log("neworder %%/module python env={indep:%%, verbose:%%}"_s % module_version() % python_version() % env.m_indep % env.m_verbose );
+#endif
   return env;
 }
 
@@ -66,15 +69,6 @@ bool no::Environment::indep()
     throw std::runtime_error("accessing %% before init called"_s % __FUNCTION__);
   return no::getenv().m_indep;
 }
-
-// TODO remove
-void no::Environment::reset()
-{
-  if (!no::getenv().m_init)
-    throw std::runtime_error("accessing %% before init called"_s % __FUNCTION__);
-  //no::getenv().m_mc->reset();
-}
-
 
 std::string no::Environment::context(int ctx) const
 {

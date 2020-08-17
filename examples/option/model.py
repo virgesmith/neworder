@@ -10,6 +10,12 @@ from option import Option
 from market import Market
 from black_scholes import BlackScholes
 
+if not neworder.embedded():
+  from mpi4py import MPI
+  comm = MPI.COMM_WORLD
+  neworder.module_init(comm.Get_rank(), comm.Get_size(), False, True)
+
+
 # market data
 spot = 100.0 # underlying spot price
 rate = 0.02  # risk-free interest rate
@@ -26,8 +32,6 @@ assert neworder.mpi.size() == 4 and not neworder.mpi.indep(), "This example requ
 
 # rust requires nsims in root namespace (or modify transitions/checkpoints)
 nsims = 100000 # number of prices to simulate
-
-#neworder.log_level = 1
 
 # initialisation
 market = Market(spot, rate, divy, vol)
