@@ -83,6 +83,8 @@ void no::shell(/*const py::object& local*/)
   kwargs["local"] = locals; 
   //kwargs["local"] = py::handle(PyObject_Dir(py::module::import("neworder").ptr()));
   /* py::object interpreter = */py::module::import("code").attr("interact")(/**py::tuple(),*/ **kwargs);
+#else
+  no::log("shell() ignored: disabled in module configuration");
 #endif
 }
 
@@ -202,7 +204,7 @@ PYBIND11_MODULE(neworder, m)
     .def("scatter", no::mpi::scatter_array)
     .def("allgather", no::mpi::allgather_array, py::return_value_policy::take_ownership)
     .def("sync", no::mpi::sync);
-  // do-nothing for embedded more (init already done)
+  // do-nothing for embedded mode (init will have already happened)
   m.def("module_init", [](int, int, bool, bool) { } );
 #else
     ;

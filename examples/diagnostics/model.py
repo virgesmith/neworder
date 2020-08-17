@@ -7,6 +7,8 @@ import os
 import subprocess
 import neworder
 
+neworder.module_init(0,1,True, True)
+
 class Diagnostics(neworder.Model):
   """
   Extends the neworder.Model class, adding a "transition" that prints diagnostic information,

@@ -17,10 +17,12 @@ https://www.statcan.gc.ca/eng/microsimulation/modgen/new/chap4/chap4
 
 """
 import neworder
-
 from riskpaths import RiskPaths
 
-population_size = 10000
+# serial mode
+neworder.module_init(0,1,True, True)
+
+population_size = 100000
 
 timeline = neworder.Timeline(0, 100, [1])
 

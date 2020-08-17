@@ -7,6 +7,9 @@ import neworder
 from people import People
 from plot import plot
 
+# serial mode
+neworder.module_init(0,1,True, True)
+
 max_age = 100.0
 
 # Choose a simple linearly increasing mortality rate: 0.1% aged 0 to 2.5% aged 100

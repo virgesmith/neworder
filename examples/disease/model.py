@@ -21,6 +21,9 @@ import neworder
 from data import *
 from graphics import Graphics
 
+# serial mode
+neworder.module_init(0,1,True, True)
+
 class DiseaseModel(neworder.Model):
   def __init__(self, days, dt, npeople):
 
