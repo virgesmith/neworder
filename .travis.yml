@@ -72,7 +72,7 @@ jobs:
       before_install:
       - sudo apt-get update
       #- sudo apt-get -y install build-essential mpich libmpich-dev python3.8-dev 
-      - sudo apt-get -y install build-essential python3.8-dev 
+      - sudo apt-get -y install build-essential mpich libmpich-dev python3.8-dev 
       install: 
       - pip install pybind11 numpy pandas mpi4py
       script:
