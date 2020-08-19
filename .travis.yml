@@ -71,14 +71,15 @@ jobs:
       python: 3.8
       before_install:
       - sudo apt-get update
-      - sudo apt-get -y install build-essential mpich libmpich-dev python3.8-dev 
+      #- sudo apt-get -y install build-essential mpich libmpich-dev python3.8-dev 
+      - sudo apt-get -y install build-essential python3.8-dev 
       install: 
-      - pip install pybind11 numpy pandas
+      - pip install pybind11 numpy pandas mpi4py
       script:
-      # - python setup.py build
-      # - python setup.py test
-      - make PY_CFG=python-config PY_CFG_LINK_ARG="" && make test
-      - make PY_CFG=python-config PY_CFG_LINK_ARG="" -f MPI.mk && make -f MPI.mk test
+      - python setup.py build
+      - python setup.py test
+      #- make PY_CFG=python-config PY_CFG_LINK_ARG="" && make test
+      #- make PY_CFG=python-config PY_CFG_LINK_ARG="" -f MPI.mk && make -f MPI.mk test
 
 #  allow_failures:
 #    - name: conda_py3
