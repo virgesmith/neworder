@@ -110,11 +110,11 @@ PYBIND11_MODULE(neworder, m)
 
   // time-related module
   m.attr("time") = py::module("time")
-    .def("distant_past", no::Timeline::distant_past)
-    .def("far_future", no::Timeline::far_future)
-    .def("never", no::Timeline::never)
-    .def("isnever", no::Timeline::isnever) // scalar 
-    .def("isnever", no::isnever); // array
+   .def("distant_past", no::Timeline::distant_past)
+   .def("far_future", no::Timeline::far_future)
+   .def("never", no::Timeline::never)
+   .def("isnever", no::Timeline::isnever) // scalar 
+   .def("isnever", no::isnever); // array
 
   py::class_<no::Timeline>(m, "Timeline")
     .def(py::init<double, double, const std::vector<size_t>&>())
@@ -125,6 +125,7 @@ PYBIND11_MODULE(neworder, m)
     .def("dt", &no::Timeline::dt)
     .def("nsteps", &no::Timeline::nsteps)
     .def("next", &no::Timeline::next)
+    .def("at_checkpoint", &no::Timeline::at_checkpoint)
     .def("at_end", &no::Timeline::at_end)
     .def("__repr__", [](const no::Timeline& tl) {
         return "<neworder.Timeline start=%% end=%% checkpoints=%% index=%%>"_s 

@@ -145,7 +145,8 @@ setup(
     description='A microsimulation framework',
     long_description='',
     ext_modules=ext_modules,
-    setup_requires=['pybind11>=2.5.0'],
+    setup_requires=['pybind11>=2.5.0', 'pytest-runner'],
+    tests_require=['pytest'],    
     cmdclass={'build_ext': BuildExt},
     zip_safe=False,
 )
