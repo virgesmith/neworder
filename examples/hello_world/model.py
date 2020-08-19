@@ -11,7 +11,7 @@ import os
 import neworder
 
 # does nothing in embedded mode
-neworder.module_init(0, 1, True, True)
+neworder.module_init(verbose=False)
 
 class HelloWorld(neworder.Model):
   """

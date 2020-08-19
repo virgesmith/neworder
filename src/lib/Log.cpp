@@ -29,11 +29,13 @@ std::string to_string_impl(const std::string& v)
 // not visible to python
 void no::log(const std::string& msg)
 {
-  std::cout << no::getenv().context() << msg << std::endl;
+  if (no::getenv().verbose())
+    std::cout << no::getenv().context() << msg << std::endl;
 }
 
 // not visible to python
 void no::log(const py::handle& msg)
 {
-  std::cout << no::getenv().context() << msg << std::endl;
+  if (no::getenv().verbose())
+    std::cout << no::getenv().context() << msg << std::endl;
 }

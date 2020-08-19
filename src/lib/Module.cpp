@@ -204,11 +204,14 @@ PYBIND11_MODULE(neworder, m)
     .def("scatter", no::mpi::scatter_array)
     .def("allgather", no::mpi::allgather_array, py::return_value_policy::take_ownership)
     .def("sync", no::mpi::sync);
-  // do-nothing for embedded mode (init will have already happened)
-  m.def("module_init", [](int, int, bool, bool) { } );
+  // do-nothing init for embedded mode (init will have already happened)
+  m.def("module_init", [](bool, bool) {}, 
+    py::arg("independent") = true, py::arg("verbose") = false);
 #else
     ;
-  m.def("module_init", [](int r, int s, bool c, bool v) { no::Environment::init(r, s, c, v); } );
+  // TODO get rank/size directly from mpi4py
+  m.def("module_init", [](bool independent, bool verbose) { no::Environment::init(-1, -1, independent, verbose); }, 
+    py::arg("independent") = true, py::arg("verbose") = false );
 #endif
 
   // Example of wrapping an STL container

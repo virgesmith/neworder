@@ -91,7 +91,6 @@ class BlackScholes(neworder.Model):
       pvs = neworder.mpi.gather(self.pv, 0)
     else:
       pvs = comm.gather(self.pv, 0)
-    neworder.log(pvs)
     # compute sensitivities on rank 0
     if neworder.mpi.rank() == 0:
       neworder.log("gathered results: %s" % pvs)
