@@ -98,7 +98,8 @@ jobs:
       install: pip3 install --upgrade pip
       script:
         - python3 setup.py install
-        - python3 tests/test_all.py
+        - python setup.py test
+        #- mpiexec -n 2 pytest
 
   allow_failures:
     - os: osx
