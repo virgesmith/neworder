@@ -52,8 +52,9 @@ jobs:
       install: 
       - pip install pybind11 numpy pandas mpi4py
       script:
-      - python setup.py build
+      - python setup.py install
       - python setup.py test
+      - mpiexec -n 2 pytest
       - make PY_CFG=python-config PY_CFG_LINK_ARG="" && make test
       - make PY_CFG=python-config PY_CFG_LINK_ARG="" -f MPI.mk && make -f MPI.mk test
 
@@ -65,8 +66,9 @@ jobs:
       install: 
       - pip install pybind11 numpy pandas mpi4py
       script:
-      - python setup.py build
+      - python setup.py install
       - python setup.py test
+      - mpiexec -n 2 pytest
       - make PY_CFG=python-config PY_CFG_LINK_ARG="" && make test
       - make PY_CFG=python-config PY_CFG_LINK_ARG="" -f MPI.mk && make -f MPI.mk test
 

@@ -97,9 +97,9 @@ void no::df::transition(no::Model& model, py::array categories, py::array matrix
     if (it == lookup.end())
       continue;
     int64_t j = it->second;
-    py::ssize_t k = interp(cumprobs[j], no::at<double>(r, {i}));
+    py::ssize_t k = interp(cumprobs[j], no::at<double>(r, Index_t<1>{i}));
     //no::log("interp %%:%% -> %%"_s % j % r[i] % k);
-    no::at<int64_t>(col, {i}) = no::at<int64_t>(categories, Index_t<1>{k});
+    no::at<int64_t>(col, Index_t<1>{i}) = no::at<int64_t>(categories, Index_t<1>{k});
   }
   no::log("transition %% elapsed: %%"_s % n % t.elapsed_s());
 }
