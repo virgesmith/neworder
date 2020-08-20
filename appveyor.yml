@@ -1,42 +1,77 @@
-# DO NOT CHANGE the "init" and "install" sections below
+# Build environments
+environment:
+ matrix:
+   - TEST_LANGUAGE: "Python"
+     PYTHON: "C:\\Python36-x64"
+     PYTHON_ARCH: 64
+     MSVC_VERSION: "Visual Studio 14 Win64"
 
-# Download script file from GitHub
+   - TEST_LANGUAGE: "Python"
+     PYTHON: "C:\\Python37-x64"
+     PYTHON_ARCH: 64
+     MSVC_VERSION: "Visual Studio 14 Win64"
+
+     - TEST_LANGUAGE: "Python"
+     PYTHON: "C:\\Python38-x64"
+     PYTHON_ARCH: 64
+     MSVC_VERSION: "Visual Studio 14 Win64"
+
+# fail fast
+matrix:
+  fast_finish: true
+
 init:
-  ps: |
-        $ErrorActionPreference = "Stop"
-        Invoke-WebRequest http://raw.github.com/krlmlr/r-appveyor/master/scripts/appveyor-tool.ps1 -OutFile "..\appveyor-tool.ps1"
-        Import-Module '..\appveyor-tool.ps1'
+  - ps: |
+      if ($env:TEST_LANGUAGE -eq "Python") {
+        Write-Host "$env:PYTHON $env:PYTHON_ARCH $env:MSVC_VERSION"
+        $python = $env:PYTHON + "\python.exe"
+        & $python --version
+      }
 
 install:
-  ps: Bootstrap
+  - ps: |
+      if ($env:TEST_LANGUAGE -eq "Python") {
+        $python = $env:PYTHON + "\python.exe"
+        & $python -m pip install --upgrade pip wheel setuptools --no-warn-script-location
+        & $python -m pip install numpy --no-warn-script-location
+      }
+  # try to fix cython install, see:
+  # * https://matthew-brett.github.io/pydagogue/python_msvc.html
+  # * https://blog.ionelmc.ro/2014/12/21/compiling-python-extensions-on-windows/
+  - echo "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64 > "C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\amd64/vcvars64.bat"
+
+  # could try settings from https://www.appveyor.com/docs/lang/cpp/
+  # - call "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64
+  # - call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
+
+  # note: VS 2010 has stdint.h bundled so simply copy it. Cython should not
+  #       depend on it for py27 (works fine when compiling using C code)
+  #       but this works differently for C++ (maybe there is some other issue
+  #       with environment setup).
+  # try to do a dirty workaround for Cython with C++ for py27
+  #- cp "c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\stdint.h" "C:\Users\appveyor\AppData\Local\Programs\Common\Microsoft\Visual C++ for Python\9.0\VC\include\stdint.h"
+  # get latest version of all submodules
+  #  - "git submodule update --init --recursive"
+  #  - "%PYTHON%\\python.exe -m pip install -r doc/requirements-test.txt"
 
 cache:
   - C:\RLibrary
 
-# Adapt as necessary starting from here
-
 build_script:
-  - travis-tool.sh install_deps
+  # install deps
+  - ps: if ($env:TEST_LANGUAGE -eq "R") { TravisTool install_deps }
 
 test_script:
-  - travis-tool.sh run_tests
+  - ps: if ($env:TEST_LANGUAGE -eq "R") { TravisTool run_tests }
+  - cmd: if "%TEST_LANGUAGE%" == "Python" ( "%PYTHON%\python.exe" setup.py test ) else ( echo %TEST_LANGUAGE% )
 
 on_failure:
   - 7z a failure.zip *.Rcheck\*
   - appveyor PushArtifact failure.zip
 
 artifacts:
-  - path: '*.Rcheck\**\*.log'
-    name: Logs
-
-  - path: '*.Rcheck\**\*.out'
-    name: Logs
-
-  - path: '*.Rcheck\**\*.fail'
-    name: Logs
-
-  - path: '*.Rcheck\**\*.Rout'
-    name: Logs
+  - path: dist\*
+    name: Dist
 
   - path: '\*_*.tar.gz'
     name: Bits
