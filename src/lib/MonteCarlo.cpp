@@ -16,10 +16,9 @@ namespace {
 int64_t compute_seed()
 {
   int rank = no::getenv().rank();
-  int size = no::getenv().size();
   bool indep = no::getenv().indep();
   // ensure stream (in)dependence w.r.t. sequence and MPI rank/sizes
-  return 77027473 * 0 + 19937 * size + rank * indep;  
+  return 19937 + rank * indep;  
 }
 
 }

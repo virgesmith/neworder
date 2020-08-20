@@ -29,7 +29,6 @@ def cxxflags():
 
   return [
     "-pthread", 
-    "-Wno-unused-result", 
     "-Wsign-compare", 
     "-fstack-protector-strong", 
     "-Wformat", 
