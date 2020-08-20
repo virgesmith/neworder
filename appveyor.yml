@@ -11,7 +11,7 @@ environment:
      PYTHON_ARCH: 64
      MSVC_VERSION: "Visual Studio 14 Win64"
 
-     - TEST_LANGUAGE: "Python"
+   - TEST_LANGUAGE: "Python"
      PYTHON: "C:\\Python38-x64"
      PYTHON_ARCH: 64
      MSVC_VERSION: "Visual Studio 14 Win64"
