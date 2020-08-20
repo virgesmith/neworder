@@ -76,7 +76,7 @@ jobs:
       install: 
       - pip install pybind11 numpy pandas mpi4py
       script:
-      - python setup.py build
+      - python setup.py install
       - python setup.py test
       - make PY_CFG=python-config PY_CFG_LINK_ARG="" && make test
       - make PY_CFG=python-config PY_CFG_LINK_ARG="" -f MPI.mk && make -f MPI.mk test
@@ -95,10 +95,10 @@ jobs:
         - python3 setup.py install
         - python3 tests/test_all.py
 
- allow_failures:
-   - os: osx
-  #  - name: conda_py3
-  #  - python: 3.8
+allow_failures:
+  - os: osx
+  # - name: conda_py3
+  # - python: 3.8
 
 warnings_are_errors: false
 
