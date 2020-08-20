@@ -35,9 +35,12 @@ jobs:
         conda create -q -n test-environment python=3.8
         source activate test-environment      
       install:
-        - conda install gxx_linux-64 openssl mpich numpy pandas pybind11
+        - conda install gxx_linux-64 openssl mpich numpy pandas pybind11 pytest
       script:
       - |
+        python setup.py install
+        pytest
+        mpiexec -n 2 pytest
         make && make test
         make -f MPI.mk && make -f MPI.mk test
 

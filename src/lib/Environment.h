@@ -20,7 +20,7 @@ namespace no {
 // - define the var in C++ and provide a python accessor function
 // for numpy arrays (and pandas DataFrames), C++ and python ref the same data
 
-struct NEWORDER_EXPORT Environment
+class NEWORDER_EXPORT Environment
 {
 public:
 

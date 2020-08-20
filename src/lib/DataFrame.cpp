@@ -73,7 +73,7 @@ void no::df::transition(no::Model& model, py::array categories, py::array matrix
   std::map<int64_t, int> lookup;
   for (py::ssize_t i = 0; i < m; ++i)
   {
-    lookup[no::at<int64_t>(categories, {i})] = (int64_t)i;
+    lookup[no::at<int64_t>(categories, Index_t<1>{i})] = (int64_t)i;
   }
 
   // no::log("row %% %% %% %%..."_s % p[0] % p[1] % p[2] % p[3]);
