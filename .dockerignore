@@ -1,0 +1,10 @@
+.git/
+.venv*/
+.pytest_cache
+__pycache__/
+*.so
+*.egg-info
+*.o
+*.d
+.vscode/
+build/
