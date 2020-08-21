@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include "Neworder.h"
 #include "ArrayHelpers.h"
 
 #include <vector>
@@ -12,7 +13,7 @@ void test_mc();
 
 namespace no {
 
-class MonteCarlo
+class NEWORDER_EXPORT MonteCarlo
 {
 public:
   // seeds rng using rank/size/indep from environment

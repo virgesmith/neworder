@@ -45,13 +45,13 @@ double no::MonteCarlo::u01()
   return m_prng() * SCALE;
 }
 
-NEWORDER_EXPORT py::array no::MonteCarlo::ustream(py::ssize_t n)
+py::array no::MonteCarlo::ustream(py::ssize_t n)
 {
   return no::make_array<double>({n}, [&](){ return u01(); });
 }
 
 // simple hazard constant probability 
-NEWORDER_EXPORT py::array no::MonteCarlo::hazard(double prob, py::ssize_t n)
+py::array no::MonteCarlo::hazard(double prob, py::ssize_t n)
 {
   return no::make_array<int>({n}, [&]() { return (u01() < prob) ? 1 : 0; });
 }
@@ -63,7 +63,7 @@ py::array no::MonteCarlo::hazard(const py::array& prob)
 }
 
 // computes stopping times 
-NEWORDER_EXPORT py::array no::MonteCarlo::stopping(double prob, py::ssize_t n)
+py::array no::MonteCarlo::stopping(double prob, py::ssize_t n)
 {
   double rprob = 1.0 / prob;
 
