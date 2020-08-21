@@ -195,6 +195,7 @@ PYBIND11_MODULE(neworder, m)
     .def("rank", no::Environment::rank)
     .def("size", no::Environment::size)
     .def("indep", no::Environment::indep)
+    .def("verbose", no::Environment::verbose)
 #ifdef NEWORDER_EMBEDDED
     .def("send", no::mpi::send_obj)
     .def("receive", no::mpi::receive_obj)

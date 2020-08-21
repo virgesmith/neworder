@@ -2,7 +2,8 @@ import pytest
 import numpy as np
 import neworder as no
 
-#no.module_init(independent=False, verbose=False)
+#ensure initialised
+no.module_init(independent=False, verbose=False)
 
 class _TestModel(no.Model):
   def __init__(self):
@@ -19,13 +20,9 @@ class _TestModel(no.Model):
     self.checkpoint_count += 1
     assert self.timeline().time() == 50 * self.checkpoint_count
 
-#ensure initialised
 @pytest.fixture
 def model():
-  no.module_init(independent=False, verbose=False)
   return _TestModel()
-
-
 
 def test_basics(model):
   # just check you can call the functions
@@ -37,6 +34,13 @@ def test_basics(model):
   # assert no.verbose() == False
   no.log("testing")
   assert not no.embedded()
+
+  try:
+    no.module_init()
+  except Exception as e:
+    pass
+  else:
+    assert False, "expected exception on second initialisation not thrown"
 
 def test_time(model):
   t = -1e10
@@ -96,6 +100,11 @@ def test_multimodel(model):
   # TODO ensure 2 models can work...
 
 def test_mc(model):
+
+  x = model.mc().ustream(1)
+  model.mc().reset()
+  assert x == model.mc().ustream(1)
+
   if no.mpi.size() == 1:
     _test_mc_serial(model)
   else:

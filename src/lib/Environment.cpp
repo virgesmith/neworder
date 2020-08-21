@@ -13,6 +13,8 @@ no::Environment& no::Environment::init(int rank, int size, bool indep, bool verb
   // get static instance
   Environment& env = no::getenv();
 
+  if (env.m_init)
+    throw std::runtime_error("Module must only be initialised once per process");
   // set whether each process has independent RNG streams
   env.m_indep = indep;
 
