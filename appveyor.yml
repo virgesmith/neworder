@@ -4,17 +4,17 @@ environment:
    - TEST_LANGUAGE: "Python"
      PYTHON: "C:\\Python36-x64"
      PYTHON_ARCH: 64
-     MSVC_VERSION: "Visual Studio 14 Win64"
+     MSVC_VERSION: "Visual Studio 19 Win64"
 
    - TEST_LANGUAGE: "Python"
      PYTHON: "C:\\Python37-x64"
      PYTHON_ARCH: 64
-     MSVC_VERSION: "Visual Studio 14 Win64"
+     MSVC_VERSION: "Visual Studio 19 Win64"
 
    - TEST_LANGUAGE: "Python"
      PYTHON: "C:\\Python38-x64"
      PYTHON_ARCH: 64
-     MSVC_VERSION: "Visual Studio 14 Win64"
+     MSVC_VERSION: "Visual Studio 19 Win64"
 
 # fail fast
 matrix:

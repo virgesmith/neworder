@@ -19,6 +19,9 @@ no::Environment& no::Environment::init(int rank, int size, bool indep, bool verb
   // verbose flag
   env.m_verbose = verbose;
 
+  // set init flag (before any possible log message)
+  env.m_init = true;
+
   //py::object& neworder = env; // env as python module
 
   // // to "share" scalars across C++ and python, use the py::extract<> object
@@ -44,9 +47,6 @@ no::Environment& no::Environment::init(int rank, int size, bool indep, bool verb
     no::log("mpi4py module not found, assuming serial mode");
   }
 #endif
-
-  // set init flag
-  env.m_init = true;
 
 #ifdef NEWORDER_EMBEDDED
   no::log("neworder %%/embedded python %% env={indep:%%, verbose:%%}"_s % module_version() % python_version() % env.m_indep % env.m_verbose );

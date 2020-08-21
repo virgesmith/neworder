@@ -210,7 +210,7 @@ PYBIND11_MODULE(neworder, m)
     py::arg("independent") = true, py::arg("verbose") = false);
 #else
     ;
-  // TODO get rank/size directly from mpi4py
+  // rank/size are set via mpi4py
   m.def("module_init", [](bool independent, bool verbose) { no::Environment::init(-1, -1, independent, verbose); }, 
     py::arg("independent") = true, py::arg("verbose") = false );
 #endif

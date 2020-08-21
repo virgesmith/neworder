@@ -40,7 +40,7 @@ def cxxflags(platform):
       "-fvisibility=hidden"
     ]
   elif platform == "msvc":
-    return ['/EHsc']
+    return ['/std:c++17', '/EHsc']
   else:
     return []
 
