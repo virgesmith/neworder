@@ -25,23 +25,29 @@ def list_files(dirs, exts, exclude=[]):
   [f in files and files.remove(f) for f in exclude]
   return files
 
-def cxxflags():
+def cxxflags(platform):
 
-  return [
-    "-pthread", 
-    "-Wsign-compare", 
-    "-fstack-protector-strong", 
-    "-Wformat", 
-    "-Werror=format-security", 
-    "-Wdate-time", 
-    "-fPIC", 
-    "-std=c++17", 
-    "-fvisibility=hidden"
-  ]
+  if platform == "unix":
+    return [
+      "-pthread", 
+      "-Wsign-compare", 
+      "-fstack-protector-strong", 
+      "-Wformat", 
+      "-Werror=format-security", 
+      "-Wdate-time", 
+      "-fPIC", 
+      "-std=c++17", 
+      "-fvisibility=hidden"
+    ]
+  elif platform == "msvc":
+    return ['/EHsc']
+  else:
+    return []
 
-#def ld_flags():
+def ldflags(_platform):
+  return []
 
-def defines():
+def defines(platform):
   v = version().split(".")
   return [ 
     ("NEWORDER_VERSION_MAJOR", v[0]),
@@ -67,14 +73,14 @@ ext_modules = [
     # Sort input source files to ensure bit-for-bit reproducible builds
     # (https://github.com/pybind/python_example/pull/53)
     sources=list_files(['src/lib'], ["cpp"]),
-    define_macros=defines(),
+    #define_macros=defines(),
     include_dirs=[
       "./src/include",
       "./src/lib",
       # Path to pybind11 headers
       get_pybind_include(),
     ],
-    extra_compile_args=cxxflags(),
+    #extra_compile_args=cxxflags(),
     depends=list_files(["src/include", "src/lib"], ["h"]),
     language='c++'
   ),
@@ -107,32 +113,35 @@ ext_modules = [
 
 class BuildExt(build_ext):
   """A custom build extension for adding compiler-specific options."""
-  c_opts = {
-      'msvc': ['/EHsc'],
-      'unix': [],
-  }
-  l_opts = {
-      'msvc': [],
-      'unix': [],
-  }
+  # c_opts = {
+  #     'msvc': ['/EHsc'],
+  #     'unix': [],
+  # }
+  # l_opts = {
+  #     'msvc': [],
+  #     'unix': [],
+  # }
 
-  if sys.platform == 'darwin':
-    darwin_opts = ['-stdlib=libc++', '-mmacosx-version-min=10.7']
-    c_opts['unix'] += darwin_opts
-    l_opts['unix'] += darwin_opts
+  # if sys.platform == 'darwin':
+  #   darwin_opts = ['-stdlib=libc++', '-mmacosx-version-min=10.7']
+  #   c_opts['unix'] += darwin_opts
+  #   l_opts['unix'] += darwin_opts
 
   def build_extensions(self):
     ct = self.compiler.compiler_type
-    opts = self.c_opts.get(ct, [])
-    link_opts = self.l_opts.get(ct, [])
+
+    # opts = self.c_opts.get(ct, [])
+    # link_opts = self.l_opts.get(ct, [])
     # if ct == 'unix':
     #   if True: #has_flag(self.compiler, '-fvisibility=hidden'):
     #     opts.append('-fvisibility=hidden')
 
-    # for ext in self.extensions:
-    #   ext.define_macros = [('VERSION_INFO', '"{}"'.format(self.distribution.get_version()))]
-    #   ext.extra_compile_args = opts
-    #   ext.extra_link_args = link_opts
+    for ext in self.extensions:
+      print(self.distribution.get_version())
+      ext.define_macros = defines(ct) #[('NEWORDER_VERSION', self.distribution.get_version())]
+      ext.extra_compile_args = cxxflags(ct)
+      ext.extra_link_args = ldflags(ct)
+    
     build_ext.build_extensions(self)
 
 setup(
