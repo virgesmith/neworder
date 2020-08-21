@@ -1,6 +1,10 @@
 # Build environments
+
+image:
+  - Visual Studio 2019
+
 environment:
- matrix:
+  matrix:
    - TEST_LANGUAGE: "Python"
      PYTHON: "C:\\Python36-x64"
      PYTHON_ARCH: 64
@@ -38,7 +42,7 @@ install:
   # try to fix cython install, see:
   # * https://matthew-brett.github.io/pydagogue/python_msvc.html
   # * https://blog.ionelmc.ro/2014/12/21/compiling-python-extensions-on-windows/
-  - echo "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64 > "C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\amd64/vcvars64.bat"
+  #- echo "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64 > "C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\amd64/vcvars64.bat"
 
   # could try settings from https://www.appveyor.com/docs/lang/cpp/
   # - call "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64
