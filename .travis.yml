@@ -95,7 +95,9 @@ jobs:
       # - brew upgrade python
       #- brew install python3
       #  - python3 -m pip install numpy distutils pytest
-      install: pip3 install --upgrade pip
+      install: 
+        - pip3 install --upgrade pip
+        - pip3 install pandas
       script:
         - python3 setup.py install
         - python3 setup.py test
