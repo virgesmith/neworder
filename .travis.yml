@@ -39,10 +39,10 @@ jobs:
       script:
       - |
         python setup.py install
-        pytest
-        mpiexec -n 2 pytest
-        make && make test
-        make -f MPI.mk && make -f MPI.mk test
+        pytest -v
+        mpiexec -n 2 pytest -v
+      #  make && make test
+      #  make -f MPI.mk && make -f MPI.mk test
 
     - language: python
       python: 3.6
@@ -101,10 +101,10 @@ jobs:
       script:
         - python3 setup.py install
         - python3 setup.py test
-        #- mpiexec -n 2 pytest
+        - mpiexec -n 2 pytest
 
-  allow_failures:
-    - os: osx
+#  allow_failures:
+#    - os: osx
     # - name: conda_py3
     # - python: 3.8
 

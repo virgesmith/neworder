@@ -28,7 +28,9 @@ def test():
   trans[2,2] = 0.0
   trans[3,2] = 1.0
   no.dataframe.transition(model, cats, trans, df, "DC2101EW_C_ETHPUK11")
+  no.log(df["DC2101EW_C_ETHPUK11"].unique())
   assert len(df["DC2101EW_C_ETHPUK11"].unique()) == 1 and df["DC2101EW_C_ETHPUK11"].unique()[0] == 3
+
 
   # ~half of 3->0
   trans[0,3] = 0.5

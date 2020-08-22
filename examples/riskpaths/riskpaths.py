@@ -108,7 +108,7 @@ class RiskPaths(neworder.Model):
     self.population.loc[~neworder.time.isnever(self.population["TimeOfPregnancy"].values), "Parity"] = Parity.PREGNANT
 
     # save population
-    self.population.to_csv("./population.csv", index=False)
+    #self.population.to_csv("./examples/riskpaths/population.csv", index=False)
 
   def stats(self):
     neworder.log("mean unions = %f" % np.mean(self.population.Unions))

@@ -23,8 +23,8 @@ environment:
      MSVC_VERSION: "Visual Studio 19 Win64"
 
 # fail fast
-matrix:
-  fast_finish: true
+# matrix:
+#   fast_finish: true
 
 init:
   - ps: |
@@ -42,8 +42,8 @@ install:
         & $python -m pip install numpy pandas mpi4py --no-warn-script-location
       }
 
-cache:
-  - C:\RLibrary
+# cache:
+#   - C:\RLibrary
 
 build_script:
   # install deps
@@ -53,16 +53,16 @@ test_script:
   - ps: if ($env:TEST_LANGUAGE -eq "R") { TravisTool run_tests }
   - cmd: if "%TEST_LANGUAGE%" == "Python" ( "%PYTHON%\python.exe" setup.py test ) else ( echo %TEST_LANGUAGE% )
 
-on_failure:
-  - 7z a failure.zip *.Rcheck\*
-  - appveyor PushArtifact failure.zip
+# on_failure:
+#   - 7z a failure.zip *.Rcheck\*
+#   - appveyor PushArtifact failure.zip
 
-artifacts:
-  - path: dist\*
-    name: Dist
+# artifacts:
+#   - path: dist\*
+#     name: Dist
 
-  - path: '\*_*.tar.gz'
-    name: Bits
+#   - path: '\*_*.tar.gz'
+#     name: Bits
 
-  - path: '\*_*.zip'
-    name: Bits
+#   - path: '\*_*.zip'
+#     name: Bits
