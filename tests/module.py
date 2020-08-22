@@ -3,6 +3,9 @@ Test framework expects modules with a function called test that
 - takes no arguments
 - returns True on success and False on failure
 """
+
+# DEPRECATED
+
 import neworder as no
 import numpy as np
 import pandas as pd

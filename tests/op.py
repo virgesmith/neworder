@@ -1,5 +1,7 @@
 # https://docs.python.org/3/extending/embedding.html
 
+# DEPRECATED
+
 import numpy as np
 import neworder
 

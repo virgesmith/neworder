@@ -2,9 +2,6 @@ import pytest
 import numpy as np
 import neworder as no
 
-#ensure initialised
-no.module_init(independent=False, verbose=False)
-
 class _TestModel(no.Model):
   def __init__(self):
     # 10 steps of 10 with checkpoint at 50 and 100
@@ -23,24 +20,6 @@ class _TestModel(no.Model):
 @pytest.fixture
 def model():
   return _TestModel()
-
-def test_basics(model):
-  # just check you can call the functions
-  no.name()
-  no.version()
-  no.python()
-  assert no.mpi.indep() == False
-  # TODO 
-  # assert no.verbose() == False
-  no.log("testing")
-  assert not no.embedded()
-
-  try:
-    no.module_init()
-  except Exception as e:
-    pass
-  else:
-    assert False, "expected exception on second initialisation not thrown"
 
 def test_time(model):
   t = -1e10
@@ -69,7 +48,7 @@ def test_null_timeline(model):
   assert t0.index() == 0
   assert t0.time() == 0.0
   t0.next()
-  assert t0.at_checkpoint() #not currently exposed to python 
+  assert t0.at_checkpoint() #not currently exposed to python
   assert t0.at_end()
   assert t0.index() == 1
   assert t0.time() == 0.0
@@ -99,87 +78,3 @@ def test_multimodel(model):
   model2 = _TestModel()
   # TODO ensure 2 models can work...
 
-def test_mc(model):
-
-  x = model.mc().ustream(1)
-  model.mc().reset()
-  assert x == model.mc().ustream(1)
-
-  if no.mpi.size() == 1:
-    _test_mc_serial(model)
-  else:
-    _test_mc_parallel(model)
-
-def _test_mc_serial(model):
-  mc = model.mc()
-  assert mc.seed() == 19937
-
-  n = 10000
-  # 10% constant hazard for 10 time units, followed by zero
-  dt = 1.0
-  p = np.full(11, 0.1)
-  p[-1] = 0
-  a = mc.first_arrival(p, dt, n)
-  assert np.nanmin(a) > 0.0
-  assert np.nanmax(a) < 10.0
-  no.log("%f - %f" % (np.nanmin(a), np.nanmax(a)))
-
-  # now set a to all 8.0
-  a = np.full(n, 8.0)
-  # next arrivals (absolute) only in range 8-10, if they happen
-  b = mc.next_arrival(a, p, dt)
-  assert np.nanmin(b) > 8.0
-  assert np.nanmax(b) < 10.0
-
-  # next arrivals with gap dt (absolute) only in range 9-10, if they happen
-  b = mc.next_arrival(a, p, dt, False, dt)
-  assert np.nanmin(b) > 9.0
-  assert np.nanmax(b) < 10.0
-
-  # next arrivals (relative) only in range 8-18, if they happen
-  b = mc.next_arrival(a, p, dt, True)
-  assert np.nanmin(b) > 8.0
-  assert np.nanmax(b) < 18.0
-
-  # next arrivals with gap dt (relative) only in range 9-19, if they happen
-  b = mc.next_arrival(a, p, dt, True, dt)
-  assert np.nanmin(b) > 9.0
-  assert np.nanmax(b) < 19.0
-
-  # now set a back to random arrivals
-  a = mc.first_arrival(p, dt, n)
-  # next arrivals (absolute) only in range (min(a), 10), if they happen
-  b = mc.next_arrival(a, p, dt)
-  assert np.nanmin(b) > np.nanmin(a)
-  assert np.nanmax(b) < 10.0
-
-  # next arrivals with gap dt (absolute) only in range (min(a)+dt, 10), if they happen
-  b = mc.next_arrival(a, p, dt, False, dt)
-  assert np.nanmin(b) > np.nanmin(a) + dt
-  assert np.nanmax(b) < 10.0
-
-  # next arrivals (relative) only in range (min(a), max(a)+10), if they happen
-  b = mc.next_arrival(a, p, dt, True)
-  assert np.nanmin(b) > np.nanmin(a)
-  assert np.nanmax(b) < np.nanmax(a) + 10.0
-
-  # next arrivals with gap dt (relative) only in range (min(a)+dt, max(a)+dt+10), if they happen
-  b = mc.next_arrival(a, p, dt, True, dt)
-  assert np.nanmin(b) > np.nanmin(a) + dt
-  assert np.nanmax(b) < np.nanmax(a) + dt + 10.0
-
-  mc.reset()
-  a = mc.first_arrival(np.array([0.1, 0.2, 0.3]), 1.0, 6, 0.0)
-  assert len(a) == 6
-  # only works for single-process
-  assert a[0] == 3.6177811673165667
-  assert a[1] == 0.6896205251312125
-  assert a[2] == 3.610216282947799
-  assert a[3] == 7.883336832344425
-  assert a[4] == 6.461894711350323
-  assert a[5] == 2.8566436418145944
-
-def _test_mc_parallel(model):
-
-  mc = model.mc()
-  assert mc.seed() == 19937

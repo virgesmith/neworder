@@ -1,5 +1,7 @@
 """ Test utils """
 
+# DEPRECATED
+
 import inspect
 import neworder
 

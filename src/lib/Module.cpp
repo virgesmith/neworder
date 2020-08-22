@@ -96,17 +96,18 @@ PYBIND11_MODULE(neworder, m)
 #endif
 {
   // utility/diagnostics
-  m.def("name", no::module_name);
-  m.def("version", no::module_version);
-  m.def("python", no::python_version);
-  m.def("log", log_obj);
-  m.def("shell", no::shell);
-  m.def("run", no::Model::run);
+  m.def("name", no::module_name)
+   .def("version", no::module_version)
+   .def("python", no::python_version)
+   .def("log", log_obj)
+   .def("shell", no::shell)
+   .def("run", no::Model::run)
 #ifdef NEWORDER_EMBEDDED
-  m.def("embedded", [](){ return true; });
+   .def("embedded", [](){ return true; })
 #else
-  m.def("embedded", [](){ return false; });
+   .def("embedded", [](){ return false; })
 #endif
+   .def("verbose", no::Environment::verbose);
 
   // time-related module
   m.attr("time") = py::module("time")
@@ -195,7 +196,6 @@ PYBIND11_MODULE(neworder, m)
     .def("rank", no::Environment::rank)
     .def("size", no::Environment::size)
     .def("indep", no::Environment::indep)
-    .def("verbose", no::Environment::verbose)
 #ifdef NEWORDER_EMBEDDED
     .def("send", no::mpi::send_obj)
     .def("receive", no::mpi::receive_obj)
