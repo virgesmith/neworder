@@ -33,3 +33,5 @@ examples/people_multi/data
 junk
 
 dist/*
+
+*.so

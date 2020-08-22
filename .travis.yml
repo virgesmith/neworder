@@ -89,8 +89,9 @@ jobs:
     - os: osx
       osx_image: xcode11.2
       language: shell
-      #before_install:
-      # - brew update
+      before_install:
+        - brew update
+        - brew install mpich
       # - brew unlink python@2
       # - brew upgrade python
       #- brew install python3
