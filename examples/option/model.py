@@ -10,7 +10,7 @@ from option import Option
 from market import Market
 from black_scholes import BlackScholes
 
-neworder.module_init(independent=False, verbose=False)
+neworder.module_init(independent=False, verbose=True)
 
 # requires 4 identical sims with perturbations to compute market sensitivities (a.k.a. Greeks)
 assert neworder.mpi.size() == 4 and not neworder.mpi.indep(), "This example requires 4 processes with identical RNG streams"

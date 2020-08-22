@@ -20,7 +20,7 @@ import neworder
 from riskpaths import RiskPaths
 
 # serial mode
-neworder.module_init(0,1,True, True)
+neworder.module_init(verbose=True)
 
 population_size = 100000
 

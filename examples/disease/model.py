@@ -22,7 +22,7 @@ from data import *
 from graphics import Graphics
 
 # serial mode
-neworder.module_init(0,1,True, True)
+neworder.module_init(verbose=False)
 
 class DiseaseModel(neworder.Model):
   def __init__(self, days, dt, npeople):
