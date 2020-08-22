@@ -26,11 +26,11 @@ $(info $(shell $(PY_CFG) --ldflags $(PY_CFG_LINK_ARG)))
 # Query python env/pybind11 for compile and link settings
 CXXFLAGS = $(shell $(PY_CFG) --cflags) 
 CXXFLAGS += $(shell python -m pybind11 --includes)
-CXXFLAGS += -Werror -Wno-error=deprecated-declarations -fPIC -std=c++17 -pedantic -DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION
-# get version from __init__.py
-CXXFLAGS += -DNEWORDER_VERSION_MAJOR=$(shell python3 -c "import neworder;print(neworder.__version__.split('.')[0])") \
-            -DNEWORDER_VERSION_MINOR=$(shell python3 -c "import neworder;print(neworder.__version__.split('.')[1])") \
-            -DNEWORDER_VERSION_PATCH=$(shell python3 -c "import neworder;print(neworder.__version__.split('.')[2])")
+CXXFLAGS += -Werror -Wno-error=deprecated-declarations -fPIC -std=c++17 -pedantic -DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION -DNEWORDER_EMBEDDED
+# get version 
+CXXFLAGS += -DNEWORDER_VERSION_MAJOR=$(shell cut -d "." -f 1 VERSION) \
+            -DNEWORDER_VERSION_MINOR=$(shell cut -d "." -f 2 VERSION) \
+            -DNEWORDER_VERSION_PATCH=$(shell cut -d "." -f 3 VERSION)
 LDFLAGS := $(shell $(PY_CFG) --ldflags $(PY_CFG_LINK_ARG))
 
 # MPI not enabled

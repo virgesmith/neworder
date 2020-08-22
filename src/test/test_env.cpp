@@ -22,7 +22,7 @@ void test_env()
   // test logging - use (,) operator combo to make it look like one arg returning bool. If a problem, there will be an exception or worse
   CHECK((no::log("neworder env test"), true));
 
-  no::Environment& env = no::Environment::init(0, 1);
+  no::Environment& env = no::getenv(); //already initialised Environment::init(0, 1);
   const py::object& neworder = env;
   // construct a base model just for tests
   no::Model m(no::Timeline());

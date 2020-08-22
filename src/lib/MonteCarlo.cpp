@@ -16,10 +16,9 @@ namespace {
 int64_t compute_seed()
 {
   int rank = no::getenv().rank();
-  int size = no::getenv().size();
   bool indep = no::getenv().indep();
   // ensure stream (in)dependence w.r.t. sequence and MPI rank/sizes
-  return 77027473 * 0 + 19937 * size + rank * indep;  
+  return 19937 + rank * indep;  
 }
 
 }
@@ -46,13 +45,13 @@ double no::MonteCarlo::u01()
   return m_prng() * SCALE;
 }
 
-NEWORDER_EXPORT py::array no::MonteCarlo::ustream(py::ssize_t n)
+py::array no::MonteCarlo::ustream(py::ssize_t n)
 {
   return no::make_array<double>({n}, [&](){ return u01(); });
 }
 
 // simple hazard constant probability 
-NEWORDER_EXPORT py::array no::MonteCarlo::hazard(double prob, py::ssize_t n)
+py::array no::MonteCarlo::hazard(double prob, py::ssize_t n)
 {
   return no::make_array<int>({n}, [&]() { return (u01() < prob) ? 1 : 0; });
 }
@@ -64,7 +63,7 @@ py::array no::MonteCarlo::hazard(const py::array& prob)
 }
 
 // computes stopping times 
-NEWORDER_EXPORT py::array no::MonteCarlo::stopping(double prob, py::ssize_t n)
+py::array no::MonteCarlo::stopping(double prob, py::ssize_t n)
 {
   double rprob = 1.0 / prob;
 

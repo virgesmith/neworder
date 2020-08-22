@@ -2,8 +2,8 @@ import numpy as np
 import neworder
 from schelling import Schelling
 
-# must not be MPI enabled
-assert neworder.mpi.size() == 1
+# serial mode
+neworder.module_init(verbose=True)
 
 # category 0 is empty
 gridsize = [100,125]

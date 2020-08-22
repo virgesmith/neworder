@@ -5,6 +5,7 @@ import neworder
 
 from people import People
 
+neworder.module_init(verbose=True)
 
 # This is case-based model so no timeline is required...
 # ... but we do need a delta-t between entries in fertility/mortality data

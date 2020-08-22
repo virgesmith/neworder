@@ -1,42 +1,65 @@
-# DO NOT CHANGE the "init" and "install" sections below
+# Build environments
 
-# Download script file from GitHub
+# TODO this script needs tidying
+
+image:
+  - Visual Studio 2019
+
+environment:
+  matrix:
+   - TEST_LANGUAGE: "Python"
+     PYTHON: "C:\\Python36-x64"
+     PYTHON_ARCH: 64
+     MSVC_VERSION: "Visual Studio 19 Win64"
+
+   - TEST_LANGUAGE: "Python"
+     PYTHON: "C:\\Python37-x64"
+     PYTHON_ARCH: 64
+     MSVC_VERSION: "Visual Studio 19 Win64"
+
+   - TEST_LANGUAGE: "Python"
+     PYTHON: "C:\\Python38-x64"
+     PYTHON_ARCH: 64
+     MSVC_VERSION: "Visual Studio 19 Win64"
+
+# fail fast
+matrix:
+  fast_finish: true
+
 init:
-  ps: |
-        $ErrorActionPreference = "Stop"
-        Invoke-WebRequest http://raw.github.com/krlmlr/r-appveyor/master/scripts/appveyor-tool.ps1 -OutFile "..\appveyor-tool.ps1"
-        Import-Module '..\appveyor-tool.ps1'
+  - ps: |
+      if ($env:TEST_LANGUAGE -eq "Python") {
+        Write-Host "$env:PYTHON $env:PYTHON_ARCH $env:MSVC_VERSION"
+        $python = $env:PYTHON + "\python.exe"
+        & $python --version
+      }
 
 install:
-  ps: Bootstrap
+  - ps: |
+      if ($env:TEST_LANGUAGE -eq "Python") {
+        $python = $env:PYTHON + "\python.exe"
+        & $python -m pip install --upgrade pip wheel setuptools --no-warn-script-location
+        & $python -m pip install numpy pandas mpi4py --no-warn-script-location
+      }
 
 cache:
   - C:\RLibrary
 
-# Adapt as necessary starting from here
-
 build_script:
-  - travis-tool.sh install_deps
+  # install deps
+  - ps: if ($env:TEST_LANGUAGE -eq "R") { TravisTool install_deps }
 
 test_script:
-  - travis-tool.sh run_tests
+  - ps: if ($env:TEST_LANGUAGE -eq "R") { TravisTool run_tests }
+  - cmd: if "%TEST_LANGUAGE%" == "Python" ( "%PYTHON%\python.exe" setup.py test ) else ( echo %TEST_LANGUAGE% )
 
 on_failure:
   - 7z a failure.zip *.Rcheck\*
   - appveyor PushArtifact failure.zip
 
 artifacts:
-  - path: '*.Rcheck\**\*.log'
-    name: Logs
-
-  - path: '*.Rcheck\**\*.out'
-    name: Logs
-
-  - path: '*.Rcheck\**\*.fail'
-    name: Logs
-
-  - path: '*.Rcheck\**\*.Rout'
-    name: Logs
+  - path: dist\*
+    name: Dist
 
   - path: '\*_*.tar.gz'
     name: Bits

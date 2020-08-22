@@ -1,0 +1,29 @@
+# command lines for each of the examples
+
+# serial embedded
+./run_example.sh hello_world
+./run_example.sh diagnostics
+./run_example.sh competing
+./run_example.sh disease
+./run_example.sh mortality
+./run_example.sh people
+./run_example.sh riskpaths
+./run_example.sh schelling
+
+# parallel embedded
+./run_example.sh test 2
+./run_example.sh option 4 -c
+
+# serial module
+python examples/hello_world/model.py
+python examples/diagnostics/model.py
+PYTHONPATH=$PYTHONPATH:./examples/shared python examples/competing/model.py
+python examples/disease/model.py
+PYTHONPATH=$PYTHONPATH:./examples/shared python examples/mortality/model.py
+PYTHONPATH=$PYTHONPATH:./examples/shared python examples/people/model.py
+python examples/riskpaths/model.py
+python examples/schelling/model.py
+
+# parallel module
+mpiexec -n 2 python examples/test/model.py
+mpiexec -n 4 python examples/option/model.py

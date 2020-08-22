@@ -73,7 +73,7 @@ void no::df::transition(no::Model& model, py::array categories, py::array matrix
   std::map<int64_t, int> lookup;
   for (py::ssize_t i = 0; i < m; ++i)
   {
-    lookup[no::at<int64_t>(categories, {i})] = (int64_t)i;
+    lookup[no::at<int64_t>(categories, Index_t<1>{i})] = (int64_t)i;
   }
 
   // no::log("row %% %% %% %%..."_s % p[0] % p[1] % p[2] % p[3]);
@@ -93,13 +93,13 @@ void no::df::transition(no::Model& model, py::array categories, py::array matrix
   for (py::ssize_t i = 0; i < n; ++i)
   {
     // look up the index, ignoring values that havent been explicitly set in categories (like -1)
-    auto it = lookup.find(no::at<int64_t>(col, {i}));
+    auto it = lookup.find(no::at<int64_t>(col, Index_t<1>{i}));
     if (it == lookup.end())
       continue;
     int64_t j = it->second;
-    py::ssize_t k = interp(cumprobs[j], no::at<double>(r, {i}));
+    py::ssize_t k = interp(cumprobs[j], no::at<double>(r, Index_t<1>{i}));
     //no::log("interp %%:%% -> %%"_s % j % r[i] % k);
-    no::at<int64_t>(col, {i}) = no::at<int64_t>(categories, {k});
+    no::at<int64_t>(col, Index_t<1>{i}) = no::at<int64_t>(categories, Index_t<1>{k});
   }
   no::log("transition %% elapsed: %%"_s % n % t.elapsed_s());
 }
@@ -113,7 +113,7 @@ void no::df::directmod(no::Model& model, py::object& df, const std::string& coln
 
   for (py::ssize_t i = 0; i < n; ++i)
   {
-    no::at<int64_t>(arr, {i}) += 1;
+    no::at<int64_t>(arr, Index_t<1>{i}) += 1;
   }
 }
 

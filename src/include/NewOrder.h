@@ -7,8 +7,9 @@
 namespace py = pybind11;
 
 #if !defined(NEWORDER_EXPORT)
-// #  if defined(WIN32) || defined(_WIN32)
-// #    define PYBIND11_EXPORT __declspec(dllexport)
-// #  else
-#  define NEWORDER_EXPORT __attribute__ ((visibility("default")))
+  #if defined(_MSC_VER)
+    #define NEWORDER_EXPORT __declspec(dllexport)
+  #else
+    #define NEWORDER_EXPORT __attribute__ ((visibility("default")))
+  #endif
 #endif

@@ -8,7 +8,7 @@
 
 namespace no { 
 
-py::array isnever(const py::array& x);
+NEWORDER_EXPORT py::array isnever(const py::array& x);
 
 template<typename T> T sum(const py::array& x)
 {
@@ -16,9 +16,9 @@ template<typename T> T sum(const py::array& x)
 } 
 
 // logistic function f(x) (TODO? offset x0 slope k: 1/(1+exp(-k(x-x0))))
-py::array logistic(const py::array& x, double x0, double k);
+NEWORDER_EXPORT py::array logistic(const py::array& x, double x0, double k);
 
 // logit function
-py::array logit(const py::array& x);
+NEWORDER_EXPORT py::array logit(const py::array& x);
 
 } 

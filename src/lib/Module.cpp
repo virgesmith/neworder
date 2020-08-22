@@ -68,6 +68,7 @@ std::string no::python_version()
 
 void no::shell(/*const py::object& local*/)
 {
+#ifdef NEWORDER_EMBEDDED
   if (no::getenv().size() != 1) 
   {
     no::log("WARNING: shell disabled in parallel mode, ignoring");
@@ -82,10 +83,17 @@ void no::shell(/*const py::object& local*/)
   kwargs["local"] = locals; 
   //kwargs["local"] = py::handle(PyObject_Dir(py::module::import("neworder").ptr()));
   /* py::object interpreter = */py::module::import("code").attr("interact")(/**py::tuple(),*/ **kwargs);
+#else
+  no::log("shell() ignored: disabled in module configuration");
+#endif
 }
 
 // python-visible log function defined above
+#ifdef NEWORDER_EMBEDDED
 PYBIND11_EMBEDDED_MODULE(neworder, m)
+#else
+PYBIND11_MODULE(neworder, m)
+#endif
 {
   // utility/diagnostics
   m.def("name", no::module_name);
@@ -94,14 +102,19 @@ PYBIND11_EMBEDDED_MODULE(neworder, m)
   m.def("log", log_obj);
   m.def("shell", no::shell);
   m.def("run", no::Model::run);
+#ifdef NEWORDER_EMBEDDED
+  m.def("embedded", [](){ return true; });
+#else
+  m.def("embedded", [](){ return false; });
+#endif
 
   // time-related module
   m.attr("time") = py::module("time")
-    .def("distant_past", no::Timeline::distant_past)
-    .def("far_future", no::Timeline::far_future)
-    .def("never", no::Timeline::never)
-    .def("isnever", no::Timeline::isnever) // scalar 
-    .def("isnever", no::isnever); // array
+   .def("distant_past", no::Timeline::distant_past)
+   .def("far_future", no::Timeline::far_future)
+   .def("never", no::Timeline::never)
+   .def("isnever", no::Timeline::isnever) // scalar 
+   .def("isnever", no::isnever); // array
 
   py::class_<no::Timeline>(m, "Timeline")
     .def(py::init<double, double, const std::vector<size_t>&>())
@@ -112,6 +125,7 @@ PYBIND11_EMBEDDED_MODULE(neworder, m)
     .def("dt", &no::Timeline::dt)
     .def("nsteps", &no::Timeline::nsteps)
     .def("next", &no::Timeline::next)
+    .def("at_checkpoint", &no::Timeline::at_checkpoint)
     .def("at_end", &no::Timeline::at_end)
     .def("__repr__", [](const no::Timeline& tl) {
         return "<neworder.Timeline start=%% end=%% checkpoints=%% index=%%>"_s 
@@ -181,6 +195,8 @@ PYBIND11_EMBEDDED_MODULE(neworder, m)
     .def("rank", no::Environment::rank)
     .def("size", no::Environment::size)
     .def("indep", no::Environment::indep)
+    .def("verbose", no::Environment::verbose)
+#ifdef NEWORDER_EMBEDDED
     .def("send", no::mpi::send_obj)
     .def("receive", no::mpi::receive_obj)
     .def("send_csv", no::mpi::send_csv)
@@ -190,6 +206,15 @@ PYBIND11_EMBEDDED_MODULE(neworder, m)
     .def("scatter", no::mpi::scatter_array)
     .def("allgather", no::mpi::allgather_array, py::return_value_policy::take_ownership)
     .def("sync", no::mpi::sync);
+  // do-nothing init for embedded mode (init will have already happened)
+  m.def("module_init", [](bool, bool) {}, 
+    py::arg("independent") = true, py::arg("verbose") = false);
+#else
+    ;
+  // rank/size are set via mpi4py
+  m.def("module_init", [](bool independent, bool verbose) { no::Environment::init(-1, -1, independent, verbose); }, 
+    py::arg("independent") = true, py::arg("verbose") = false );
+#endif
 
   // Example of wrapping an STL container
   // py::class_<std::vector<double>>("DVector", py::init<int>())

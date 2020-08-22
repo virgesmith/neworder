@@ -20,7 +20,7 @@ namespace no {
 // - define the var in C++ and provide a python accessor function
 // for numpy arrays (and pandas DataFrames), C++ and python ref the same data
 
-struct NEWORDER_EXPORT Environment
+class NEWORDER_EXPORT Environment
 {
 public:
 
@@ -60,12 +60,6 @@ public:
   // returns "py/no rank/size"
   std::string context(int ctx = CPP) const;
 
-  // reset the RNG stream sequence to the original seed 
-  static void reset();
-
-  // // Access the RNG stream (one per env)
-  // no::MonteCarlo& mc() const;
-
   // returns the neworder env as a python object 
   operator py::object&() { return *m_self; } 
   operator const py::object&() const { return *m_self; } 
@@ -75,8 +69,10 @@ private:
   // flag to check whether init has been called
   bool m_init;
 
+#ifdef NEWORDER_EMBEDDED
   // global interpreter lock (NB this is a singleton)
   py::scoped_interpreter m_gil; 
+#endif
 
   // Singletons only
   Environment();

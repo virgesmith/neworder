@@ -10,8 +10,20 @@
 // This function must be used to init the environment
 no::Environment& no::Environment::init(int rank, int size, bool indep, bool verbose)
 {
-  // make our rank/size visible to python
+  // get static instance
   Environment& env = no::getenv();
+
+  if (env.m_init)
+    throw std::runtime_error("Module must only be initialised once per process");
+  // set whether each process has independent RNG streams
+  env.m_indep = indep;
+
+  // verbose flag
+  env.m_verbose = verbose;
+
+  // set init flag (before any possible log message)
+  env.m_init = true;
+
   //py::object& neworder = env; // env as python module
 
   // // to "share" scalars across C++ and python, use the py::extract<> object
@@ -19,20 +31,30 @@ no::Environment& no::Environment::init(int rank, int size, bool indep, bool verb
   // env.m_self->attr("size") = size;
   // These values are 1) set by the C++ runtime; and 2) constant. 
   // python access is by function to avoid exposing a modifiable variable
+#ifdef NEWORDER_EMBEDDED
   env.m_rank = rank;
   env.m_size = size;
+#else
+  try 
+  {
+    py::module mpi = py::module::import("mpi4py.MPI");
+    py::object comm = mpi.attr("COMM_WORLD");
+    env.m_rank = comm.attr("Get_rank")().cast<int>();
+    env.m_size = comm.attr("Get_size")().cast<int>();
+  }
+  catch(const py::error_already_set&)
+  {
+    env.m_rank = 0;
+    env.m_size = 1;
+    no::log("mpi4py module not found, assuming serial mode");
+  }
+#endif
 
-  // set whether each process has independent RNG streams
-  env.m_indep = indep;
-
-  // TODO verbose flag
-  env.m_verbose = verbose;
-
-  // set init flag
-  env.m_init = true;
-
-  no::log("neworder %%/python %% env={indep:%%, verbose:%%}"_s % module_version() % python_version() % env.m_indep % env.m_verbose );
-
+#ifdef NEWORDER_EMBEDDED
+  no::log("neworder %%/embedded python %% env={indep:%%, verbose:%%}"_s % module_version() % python_version() % env.m_indep % env.m_verbose );
+#else
+  no::log("neworder %%/module python %% env={indep:%%, verbose:%%}"_s % module_version() % python_version() % env.m_indep % env.m_verbose );
+#endif
   return env;
 }
 
@@ -59,7 +81,7 @@ int no::Environment::size()
   return no::getenv().m_size;
 }
 
-// MPI random stream independence (true if serial)
+// parallel random stream independence (true if serial)
 bool no::Environment::indep()
 {
   if (!no::getenv().m_init)
@@ -67,13 +89,12 @@ bool no::Environment::indep()
   return no::getenv().m_indep;
 }
 
-void no::Environment::reset()
+bool no::Environment::verbose()
 {
   if (!no::getenv().m_init)
     throw std::runtime_error("accessing %% before init called"_s % __FUNCTION__);
-  //no::getenv().m_mc->reset();
+  return no::getenv().m_verbose;
 }
-
 
 std::string no::Environment::context(int ctx) const
 {
@@ -82,11 +103,7 @@ std::string no::Environment::context(int ctx) const
 }
 
 
-// no::MonteCarlo& no::Environment::mc() const
-// {
-//   return *m_mc;
-// }
-
+#ifdef NEWORDER_EMBEDDED
 // Note this does not fully initialise, do not construct directly, use the static init function
 no::Environment::Environment() : m_init(false) , m_gil{} // TODO does it still? segfaults on exit (presumably called **too late** (singleton))
 {
@@ -96,6 +113,11 @@ no::Environment::Environment() : m_init(false) , m_gil{} // TODO does it still? 
   py::dict sys_modules = py::module::import("sys").attr("modules");
   sys_modules["neworder"] = *m_self;
 } 
+#else
+no::Environment::Environment() : m_init(false) 
+{
+} 
+#endif
 
 no::Environment::~Environment() 
 {

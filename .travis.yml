@@ -35,9 +35,12 @@ jobs:
         conda create -q -n test-environment python=3.8
         source activate test-environment      
       install:
-        - conda install gxx_linux-64 openssl mpich numpy pandas pybind11
+        - conda install gxx_linux-64 openssl mpich numpy pandas pybind11 pytest
       script:
       - |
+        python setup.py install
+        pytest
+        mpiexec -n 2 pytest
         make && make test
         make -f MPI.mk && make -f MPI.mk test
 
@@ -47,10 +50,11 @@ jobs:
       - sudo apt-get update
       - sudo apt-get -y install build-essential mpich libmpich-dev
       install: 
-      - pip install pybind11 numpy pandas
+      - pip install pybind11 numpy pandas mpi4py
       script:
-      # - python setup.py build
-      # - python setup.py test
+      - python setup.py install
+      - python setup.py test
+      - mpiexec -n 2 pytest
       - make PY_CFG=python-config PY_CFG_LINK_ARG="" && make test
       - make PY_CFG=python-config PY_CFG_LINK_ARG="" -f MPI.mk && make -f MPI.mk test
 
@@ -60,10 +64,11 @@ jobs:
       - sudo apt-get update
       - sudo apt-get -y install build-essential mpich libmpich-dev python3.7-dev 
       install: 
-      - pip install pybind11 numpy pandas
+      - pip install pybind11 numpy pandas mpi4py
       script:
-      # - python setup.py build
-      # - python setup.py test
+      - python setup.py install
+      - python setup.py test
+      - mpiexec -n 2 pytest
       - make PY_CFG=python-config PY_CFG_LINK_ARG="" && make test
       - make PY_CFG=python-config PY_CFG_LINK_ARG="" -f MPI.mk && make -f MPI.mk test
 
@@ -73,16 +78,35 @@ jobs:
       - sudo apt-get update
       - sudo apt-get -y install build-essential mpich libmpich-dev python3.8-dev 
       install: 
-      - pip install pybind11 numpy pandas
+      - pip install pybind11 numpy pandas mpi4py
       script:
-      # - python setup.py build
-      # - python setup.py test
+      - python setup.py install
+      - python setup.py test
+      - mpiexec -n 2 pytest
       - make PY_CFG=python-config PY_CFG_LINK_ARG="" && make test
       - make PY_CFG=python-config PY_CFG_LINK_ARG="" -f MPI.mk && make -f MPI.mk test
 
-#  allow_failures:
-#    - name: conda_py3
-#    - python: 3.8
+    - os: osx
+      osx_image: xcode11.2
+      language: shell
+      #before_install:
+      # - brew update
+      # - brew unlink python@2
+      # - brew upgrade python
+      #- brew install python3
+      #  - python3 -m pip install numpy distutils pytest
+      install: 
+        - pip3 install --upgrade pip
+        - pip3 install pandas
+      script:
+        - python3 setup.py install
+        - python3 setup.py test
+        #- mpiexec -n 2 pytest
+
+  allow_failures:
+    - os: osx
+    # - name: conda_py3
+    # - python: 3.8
 
 warnings_are_errors: false
 
