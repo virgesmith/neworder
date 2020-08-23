@@ -10,7 +10,7 @@ class _TestModel(no.Model):
     self.step_count = 0
     self.checkpoint_count = 0
 
-  def transition(self):
+  def step(self):
     self.step_count += 1
 
   def checkpoint(self):

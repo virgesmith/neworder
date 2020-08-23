@@ -21,9 +21,9 @@ void no::Model::modify(int)
   no::log("defaulted to no-op Model::modify()");
 }
 
-void no::Model::transition()
+void no::Model::step()
 {
-  throw std::runtime_error("Model.transition() method must be overridden");
+  throw std::runtime_error("Model.step() method must be overridden");
 }
 
 bool no::Model::check()
@@ -64,8 +64,8 @@ void no::Model::run(py::object& model_subclass)
     double t = base.timeline().time();
     int timeindex = base.timeline().index();
 
-    no::log("t=%%(%%) calling %%.transition()"_s % t % timeindex % subclass_name );
-    model_subclass.attr("transition")();
+    no::log("t=%%(%%) calling %%.step()"_s % t % timeindex % subclass_name );
+    model_subclass.attr("step")();
 
     // call the modifier if implemented
 //    if (pycpp::has_attr(model_subclass, "check"))

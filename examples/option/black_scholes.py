@@ -29,7 +29,7 @@ class BlackScholes(neworder.Model):
     elif rank == 3:
       self.market.vol = self.market.vol + 0.001 # 10bp upward vega
 
-  def transition(self):
+  def step(self):
     self.pv = self.simulate()
 
   def checkpoint(self):

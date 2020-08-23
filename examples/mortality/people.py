@@ -27,7 +27,7 @@ class People(neworder.Model):
 
     self.max_age = max_age
 
-  def transition(self):
+  def step(self):
     # kill off some people
     self.die()
     # age the living only

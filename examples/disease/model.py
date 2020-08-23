@@ -91,9 +91,6 @@ class DiseaseModel(neworder.Model):
     #self.transitions = np.transpose(self.transitions)
     #neworder.log(self.transitions)
 
-  def transition(self):
-    self.step()
-
   def checkpoint(self):
     self.finalise()
     Graphics().plot(self)

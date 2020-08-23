@@ -38,7 +38,7 @@ class Schelling(neworder.Model):
     self.sat = np.full(gridsize, 0, dtype=int)
     self.similarity = similarity
 
-  def transition(self):
+  def step(self):
     self.sat.fill(1)
 
     pop = self.pop[-1].copy()

@@ -140,7 +140,7 @@ PYBIND11_MODULE(neworder, m)
     .def("timeline", &no::Model::timeline, py::return_value_policy::reference)
     .def("mc", &no::Model::mc, py::return_value_policy::reference)
     .def("modify", &no::Model::modify)
-    .def("transition", &no::Model::transition)
+    .def("step", &no::Model::step)
     .def("check", &no::Model::check)
     .def("checkpoint", &no::Model::checkpoint);
     // NB the all-important run function is not exposed to python, it can only be executed by the embedded runtime

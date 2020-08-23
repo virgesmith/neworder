@@ -33,7 +33,7 @@ class People(neworder.Model):
                                          "TimeOfBaby1": neworder.time.far_future(),
                                          "TimeOfDeath": np.zeros(n, dtype=float)})
 
-  def transition(self):
+  def step(self):
     self.age()
 
 

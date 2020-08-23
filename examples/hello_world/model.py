@@ -6,18 +6,16 @@ It subclasses neworder.Model adds implements a toy model which
 - say hello, which is called at the end of the "simulation".
 """
 
-# Expose the neworder enviroment to python
 import os
 import neworder
 
-# does nothing in embedded mode
-neworder.module_init(verbose=False)
+neworder.module_init(verbose=True)
 
 class HelloWorld(neworder.Model):
   """
   This model extends the builtin neworder.Model class by providing implementations of the following methods:
   - modify (optional)
-  - transition
+  - step
   - check (optional)
   - checkpoint
   The neworder runtime will automatically execute the model, looping over the timeline and calling the methods above
@@ -45,7 +43,7 @@ class HelloWorld(neworder.Model):
   #   """
   #   pass
 
-  def transition(self):
+  def step(self):
     """
     Transitions to run at each timestep.
     This method must be implemented.

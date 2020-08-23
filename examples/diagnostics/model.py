@@ -11,14 +11,14 @@ neworder.module_init(True, True)
 
 class Diagnostics(neworder.Model):
   """
-  Extends the neworder.Model class, adding a "transition" that prints diagnostic information,
+  Extends the neworder.Model class, adding a "step" that prints diagnostic information,
   and a ends by starting an interactive shell
   """
   def __init__(self, *args):
     super().__init__(neworder.Timeline.null())
 
 
-  def transition(self):
+  def step(self):
     neworder.log("MODULE= %s %s" % (neworder.name(), neworder.version()))
     binary = "target/debug/neworder" if (neworder.name() == "neworder.rs") else "src/bin/neworder"
     all_libs = subprocess.getoutput("ldd %s" % binary).replace("\t", "").split("\n")

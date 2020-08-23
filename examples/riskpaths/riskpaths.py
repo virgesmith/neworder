@@ -45,7 +45,7 @@ class RiskPaths(neworder.Model):
     neworder.log("RiskPaths initialised")
 
 
-  def transition(self):
+  def step(self):
     #"a": "import sys; neworder.log(sys.argv)",
     self.pregnancy()
 

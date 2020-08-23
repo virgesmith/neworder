@@ -1,33 +1,71 @@
 ## Hello World
 
-This example is a simple illustration of the structure required, and how it fits together. All the code is extensively commented, and can servce as a skeleton for new project.
+This simplest example is illustrates of the structure required, and how it fits together. All the code is extensively commented. The code can be run like so
+
+```bash
+python examples/hello_world/model.py
+```
+which will output something like
+
+```text
+[py 0/1] Hello neworder_user
+```
+or if you change the `verbose` argument, 
+
+```
+[no 0/1] neworder 1.0.0/module python 3.8.2 (default, Jul 16 2020, 14:00:26)  [GCC 9.3.0] env={indep:1, verbose:1}
+[no 0/1] model init: mc={indep:1, seed:19937}
+[no 0/1] starting model run. start time=0.000000, timestep=0.000000, checkpoint(s) at [1]
+[no 0/1] t=0.000000(0) calling: <__main__.HelloWorld object at 0x7f642ca367c0>.modify(0)
+[no 0/1] defaulted to no-op Model::modify()
+[no 0/1] t=0.000000(1) calling <__main__.HelloWorld object at 0x7f642ca367c0>.transition()
+[no 0/1] t=0.000000(1) calling <__main__.HelloWorld object at 0x7f642ca367c0>.check()
+[no 0/1] t=0.000000(1) calling <__main__.HelloWorld object at 0x7f642ca367c0>.checkpoint()
+[py 0/1] Hello neworder_user
+[no 0/1] SUCCESS exec time=0.000279s
+
+```
+this output is explained below.
+
+The API reference can be found [here](./reference.md)
 
 ### Input
 
-All models require the following:
+The `neworder` framework expects an instance of a `Model` class, which in turn requires a `Timeline` object.
 
+Not all models require an explicit discrete timeline (like this one), so a method is provided to construct a dummy timeline (which is a single step of length zero). 
 
-The model is defined and initialised in [config.py](examples/hello_world/config.py). The neworder runtime will automatically execute it.
+The model class provided is a base class from which the user should subclass, implemention the following class methods:
+
+- a constructor that initialises the base class with a timeline.
+- optionally, a `modify` method which is used to 
+- a `step` method that governs the evolution of the model
+- optionally, a `check` method which is executed after each step
+- a `checkpoint` method which is run at certain timesteps, and always on the final step.
+
+The model is defined and initialised in [model.py](examples/hello_world/model.py). 
 
 ### Output
 
 The log output from *neworder* is prefixed with a source identifier in square brackets, containing the following information for debugging purposes:
-- Source of message: `no` if logged from the framework itself, `py` if logged from python code (via the `neworder.log()` function).
+
+- Source of message: `no` if logged from the framework itself, `py` if logged from python code (via the `neworder.log()` function). The former are only displayed in verbose mode.
+
 - the process id ('rank' in MPI parlance) and the total number of processes ('size' in MPI parlance) - in serial mode these default to 0/1.
 
 
 ```bash
-$ ./run_example.sh hello_world
-[no 0/1] neworder 0.0.0 env: mc=(indep:1, seed:19937) python 3.8.2 (default, Jul 16 2020, 14:00:26)  [GCC 9.3.0]
-[no 0/1] registered transition who: neworder.model.set_name()
-[no 0/1] registered check eval: True
-[no 0/1] registered checkpoint say_hello: neworder.model()
-[no 0/1] starting microsimulation. start time=0.000000, timestep=0.000000, checkpoint(s) at [1]
-[no 0/1] t=0.000000(1) transition: who
-[no 0/1] t=0.000000(1) check: eval
-[no 0/1] t=0.000000(1) checkpoint: say_hello
-[py 0/1] Hello neworder_user
-[no 0/1] SUCCESS exec time=0.000497s
+$ python examples/hello_world/model.py 
+[no 0/1] neworder 1.0.0/module python 3.8.2 (default, Jul 16 2020, 14:00:26)  [GCC 9.3.0] env={indep:1, verbose:1}
+[no 0/1] model init: mc={indep:1, seed:19937}
+[no 0/1] starting model run. start time=0.000000, timestep=0.000000, checkpoint(s) at [1]
+[no 0/1] t=0.000000(0) calling: <__main__.HelloWorld object at 0x7ffa1b20a810>.modify(0)
+[no 0/1] defaulted to no-op Model::modify()
+[no 0/1] t=0.000000(1) calling <__main__.HelloWorld object at 0x7ffa1b20a810>.step()
+[no 0/1] t=0.000000(1) calling <__main__.HelloWorld object at 0x7ffa1b20a810>.check()
+[no 0/1] t=0.000000(1) calling <__main__.HelloWorld object at 0x7ffa1b20a810>.checkpoint()
+[py 0/1] Hello az
+[no 0/1] SUCCESS exec time=0.000289s
 ```
 
 ### Understanding the workflow and the output

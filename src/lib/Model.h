@@ -29,7 +29,7 @@ public:
 
   // functions to override
   virtual void modify(int rank); // optional, parallel runs only
-  virtual void transition(); // compulsory
+  virtual void step(); // compulsory
   virtual bool check(); // optional
   virtual void checkpoint(); // compulsory
 

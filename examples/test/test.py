@@ -18,7 +18,7 @@ class Test(neworder.Model):
     # all begin with unique id and state = rank
     self.pop = pd.DataFrame({"id": np.array(range(neworder.mpi.rank() * n, neworder.mpi.rank() * n + n)), "state": np.full(n, neworder.mpi.rank()) })
 
-  def transition(self):
+  def step(self):
     # generate some movement
     neworder.dataframe.transition(self, self.s, self.p, self.pop, "state")
 

@@ -50,7 +50,7 @@ class Population(neworder.Model):
     self.data["Age"] = self.data.DC1117EW_C_AGE - self.mc().ustream(len(self.data))
     self.data = ethpop.from_census_eth(self.data)
 
-  def transition(self):
+  def step(self):
     self.births()
     self.deaths()
     self.migrations()
