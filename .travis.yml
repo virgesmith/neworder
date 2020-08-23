@@ -85,10 +85,10 @@ jobs:
       script:
         - python3 setup.py install
         - python3 setup.py test
-        - mpiexec -n 2 python3 -m pytest
+        - mpiexec -n 2 python3 setup.y test
 
-#  allow_failures:
-#    - os: osx
+  allow_failures:
+    - os: osx
     # - name: conda_py3
     # - python: 3.8
 
