@@ -84,8 +84,9 @@ jobs:
         - pip3 install pandas
       script:
         - python3 setup.py install
-        - python3 setup.py test
-        - mpiexec -n 2 $(which pytest)
+        - pytest #python3 setup.py test
+        - which pytest
+        - mpiexec -n 2 pytest
 
 #  allow_failures:
 #    - os: osx
