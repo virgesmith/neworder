@@ -85,7 +85,7 @@ jobs:
       script:
         - python3 setup.py install
         - python3 setup.py test
-        - mpiexec -n 2 python3 setup.y test
+        - mpiexec -n 2 python3 setup.py test
 
   allow_failures:
     - os: osx
