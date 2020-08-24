@@ -39,7 +39,7 @@ void no::Model::checkpoint()
 }
 
 
-void no::Model::run(py::object& model_subclass) 
+bool no::Model::run(py::object& model_subclass) 
 {
   // extract the base class
   no::Model& base = model_subclass.cast<no::Model&>();
@@ -54,32 +54,38 @@ void no::Model::run(py::object& model_subclass)
     % base.timeline().start() % base.m_timeline.dt() % base.timeline().checkpoints());
 
   // apply the modifier, if implemented in the derived class 
-  no::log("t=%%(%%) calling: %%.modify(%%)"_s % base.timeline().time() % base.timeline().index() % subclass_name % rank);
+  no::log("t=%%(%%) %%.modify(%%)"_s % base.timeline().time() % base.timeline().index() % subclass_name % rank);
   model_subclass.attr("modify")(rank);
 
   // Loop with checkpoints
+  bool ok = true;
   while (!base.timeline().at_end())
   {
     base.timeline().next(); 
     double t = base.timeline().time();
     int timeindex = base.timeline().index();
 
-    no::log("t=%%(%%) calling %%.step()"_s % t % timeindex % subclass_name );
+    no::log("t=%%(%%) %%.step()"_s % t % timeindex % subclass_name );
     model_subclass.attr("step")();
 
-    // call the modifier if implemented
-//    if (pycpp::has_attr(model_subclass, "check"))
+    // call the check method and stop if necessary
+    ok = model_subclass.attr("check")().cast<bool>();
+    if (!ok)
     {
-      no::log("t=%%(%%) calling %%.check()"_s % t % timeindex % subclass_name );
-      model_subclass.attr("check")();
+      no::log("t=%%(%%) %%.check() FAILED, halting model run"_s % t % timeindex % subclass_name );
+      break;
     }
+    no::log("t=%%(%%) %%.check() [ok]"_s % t % timeindex % subclass_name );
+  
+    // call the checkpoint method as required 
     if (base.timeline().at_checkpoint())
     {
-      no::log("t=%%(%%) calling %%.checkpoint()"_s % t % timeindex % subclass_name );
+      no::log("t=%%(%%) %%.checkpoint()"_s % t % timeindex % subclass_name );
       model_subclass.attr("checkpoint")();
     } 
   }
-  no::log("SUCCESS exec time=%%s"_s % timer.elapsed_s());
+  no::log("%% exec time=%%s"_s % (ok ? "SUCCESS": "ERRORED") % timer.elapsed_s());
+  return ok;
 }
 
 

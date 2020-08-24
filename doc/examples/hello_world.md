@@ -1,23 +1,23 @@
-## Hello World
+# Hello World
 
-This simplest example is illustrates of the structure required, and how it fits together. All the code is extensively commented. The code can be run like so
+This simplest example is illustrates of the structure required, and how it fits together. All the code is extensively commented. The code can be run like so:
 
 ```bash
 python examples/hello_world/model.py
 ```
 
-### Input
+## Input
 
 The `neworder` framework expects an instance of a `Model` class, which in turn requires a `Timeline` object.
 
-Not all models require an explicit discrete timeline (like this one), so a method is provided to construct a dummy timeline (which is a single step of length zero).
+This model doesn't require an explicit discrete timeline, so for models of this type a method is provided to construct an empty timeline (which is a single step of length zero). In more complex examples, this permits "case-based" models (to use MODGEN parlance) where each individual's history is constructed in a single pass.
 
-The model class provided is a base class from which the user should subclass, implemention the following class methods:
+`neworder` provides a base Model class from which the user should subclass, implementing the following class methods:
 
-- a constructor that initialises the base class with a timeline.
-- optionally, a `modify` method which is used to change inputs or behaviour across parallel processes
+- a constructor that initialises the base class with a timeline
+- optionally, a `modify` method which is used to change inputs or behaviour across parallel processes,
 - a `step` method that governs the evolution of the model
-- optionally, a `check` method which is executed after each step
+- optionally, a `check` method which is executed after each step and must return a boolean. A result of `False` will halt the model.
 - a `checkpoint` method which is run at certain timesteps, and always on the final step.
 
 This (somewhat contrived) example initialised a model with a username, which is initially unknown. The single step of the model queries the OS for the user's name, and the checkpoint greets the user.
@@ -52,23 +52,26 @@ the `check` method simply confirms that the username was changed by the step met
     return self.name != "unknown"
 ...
 ```
-Note that the this method must return a boolean, if not `True` the neworder runtime will assume an error.
+
+Note that the this method must return a boolean, if not `True` the neworder runtime will assume an error and stop execution.
 
 Finally, the `checkpoint` methods prints the greeting:
 
-```
+```python
 ...
   def checkpoint(self):
     neworder.log("Hello %s" % self.name)
 ...
 ```
 
+using the `neworder.log` function is preferred to plain `print` statements as they add useful context for debugging purposes.
+
 ### Execution
 
 The model is run by first initialising the module
 
 ```python
-neworder.module_init(verbose=True)
+neworder.module_init(verbose=False)
 ```
 
 then constructing the model
@@ -79,7 +82,7 @@ hello_world = HelloWorld()
 
 and invoking it like so
 
-```
+```python
 neworder.run(hello_world)
 ```
 
@@ -90,7 +93,7 @@ The model will output something like
 ```text
 [py 0/1] Hello neworder_user
 ```
-or if you change the `verbose` argument, 
+or if you change the `verbose` initialisation argument to `True`, 
 
 ```text
 [no 0/1] neworder 1.0.0/module python 3.8.2 (default, Jul 16 2020, 14:00:26)  [GCC 9.3.0] env={indep:1, verbose:1}
@@ -105,10 +108,10 @@ or if you change the `verbose` argument,
 [no 0/1] SUCCESS exec time=0.000279s
 
 ```
+
 this output is explained below.
 
 The API reference can be found [here](./reference.md)
-
 
 The log output from *neworder* is prefixed with a source identifier in square brackets, containing the following information for debugging purposes:
 
@@ -116,82 +119,67 @@ The log output from *neworder* is prefixed with a source identifier in square br
 
 - the process id ('rank' in MPI parlance) and the total number of processes ('size' in MPI parlance) - in serial mode these default to 0/1.
 
-
 ```bash
 $ python examples/hello_world/model.py 
 [no 0/1] neworder 1.0.0/module python 3.8.2 (default, Jul 16 2020, 14:00:26)  [GCC 9.3.0] env={indep:1, verbose:1}
 [no 0/1] model init: mc={indep:1, seed:19937}
 [no 0/1] starting model run. start time=0.000000, timestep=0.000000, checkpoint(s) at [1]
-[no 0/1] t=0.000000(0) calling: <__main__.HelloWorld object at 0x7ffa1b20a810>.modify(0)
+[no 0/1] t=0.000000(0) HelloWorld.modify(0)
 [no 0/1] defaulted to no-op Model::modify()
-[no 0/1] t=0.000000(1) calling <__main__.HelloWorld object at 0x7ffa1b20a810>.step()
-[no 0/1] t=0.000000(1) calling <__main__.HelloWorld object at 0x7ffa1b20a810>.check()
-[no 0/1] t=0.000000(1) calling <__main__.HelloWorld object at 0x7ffa1b20a810>.checkpoint()
+[no 0/1] t=0.000000(1) HelloWorld.step()
+[no 0/1] t=0.000000(1) HelloWorld.check() [ok]
+[no 0/1] t=0.000000(1) HelloWorld.checkpoint()
 [py 0/1] Hello az
-[no 0/1] SUCCESS exec time=0.000289s
+[no 0/1] SUCCESS exec time=0.000424s
 ```
 
 ### Understanding the workflow and the output
 
-All models must have a timeline over which they run. For cases where an explicit timeline isn't necessary, such as this one, we use a *null* timeline, which is just a single instantaneous transition.
+When using `Timeline.null()` the start time, end time and timestep are all zero, and there is a single step, and a single checkpoint at step 1.  
 
-By default the start time and timestep is zero, and there is a single timestep. This example doesn't require a timeline.
+First we get some information about the environment, and confirmation of the initialisation parameters:
 
-The environment initialises, indicating the random seed and the python version used:
 ```
-[no 0/1] env: seed=19937 python 3.6.6 (default, Sep 12 2018, 18:26:19)  [GCC 8.0.1 20180414 (experimental) [trunk revision 259383]]
-[no 0/1] starting microsimulation...
-```
-As no timeline has been specified, we just have single timestep and a single checkpoint (the end). The model is initialised:
-```
-[no 0/1] t=0.000000 initialise: greeter
-```
-...an object is constructed and assigned to the variable `greeter`. In [config.py](examples/hello_world/config.py), from the module `greet`, construct an object of type `Greet`, passing no parameters:
-```
-neworder.initialisations = {
-  "greeter": { "module": "greet", "class_": "Greet", "parameters": [] }
-}
-```
-The time loop now increments, and the transitions are processed:
-```
-[no 0/1] t=1.000000 transition: who
-```
-The transition named 'who' simply executes the `get_name()` method of the `greeter` object. (If you look in [greet.py](examples/hello_world/greet.py) you will see that the method uses an operating system call to get the username.)
-```
-neworder.transitions = {
-  "who": "greeter.get_name()"
-}
-```
-Optionally, checks can be implemented to run after each timestep, to check the state of the microsimulation. In [config.py](examples/hello_world/config.py), we have defined:
-
-```json
-neworder.do_checks = True
-neworder.checks = {
-  "eval": "True",
-}
-```
-and thus see the corresponding
-```
-[no 0/1] t=1.000000 check: eval
-```
-in the output. The check must evaluate to a boolean, and if `False` the model will stop. In this example the dummy check simply evaluates `True` (which is of course `True`).
-
-We have now reached the end of the timeline and the checkpoint code - call the () method (i.e. `__call__`) of the greeter object
-```
-neworder.checkpoints = {
-  "say_hello" : "greeter()",
-}
-```
-...which says hello:
-```
-[no 0/1] t=1.000000 checkpoint: say_hello
-[py 0/1] Hello neworder_user
+[no 0/1] neworder 1.0.0/module python 3.8.2 (default, Jul 16 2020, 14:00:26)  [GCC 9.3.0] env={indep:1, verbose:1}
+[no 0/1] model init: mc={indep:1, seed:19937}
+[no 0/1] starting model run. start time=0.000000, timestep=0.000000, checkpoint(s) at [1]
 ```
 
-Finally the framework indicates the model ran successfully:
-```
-[no 0/1] SUCCESS
+then the model starts to run, firstly applying any per-process modifications
+
+```text
+[no 0/1] t=0.000000(0) HelloWorld.modify(0)
+[no 0/1] defaulted to no-op Model::modify()
 ```
 
-The 'model' configuration is here: [examples/hello_world/config.py](examples/hello_world/config.py). This file refers to a second file in which the "model" is defined, see [examples/hello_world/greet.py](examples/hello_world/greet.py)
+and in this case we have none, as `modify` hasn't been implemented in the subclass. Now the `step` method is called:
 
+```text
+[no 0/1] t=0.000000(1) HelloWorld.step()
+```
+
+followed by the `check` method:
+
+```text
+[no 0/1] t=0.000000(1) HelloWorld.check() [ok]
+```
+
+which succeeded (try making it fail and then running the model). Then the single checkpoint is reached:
+
+```text
+[no 0/1] t=0.000000(1) HelloWorld.checkpoint()
+```
+
+which prints the result:
+
+```text
+[py 0/1] Hello az
+```
+
+and finally the model reports its status and execution time:
+
+```text
+[no 0/1] SUCCESS exec time=0.000273s
+```
+
+The python code can be found here: [examples/hello_world/model.py](examples/hello_world/model.py). 

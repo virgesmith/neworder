@@ -29,7 +29,7 @@ class HelloWorld(neworder.Model):
     Failing to do so will result in UNDEFINED BEHAVIOUR
     """
     super().__init__(neworder.Timeline.null())
-    self.name = "unknown"
+    self.name = None
 
   # def modify(self, rank):
   #   """
@@ -40,6 +40,13 @@ class HelloWorld(neworder.Model):
   #   Returns: NoneType
   #   """
   #   pass
+
+  def __str__(self):
+    """
+    Returns a more readable name for verbose logging output, would otherwise be something like
+    "<__main__.HelloWorld object at 0x7fe82792da90>"
+    """
+    return self.__class__.__name__
 
   def step(self):
     """
@@ -57,7 +64,7 @@ class HelloWorld(neworder.Model):
     Arguments: self
     Returns: bool
     """
-    return self.name != "unknown"
+    return self.name is not None
 
   def checkpoint(self):
     """
@@ -73,5 +80,6 @@ neworder.module_init(verbose=True)
 # construct the model
 hello_world = HelloWorld()
 
-# run the model
-neworder.run(hello_world)
+# run the model and check it worked
+ok = neworder.run(hello_world)
+if not ok: neworder.log("model failed!")
