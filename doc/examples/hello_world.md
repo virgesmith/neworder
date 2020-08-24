@@ -5,14 +5,94 @@ This simplest example is illustrates of the structure required, and how it fits 
 ```bash
 python examples/hello_world/model.py
 ```
-which will output something like
+
+### Input
+
+The `neworder` framework expects an instance of a `Model` class, which in turn requires a `Timeline` object.
+
+Not all models require an explicit discrete timeline (like this one), so a method is provided to construct a dummy timeline (which is a single step of length zero).
+
+The model class provided is a base class from which the user should subclass, implemention the following class methods:
+
+- a constructor that initialises the base class with a timeline.
+- optionally, a `modify` method which is used to change inputs or behaviour across parallel processes
+- a `step` method that governs the evolution of the model
+- optionally, a `check` method which is executed after each step
+- a `checkpoint` method which is run at certain timesteps, and always on the final step.
+
+This (somewhat contrived) example initialised a model with a username, which is initially unknown. The single step of the model queries the OS for the user's name, and the checkpoint greets the user.
+
+The model is defined and initialised in [model.py](examples/hello_world/model.py). Firstly we create our model, subclassing `neworder.Model`:
+
+```python
+import neworder
+
+class HelloWorld(neworder.Model):
+
+  def __init__(self):
+    super().__init__(neworder.Timeline.null())
+    self.name = "unknown"
+...
+```
+
+the `modify` method is not implemented in this single-process example. Here's the `step` method:
+
+```python
+...
+  def step(self):
+    self.name = os.getlogin()
+...
+```
+
+the `check` method simply confirms that the username was changed by the step method:
+
+```python
+...
+  def check(self):
+    return self.name != "unknown"
+...
+```
+Note that the this method must return a boolean, if not `True` the neworder runtime will assume an error.
+
+Finally, the `checkpoint` methods prints the greeting:
+
+```
+...
+  def checkpoint(self):
+    neworder.log("Hello %s" % self.name)
+...
+```
+
+### Execution
+
+The model is run by first initialising the module
+
+```python
+neworder.module_init(verbose=True)
+```
+
+then constructing the model
+
+```python
+hello_world = HelloWorld()
+```
+
+and invoking it like so
+
+```
+neworder.run(hello_world)
+```
+
+### Output
+
+The model will output something like
 
 ```text
 [py 0/1] Hello neworder_user
 ```
 or if you change the `verbose` argument, 
 
-```
+```text
 [no 0/1] neworder 1.0.0/module python 3.8.2 (default, Jul 16 2020, 14:00:26)  [GCC 9.3.0] env={indep:1, verbose:1}
 [no 0/1] model init: mc={indep:1, seed:19937}
 [no 0/1] starting model run. start time=0.000000, timestep=0.000000, checkpoint(s) at [1]
@@ -29,23 +109,6 @@ this output is explained below.
 
 The API reference can be found [here](./reference.md)
 
-### Input
-
-The `neworder` framework expects an instance of a `Model` class, which in turn requires a `Timeline` object.
-
-Not all models require an explicit discrete timeline (like this one), so a method is provided to construct a dummy timeline (which is a single step of length zero). 
-
-The model class provided is a base class from which the user should subclass, implemention the following class methods:
-
-- a constructor that initialises the base class with a timeline.
-- optionally, a `modify` method which is used to 
-- a `step` method that governs the evolution of the model
-- optionally, a `check` method which is executed after each step
-- a `checkpoint` method which is run at certain timesteps, and always on the final step.
-
-The model is defined and initialised in [model.py](examples/hello_world/model.py). 
-
-### Output
 
 The log output from *neworder* is prefixed with a source identifier in square brackets, containing the following information for debugging purposes:
 

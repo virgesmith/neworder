@@ -5,8 +5,6 @@ from matplotlib import pyplot as plt
 import neworder
 import ethpop
 
-# A more "pythonic" approach using pandas DataFrames
-
 class People(neworder.Model):
   """ A simple aggregration of Persons each represented as a row in a data frame """
   def __init__(self, timeline, fertility_hazard_file, mortality_hazard_file, lad, ethnicity, n):
@@ -43,24 +41,23 @@ class People(neworder.Model):
 
 
   def plot(self):
-    buckets = range(self.max_rate_age + 10)
+    buckets = range(50)
 
     # add some time on the end to capture (most of) those who die over the max simulation age
-    plt.hist(self.population.TimeOfDeath, buckets, color='black')
+    #plt.hist(self.population.TimeOfDeath, buckets, color='black')
+
     b = [ self.population.TimeOfBaby1[~np.isnan(self.population.TimeOfBaby1)],
           self.population.TimeOfBaby2[~np.isnan(self.population.TimeOfBaby2)],
           self.population.TimeOfBaby3[~np.isnan(self.population.TimeOfBaby3)],
           self.population.TimeOfBaby4[~np.isnan(self.population.TimeOfBaby4)] ]
     plt.hist(b, buckets, stacked=True)
     #plt.savefig("./doc/examples/img/competing_hist_100k.png")
-    plt.legend(["Death", "Birth 1", "Birth 2", "Birth 3", "Birth 4"])
+    plt.legend(["Birth 1", "Birth 2", "Birth 3", "Birth 4"])
     plt.xlabel("Age (y)")
     plt.ylabel("Frequency")
     plt.show()
 
   def age(self):
-    # sample times
-
     self.population["TimeOfDeath"] = self.mc().first_arrival(self.mortality_hazard.Rate.values, 1.0, len(self.population))
 
     #neworder.timeline.dt()

@@ -9,8 +9,6 @@ It subclasses neworder.Model adds implements a toy model which
 import os
 import neworder
 
-neworder.module_init(verbose=True)
-
 class HelloWorld(neworder.Model):
   """
   This model extends the builtin neworder.Model class by providing implementations of the following methods:
@@ -69,6 +67,8 @@ class HelloWorld(neworder.Model):
     Returns: NoneType
     """
     neworder.log("Hello %s" % self.name)
+
+neworder.module_init(verbose=True)
 
 # construct the model
 hello_world = HelloWorld()

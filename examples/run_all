@@ -9,6 +9,7 @@
 ./run_example.sh people
 ./run_example.sh riskpaths
 ./run_example.sh schelling
+./run_example.sh option
 
 # parallel embedded
 ./run_example.sh test 2

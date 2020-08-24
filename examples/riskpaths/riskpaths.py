@@ -115,6 +115,12 @@ class RiskPaths(neworder.Model):
     neworder.log("pregnancy ratio = %f" % np.mean(self.population.Parity == Parity.PREGNANT))
 
   def plot(self):
+    # Below line emits:
+    # /mnt/data/home/az/dev/neworder/.venv-focal/lib/python3.8/site-packages/numpy/core/_asarray.py:83:
+    # VisibleDeprecationWarning: Creating an ndarray from ragged nested sequences (which is a list-or-tuple of
+    # lists-or-tuples-or ndarrays with different lengths or shapes) is deprecated. If you meant to do this, you
+    # must specify 'dtype=object' when creating the ndarray
+    # return array(a, dtype, copy=False, order=order)
     b = [ self.population.T_Union1Start[~neworder.time.isnever(self.population.T_Union1Start.values)],
           self.population.T_Union1End[~neworder.time.isnever(self.population.T_Union1End.values)],
           self.population.T_Union2Start[~neworder.time.isnever(self.population.T_Union2Start.values)],
