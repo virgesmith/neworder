@@ -13,7 +13,7 @@ import data
 class RiskPaths(neworder.Model):
   def __init__(self, timeline, n):
 
-    super().__init__(timeline)
+    super().__init__(timeline, neworder.MonteCarlo.deterministic_identical_seed)
 
     # initialise population - time of death only
     self.population = pd.DataFrame(data={"TimeOfDeath": self.mc().first_arrival(data.mortality_rate, timeline.dt(), n, 0.0),

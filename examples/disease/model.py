@@ -25,7 +25,7 @@ from graphics import Graphics
 class DiseaseModel(neworder.Model):
   def __init__(self, days, dt, npeople):
 
-    super().__init__(neworder.Timeline(0, days, [int(days/dt)]))
+    super().__init__(neworder.Timeline(0, days, [int(days/dt)]), neworder.MonteCarlo.deterministic_identical_seed)
 
     n = self.timeline().nsteps()
 

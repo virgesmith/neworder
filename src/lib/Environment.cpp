@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <string>
 
-
+#ifdef NEWORDER_EMBEDDED
 // This function must be used to init the embedded environment
 no::Environment& no::Environment::init(int rank, int size, bool verbose)
 {
@@ -19,15 +19,14 @@ no::Environment& no::Environment::init(int rank, int size, bool verbose)
   // verbose flag
   env.m_verbose = verbose;
 
-#ifdef NEWORDER_EMBEDDED
   // set init flag (before any possible log message)
   env.m_init = true;
   env.m_rank = rank;
   env.m_size = size;
   no::log("neworder %%/embedded python %%"_s % module_version() % python_version());
-#endif
   return env;
 }
+#endif //NEWORDER_EMBEDDED
 
 
 // syntactic sugar
@@ -84,9 +83,9 @@ no::Environment::Environment() : m_init(true), m_verbose(true)
   {
     m_rank = 0;
     m_size = 1;
+    // verbose initially set to true so that this message is logged
     no::log("mpi4py module not found, assuming serial mode");
   }
-  // 
   m_verbose = false;
 } 
 #endif

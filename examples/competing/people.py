@@ -9,7 +9,7 @@ class People(neworder.Model):
   """ A simple aggregration of Persons each represented as a row in a data frame """
   def __init__(self, timeline, fertility_hazard_file, mortality_hazard_file, lad, ethnicity, n):
 
-    super().__init__(timeline)
+    super().__init__(timeline, neworder.MonteCarlo.deterministic_identical_seed)
 
     # initialise cohort
     # filter by location, ethnicity and gender
@@ -34,11 +34,9 @@ class People(neworder.Model):
   def step(self):
     self.age()
 
-
   def checkpoint(self):
     self.stats()
     self.plot()
-
 
   def plot(self):
     buckets = range(50)

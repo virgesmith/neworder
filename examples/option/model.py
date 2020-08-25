@@ -10,8 +10,6 @@ from option import Option
 from market import Market
 from black_scholes import BlackScholes
 
-# TODO track down ~0.5% systematic error
-
 #neworder.verbose()
 
 # requires 4 identical sims with perturbations to compute market sensitivities (a.k.a. Greeks)
@@ -29,7 +27,7 @@ strike = 100.0
 expiry = 0.75
 
 # rust requires nsims in root namespace (or modify transitions/checkpoints)
-nsims = 100000 # number of prices to simulate
+nsims = 1000000 # number of prices to simulate
 
 # initialisation
 market = Market(spot, rate, divy, vol)

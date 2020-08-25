@@ -40,7 +40,7 @@ class HelloWorld(neworder.Model):
 
   # def modify(self, rank):
   #   """
-  #   For parallel runs only, per-process state modifications can be made before the model, allowing
+  #   For parallel runs only, per-process state modifications can be made before the model runs, allowing
   #   for e.g. sensitivity analysis or splitting datasets across parallel model runs
   #   This method is optional.
   #   Arguments: self, rank (MPI process number)
@@ -82,7 +82,8 @@ class HelloWorld(neworder.Model):
     """
     neworder.log("Hello %s" % self.name)
 
-neworder.verbose()
+# uncomment for verbose output
+#neworder.verbose()
 
 # construct the model
 hello_world = HelloWorld()

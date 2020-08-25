@@ -21,7 +21,6 @@ class BlackScholes(neworder.Model):
     self.nsims = nsims
 
   def modify(self, rank):
-    # hmmm....
     if rank == 1:
       self.market.spot = self.market.spot * 1.01 # delta/gamma up bump
     elif rank == 2:

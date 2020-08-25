@@ -36,8 +36,10 @@ public:
   Environment(const Environment&&) = delete;
   Environment& operator=(const Environment&&) = delete;
 
+#ifdef NEWORDER_EMBEDDED
   // Use this function to create the base environemt
   static Environment& init(int rank, int size, bool verbose = true);
+#endif
 
   // check for errors in the python env (use after catching py::error_already_set)
   static std::string get_error() noexcept;

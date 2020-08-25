@@ -95,19 +95,19 @@ The model will output something like
 or, if you change the `verbose` initialisation argument to `True`, 
 
 ```text
-[no 0/1] neworder 1.0.0/module python 3.8.2 (default, Jul 16 2020, 14:00:26)  [GCC 9.3.0] env={indep:1, verbose:1}
-[no 0/1] model init: mc={indep:1, seed:19937}
+[no 0/1] neworder 1.0.0/module python 3.8.2 (default, Jul 16 2020, 14:00:26)  [GCC 9.3.0]
+[no 0/1] model init: mc={seed:19937}
 [no 0/1] starting model run. start time=0.000000, timestep=0.000000, checkpoint(s) at [1]
 [no 0/1] t=0.000000(0) HelloWorld.modify(0)
 [no 0/1] defaulted to no-op Model::modify()
 [no 0/1] t=0.000000(1) HelloWorld.step()
 [no 0/1] t=0.000000(1) HelloWorld.check() [ok]
 [no 0/1] t=0.000000(1) HelloWorld.checkpoint()
-[py 0/1] Hello az
-[no 0/1] SUCCESS exec time=0.000424s
+[py 0/1] Hello neworder_user
+[no 0/1] SUCCESS exec time=0.000442s
 ```
 
-this output is explained line-by-line below. 
+this output is explained line-by-line below.
 
 The log output is prefixed with a source identifier in square brackets, containing the following information for debugging purposes:
 
@@ -122,8 +122,8 @@ When using `Timeline.null()` the start time, end time and timestep are all zero,
 First we get some information about the environment, and confirmation of the initialisation parameters:
 
 ```
-[no 0/1] neworder 1.0.0/module python 3.8.2 (default, Jul 16 2020, 14:00:26)  [GCC 9.3.0] env={indep:1, verbose:1}
-[no 0/1] model init: mc={indep:1, seed:19937}
+[no 0/1] neworder 1.0.0/module python 3.8.2 (default, Jul 16 2020, 14:00:26)  [GCC 9.3.0]
+[no 0/1] model init: mc={seed:19937}
 [no 0/1] starting model run. start time=0.000000, timestep=0.000000, checkpoint(s) at [1]
 ```
 
@@ -146,7 +146,7 @@ followed by the `check` method:
 [no 0/1] t=0.000000(1) HelloWorld.check() [ok]
 ```
 
-which succeeded (try making it fail and then running the model and also removing the method entirely). Then the single checkpoint is reached:
+which succeeded (try making it fail and then running the model, and also removing the method entirely). Then the single checkpoint is reached:
 
 ```text
 [no 0/1] t=0.000000(1) HelloWorld.checkpoint()
@@ -163,4 +163,3 @@ and finally the model reports its status and execution time:
 ```text
 [no 0/1] SUCCESS exec time=0.000273s
 ```
-
