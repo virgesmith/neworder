@@ -9,23 +9,28 @@
 #include <random>
 #include <algorithm>
 #include <cmath>
+#include <time.h>
 
-namespace {
 
-// compute the RNG seed
-int64_t compute_seed()
+// helper functions for basic seeding strategies
+int64_t no::MonteCarlo::deterministic_independent_seed(int r)
 {
-  int rank = no::getenv().rank();
-  bool indep = no::getenv().indep();
-  // ensure stream (in)dependence w.r.t. sequence and MPI rank/sizes
-  return 19937 + rank * indep;  
+  return 19937 + r;
 }
 
+int64_t no::MonteCarlo::deterministic_identical_seed(int)
+{
+  return 19937;  
+}
+
+int64_t no::MonteCarlo::random_seed(int)
+{
+  return time(NULL);
 }
 
 //
-no::MonteCarlo::MonteCarlo() 
-  : m_seed(compute_seed()), m_prng(m_seed) { }
+no::MonteCarlo::MonteCarlo(int64_t seed) 
+  : m_seed(seed), m_prng(m_seed) { }
 
 
 int64_t no::MonteCarlo::seed() const 

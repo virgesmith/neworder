@@ -9,6 +9,13 @@ It subclasses neworder.Model adds implements a toy model which
 import os
 import neworder
 
+# seeding strategy example as a function
+def _seeder(_):
+  return 19937
+
+# seeding strategy as an anonymous function
+_seeder2 = lambda r: 19937 + r
+
 class HelloWorld(neworder.Model):
   """
   This model extends the builtin neworder.Model class by providing implementations of the following methods:
@@ -25,10 +32,10 @@ class HelloWorld(neworder.Model):
     We create a null timeline, corresponding to a single instantaneous transition,
     and initialised the base class with this
 
-    NB it is *essential* to initialise the base class with a timeline, even if its null.
+    NB it is *essential* to initialise the base class.
     Failing to do so will result in UNDEFINED BEHAVIOUR
     """
-    super().__init__(neworder.Timeline.null())
+    super().__init__(neworder.Timeline.null(), neworder.MonteCarlo.deterministic_independent_seed)
     self.name = None
 
   # def modify(self, rank):
@@ -75,7 +82,7 @@ class HelloWorld(neworder.Model):
     """
     neworder.log("Hello %s" % self.name)
 
-neworder.module_init(verbose=True)
+neworder.verbose()
 
 # construct the model
 hello_world = HelloWorld()

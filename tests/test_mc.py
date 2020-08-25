@@ -3,7 +3,7 @@ import neworder as no
 
 def test_mc():
 
-  model = no.Model(no.Timeline.null())
+  model = no.Model(no.Timeline.null(), no.MonteCarlo.deterministic_identical_seed)
 
   x = model.mc().ustream(1)
   model.mc().reset()

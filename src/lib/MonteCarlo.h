@@ -16,8 +16,16 @@ namespace no {
 class NEWORDER_EXPORT MonteCarlo
 {
 public:
-  // seeds rng using rank/size/indep from environment
-  MonteCarlo();
+
+  // some basic seeding strategies
+  static int64_t deterministic_independent_seed(int r);
+
+  static int64_t deterministic_identical_seed(int);
+
+  static int64_t random_seed(int);
+
+  // constructs given a seed
+  MonteCarlo(int64_t seed);
 
   int64_t seed() const;
 

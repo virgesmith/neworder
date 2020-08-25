@@ -37,7 +37,7 @@ public:
   Environment& operator=(const Environment&&) = delete;
 
   // Use this function to create the base environemt
-  static Environment& init(int rank, int size, bool indep = true, bool verbose = true);
+  static Environment& init(int rank, int size, bool verbose = true);
 
   // check for errors in the python env (use after catching py::error_already_set)
   static std::string get_error() noexcept;
@@ -51,11 +51,8 @@ public:
   // MPI size (1 if serial)
   static int size();
 
-  // independent streams (per rank)? 
-  static bool indep();
-
-  // logging level
-  static bool verbose();
+  // set logging on/off
+  static void verbose(bool b = true);
 
   // returns "py/no rank/size"
   std::string context(int ctx = CPP) const;
@@ -63,6 +60,9 @@ public:
   // returns the neworder env as a python object 
   operator py::object&() { return *m_self; } 
   operator const py::object&() const { return *m_self; } 
+
+  friend void log(const std::string& msg);
+  friend void log(const py::handle& msg);
 
 private:
 
@@ -82,14 +82,8 @@ private:
   int m_rank;
   int m_size;
 
-  // MC mode (false means all processes use the same stream)
-  bool m_indep;
-
   // log level
   bool m_verbose;
-
-  // // seed not directly visible to python
-  // int64_t m_seed;
 
   // TODO work out why this segfaults if the dtor is called (even on exit)
   py::module* m_self;

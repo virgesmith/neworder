@@ -25,8 +25,7 @@ $(INTDIR)/%.o: %.cpp $(INTDIR/%.d)
 
 #TODO $(shell ls ../../tests/*.py) ... then strip .py
 test: testharness$(SUFFIX)
-	PYTHONPATH=.:../../tests:$(PYTHONPATH) LD_LIBRARY_PATH=../lib:$(LD_LIBRARY_PATH) $(MPIEXEC) ./testharness$(SUFFIX) $(MPI_INDEP) module op mpi trans mc
-	PYTHONPATH=.:../../tests:$(PYTHONPATH) LD_LIBRARY_PATH=../lib:$(LD_LIBRARY_PATH) $(MPIEXEC) ./testharness$(SUFFIX) $(MPI_DEP) correlated
+	PYTHONPATH=.:../../tests:$(PYTHONPATH) LD_LIBRARY_PATH=../lib:$(LD_LIBRARY_PATH) $(MPIEXEC) ./testharness$(SUFFIX) $(MPI_INDEP) module op mpi trans mc correlated
 
 clean:
 	rm -rf $(dep) $(obj) testharness$(SUFFIX)

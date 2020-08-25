@@ -4,9 +4,6 @@ import numpy as np
 import pandas as pd
 import neworder as no
 
-# no is already initialised
-#no.module_init(independent=False, verbose=False)
-
 if no.mpi.size() != 1:
 
   from mpi4py import MPI
@@ -71,13 +68,25 @@ if no.mpi.size() != 1:
       assert not np.array_equal(a0, a1)
 
     # base model for MC engine
-    model = no.Model(no.Timeline.null())
+    model = no.Model(no.Timeline.null(), no.MonteCarlo.deterministic_identical_seed)
 
     # # check identical streams (independent=False)
     u = model.mc().ustream(1000)
     v = comm.bcast(u, root=root)
     # u == v on all processes
     assert np.array_equal(u, v)
+
+    # base model for MC engine
+    model = no.Model(no.Timeline.null(), no.MonteCarlo.deterministic_independent_seed)
+
+    # # check identical streams (independent=False)
+    u = model.mc().ustream(1000)
+    v = comm.bcast(u, root=root)
+    # u != v on all non-root processes
+    if no.mpi.rank() != root:
+      assert not np.array_equal(u, v)
+    else:
+      assert np.array_equal(u, v)
 
   #   # test gather
   #   x = (no.mpi.rank() + 1) ** 2 / 8

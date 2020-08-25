@@ -12,7 +12,7 @@ class Environment;
 class NEWORDER_EXPORT Model
 {
 public:
-  Model(Timeline& timeline);
+  Model(Timeline& timeline, const py::function& seeder);
 
   virtual ~Model() = default;
 

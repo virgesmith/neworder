@@ -7,11 +7,13 @@
 #include "Environment.h"
 #include "Inspect.h"
 
+#include <pybind11/pybind11.h>
 
-no::Model::Model(Timeline& timeline) 
-  : m_timeline(timeline), m_monteCarlo()
-{ 
-  no::log("model init: mc={indep:%%, seed:%%}"_s % no::getenv().indep() % m_monteCarlo.seed());
+no::Model::Model(Timeline& timeline, const py::function& seeder) 
+  : m_timeline(timeline), m_monteCarlo(seeder(no::getenv().rank()).cast<int64_t>())
+{
+  no::log("neworder %%/module python %%"_s % module_version() % python_version());
+  no::log("model init: mc={seed:%%}"_s % m_monteCarlo.seed());
 }
 
 

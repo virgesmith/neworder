@@ -36,7 +36,6 @@ void test_env()
   CHECK(neworder.attr("mpi").attr("size")().cast<int>() == 1);
 
   // const py::object& mc = neworder.attr("mc"); 
-  // CHECK(m.mc().indep());
   // CHECK(m.mc().seed() == 19937);
   // //CHECK(mc.attr("indep")().cast<bool>());
   // //CHECK(mc.attr("seed")().cast<int>() == 19937);

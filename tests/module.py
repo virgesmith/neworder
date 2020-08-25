@@ -34,7 +34,7 @@ def test():
   t.check(no.time.isnever(no.time.never()))
 
   # construct a base model
-  model = no.Model(no.Timeline.null())
+  model = no.Model(no.Timeline.null(), no.MonteCarlo.deterministic_identical_seed)
 
   s = model.mc().ustream(10000)
   t.check(isinstance(s, np.ndarray))

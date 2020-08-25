@@ -6,4 +6,4 @@
 void append_model_paths(const char* paths[], size_t n);
 
 // main entry point
-int run(int rank, int size, bool indep, bool verbose);
+int run(int rank, int size, bool verbose);

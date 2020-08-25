@@ -107,7 +107,7 @@ PYBIND11_MODULE(neworder, m)
 #else
    .def("embedded", [](){ return false; })
 #endif
-   .def("verbose", no::Environment::verbose);
+   .def("verbose", no::Environment::verbose, py::arg("verbose") = true);
 
   // time-related module
   m.attr("time") = py::module("time")
@@ -136,7 +136,7 @@ PYBIND11_MODULE(neworder, m)
 
   // Microsimulation (or ABM) model class
   py::class_<no::Model>(m, "Model")
-    .def(py::init<no::Timeline&>())
+    .def(py::init<no::Timeline&, const py::function&>())
     .def("timeline", &no::Model::timeline, py::return_value_policy::reference)
     .def("mc", &no::Model::mc, py::return_value_policy::reference)
     .def("modify", &no::Model::modify)
@@ -147,7 +147,9 @@ PYBIND11_MODULE(neworder, m)
 
   // MC
   py::class_<no::MonteCarlo>(m, "MonteCarlo")
-  //.def(py::init<uint32_t>()); // no ctor visible to python  
+    .def_static("deterministic_identical_seed", &no::MonteCarlo::deterministic_identical_seed)
+    .def_static("deterministic_independent_seed", &no::MonteCarlo::deterministic_independent_seed)
+    .def_static("random_seed", &no::MonteCarlo::random_seed)
     .def("seed", &no::MonteCarlo::seed)  
     .def("reset", &no::MonteCarlo::reset)  
     .def("ustream", &no::MonteCarlo::ustream)
@@ -169,8 +171,7 @@ PYBIND11_MODULE(neworder, m)
         return mc.next_arrival(startingpoints, lambda_t, dt, false, 0.0); 
       })
     .def("__repr__", [](const no::MonteCarlo& mc) {
-        return "<neworder.MonteCarlo indep=%% seed=%%>"_s 
-          % no::getenv().indep() % mc.seed();
+        return "<neworder.MonteCarlo seed=%%>"_s  % mc.seed();
       });
 
     // .def("first_arrival", [](no::MonteCarlo& mc, const py::array& lambda_t, double dt, size_t n) { 
@@ -195,7 +196,6 @@ PYBIND11_MODULE(neworder, m)
   m.attr("mpi") = py::module("mpi", "multiprocess communication")
     .def("rank", no::Environment::rank)
     .def("size", no::Environment::size)
-    .def("indep", no::Environment::indep)
 #ifdef NEWORDER_EMBEDDED
     .def("send", no::mpi::send_obj)
     .def("receive", no::mpi::receive_obj)
@@ -206,14 +206,8 @@ PYBIND11_MODULE(neworder, m)
     .def("scatter", no::mpi::scatter_array)
     .def("allgather", no::mpi::allgather_array, py::return_value_policy::take_ownership)
     .def("sync", no::mpi::sync);
-  // do-nothing init for embedded mode (init will have already happened)
-  m.def("module_init", [](bool, bool) {}, 
-    py::arg("independent") = true, py::arg("verbose") = false);
 #else
     ;
-  // rank/size are set via mpi4py
-  m.def("module_init", [](bool independent, bool verbose) { no::Environment::init(-1, -1, independent, verbose); }, 
-    py::arg("independent") = true, py::arg("verbose") = false );
 #endif
 
   // Example of wrapping an STL container

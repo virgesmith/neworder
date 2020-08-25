@@ -14,11 +14,12 @@ def test():
     return True
 
   # base model for testing MC engine
-  model = neworder.Model(neworder.Timeline.null())
-  neworder.log(model)
+  model = neworder.Model(neworder.Timeline.null(), neworder.MonteCarlo.deterministic_identical_seed)
 
+  seed = model.mc().seed()
+  seed0 = neworder.mpi.broadcast(seed, 0)
+  t.check(seed == seed0)
   # test ustream/sequence
-  t.check(not neworder.mpi.indep())
 
   u = model.mc().ustream(1000)
   v = neworder.mpi.broadcast(u, 0)

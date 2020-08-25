@@ -8,7 +8,7 @@ import neworder
 
 class Test(neworder.Model):
   def __init__(self, timeline, p, n):
-    super().__init__(timeline)
+    super().__init__(timeline, neworder.MonteCarlo.deterministic_identical_seed)
     # states
     self.s = np.array(range(neworder.mpi.size()))
     # transition matrix

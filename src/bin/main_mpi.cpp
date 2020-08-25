@@ -18,11 +18,10 @@ int main(int argc, const char* argv[])
               << "and <extra-path> is an option directory containing any other modules required by the model." << std::endl;
     exit(1);
   }
-  bool indep = std::atoi(argv[1]) == 1;
 
   append_model_paths(&argv[2], argc-2);
 
   MPIResource mpi(&argc, &argv);
 
-  run(mpi.rank(), mpi.size(), indep, true);
+  run(mpi.rank(), mpi.size(), true);
 }

@@ -8,7 +8,7 @@ from people import People
 from plot import plot
 
 # serial mode
-neworder.module_init(verbose=True)
+neworder.verbose()
 
 max_age = 100.0
 

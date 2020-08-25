@@ -14,7 +14,7 @@ class BlackScholes(neworder.Model):
 
     # Using exact MC calc of GBM requires only 1 timestep
     timeline = neworder.Timeline(0.0, option.expiry, [1])
-    super().__init__(timeline)
+    super().__init__(timeline, neworder.MonteCarlo.deterministic_identical_seed)
 
     self.option = option
     self.market = market
@@ -41,6 +41,7 @@ class BlackScholes(neworder.Model):
     # get the time from the environment
     dt = self.timeline().time()
     normals = nstream(self.mc().ustream(self.nsims))
+
     # compute underlying prices at dt
     S = self.market.spot
     r = self.market.rate
@@ -64,6 +65,8 @@ class BlackScholes(neworder.Model):
     q = self.market.divy
     T = self.option.expiry
     vol = self.market.vol
+
+    #neworder.log("%f %f %f %f %f %f" % (S, K, r, q, T, vol))
 
     srt = vol * sqrt(T)
     rqs2t = (r - q + 0.5 * vol * vol) * T

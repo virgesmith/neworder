@@ -7,7 +7,7 @@ import os
 import subprocess
 import neworder
 
-neworder.module_init(True, True)
+neworder.verbose()
 
 class Diagnostics(neworder.Model):
   """
@@ -15,7 +15,7 @@ class Diagnostics(neworder.Model):
   and a ends by starting an interactive shell
   """
   def __init__(self, *args):
-    super().__init__(neworder.Timeline.null())
+    super().__init__(neworder.Timeline.null(), neworder.MonteCarlo.deterministic_independent_seed)
 
 
   def step(self):

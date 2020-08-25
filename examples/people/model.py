@@ -6,8 +6,6 @@ import neworder
 
 from population import Population
 
-# serial mode
-neworder.module_init(verbose=False)
 
 # define some global variables describing where the starting population and the parameters of the dynamics come from
 initial_population = "examples/people/ssm_E08000021_MSOA11_ppp_2011.csv"

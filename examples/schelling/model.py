@@ -3,7 +3,7 @@ import neworder
 from schelling import Schelling
 
 # serial mode
-neworder.module_init(verbose=True)
+neworder.verbose()
 
 # category 0 is empty
 gridsize = [100,125]

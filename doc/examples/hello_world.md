@@ -1,6 +1,8 @@
 # Hello World
 
-This simplest example is illustrates of the structure required, and how it fits together. All the code is extensively commented. The code can be run like so:
+This simplest example illustrates the structure required, how it fits together and how it's executed by the framework. The annotated python code can be found here: [examples/hello_world/model.py](examples/hello_world/model.py). 
+
+To run the model:
 
 ```bash
 python examples/hello_world/model.py
@@ -22,7 +24,7 @@ This model doesn't require an explicit discrete timeline, so for models of this 
 
 This (somewhat contrived) example initialised a model with a username, which is initially unknown. The single step of the model queries the OS for the user's name, and the checkpoint greets the user.
 
-The model is defined and initialised in [model.py](examples/hello_world/model.py). Firstly we create our model, subclassing `neworder.Model`:
+Firstly we create our model class, subclassing `neworder.Model`:
 
 ```python
 import neworder
@@ -31,11 +33,11 @@ class HelloWorld(neworder.Model):
 
   def __init__(self):
     super().__init__(neworder.Timeline.null())
-    self.name = "unknown"
+    self.name = None
 ...
 ```
 
-the `modify` method is not implemented in this single-process example. Here's the `step` method:
+the `modify` method is not relevant in this single-process example so it not implemented. Here's the `step` method:
 
 ```python
 ...
@@ -44,12 +46,12 @@ the `modify` method is not implemented in this single-process example. Here's th
 ...
 ```
 
-the `check` method simply confirms that the username was changed by the step method:
+and the `check` method simply confirms that the username was changed by the step method:
 
 ```python
 ...
   def check(self):
-    return self.name != "unknown"
+    return self.name is not None
 ...
 ```
 
@@ -64,27 +66,23 @@ Finally, the `checkpoint` methods prints the greeting:
 ...
 ```
 
-using the `neworder.log` function is preferred to plain `print` statements as they add useful context for debugging purposes.
+using the `neworder.log` function is preferred to plain `print` statements as they add useful context for debugging purposes. The API reference can be found [here](./reference.md)
 
 ### Execution
 
-The model is run by first initialising the module
-
-```python
-neworder.module_init(verbose=False)
-```
-
-then constructing the model
+The model is run by first constructing an instance of our model
 
 ```python
 hello_world = HelloWorld()
 ```
 
-and invoking it like so
+then invoking it like so
 
 ```python
-neworder.run(hello_world)
+ok = neworder.run(hello_world)
 ```
+
+which returns a boolean, `True` for success.
 
 ### Output
 
@@ -93,34 +91,10 @@ The model will output something like
 ```text
 [py 0/1] Hello neworder_user
 ```
-or if you change the `verbose` initialisation argument to `True`, 
+
+or, if you change the `verbose` initialisation argument to `True`, 
 
 ```text
-[no 0/1] neworder 1.0.0/module python 3.8.2 (default, Jul 16 2020, 14:00:26)  [GCC 9.3.0] env={indep:1, verbose:1}
-[no 0/1] model init: mc={indep:1, seed:19937}
-[no 0/1] starting model run. start time=0.000000, timestep=0.000000, checkpoint(s) at [1]
-[no 0/1] t=0.000000(0) calling: <__main__.HelloWorld object at 0x7f642ca367c0>.modify(0)
-[no 0/1] defaulted to no-op Model::modify()
-[no 0/1] t=0.000000(1) calling <__main__.HelloWorld object at 0x7f642ca367c0>.transition()
-[no 0/1] t=0.000000(1) calling <__main__.HelloWorld object at 0x7f642ca367c0>.check()
-[no 0/1] t=0.000000(1) calling <__main__.HelloWorld object at 0x7f642ca367c0>.checkpoint()
-[py 0/1] Hello neworder_user
-[no 0/1] SUCCESS exec time=0.000279s
-
-```
-
-this output is explained below.
-
-The API reference can be found [here](./reference.md)
-
-The log output from *neworder* is prefixed with a source identifier in square brackets, containing the following information for debugging purposes:
-
-- Source of message: `no` if logged from the framework itself, `py` if logged from python code (via the `neworder.log()` function). The former are only displayed in verbose mode.
-
-- the process id ('rank' in MPI parlance) and the total number of processes ('size' in MPI parlance) - in serial mode these default to 0/1.
-
-```bash
-$ python examples/hello_world/model.py 
 [no 0/1] neworder 1.0.0/module python 3.8.2 (default, Jul 16 2020, 14:00:26)  [GCC 9.3.0] env={indep:1, verbose:1}
 [no 0/1] model init: mc={indep:1, seed:19937}
 [no 0/1] starting model run. start time=0.000000, timestep=0.000000, checkpoint(s) at [1]
@@ -132,6 +106,14 @@ $ python examples/hello_world/model.py
 [py 0/1] Hello az
 [no 0/1] SUCCESS exec time=0.000424s
 ```
+
+this output is explained line-by-line below. 
+
+The log output is prefixed with a source identifier in square brackets, containing the following information for debugging purposes:
+
+- Source of message: `no` if logged from the framework itself, `py` if logged from python code (via the `neworder.log()` function). The former are only displayed in verbose mode.
+
+- the process id ('rank' in MPI parlance) and the total number of processes ('size' in MPI parlance) - in serial mode these default to 0/1.
 
 ### Understanding the workflow and the output
 
@@ -164,7 +146,7 @@ followed by the `check` method:
 [no 0/1] t=0.000000(1) HelloWorld.check() [ok]
 ```
 
-which succeeded (try making it fail and then running the model). Then the single checkpoint is reached:
+which succeeded (try making it fail and then running the model and also removing the method entirely). Then the single checkpoint is reached:
 
 ```text
 [no 0/1] t=0.000000(1) HelloWorld.checkpoint()
@@ -182,4 +164,3 @@ and finally the model reports its status and execution time:
 [no 0/1] SUCCESS exec time=0.000273s
 ```
 
-The python code can be found here: [examples/hello_world/model.py](examples/hello_world/model.py). 

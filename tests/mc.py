@@ -17,7 +17,7 @@ def test():
   t = test_.Test()
 
   # base model for MC engine
-  model = no.Model(no.Timeline.null())
+  model = no.Model(no.Timeline.null(), no.MonteCarlo.deterministic_identical_seed)
 
   n = 10000
   # 10% constant hazard for 10 time units, followed by zero

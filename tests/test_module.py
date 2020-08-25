@@ -5,7 +5,7 @@ import neworder as no
 class _TestModel(no.Model):
   def __init__(self):
     # 10 steps of 10 with checkpoint at 50 and 100
-    super().__init__(no.Timeline(0,100,[5,10]))
+    super().__init__(no.Timeline(0,100,[5,10]), no.MonteCarlo.deterministic_identical_seed)
 
     self.step_count = 0
     self.checkpoint_count = 0
@@ -20,6 +20,14 @@ class _TestModel(no.Model):
 @pytest.fixture
 def model():
   return _TestModel()
+
+def test_basics():
+  # just check you can call the functions
+  no.name()
+  no.version()
+  no.python()
+  no.log("testing")
+  assert not no.embedded()
 
 def test_time(model):
   t = -1e10

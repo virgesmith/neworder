@@ -38,8 +38,8 @@ jobs:
       - python setup.py install
       - python setup.py test
       - mpiexec -n 2 pytest
-      - make PY_CFG=python-config PY_CFG_LINK_ARG="" && make test
-      - make PY_CFG=python-config PY_CFG_LINK_ARG="" -f MPI.mk && make -f MPI.mk test
+      # - make PY_CFG=python-config PY_CFG_LINK_ARG="" && make test
+      # - make PY_CFG=python-config PY_CFG_LINK_ARG="" -f MPI.mk && make -f MPI.mk test
 
     - language: python
       python: 3.7
@@ -52,8 +52,8 @@ jobs:
       - python setup.py install
       - python setup.py test
       - mpiexec -n 2 pytest
-      - make PY_CFG=python-config PY_CFG_LINK_ARG="" && make test
-      - make PY_CFG=python-config PY_CFG_LINK_ARG="" -f MPI.mk && make -f MPI.mk test
+      # - make PY_CFG=python-config PY_CFG_LINK_ARG="" && make test
+      # - make PY_CFG=python-config PY_CFG_LINK_ARG="" -f MPI.mk && make -f MPI.mk test
 
     - language: python
       python: 3.8

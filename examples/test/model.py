@@ -1,7 +1,7 @@
 import neworder
 from test import Test
 
-neworder.module_init(verbose=True, independent=False)
+neworder.verbose()
 
 # must be MPI enabled
 assert neworder.mpi.size() > 1, "This configuration requires MPI with >1 process"

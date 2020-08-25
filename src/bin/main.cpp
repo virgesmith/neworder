@@ -17,6 +17,6 @@ int main(int argc, const char* argv[])
   append_model_paths(&argv[1], argc-1);
   
   // single-process
-  return run(0, 1, true, true);
+  return run(0, 1, true);
 }
 
