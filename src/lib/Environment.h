@@ -36,10 +36,8 @@ public:
   Environment(const Environment&&) = delete;
   Environment& operator=(const Environment&&) = delete;
 
-#ifdef NEWORDER_EMBEDDED
-  // Use this function to create the base environemt
+  // initialises the environment
   static Environment& init(int rank, int size, bool verbose = true);
-#endif
 
   // check for errors in the python env (use after catching py::error_already_set)
   static std::string get_error() noexcept;
@@ -63,8 +61,8 @@ public:
   operator py::object&() { return *m_self; } 
   operator const py::object&() const { return *m_self; } 
 
-  friend void log(const std::string& msg);
-  friend void log(const py::handle& msg);
+  friend void log(const std::string& msg, bool);
+  friend void log(const py::handle& msg, bool);
 
 private:
 

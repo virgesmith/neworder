@@ -27,15 +27,15 @@ std::string to_string_impl(const std::string& v)
 }
 
 // not visible to python
-void no::log(const std::string& msg)
+void no::log(const std::string& msg, bool override_verbose)
 {
-  if (no::getenv().m_verbose)
+  if (override_verbose || no::getenv().m_verbose)
     std::cout << no::getenv().context() << msg << std::endl;
 }
 
 // not visible to python
-void no::log(const py::handle& msg)
+void no::log(const py::handle& msg, bool override_verbose)
 {
-  if (no::getenv().m_verbose)
+  if (override_verbose || no::getenv().m_verbose)
     std::cout << no::getenv().context() << msg << std::endl;
 }

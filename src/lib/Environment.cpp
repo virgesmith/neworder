@@ -6,27 +6,40 @@
 #include <algorithm>
 #include <string>
 
-#ifdef NEWORDER_EMBEDDED
 // This function must be used to init the embedded environment
 no::Environment& no::Environment::init(int rank, int size, bool verbose)
 {
   // get static instance
   Environment& env = no::getenv();
 
-  if (env.m_init)
-    throw std::runtime_error("Module must only be initialised once per process");
-
   // verbose flag
   env.m_verbose = verbose;
 
+#ifdef NEWORDER_EMBEDDED
   // set init flag (before any possible log message)
-  env.m_init = true;
   env.m_rank = rank;
   env.m_size = size;
   no::log("neworder %%/embedded python %%"_s % module_version() % python_version());
+#else
+  // this hangs on throw when this code is in the (global singleton) constructor
+  try 
+  {
+    py::module mpi = py::module::import("mpi4py.MPI");
+    py::object comm = mpi.attr("COMM_WORLD");
+    env.m_rank = comm.attr("Get_rank")().cast<int>();
+    env.m_size = comm.attr("Get_size")().cast<int>();
+  }
+  catch(const py::error_already_set&)
+  {
+    env.m_rank = 0;
+    env.m_size = 1;
+    // override verbose 
+    env.get_error(); // flush the error
+    no::log("WARNING: mpi4py module not found, assuming serial mode", true);
+  }
+#endif
   return env;
 }
-#endif //NEWORDER_EMBEDDED
 
 
 // syntactic sugar
@@ -70,22 +83,8 @@ no::Environment::Environment() : m_init(false) , m_gil{} // TODO does it still? 
   sys_modules["neworder"] = *m_self;
 } 
 #else
-no::Environment::Environment() : m_init(true), m_verbose(true) 
+no::Environment::Environment() : m_init(false), m_verbose(true) 
 {
-  try 
-  {
-    py::module mpi = py::module::import("mpi4py.MPI");
-    py::object comm = mpi.attr("COMM_WORLD");
-    m_rank = comm.attr("Get_rank")().cast<int>();
-    m_size = comm.attr("Get_size")().cast<int>();
-  }
-  catch(const py::error_already_set&)
-  {
-    m_rank = 0;
-    m_size = 1;
-    // verbose initially set to true so that this message is logged
-    no::log("mpi4py module not found, assuming serial mode");
-  }
   m_verbose = false;
 } 
 #endif

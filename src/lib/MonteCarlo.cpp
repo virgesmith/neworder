@@ -23,9 +23,9 @@ int64_t no::MonteCarlo::deterministic_identical_seed(int)
   return 19937;  
 }
 
-int64_t no::MonteCarlo::random_seed(int)
+int64_t no::MonteCarlo::random_seed(int r)
 {
-  return time(NULL);
+  return time(NULL) * (1 + r) + (int64_t)(&r);
 }
 
 //

@@ -208,6 +208,9 @@ PYBIND11_MODULE(neworder, m)
     .def("sync", no::mpi::sync);
 #else
     ;
+
+    no::Environment::init(-1, -1, false);
+
 #endif
 
   // Example of wrapping an STL container
