@@ -74,11 +74,14 @@ python setup.py test
 ```
 
 and in parallel by running in MPI:  
+
 ```bash
 mpiexec -n 2 pytest
 # or 
 mpiexec -n 2 python setup.py test
 ```
+
+Important note: if the parallel tests are invoked without an installed `mpi4py` package, they will run as if in serial mode which won't invoke the parallel tests. If in doubt check the test log for warnings.
 
 ### Run Examples
 

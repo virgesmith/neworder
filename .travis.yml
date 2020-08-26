@@ -18,12 +18,12 @@ jobs:
         conda create -q -n test-environment python=3.8
         source activate test-environment      
       install:
-        - conda install gxx_linux-64 openssl mpich numpy pandas pybind11 pytest
+        - conda install gxx_linux-64 mpich numpy pandas pybind11 pytest mpi4py
       script:
       - |
         python setup.py install
-        pytest -v
-        mpiexec -n 2 $(which pytest) -v
+        pytest -sv
+        mpiexec -n 2 $(which pytest) -sv
       #  make && make test
       #  make -f MPI.mk && make -f MPI.mk test
 
@@ -37,7 +37,7 @@ jobs:
       script:
       - python setup.py install
       - python setup.py test
-      - mpiexec -n 2 pytest
+      - mpiexec -n 2 pytest -sv
       # - make PY_CFG=python-config PY_CFG_LINK_ARG="" && make test
       # - make PY_CFG=python-config PY_CFG_LINK_ARG="" -f MPI.mk && make -f MPI.mk test
 
@@ -51,7 +51,7 @@ jobs:
       script:
       - python setup.py install
       - python setup.py test
-      - mpiexec -n 2 pytest
+      - mpiexec -n 2 pytest -sv
       # - make PY_CFG=python-config PY_CFG_LINK_ARG="" && make test
       # - make PY_CFG=python-config PY_CFG_LINK_ARG="" -f MPI.mk && make -f MPI.mk test
 
@@ -65,7 +65,7 @@ jobs:
       script:
       - python setup.py install
       - python setup.py test
-      - mpiexec -n 2 pytest
+      - mpiexec -n 2 pytest -sv
       - make PY_CFG=python-config PY_CFG_LINK_ARG="" && make test
       - make PY_CFG=python-config PY_CFG_LINK_ARG="" -f MPI.mk && make -f MPI.mk test
 
@@ -81,7 +81,7 @@ jobs:
       #  - python3 -m pip install numpy distutils pytest
       install: 
         - pip3 install --upgrade pip
-        - pip3 install pandas
+        - pip3 install pandas mpi4py
       script:
         - python3 setup.py install
         - python3 setup.py test
