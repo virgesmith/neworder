@@ -62,7 +62,7 @@ public:
   operator const py::object&() const { return *m_self; } 
 
   friend void log(const std::string& msg, bool);
-  friend void log(const py::handle& msg, bool);
+  friend NEWORDER_EXPORT void log(const py::handle& msg, bool);
 
 private:
 
