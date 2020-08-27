@@ -6,10 +6,12 @@ if [ "$#" != "1" ] && [ "$#" != "2" ] && [ "$#" != "3" ]; then
   exit 1
 fi
 
+# always use mpi
+suffix=_mpi
+
 # serial mode
 if [ "$#" != "1" ]; then
-  mpi="mpirun -n $2"
-  suffix=_mpi
+  mpi="mpiexec -n $2"
   indep=1
   if [ "$3" == "-c" ]; then
     indep=0

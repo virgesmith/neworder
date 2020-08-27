@@ -6,84 +6,59 @@ TODO update...
 
 The neworder python module defines the following symbols within the `neworder` namespace:
 
-name                        | type        | description
-----------------------------|-------------|--------------
-[`Timeline`](#timeline)     | class       | defines the timeline over which the model is run
-[`MonteCarlo`](#montecarlo) | class       | random number generation and sampling functionality
-`Model`                     | class       | the base class from which all models should be derived from
-`time`                      | module      | time-related functionality
-`stats`                     | module      | statistical functions
-`dataframe`                 | module      | direct, fast manipulation of pandas DataFrames
-`mpi`                       | module      | inter-process communication
-`log`                       | function    | prints output with annotations
-`version`                   | function    | reports the version of the embedded environment
-`python`                    | function    | reports the python version used in the embedded environment
-`shell`                     | function    | invokes an interactive python shell for debugging (embedded mode only)
+name                                 | type        | description
+-------------------------------------|-------------|--------------
+[`Timeline`](#neworder.timeline)     | class       | defines the timeline over which the model is run
+[`MonteCarlo`](#neworder.montecarlo) | class       | random number generation and sampling functionality
+`Model`](#neworder.model)                     | class       | the base class from which all models should be derived from
+`time`](#neworder.time)                      | module      | time-related functionality
+`stats`](#neworder.montecarlo)                     | module      | statistical functions
+`dataframe`](#neworder.montecarlo)                 | module      | direct, fast manipulation of pandas DataFrames
+`mpi`](#neworder.montecarlo)                       | module      | inter-process communication
+`log`](#neworder.montecarlo)                       | function    | prints output with annotations
+`version`](#neworder.montecarlo)                   | function    | reports the version of the embedded environment
+`python`](#neworder.montecarlo)                    | function    | reports the python version used in the embedded environment
+`shell`](#neworder.montecarlo)                     | function    | invokes an interactive python shell for debugging (embedded mode only)
 
+## Classes
 
-## Timeline
+## `neworder.Timeline`
 
-The `Timeline` class describes a timeline containing one of more checkpoints.
+The `Timeline` class describes a timeline containing one of more checkpoints. The timeline can refer to either absolute time, or to the age of the cohort being modelled for case-based models.
 
-The final value in checkpoints must be a list, e.g. Timeline(2020, 2050, [10, 20, 30]) will start the simulation at 2020 and end at 2050 with a yearly timestep and checkpoints at 2030, 2040 and 2050.
+The final value in checkpoints must be a list, e.g. `Timeline(2020, 2050, [10, 20, 30])` will start the simulation at 2020 and end at 2050 with a yearly timestep and checkpoints at 2030, 2040 and 2050. Likewise, `Timeline(0.0, 100.0, [100])` could represent an age range of 0-100 with one-year steps, and a single checkpoint at age 100.
 
-To generate a 'null' timeline, which is useful for case-based models use
+To generate a 'null' timeline, which is useful for continuous-time models use
 
-```
+```python
 timeline = Timeline.null()
 ```
 
 which is equivalent to `Timeline(0, 0, [1])`.
 
-The timeline is incremented internally by the neworder Model object and is not modifiable in python code once instantiated. The following accessors are provided:
+The timeline is incremented internally by the neworder Model object during the model run and is not directly modifiable in python code once instantiated. The following accessors are provided:
 
 name                | description
 --------------------|------------------------------------
 `null()`            | construct null timeline, as above
+`at_checkpoint()`   | returns `True` if the current step is a checkpoint, `False` otherwise
 `at_end()`          | returns `True` if the end of the timeline has been reaches, `False` otherwise
 `dt()`              | returns the size of the timestep
-`index()`           | returns the index of the current timestepMRS233p_
-`next()`            | jumps to the next timestep
+`index()`           | returns the index of the current timestep
 `steps()`           | returns the total number of steps
 `time()`            | returns the time at the current timestep
 `__repr__()`        | prints the object's string representation
-`__str__()`         | prints the object's string representation
 
-### MonteCarlo
+### neworder.MonteCarlo
 
-### Model
+TODO
+
+### neworder.Model
 
 
 ## Modules
 
-### time
-
-TODO
-
-
-
-### Model
-
-### Timeline
-
-
-__NB the following are works-in-progress and subject to change, and the documentation may not reflect the current code__
-
-## Functions
-
-The `neworder` module exposes the following functions to python:
-
-### General, Utility and Diagnostics
-
-name                | description
---------------------|------------------------------------
-`version()`         | returns the module version
-`python()`          | returns the embedded python version
-`log(msg)`          | prints `msg`
-`shell()`           | starts an interactive shell (serial mode only)
-`reseed()`          | resets the random number stream for the current process
-
-### Time-related
+### `neworder.time`
 
 name                  | description
 ----------------------|------------------------------------
@@ -91,6 +66,35 @@ name                  | description
 `far_future()`        | returns a floating-point number that compares greater than any other floating point number (i.e. always after)
 `never()`             | returns a floating point number that compares unequal to (and unordered w.r.t) any other number
 `isnever(t)`          | returns true if `t` is `never()`. (Direct comparison will always return false)
+`isnever(a)`          | returns a boolean array containing True for each element of a that `never()`. 
+
+
+TODO
+
+
+### `neworder.Model`
+
+### `neworder.Timeline`
+
+## Functions
+
+The `neworder` module exposes the following top-level functions to python:
+
+name                | description
+--------------------|------------------------------------
+`version()`         | returns the module version
+`python()`          | returns the embedded python version
+`embedded()`        | returns `True` if running as an embedded environment (deprecated), `False` if running as a python module 
+`log(x)`            | prints `x`, annotated with MPI context
+`shell()`           | starts an interactive shell (serial mode only)
+`run(m)`            | starts a model run, given a model `m`
+
+### General, Utility and Diagnostics
+
+`reseed()`          | resets the random number stream for the current process
+
+### Time-related
+
 
 ### Monte-Carlo
 

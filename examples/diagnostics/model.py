@@ -19,8 +19,8 @@ class Diagnostics(neworder.Model):
   def step(self):
     neworder.log("neworder %s" % neworder.version())
     if neworder.embedded():
-      # TODO this is correct only for a locally built embedded non-MPI version
-      binary = "/src/bin/neworder"
+      # TODO this is correct only for a locally built embedded MPI version
+      binary = "./src/bin/neworder_mpi"
     else:
       binary = neworder.__file__
     neworder.log(binary)

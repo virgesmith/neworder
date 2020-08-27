@@ -12,7 +12,9 @@ python examples/hello_world/model.py
 
 The `neworder` framework expects an instance of a `Model` class, which in turn requires a `Timeline` object.
 
-This model doesn't require an explicit discrete timeline, so for models of this type a method is provided to construct an empty timeline (which is a single step of length zero). In more complex examples, this permits "case-based" models (to use MODGEN parlance) where each individual's history is constructed in a single pass.
+This model doesn't require an explicit discrete timeline, so for models of this type a method is provided to construct an empty timeline (which is a single step of length zero). 
+
+In more complex examples, the timeline would normally refer to absolute time, or for "case-based" models (to use MODGEN parlance), the age of a cohort. In some simple model configurations, each individual's history can be constructed in a single pass, and in this type of situation a null timeline is appropriate.
 
 `neworder` provides a base Model class from which the user should subclass, implementing the following class methods:
 

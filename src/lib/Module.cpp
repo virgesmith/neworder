@@ -124,7 +124,7 @@ PYBIND11_MODULE(neworder, m)
     .def("time", &no::Timeline::time)
     .def("dt", &no::Timeline::dt)
     .def("nsteps", &no::Timeline::nsteps)
-    .def("next", &no::Timeline::next)
+    //.def("next", &no::Timeline::next) not exposed 
     .def("at_checkpoint", &no::Timeline::at_checkpoint)
     .def("at_end", &no::Timeline::at_end)
     .def("__repr__", [](const no::Timeline& tl) {

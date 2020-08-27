@@ -1,6 +1,8 @@
 # Requirements:
 # pybind11: install with pip/conda
 # virtualenv or conda using python 3.5 or higher
+$(error neworder embedded serial build is deprecated)
+
 
 ifndef VIRTUAL_ENV
 ifndef CONDA_DEFAULT_ENV
