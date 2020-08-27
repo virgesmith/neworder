@@ -6,44 +6,36 @@ TODO update...
 
 The neworder python module defines the following symbols within the `neworder` namespace:
 
-name             | type        | description
------------------|-------------|--------------
-`Model`          | class       | the base class from which all models should be derived from
-`Timeline`       | class       | defines the timeline over which the model is run
-`time`           | module      | time-related functionality
-`MonteCarlo`     | class       | random number generation and sampling functionality
-#`mc`             | object      | per-process instance of `MonteCarlo`
-`stats`          | module      | statistical functions
-`dataframe`      | module      | direct, fast manipulation of pandas DataFrames
-`mpi`            | module      | inter-process communication
-`log`            | function    | prints output
-`name`           | function    | reports the name of the embedded environment, i.e. 'neworder'
-`version`        | function    | reports the version of the embedded environment
-`python`         | function    | reports the python version used in the embedded environment
-`shell`          | function    | invokes an interactive python shell for debugging
+name                        | type        | description
+----------------------------|-------------|--------------
+[`Timeline`](#timeline)     | class       | defines the timeline over which the model is run
+[`MonteCarlo`](#montecarlo) | class       | random number generation and sampling functionality
+`Model`                     | class       | the base class from which all models should be derived from
+`time`                      | module      | time-related functionality
+`stats`                     | module      | statistical functions
+`dataframe`                 | module      | direct, fast manipulation of pandas DataFrames
+`mpi`                       | module      | inter-process communication
+`log`                       | function    | prints output with annotations
+`version`                   | function    | reports the version of the embedded environment
+`python`                    | function    | reports the python version used in the embedded environment
+`shell`                     | function    | invokes an interactive python shell for debugging (embedded mode only)
 
 
-## Classes and objects
+## Timeline
 
-## Modules
+The `Timeline` class describes a timeline containing one of more checkpoints.
 
-### Model
+The final value in checkpoints must be a list, e.g. Timeline(2020, 2050, [10, 20, 30]) will start the simulation at 2020 and end at 2050 with a yearly timestep and checkpoints at 2030, 2040 and 2050.
 
-### Timeline
+To generate a 'null' timeline, which is useful for case-based models use
 
-Defines a timeline beginning at `start` and finishing at `end` with an array of checkpoints at the steps indicated. The final value in checkpoints is the total number of timesteps
-```
-timeline = Timeline(start, end, [checkpoints])
-```
-e.g. Timeline(2020, 2050, [10, 20, 30]) will start the simulation at 2020 and end at 2050 with a yearly timestep and checkpoints at 2030, 2040 and 2050.
-
-To generate a 'null' timeline use
 ```
 timeline = Timeline.null()
 ```
+
 which is equivalent to `Timeline(0, 0, [1])`.
 
-The timeline is incremented internally by the neworder runtime and should not normally be modified in the python code. The following accessors are provided:
+The timeline is incremented internally by the neworder Model object and is not modifiable in python code once instantiated. The following accessors are provided:
 
 name                | description
 --------------------|------------------------------------
@@ -57,22 +49,38 @@ name                | description
 `__repr__()`        | prints the object's string representation
 `__str__()`         | prints the object's string representation
 
+### MonteCarlo
+
+### Model
+
+
+## Modules
+
+### time
+
+TODO
+
+
+
+### Model
+
+### Timeline
+
+
 __NB the following are works-in-progress and subject to change, and the documentation may not reflect the current code__
 
 ## Functions
+
 The `neworder` module exposes the following functions to python:
 
 ### General, Utility and Diagnostics
 
 name                | description
 --------------------|------------------------------------
-`name()`            | returns the module name (`neworder`)
 `version()`         | returns the module version
 `python()`          | returns the embedded python version
 `log(msg)`          | prints `msg`
 `shell()`           | starts an interactive shell (serial mode only)
-`lazy_exec(expr)`   | creates a python expression `expr` for later execution via the `()` operator
-`lazy_eval(expr)`   | creates a python expression `expr` for later evaluation via the `()` operator
 `reseed()`          | resets the random number stream for the current process
 
 ### Time-related

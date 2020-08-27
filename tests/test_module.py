@@ -23,7 +23,6 @@ def model():
 
 def test_basics():
   # just check you can call the functions
-  no.name()
   no.version()
   no.python()
   no.log("testing")

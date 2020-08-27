@@ -12,10 +12,8 @@ $ PYTHONPATH=tools python3 examples/hello_world/model.py
 
 # TODO decide if this file is useful and if so add all the neworder symbols
 
-def name():
-  return "stub"
 
-def version():
+def version()
   return "0.0.0"
 
 def python():

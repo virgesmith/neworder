@@ -54,7 +54,6 @@ void test_no()
   CHECK(pycpp::as_string(module.attr("time").attr("never")()) == "nan");
 
   // Check diagnostics consistent
-  CHECK(runtime({"neworder.name() == '%%'"_s % no::module_name(), no::CommandType::Eval}).cast<bool>());
   CHECK(runtime({"neworder.version() == '%%'"_s % no::module_version(), no::CommandType::Eval}).cast<bool>());
   CHECK(runtime({"neworder.python() == '%%'"_s % no::python_version(), no::CommandType::Eval}).cast<bool>());
 

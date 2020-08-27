@@ -24,9 +24,8 @@ class NEWORDER_EXPORT Environment
 {
 public:
 
-  // Context
-  static const int CPP = 0;
-  static const int PY = 1;
+  // Context, for logging
+  enum class Context { CPP, PY };
 
   ~Environment();
 
@@ -55,7 +54,7 @@ public:
   static void verbose(bool b = true);
 
   // returns "py/no rank/size"
-  std::string context(int ctx = CPP) const;
+  std::string context(Context ctx = Context::CPP) const;
 
   // returns the neworder env as a python object 
   operator py::object&() { return *m_self; } 

@@ -7,7 +7,6 @@ import os
 import subprocess
 import neworder
 
-neworder.verbose()
 
 class Diagnostics(neworder.Model):
   """
@@ -17,10 +16,14 @@ class Diagnostics(neworder.Model):
   def __init__(self, *args):
     super().__init__(neworder.Timeline.null(), neworder.MonteCarlo.deterministic_independent_seed)
 
-
   def step(self):
-    neworder.log("MODULE= %s %s" % (neworder.name(), neworder.version()))
-    binary = "target/debug/neworder" if (neworder.name() == "neworder.rs") else "src/bin/neworder"
+    neworder.log("neworder %s" % neworder.version())
+    if neworder.embedded():
+      # TODO this is correct only for a locally built embedded non-MPI version
+      binary = "/src/bin/neworder"
+    else:
+      binary = neworder.__file__
+    neworder.log(binary)
     all_libs = subprocess.getoutput("ldd %s" % binary).replace("\t", "").split("\n")
     neworder.log("Loaded libs:")
     for _, s in enumerate(all_libs): neworder.log("  %s" % s)
@@ -30,10 +33,10 @@ class Diagnostics(neworder.Model):
   def checkpoint(self):
     neworder.shell()
 
-
-# construct the model
+# log all
+neworder.verbose()
+# construct the "model"
 model = Diagnostics()
-
+# run it
 neworder.run(model)
-
 

@@ -65,10 +65,11 @@ void no::Environment::verbose(bool b)
   no::getenv().m_verbose = b;
 }
 
-std::string no::Environment::context(int ctx) const
+std::string no::Environment::context(no::Environment::Context ctx) const
 {
-  std::string idstring = "[%% %%/%%] "_s % (ctx == 0 ? "no" : "py") % m_rank % m_size;
-  return idstring;
+  // construct strings once 
+  static const std::string idstrings[2] = {"[no %%/%%] "_s % m_rank % m_size, "[py %%/%%] "_s % m_rank % m_size};
+  return idstrings[(int)ctx];
 }
 
 

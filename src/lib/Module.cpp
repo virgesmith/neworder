@@ -20,7 +20,7 @@ namespace {
 // not visible to (rest of) C++ - use the function declared in Log.h
 void log_obj(const py::object& msg)
 {
-  std::cout << no::getenv().context(no::Environment::PY) << msg << std::endl;
+  std::cout << no::getenv().context(no::Environment::Context::PY) << msg << std::endl;
 }
 
 }
@@ -96,8 +96,7 @@ PYBIND11_MODULE(neworder, m)
 #endif
 {
   // utility/diagnostics
-  m.def("name", no::module_name)
-   .def("version", no::module_version)
+  m.def("version", no::module_version)
    .def("python", no::python_version)
    .def("log", log_obj)
    .def("shell", no::shell)
