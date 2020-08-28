@@ -58,6 +58,5 @@ notifications:
     - '{{commitAuthorEmail}}'
     on_build_failure: true
   - provider: Slack
-    auth_token:
-      secure: xoxb-1320617257792-1322798478150-niA38MuN9ZfaO8jNJS1NTTZE
-    channel: '#devops'
+    incoming_webhook:
+      secure: TgkWvYaiFVyz5lbNkDXlHJmYThnK+VJ3C07q7N5BE9pxgpMkDKDSY+7Mc9NLxZngJ18ErQll/v9GxuDqG/9qHIFs3EuJ9Sh3XVaEkKyJBsZOWFfP/mWY+pQljqjNxsWm
