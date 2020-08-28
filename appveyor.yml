@@ -35,11 +35,11 @@ install:
 
 
 build_script:
-  - cmd: ("%PYTHON%\python.exe" setup.py install)
+  - cmd: '%PYTHON%\python.exe setup.py install'
 
 # TODO run in MPI mode also 
 test_script:
-  - cmd: ("%PYTHON%\\python.exe" setup.py test)
+  - cmd: '%PYTHON%\\python.exe setup.py test'
 
 
 notifications:
