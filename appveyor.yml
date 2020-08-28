@@ -1,7 +1,5 @@
 # Build environments
 
-# TODO this script needs tidying
-
 image:
   - Visual Studio 2019
 
@@ -37,11 +35,11 @@ install:
 
 
 build_script:
-  - cmd: "%PYTHON%\python.exe" setup.py install
+  - cmd: ("%PYTHON%\python.exe" setup.py install)
 
+# TODO run in MPI mode also 
 test_script:
-  # TODO run in MPI mode also 
-  - cmd: "%PYTHON%\python.exe" setup.py test
+  - cmd: ("%PYTHON%\\python.exe" setup.py test)
 
 
 notifications:
