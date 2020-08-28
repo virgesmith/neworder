@@ -30,7 +30,7 @@ init:
 install: 
   - ps: |
       Start-FileDownload 'https://github.com/microsoft/Microsoft-MPI/releases/download/v10.1.1/msmpisetup.exe'
-      .\msmpisetup.exe -unattend 
+      .\msmpisetup.exe -unattend # TODO this doesnt seem to do anything 
       $python = $env:PYTHON + "\python.exe"
       & $python -m pip install --upgrade pip wheel setuptools --no-warn-script-location
       & $python -m pip install numpy pandas mpi4py --no-warn-script-location
@@ -39,9 +39,7 @@ build_script:
   - cmd: '%PYTHON%\python.exe setup.py install'
 
 test_script:
-  - cmd: |
-      '%PYTHON%\\python.exe setup.py test'
-      'mpiexec -n 2 %PYTHON%\\python.exe setup.py test'
+  - cmd: '%PYTHON%\python.exe setup.py test'
 
 notifications:
   - provider: Email
