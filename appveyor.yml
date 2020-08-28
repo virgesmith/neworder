@@ -42,27 +42,22 @@ install:
         & $python -m pip install numpy pandas mpi4py --no-warn-script-location
       }
 
-# cache:
-#   - C:\RLibrary
 
 build_script:
   # install deps
-  - ps: if ($env:TEST_LANGUAGE -eq "R") { TravisTool install_deps }
+  #- ps: if ($env:TEST_LANGUAGE -eq "R") { TravisTool install_deps }
 
 test_script:
   - ps: if ($env:TEST_LANGUAGE -eq "R") { TravisTool run_tests }
   - cmd: if "%TEST_LANGUAGE%" == "Python" ( "%PYTHON%\python.exe" setup.py test ) else ( echo %TEST_LANGUAGE% )
 
-# on_failure:
-#   - 7z a failure.zip *.Rcheck\*
-#   - appveyor PushArtifact failure.zip
 
-# artifacts:
-#   - path: dist\*
-#     name: Dist
-
-#   - path: '\*_*.tar.gz'
-#     name: Bits
-
-#   - path: '\*_*.zip'
-#     name: Bits
+notifications:
+  - provider: Email
+    to:
+    - '{{commitAuthorEmail}}'
+    on_build_failure: true
+  - provider: Slack
+    auth_token:
+      secure: xoxb-1320617257792-1322798478150-niA38MuN9ZfaO8jNJS1NTTZE
+    channel: '#devops'
