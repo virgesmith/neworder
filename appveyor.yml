@@ -7,49 +7,41 @@ image:
 
 environment:
   matrix:
-   - TEST_LANGUAGE: "Python"
-     PYTHON: "C:\\Python36-x64"
+   - PYTHON: "C:\\Python36-x64"
      PYTHON_ARCH: 64
      MSVC_VERSION: "Visual Studio 19 Win64"
 
-   - TEST_LANGUAGE: "Python"
-     PYTHON: "C:\\Python37-x64"
+   - PYTHON: "C:\\Python37-x64"
      PYTHON_ARCH: 64
      MSVC_VERSION: "Visual Studio 19 Win64"
 
-   - TEST_LANGUAGE: "Python"
-     PYTHON: "C:\\Python38-x64"
+   - PYTHON: "C:\\Python38-x64"
      PYTHON_ARCH: 64
      MSVC_VERSION: "Visual Studio 19 Win64"
 
 # fail fast
-# matrix:
-#   fast_finish: true
+matrix:
+  fast_finish: true
 
 init:
   - ps: |
-      if ($env:TEST_LANGUAGE -eq "Python") {
-        Write-Host "$env:PYTHON $env:PYTHON_ARCH $env:MSVC_VERSION"
-        $python = $env:PYTHON + "\python.exe"
-        & $python --version
-      }
+      Write-Host "$env:PYTHON $env:PYTHON_ARCH $env:MSVC_VERSION"
+      $python = $env:PYTHON + "\python.exe"
+      & $python --version
 
 install:
   - ps: |
-      if ($env:TEST_LANGUAGE -eq "Python") {
-        $python = $env:PYTHON + "\python.exe"
-        & $python -m pip install --upgrade pip wheel setuptools --no-warn-script-location
-        & $python -m pip install numpy pandas mpi4py --no-warn-script-location
-      }
+      $python = $env:PYTHON + "\python.exe"
+      & $python -m pip install --upgrade pip wheel setuptools --no-warn-script-location
+      & $python -m pip install numpy pandas mpi4py --no-warn-script-location
 
 
 build_script:
-  # install deps
-  - ps: if ($env:TEST_LANGUAGE -eq "R") { TravisTool install_deps }
+  - cmd: "%PYTHON%\python.exe" setup.py install
 
 test_script:
-  - ps: if ($env:TEST_LANGUAGE -eq "R") { TravisTool run_tests }
-  - cmd: if "%TEST_LANGUAGE%" == "Python" ( "%PYTHON%\python.exe" setup.py test ) else ( echo %TEST_LANGUAGE% )
+  # TODO run in MPI mode also 
+  - cmd: "%PYTHON%\python.exe" setup.py test
 
 
 notifications:
