@@ -3,6 +3,7 @@
 # serial embedded
 ./run_example.sh hello_world
 ./run_example.sh diagnostics
+./run_example.sh chapter1
 ./run_example.sh competing
 ./run_example.sh disease
 ./run_example.sh mortality
@@ -18,6 +19,7 @@
 # serial module
 python examples/hello_world/model.py
 python examples/diagnostics/model.py
+python examples/chapter1/model.py
 PYTHONPATH=$PYTHONPATH:./examples/shared python examples/competing/model.py
 python examples/disease/model.py
 PYTHONPATH=$PYTHONPATH:./examples/shared python examples/mortality/model.py

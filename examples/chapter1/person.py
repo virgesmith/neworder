@@ -1,5 +1,6 @@
 # the framework must be explicitly imported
 import neworder
+import numpy as np
 
 class Person():
   """ 
@@ -21,29 +22,38 @@ class Person():
     """ Returns the person's state (alive/dead) at age t """
     return True if self.time_mortality > t else False
 
-  def time_mortality_event(self):
+  def time_mortality_event(self, mc):
     """ MODGEN equivalent: TIME Person::timeMortalityEvent() """
-    self.time_mortality = neworder.stopping(self.mortality_hazard, 1)[0]
+    self.time_mortality = mc.stopping(self.mortality_hazard, 1)[0]
 
   def mortality_event(self):
     """ MODGEN equivalent: void Person::MortalityEvent() """
+    # NB this is not used in this implementation
     self.alive = False
 
-class People():
-  """ A simple aggregration of Person """
+class People(neworder.Model):
+  """ A model containing an aggregration of Person objects """
   def __init__(self, mortality_hazard, n):
+    
+    # initialise base model with a nondeterministic seed results will vary (slightly)
+    super().__init__(neworder.Timeline.null(), neworder.MonteCarlo.random_seed)
+
     # initialise population
     self.population = [ Person(mortality_hazard) for _ in range(n) ]
     neworder.log("created %d individuals" % n)
 
-  def sample_mortality(self):
-    # sample age at death for each member of the population
-    [p.time_mortality_event() for p in self.population]
+  def step(self):
+    # sample each person's age at death. since everyone 
+    # (this is a hopelessly inefficient implementation when everyone has the same hazard rate)
+    [p.time_mortality_event(self.mc()) for p in self.population]
 
-  def calc_life_expectancy(self):
+  def checkpoint(self):
     # compute mean sampled life expectancy against theoretical
     sample_le = sum([p.time_mortality for p in self.population]) / len(self.population)
     actual_le = 1.0 / self.population[0].mortality_hazard
     error = sample_le - actual_le
-    neworder.log("Life expectancy = %.2f years (sampling error=%f)" % (sample_le, error))
+    neworder.log("Life expectancy = %.2f years (sampling error=%.2f years)" % (sample_le, error))
+
+  def alive(self, t):
+    return np.mean([p.state(t) for p in self.population])
 
