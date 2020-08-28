@@ -45,7 +45,7 @@ install:
 
 build_script:
   # install deps
-  #- ps: if ($env:TEST_LANGUAGE -eq "R") { TravisTool install_deps }
+  - ps: if ($env:TEST_LANGUAGE -eq "R") { TravisTool install_deps }
 
 test_script:
   - ps: if ($env:TEST_LANGUAGE -eq "R") { TravisTool run_tests }
