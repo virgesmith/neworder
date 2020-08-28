@@ -10,7 +10,7 @@ class Model;
 
 namespace df {
 
-void transition(no::Model& model, py::array categories, py::array matrix, py::object& df, const std::string& colname);
+void transition(no::Model& model, py::array_t<int64_t> categories, py::array_t<double> matrix, py::object &df, const std::string& colname);
 
 void directmod(no::Model& model, py::object& df, const std::string& colname);
 

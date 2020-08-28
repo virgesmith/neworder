@@ -26,10 +26,16 @@ size_t interp(const std::vector<double>& cumprob, double x)
 // TODO one-off-
 // categories are all possible category labels. Order corresponds to row/col in matrix
 // matrix is a transition matrix
-void no::df::transition(no::Model& model, py::array categories, py::array matrix, py::object &df, const std::string& colname)
+void no::df::transition(no::Model& model, py::array_t<int64_t> categories, py::array_t<double> matrix, py::object &df, const std::string& colname)
 {
   // Extract column from DF as np.array
   py::array col = df.attr(colname.c_str());
+
+  // check col and categories are int64
+  if (!col.dtype().is(py::dtype::of<int64_t>()))
+  {
+    throw std::runtime_error("dataframe transitions can only be perfomed on columns containing int64 values");
+  }
 
   py::ssize_t m = categories.size();
 

@@ -7,6 +7,27 @@ import neworder as no
 #   i = int(np.interp(u, t, range(len(t))))
 #   return c[i]
 
+def test_errors():
+
+  df = pd.read_csv("./tests/df.csv")
+
+  # base model for MC engine
+  model = no.Model(no.Timeline.null(), no.MonteCarlo.deterministic_identical_seed)
+
+  cats = np.array(range(4)) 
+  # identity matrix means no transitions
+  trans = np.identity(len(cats))
+
+  # category data MUST be 64bit integer. This will alomst certainly be the default on linux/OSX but not on windows
+  df["DC2101EW_C_ETHPUK11"]= df["DC2101EW_C_ETHPUK11"].astype(np.int32)
+
+  try:
+    no.dataframe.transition(model, cats, trans, df, "DC2101EW_C_ETHPUK11")
+  except Exception:
+    assert True
+  else:
+    assert False
+
 
 def test():
 
@@ -15,9 +36,10 @@ def test():
   # base model for MC engine
   model = no.Model(no.Timeline.null(), no.MonteCarlo.deterministic_identical_seed)
 
-  cats = np.array(range(4))
+  cats = np.array(range(4)) 
   # identity matrix means no transitions
   trans = np.identity(len(cats))
+
   no.dataframe.transition(model, cats, trans, df, "DC2101EW_C_ETHPUK11")
 
   assert len(df["DC2101EW_C_ETHPUK11"].unique()) == 1 and df["DC2101EW_C_ETHPUK11"].unique()[0] == 2
