@@ -9,7 +9,6 @@
 #include <random>
 #include <algorithm>
 #include <cmath>
-#include <time.h>
 
 
 // helper functions for basic seeding strategies
@@ -25,7 +24,8 @@ int64_t no::MonteCarlo::deterministic_identical_seed(int)
 
 int64_t no::MonteCarlo::random_seed(int r)
 {
-  return time(NULL) * (1 + r) + (int64_t)(&r);
+  std::random_device rand;
+  return ((int64_t)r << 32) + rand();
 }
 
 //

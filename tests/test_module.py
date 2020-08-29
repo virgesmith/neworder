@@ -9,8 +9,29 @@ def test_basics():
   # just check you can call the functions
   no.version()
   no.python()
+  assert hasattr(no, "verbose")
   no.log("testing")
+  no.log(1)
+  no.log(no)
+  no.log([1,2,3])
+  no.log((1,2,3))
+  no.log({1:2,3:4})
   assert not no.embedded()
+
+def test_submodules():
+  assert(hasattr(no, "mpi"))
+  assert(hasattr(no, "stats"))
+  assert(hasattr(no, "dataframe"))
+
+def test_dummy_model():
+  class DummyModel(no.Model):
+    def __init__(self):
+      super().__init__(no.Timeline.null(), no.MonteCarlo.deterministic_identical_seed)
+    def step(self):
+      pass
+    def checkpoint(self):
+      pass
+  assert no.run(DummyModel())
 
 def test_mpi():
   # if no mpi4py, assume serial like module does

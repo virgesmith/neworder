@@ -14,9 +14,63 @@ def test_mc():
   else:
     _test_mc_parallel(model)
 
+def test_seeders():
+
+  # serial tests 
+  # determinisitc seeders always return the same value
+  assert no.MonteCarlo.deterministic_identical_seed(no.mpi.rank()) == no.MonteCarlo.deterministic_identical_seed(no.mpi.rank())
+  assert no.MonteCarlo.deterministic_independent_seed(no.mpi.rank()) == no.MonteCarlo.deterministic_independent_seed(no.mpi.rank())
+  # nondeterministic seeders don't
+  assert no.MonteCarlo.random_seed(no.mpi.rank()) != no.MonteCarlo.random_seed(no.mpi.rank())
+
+  try:
+    import mpi4py.MPI as mpi
+    comm = mpi.COMM_WORLD
+  except Exception: 
+    return
+
+  # parallel tests
+
+  # all seeds equal
+  seeds = comm.gather(no.MonteCarlo.deterministic_identical_seed(no.mpi.rank()), 0)
+  if no.mpi.rank() == 0:
+    assert len(seeds) == no.mpi.size()
+    assert len(set(seeds)) == 1
+
+  # all seeds different but reproducible
+  seeds = comm.gather(no.MonteCarlo.deterministic_independent_seed(no.mpi.rank()), 0)
+  if no.mpi.rank() == 0:
+    assert len(seeds) == no.mpi.size()
+    assert len(set(seeds)) == len(seeds)
+  seeds2 = comm.gather(no.MonteCarlo.deterministic_independent_seed(no.mpi.rank()), 0)
+  if no.mpi.rank() == 0:
+    assert seeds == seeds2
+
+  # all seeds different and not reproducible
+  seeds = comm.gather(no.MonteCarlo.random_seed(no.mpi.rank()), 0)
+  if no.mpi.rank() == 0:
+    assert len(seeds) == no.mpi.size()
+    assert len(set(seeds)) == len(seeds)
+  # TODO need higher time resolution on seeder
+  seeds2 = comm.gather(no.MonteCarlo.random_seed(no.mpi.rank()), 0)
+  if no.mpi.rank() == 0:
+    assert seeds != seeds2
+
 def _test_mc_serial(model):
   mc = model.mc()
   assert mc.seed() == 19937
+
+  mc.reset()
+  a = mc.ustream(5)
+  assert abs(a[0] - 0.33778882725164294) < 1e-8
+  assert abs(a[1] - 0.04767065867781639) < 1e-8
+  assert abs(a[2] - 0.8131122114136815) < 1e-8
+  assert abs(a[3] - 0.24954832065850496) < 1e-8
+  assert abs(a[4] - 0.3385562978219241) < 1e-8
+
+  mc.reset()
+  h = mc.hazard(0.5, 1000000)
+  assert np.sum(h) == 500151
 
   n = 10000
   # 10% constant hazard for 10 time units, followed by zero
@@ -83,7 +137,6 @@ def _test_mc_serial(model):
   assert a[4] == 6.461894711350323
   assert a[5] == 2.8566436418145944
 
-
   # Exp.value = p +/- 1/sqrt(N)
   h = model.mc().hazard(0.2, 10000)
   assert isinstance(h, np.ndarray)
@@ -112,8 +165,30 @@ def _test_mc_serial(model):
 
 def _test_mc_parallel(model):
 
+  import mpi4py.MPI as mpi
+  comm = mpi.COMM_WORLD
+
   mc = model.mc()
+  mc.reset()
   assert mc.seed() == 19937
 
+  a = mc.ustream(5)
+  all_a = comm.gather(a, root=0)
 
+
+  if no.mpi.rank() == 0:
+    for r in range(0, no.mpi.size()):
+      assert np.all(a - all_a[r] == 0.0)
+
+  mc = no.Model(no.Timeline.null(), no.MonteCarlo.deterministic_independent_seed).mc()
+
+  a = mc.ustream(5)
+
+  no.log(a)
+  all_a = comm.gather(a, root=0)
+
+  # check all other streams different
+  if no.mpi.rank() == 0:
+    for r in range(1, no.mpi.size()):
+      assert not np.all(a - all_a[r] == 0.0)
 
