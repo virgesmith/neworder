@@ -6,8 +6,10 @@ import neworder as no
 
 
 def test_basics():
+  with open("VERSION") as f:
+    assert f.readline().rstrip() == no.version()
+
   # just check you can call the functions
-  no.version()
   no.python()
   assert hasattr(no, "verbose")
   no.log("testing")

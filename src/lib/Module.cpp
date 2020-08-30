@@ -50,9 +50,12 @@ py::object no::Runtime::operator()(const std::tuple<std::string, CommandType>& c
   }
 }
 
+// jump through hoops as msvc seems to strip quotes from defines, so need to add them here
+#define STR2(x) #x
+#define STR(x) STR2(x)
 const char* no::module_version()
 {
-  return NEWORDER_VERSION;
+  return STR(NEWORDER_VERSION);
 }
 
 std::string no::python_version()

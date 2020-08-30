@@ -13,7 +13,7 @@ import setuptools
 def version():
   """ The file VERSION in the project root is now the single source of version info """
   with open("VERSION") as fd:
-    return fd.readline().strip("\n")
+    return fd.readline().rstrip()
 
 def list_files(dirs, exts, exclude=[]):
   files = []
@@ -49,7 +49,7 @@ def ldflags(_platform):
 
 def defines(platform):
   return [ 
-    ("NEWORDER_VERSION", '"%s"' % version())
+    ("NEWORDER_VERSION", version())
   ]
 
 class get_pybind_include(object):
