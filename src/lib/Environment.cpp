@@ -6,7 +6,8 @@
 #include <algorithm>
 #include <string>
 
-// This function must be used to init the embedded environment
+// This function must be used to init the environment
+// TODO can it be removed?
 no::Environment& no::Environment::init(int rank, int size, bool verbose)
 {
   // get static instance
@@ -15,12 +16,6 @@ no::Environment& no::Environment::init(int rank, int size, bool verbose)
   // verbose flag
   env.m_verbose = verbose;
 
-#ifdef NEWORDER_EMBEDDED
-  // set init flag (before any possible log message)
-  env.m_rank = rank;
-  env.m_size = size;
-  no::log("neworder %%/embedded python %%"_s % module_version() % python_version());
-#else
   // this hangs on throw when this code is in the (global singleton) constructor
   try 
   {
@@ -37,7 +32,6 @@ no::Environment& no::Environment::init(int rank, int size, bool verbose)
     env.get_error(); // flush the error
     no::log("WARNING: mpi4py module not found, assuming serial mode", true);
   }
-#endif
   return env;
 }
 
@@ -73,22 +67,10 @@ std::string no::Environment::context(no::Environment::Context ctx) const
 }
 
 
-#ifdef NEWORDER_EMBEDDED
-// Note this does not fully initialise, do not construct directly, use the static init function
-no::Environment::Environment() : m_init(false) , m_gil{} // TODO does it still? segfaults on exit (presumably called **too late** (singleton))
-{
-  // make the neworder module available in embedded python env
-  m_self = new py::module(py::module::import("neworder"));
-  // add to sys to ensure neworder module can be resolved
-  py::dict sys_modules = py::module::import("sys").attr("modules");
-  sys_modules["neworder"] = *m_self;
-} 
-#else
 no::Environment::Environment() : m_init(false), m_verbose(true) 
 {
   m_verbose = false;
 } 
-#endif
 
 no::Environment::~Environment() 
 {

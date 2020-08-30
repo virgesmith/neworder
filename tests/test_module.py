@@ -16,7 +16,6 @@ def test_basics():
   no.log([1,2,3])
   no.log((1,2,3))
   no.log({1:2,3:4})
-  assert not no.embedded()
 
 def test_submodules():
   assert(hasattr(no, "mpi"))

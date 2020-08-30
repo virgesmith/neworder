@@ -18,11 +18,7 @@ class Diagnostics(neworder.Model):
 
   def step(self):
     neworder.log("neworder %s" % neworder.version())
-    if neworder.embedded():
-      # TODO this is correct only for a locally built embedded MPI version
-      binary = "./src/bin/neworder_mpi"
-    else:
-      binary = neworder.__file__
+    binary = neworder.__file__
     neworder.log(binary)
     all_libs = subprocess.getoutput("ldd %s" % binary).replace("\t", "").split("\n")
     neworder.log("Loaded libs:")
@@ -31,7 +27,7 @@ class Diagnostics(neworder.Model):
     neworder.log("Globals: %s" % dir())
 
   def checkpoint(self):
-    neworder.shell()
+    pass
 
 # log all
 neworder.verbose()

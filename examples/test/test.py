@@ -27,10 +27,7 @@ class Test(neworder.Model):
       if s != neworder.mpi.rank():
         emigrants = self.pop[self.pop.state == s]
         #neworder.log("sending %d emigrants to %d" % (len(emigrants), s))
-        if neworder.embedded():
-          neworder.mpi.send(emigrants, s)
-        else:
-          comm.send(emigrants, dest=s)
+        comm.send(emigrants, dest=s)
 
     # remove the emigrants
     self.pop = self.pop[self.pop.state == neworder.mpi.rank()]
@@ -38,18 +35,12 @@ class Test(neworder.Model):
     # receive migrants
     for s in range(neworder.mpi.size()):
       if s != neworder.mpi.rank():
-        if neworder.embedded():
-          immigrants = neworder.mpi.receive(s)
-        else:
-          immigrants = comm.recv(source=s)
+        immigrants = comm.recv(source=s)
         #neworder.log("received %d immigrants from %d" % (len(immigrants), s))
         self.pop = self.pop.append(immigrants)
 
   def checkpoint(self):
-    if neworder.embedded():
-      neworder.mpi.sync()
-    else:
-      comm.Barrier()
+    comm.Barrier()
     neworder.log("len(pop)=%d" % len(self.pop))
 
     # check we only have status = rank now

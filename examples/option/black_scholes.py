@@ -4,9 +4,8 @@ import neworder
 from math import exp, log
 from helpers import *
 
-if not neworder.embedded():
-  from mpi4py import MPI
-  comm = MPI.COMM_WORLD
+from mpi4py import MPI
+comm = MPI.COMM_WORLD
 
 # Subclass neworder.Model
 class BlackScholes(neworder.Model):
@@ -89,10 +88,7 @@ class BlackScholes(neworder.Model):
 
   def greeks(self):
     # get all the results
-    if neworder.embedded():
-      pvs = neworder.mpi.gather(self.pv, 0)
-    else:
-      pvs = comm.gather(self.pv, 0)
+    pvs = comm.gather(self.pv, 0)
     # compute sensitivities on rank 0
     if neworder.mpi.rank() == 0:
       neworder.log("gathered results: %s" % pvs)

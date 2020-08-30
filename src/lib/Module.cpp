@@ -1,7 +1,6 @@
 
 #include "Module.h"
 
-#include "Version.h"
 #include "Timeline.h"
 #include "Model.h"
 #include "Environment.h"
@@ -9,7 +8,7 @@
 #include "MonteCarlo.h"
 #include "NPArray.h"
 #include "DataFrame.h"
-#include "MPIComms.h"
+#include "Log.h"
 
 #include "NewOrder.h"
 
@@ -51,14 +50,9 @@ py::object no::Runtime::operator()(const std::tuple<std::string, CommandType>& c
   }
 }
 
-const char* no::module_name()
-{
-  return "neworder";
-}
-
 const char* no::module_version()
 {
-  return NEWORDER_VERSION_STRING;
+  return NEWORDER_VERSION;
 }
 
 std::string no::python_version()
@@ -66,46 +60,14 @@ std::string no::python_version()
   return no::getenv().python_version();
 }
 
-void no::shell(/*const py::object& local*/)
-{
-#ifdef NEWORDER_EMBEDDED
-  if (no::getenv().size() != 1) 
-  {
-    no::log("WARNING: shell disabled in parallel mode, ignoring");
-    return;
-  }
-  py::dict locals = py::module::import("__main__").attr("__dict__");
-  //locals/*["neworder"]*/ = py::module::import("neworder").attr("__dict__");
-  locals["neworder"] = py::module::import("neworder");
-  py::dict kwargs;
-  kwargs["banner"] = py::str("[starting neworder debug shell]");
-  kwargs["exitmsg"] = py::str("[exiting neworder debug shell]");
-  kwargs["local"] = locals; 
-  //kwargs["local"] = py::handle(PyObject_Dir(py::module::import("neworder").ptr()));
-  /* py::object interpreter = */py::module::import("code").attr("interact")(/**py::tuple(),*/ **kwargs);
-#else
-  no::log("shell() ignored: disabled in module configuration");
-#endif
-}
-
 // python-visible log function defined above
-#ifdef NEWORDER_EMBEDDED
-PYBIND11_EMBEDDED_MODULE(neworder, m)
-#else
 PYBIND11_MODULE(neworder, m)
-#endif
 {
   // utility/diagnostics
   m.def("version", no::module_version)
    .def("python", no::python_version)
    .def("log", log_obj)
-   .def("shell", no::shell)
    .def("run", no::Model::run)
-#ifdef NEWORDER_EMBEDDED
-   .def("embedded", [](){ return true; })
-#else
-   .def("embedded", [](){ return false; })
-#endif
    .def("verbose", no::Environment::verbose, py::arg("verbose") = true);
 
   // time-related module
@@ -142,7 +104,7 @@ PYBIND11_MODULE(neworder, m)
     .def("step", &no::Model::step)
     .def("check", &no::Model::check)
     .def("checkpoint", &no::Model::checkpoint);
-    // NB the all-important run function is not exposed to python, it can only be executed by the embedded runtime
+    // NB the all-important run function is not exposed to python, it can only be executed via the `neworder.run` function
 
   // MC
   py::class_<no::MonteCarlo>(m, "MonteCarlo")
@@ -194,21 +156,9 @@ PYBIND11_MODULE(neworder, m)
   // MPI submodule
   m.attr("mpi") = py::module("mpi", "multiprocess communication")
     .def("rank", no::Environment::rank)
-    .def("size", no::Environment::size)
-#ifdef NEWORDER_EMBEDDED
-    .def("send", no::mpi::send_obj)
-    .def("receive", no::mpi::receive_obj)
-    .def("send_csv", no::mpi::send_csv)
-    .def("receive_csv", no::mpi::receive_csv)
-    .def("broadcast", no::mpi::broadcast_obj)
-    .def("gather", no::mpi::gather_array)
-    .def("scatter", no::mpi::scatter_array)
-    .def("allgather", no::mpi::allgather_array, py::return_value_policy::take_ownership)
-    .def("sync", no::mpi::sync);
-#else
-    ;
-    no::Environment::init(-1, -1, false);
-#endif
+    .def("size", no::Environment::size);    
+    
+  no::Environment::init(-1, -1, false);
 
   // Example of wrapping an STL container
   // py::class_<std::vector<double>>("DVector", py::init<int>())

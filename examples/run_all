@@ -1,21 +1,5 @@
 # command lines for each of the examples
 
-# serial embedded
-./run_example.sh hello_world
-./run_example.sh diagnostics
-./run_example.sh chapter1
-./run_example.sh competing
-./run_example.sh disease
-./run_example.sh mortality
-./run_example.sh people
-./run_example.sh riskpaths
-./run_example.sh schelling
-./run_example.sh option
-
-# parallel embedded
-./run_example.sh test 2
-./run_example.sh option 4 -c
-
 # serial module
 python examples/hello_world/model.py
 python examples/diagnostics/model.py

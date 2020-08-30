@@ -48,11 +48,8 @@ def ldflags(_platform):
   return []
 
 def defines(platform):
-  v = version().split(".")
   return [ 
-    ("NEWORDER_VERSION_MAJOR", v[0]),
-    ("NEWORDER_VERSION_MINOR", v[1]),
-    ("NEWORDER_VERSION_PATCH", v[2])
+    ("NEWORDER_VERSION", '"%s"' % version())
   ]
 
 class get_pybind_include(object):

@@ -22,13 +22,9 @@ name              | description
 ------------------|------------------------------------
 `log(x)`          | prints x, annotated with process information 
 `version()`       | reports the module version
-`embedded()`      | returns `True` if running in the (legacy) embedded version of neworder
-`python()`        | reports the python version<sup>*</sup>
-`shell()`         | invokes an interactive python shell for debugging<sup>*</sup>
+`python()`        | reports the python version
 `verbose(v=True)` | sets logging level
 `run(m)`          | executes a neworder model
-
-<sup>*</sup> legacy functionality from the older embedded version. 
 
 ## Classes
 
@@ -124,53 +120,9 @@ TODO
 
 ### `neworder.Model`
 
-### `neworder.Timeline`
+### `neworder.dtaframe`
 
-## Functions
-
-The `neworder` module exposes the following top-level functions to python:
-
-name                | description
---------------------|------------------------------------
-`version()`         | returns the module version
-`python()`          | returns the embedded python version
-`embedded()`        | returns `True` if running as an embedded environment (deprecated), `False` if running as a python module 
-`log(x)`            | prints `x`, annotated with MPI context
-`shell()`           | starts an interactive shell (serial mode only)
-`run(m)`            | starts a model run, given a model `m`
-
-### General, Utility and Diagnostics
-
-`reseed()`          | resets the random number stream for the current process
-
-### Time-related
-
-
-### Monte-Carlo
-
-
-### Data Frames
 name                           | description
 -------------------------------|------------------------------------
 `transition(c, t, df, colname)`| Modifies the values in `df.colname` according to a set of possible states `c` and a matrix `t` that specifies the transition probabilities between the states.
-
-### Parallel Execution
-
-Constants
-
-Functions
-name                | description
---------------------|------------------------------------
-`rank()`            | identifies process for parallel runs (0 if serial)
-`size()`            | total number of processes in simulation. (1 if serial)
-`INDEP`             | `True` if each process is using an independent same random stream, `False` otherwise
-`send(x, n)`        | send object `x` to process `n`
-`receive(n)`        | accept object from process `n`
-`send_csv(df, n)`   | send pandas DataFrame in csv format to process `n`
-`receive_csv(n)`    | accept pandas DataFrame transmitted in csv format from process `n`
-`broadcast(x, n)`   | send object `x` from process `n` to all other processes
-`gather(x, n)`      | aggregate (numeric) `x` from the current process (i) to the i'th element of a numpy array in process `n`
-`scatter(a, n)`     | disperse (numeric) `a` elements from the n'th process to current process (rank is index).
-`allgather(a)`      | assemble `a` using elements from each process (rank is index).
-`sync()`            | suspend execution of the current process until all processes have reached this point
 

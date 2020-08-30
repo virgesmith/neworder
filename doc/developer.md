@@ -4,7 +4,7 @@
 
 In order to make `neworder` easier to package, distribute and integrate with other packages/frameworks, it is now provided as a python module. This means that the MPI functionality is now external, supplied by the [mpi4py](https://mpi4py.readthedocs.io/en/stable/) package.
 
-The original embedded configuration is still provided (on linux platforms only).
+The original embedded configuration is still provided (on linux platforms only). See the branch called "embedded".
 
 ## Requirements
 

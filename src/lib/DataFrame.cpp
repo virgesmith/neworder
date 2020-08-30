@@ -4,7 +4,7 @@
 #include "Model.h"
 #include "MonteCarlo.h"
 #include "Timer.h"
-#include "MPIComms.h"
+#include "Log.h"
 
 #include "NewOrder.h"
 
