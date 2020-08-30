@@ -97,7 +97,7 @@ or
 mpiexec -n <N> python examples/<name>/model.py
 ```
 
-See [Examples](../README.md#examples) for more detail on each example.
+See [Examples](examples.md) for more detail on each example.
 
 ### Package
 
@@ -113,38 +113,3 @@ TODO...
 
 Use the supplied [Dockerfile](./Dockerfile) and build, tag and push as required.
 
-## Embedded Environment (legacy)
-
-### MPI-enabled Build
-
-From the root of the repo, in an activated virtualenv or conda environment, use the [MPI.mk](MPI.mk) makefile to build the MPI-enabled framework:
-
-```bash
-make -j <N> -f MPI.mk
-```
-
-picking a suitable `<N>` for your platform, typically 1-1.5x the number of cores. And to run the tests test,
-
-```bash
-make -f MPI.mk test
-```
-
-### Run Examples
-
-Some examples are configured to run as a single process only and some must have multiple processes (i.e. MPI). If the latter, specify the number of processes as `<N>` and if the processes need to use identical random streams add `-c`:
-
-```bash
-./run_example.sh <name> [<N> [ -c]]
-```
-
-where `<name>` is the name of the example, e.g. the "option" example must be run with 4 processes all using the same random number streams:
-
-```bash
-./run_example option 4 -c
-```
-
-See [Examples](../README.md#examples) for more detail.
-
-# Documentation
-
-TODO
