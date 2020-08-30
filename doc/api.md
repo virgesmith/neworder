@@ -4,21 +4,31 @@ TODO update...
 
 ## Classes and Modules
 
-The neworder python module defines the following symbols within the `neworder` namespace:
+The _neworder_ module defines the following classes and modules symbols within the `neworder` namespace:
 
 name                                 | type        | description
 -------------------------------------|-------------|--------------
 [`Timeline`](#neworder.timeline)     | class       | defines the timeline over which the model is run
 [`MonteCarlo`](#neworder.montecarlo) | class       | random number generation and sampling functionality
-`Model`](#neworder.model)                     | class       | the base class from which all models should be derived from
-`time`](#neworder.time)                      | module      | time-related functionality
-`stats`](#neworder.montecarlo)                     | module      | statistical functions
-`dataframe`](#neworder.montecarlo)                 | module      | direct, fast manipulation of pandas DataFrames
-`mpi`](#neworder.montecarlo)                       | module      | inter-process communication
-`log`](#neworder.montecarlo)                       | function    | prints output with annotations
-`version`](#neworder.montecarlo)                   | function    | reports the version of the embedded environment
-`python`](#neworder.montecarlo)                    | function    | reports the python version used in the embedded environment
-`shell`](#neworder.montecarlo)                     | function    | invokes an interactive python shell for debugging (embedded mode only)
+[`Model`](#neworder.model)           | class       | the base class from which all models should be derived from
+[`time`](#neworder.time)             | module      | time-related functionality
+[`stats`](#neworder.stats)           | module      | statistical functions
+[`dataframe`](#neworder.dataframe)   | module      | direct, fast manipulation of pandas DataFrames
+[`mpi`](#neworder.mpi)               | module      | inter-process communication<sup>*</sup>
+
+and the following functions:
+
+name              | description
+------------------|------------------------------------
+`log(x)`          | prints x, annotated with process information 
+`version()`       | reports the module version
+`embedded()`      | returns `True` if running in the (legacy) embedded version of neworder
+`python()`        | reports the python version<sup>*</sup>
+`shell()`         | invokes an interactive python shell for debugging<sup>*</sup>
+`verbose(v=True)` | sets logging level
+`run(m)`          | executes a neworder model
+
+<sup>*</sup> legacy functionality from the older embedded version. 
 
 ## Classes
 
@@ -49,12 +59,52 @@ name                | description
 `time()`            | returns the time at the current timestep
 `__repr__()`        | prints the object's string representation
 
-### neworder.MonteCarlo
+### `neworder.MonteCarlo`
 
-TODO
+### Static Methods
+
+name                                | description
+------------------------------------|------------------------------------
+`deterministic_identical_seed(_)`   | Returns
+`deterministic_independent_seed(r)` | Returns 
+`random_seed(_)`                    | Returns
+
+### Class Methods 
+
+name                | description
+--------------------|------------------------------------
+`MonteCarlo(seeder)`| construct a MonteCarlo object with random stream using the supplied seeder function 
+`seed()`            | returns the seed
+`reset()`           | resets the stream  
+`ustream(n)`        | returns a numpy array of `n` uniform [0,1) random values
+`hazard(p,n)`         | returns a numpy array of `n` booleans simulating outcomes from a flat hazard rate `p` 
+`hazard(a)`           | returns a numpy array of `len(a)` booleans simulating outcomes for each hazard rate in array `a`
+`stopping(p, n)`        | returns a numpy array of `n` sampled stopping times for a constant hazard rate of `p`
+`stopping(a)`        | returns a numpy array of sampled stopping times for an each hazard rate in array `a`
+`arrivals(p, dt, gap, n)` | returns a numpy array of length n containing arrival times for a time-dependent hazard rate p with time interval `dt` with a minimum separation of `gap` between events
+`first_arrival(p, dt, n)`    |
+`first_arrival(p, dt, n, gap)` | as above with a minimum time 
+`next_arrival()`     |
+`next_arrival()`     |
+`next_arrival()`     |
+`__repr__()`         | prints the object's string representation
+
+
+name                | description
+--------------------|------------------------------------
+`ustream(n)`        | returns a numpy 1d array of `n` uniform [0,1) random variables.
+`hazard(r, n)`      | returns a numpy 1d array of `n` Bernoulli trials given a scalar hazard rate `r`.
+`hazard(r)`         | return a numpy 1d array of Bernoulli trials given a vector of hazard rates `r`.
+`stopping(r, n)`    | returns a numpy array of `n` stopping times given a flat hazard rate `r`.
+`stopping(r)`       | returns a numpy array of stopping times given a vector of hazard rates `r`.
+`arrivals(...)`     | returns sampled arrival times from an "open" non-homogeneous Poisson process (must be a finite probability of no event i.e. 0 or more events per input)
+`first_arrival(...)`| returns sampled arrival times from a non-homogeneous Poisson process (can be "open", i.e. 0 or 1 events per input)
+`next_arrival(...)` | returns subsequent sampled arrival times from an "open" non-homogeneous Poisson process (i.e. 0 or 1 events per input)
+
 
 ### neworder.Model
 
+TODO
 
 ## Modules
 
@@ -98,18 +148,6 @@ name                | description
 
 ### Monte-Carlo
 
-name                | description
---------------------|------------------------------------
-`ustream(n)`        | returns a numpy 1d array of `n` uniform [0,1) random variables.
-`hazard(r, n)`      | returns a numpy 1d array of `n` Bernoulli trials given a scalar hazard rate `r`.
-`hazard(r)`         | return a numpy 1d array of Bernoulli trials given a vector of hazard rates `r`.
-`stopping(r, n)`    | returns a numpy array of `n` stopping times given a flat hazard rate `r`.
-`stopping(r)`       | returns a numpy array of stopping times given a vector of hazard rates `r`.
-`arrivals(...)`     | returns sampled arrival times from an "open" non-homogeneous Poisson process (must be a finite probability of no event i.e. 0 or more events per input)
-`first_arrival(...)`| returns sampled arrival times from a non-homogeneous Poisson process (can be "open", i.e. 0 or 1 events per input)
-`next_arrival(...)` | returns subsequent sampled arrival times from an "open" non-homogeneous Poisson process (i.e. 0 or 1 events per input)
-
-Each process has its own random number stream (Mersenne Twister), which by default is seeded independently. In most cases this is the preferred configuration. However, for sensitivity analysis, e.g. to gauge the impact perturbing the dynamics of the system in multiple runs, it makes more sense for each run to re-use the same sequence in order to eliminate noise from the Monte-Carlo simulation.
 
 ### Data Frames
 name                           | description

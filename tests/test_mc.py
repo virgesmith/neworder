@@ -56,6 +56,11 @@ def test_seeders():
   if no.mpi.rank() == 0:
     assert seeds != seeds2
 
+  # test custom seeder
+  seeder = lambda r: r + 1
+  m = no.Model(no.Timeline.null(), seeder)
+  assert m.mc().seed() == no.mpi.rank() + 1
+
 def _test_mc_serial(model):
   mc = model.mc()
   assert mc.seed() == 19937
