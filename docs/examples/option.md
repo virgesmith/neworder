@@ -33,11 +33,11 @@ Additionally, we compute some market risk: sensitivities to the underlying price
 We run the model over 4 processes in the MPI framework to achieve this:
 
 ```
-$ ./run_example.sh option 4 -c
+mpiexec -n 4 python examples/option/model.py
 ```
-where the `-c` flag ensures the random streams are identical.
 
-The [config.py](../../examples/option/config.py) file:
+TODO update
+The `model.py` file:
 - sets the parameters for the market and the option, and describes how to initialise the [market](../../examples/option/market.py) and [option](../../examples/option/option.py) objects with these parameters.
 
 - defines a simple timeline [0, T] corresponding to [valuation date, expiry date] and a single timestep, which is al we require for this example.

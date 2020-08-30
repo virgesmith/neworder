@@ -1,31 +1,6 @@
-# neworder
+# Description
 
-## Contents
-
-
-- [Key Features](#key-features)
-  - [Data and Performance](#data-and-performance)
-- [Proofs of Concept](#proofs-of-concept)
-- [The Framework](#the-framework)
-  - [Provision](#provision)
-- [Requirements](#requirements)
-  - [Compulsory](#compulsory)
-  - [Optional](#optional)
-- [Examples](#examples)
-  - [Hello World](#hello-world)
-  - [Diagnostics](#diagnostics)
-  - [Microsimulation of People](#microsimulation-of-people)
-    - [Parallel Execution](#parallel-execution)
-  - [MODGEN-based models](#modgen-based-models)
-    - [Microsimulation and Population Dynamics](#microsimulation-and-population-dynamics)
-    - [Competing Risks](#competing-risks)
-    - [RiskPaths](#riskpaths)
-  - [Agent-Based Models](#agent-based-models)
-  - [Derivative Pricing & Risk](#derivative-pricing-&-risk)
-- [References](#references)
-
-
-### Data and Performance
+## Data and Performance
 
 As python and C++ have very different memory models, it's generally not advisable to directly share data, i.e. to safely have a python object and a C++ object both referencing (and potentially modifying) the same memory location. However, there is a crucial exception to this: the numpy ndarray type. This is fundamental to the operation of the framework, as it enables the C++ module to directly access (and modify) both numpy arrays and pandas data frames, facilitiating very fast implementation of algorithms operating directly on pandas DataFrames<sup>*</sup>;
 
@@ -42,7 +17,7 @@ In terms of parallel execution, the following use-cases are supported:
   - perturbations to the model dynamics for sensitivity analysis
   - independent RNGs for convergence analysis
 
-### Provision
+## Provision
 
 The framework essentially provides a mechanism to iterate over a timeline, and perform operations at specified points on that timeline. This is what we call the _model_.
 
@@ -109,8 +84,6 @@ These are two variants of a simulation of a population in terms of fertility, mo
 
 The single local authority case ran in about 25 seconds on a desktop PC. The larger simulation ran on the ARC3 [[2]](#references) HPC cluster, using 48 cores, in under 5 minutes.
 
-
-
 The microsimulation framework expects a directory containing one or more python modules. There must be a module called [model.py] that, minimally, initialises a user-defined subclass of `neworder.Model` object. This entails:
 
 - defining a timeline over which the model runs. The timeline can be broken into multiple chunks, the end of each of which is considered a _checkpoint_.
@@ -118,5 +91,3 @@ The microsimulation framework expects a directory containing one or more python 
 - describes what (if any) checks to run after each timestep.
 - defines the _transitions_ that the population are subject to during the timeline.
 - describes what to do with the simulated population data at each checkpoint.
-
-

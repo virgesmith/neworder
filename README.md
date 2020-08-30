@@ -6,7 +6,7 @@
 [![Documentation Status](https://readthedocs.org/projects/neworder/badge/?version=latest)](https://neworder.readthedocs.io/en/latest/?badge=latest)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/2f3d4cbf0d174b07b527c64b700db77f)](https://www.codacy.com/app/virgesmith/neworder?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=virgesmith/neworder&amp;utm_campaign=Badge_Grade)
 
-![Mortality histogram](./doc/examples/img/mortality_hist_100k.gif)
+![Mortality histogram](./docs/examples/img/mortality_hist_100k.gif)
 
 *neworder* is a microsimulation framework inspired by [openm++](https://ompp.sourceforge.io/) and MODGEN, and to a lesser extent, the python-based [LIAM2](http://liam2.plan.be/pages/about.html) tool, and can be thought of powerful best-of-both-worlds hybrid of MODGEN and LIAM2. Modellers can define their models in a a simple. well-known language, yet benefit from the efficiency of compiled code and parallel execution:
 
@@ -19,8 +19,9 @@
 - **compatibility**: operate directly on numpy arrays and pandas DataFrames
 - **scalability**: can be run on a desktop or a HPC cluster, supporting parallel execution using MPI.
 
-|**[Module Documentation](doc/neworder.md)** | **[Examples](doc/examples.md)** | **[API reference](doc/api.md)** | **[Developer reference](doc/developer.md)** |  
-:-------------------------------------------:|:-------------------------------:|:-------------------------------------:|:-------------------------------------:
+## Documentation
+
+The main documentation is hosted at [readthedocs.io](https://neworder.readthedocs.io)
 
 ## System Requirements
 
@@ -39,4 +40,4 @@ pip install
 
 ## Tutorial
 
-First, check out the [Hello World](./examples/hello_world.md) example, then take a look at some or all of the [other examples](./examples/examples.md).
+To get started first see the detailed documentation [here](https://neworder.readthedocs.io). Then, check out the [Hello World](./docs/examples/hello_world.md) example, followed by some of [other examples](./docs/examples/examples.md).

@@ -9,7 +9,7 @@ Counts of transitions by age: first pregnancy (purple), beginning of first union
 
 See also:
 
-- the [model configuration](examples/riskpaths/config.py)
+- the [model configuration](../examples/riskpaths/model.py)
 - the [model implementation](examples/riskpaths/riskpaths.py), and
 - the [input data](examples/riskpaths/data.py)
 

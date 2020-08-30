@@ -1,4 +1,4 @@
-# Installation
+# Developer
 
 `neworder` was originally written as an embbeded python environment, a binary excutable written in C++ that provided python bindings and parallel execution functionality internally (using MPI).
 
