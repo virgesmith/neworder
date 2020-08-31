@@ -6,17 +6,18 @@ comm = MPI.COMM_WORLD
 
 import neworder
 
-class Test(neworder.Model):
+class Parallel(neworder.Model):
   def __init__(self, timeline, p, n):
-    super().__init__(timeline, neworder.MonteCarlo.deterministic_identical_seed)
+    super().__init__(timeline, neworder.MonteCarlo.deterministic_independent_seed)
     # states
     self.s = np.array(range(neworder.mpi.size()))
     # transition matrix
     self.p = np.identity(neworder.mpi.size()) * (1 - neworder.mpi.size() * p) + p
     self.n = n
 
-    # all begin with unique id and state = rank
-    self.pop = pd.DataFrame({"id": np.array(range(neworder.mpi.rank() * n, neworder.mpi.rank() * n + n)), "state": np.full(n, neworder.mpi.rank()) })
+    # all indiviuals begin with a unique id (which doubles as the index) and state = MPI rank
+    self.pop = pd.DataFrame({"id": np.array(range(neworder.mpi.rank() * n, neworder.mpi.rank() * n + n)), 
+                              "state": np.full(n, neworder.mpi.rank()) }).set_index("id")
 
   def step(self):
     # generate some movement
@@ -26,7 +27,7 @@ class Test(neworder.Model):
     for s in range(neworder.mpi.size()):
       if s != neworder.mpi.rank():
         emigrants = self.pop[self.pop.state == s]
-        #neworder.log("sending %d emigrants to %d" % (len(emigrants), s))
+        neworder.log("sending %d emigrants to %d" % (len(emigrants), s))
         comm.send(emigrants, dest=s)
 
     # remove the emigrants
@@ -36,7 +37,7 @@ class Test(neworder.Model):
     for s in range(neworder.mpi.size()):
       if s != neworder.mpi.rank():
         immigrants = comm.recv(source=s)
-        #neworder.log("received %d immigrants from %d" % (len(immigrants), s))
+        neworder.log("received %d immigrants from %d" % (len(immigrants), s))
         self.pop = self.pop.append(immigrants)
 
   def checkpoint(self):
