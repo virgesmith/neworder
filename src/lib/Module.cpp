@@ -71,7 +71,8 @@ PYBIND11_MODULE(neworder, m)
    .def("python", no::python_version)
    .def("log", log_obj)
    .def("run", no::Model::run)
-   .def("verbose", no::Environment::verbose, py::arg("verbose") = true);
+   .def("verbose", no::Environment::verbose, py::arg("verbose") = true)
+   .def("checked", no::Environment::checked, py::arg("checked") = true);
 
   // time-related module
   m.attr("time") = py::module("time")
@@ -161,7 +162,7 @@ PYBIND11_MODULE(neworder, m)
     .def("rank", no::Environment::rank)
     .def("size", no::Environment::size);    
     
-  no::Environment::init(-1, -1, false);
+  no::Environment::init(-1, -1, false, true);
 
   // Example of wrapping an STL container
   // py::class_<std::vector<double>>("DVector", py::init<int>())

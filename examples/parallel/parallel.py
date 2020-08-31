@@ -8,22 +8,27 @@ import neworder
 
 class Parallel(neworder.Model):
   def __init__(self, timeline, p, n):
+    # initialise base model (essential!)
     super().__init__(timeline, neworder.MonteCarlo.deterministic_independent_seed)
-    # states
+
+    # enumerate possible states
     self.s = np.array(range(neworder.mpi.size()))
-    # transition matrix
+
+    # create transition matrix
     self.p = np.identity(neworder.mpi.size()) * (1 - neworder.mpi.size() * p) + p
+
+    # record initial population size
     self.n = n
 
-    # all indiviuals begin with a unique id (which doubles as the index) and state = MPI rank
-    self.pop = pd.DataFrame({"id": np.array(range(neworder.mpi.rank() * n, neworder.mpi.rank() * n + n)), 
-                              "state": np.full(n, neworder.mpi.rank()) }).set_index("id")
+    # individuals use the index as a unique id and their initial state is the MPI rank
+    self.pop = pd.DataFrame({"id": np.array(range(neworder.mpi.rank() * n, (neworder.mpi.rank() + 1) * n)), 
+                             "state": np.full(n, neworder.mpi.rank()) }).set_index("id")
 
   def step(self):
     # generate some movement
     neworder.dataframe.transition(self, self.s, self.p, self.pop, "state")
 
-    # send migrants
+    # send emigrants to other processes 
     for s in range(neworder.mpi.size()):
       if s != neworder.mpi.rank():
         emigrants = self.pop[self.pop.state == s]
@@ -33,12 +38,20 @@ class Parallel(neworder.Model):
     # remove the emigrants
     self.pop = self.pop[self.pop.state == neworder.mpi.rank()]
 
-    # receive migrants
+    # receive immigrants
     for s in range(neworder.mpi.size()):
       if s != neworder.mpi.rank():
         immigrants = comm.recv(source=s)
-        neworder.log("received %d immigrants from %d" % (len(immigrants), s))
-        self.pop = self.pop.append(immigrants)
+        if len(immigrants):
+          neworder.log("received %d immigrants from %d" % (len(immigrants), s))
+          self.pop = self.pop.append(immigrants)
+
+  def check(self):
+    """ Ensure we havent lost (or gained) anybody """
+    totals = comm.gather(len(self.pop), root=0)
+    if neworder.mpi.rank() == 0:
+      return sum(totals) == self.n * neworder.mpi.size()
+    return True
 
   def checkpoint(self):
     comm.Barrier()

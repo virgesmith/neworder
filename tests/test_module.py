@@ -32,7 +32,26 @@ def test_dummy_model():
       pass
     def checkpoint(self):
       pass
+
   assert no.run(DummyModel())
+
+def test_check_flag():
+  class FailingModel(no.Model):
+    def __init__(self):
+      super().__init__(no.Timeline.null(), no.MonteCarlo.deterministic_identical_seed)
+    def step(self):
+      pass
+    def check(self):
+      return False
+    def checkpoint(self):
+      pass
+
+  # fails
+  assert not no.run(FailingModel())
+
+  no.checked(False)
+  # succeeds
+  assert no.run(FailingModel())
 
 def test_mpi():
   # if no mpi4py, assume serial like module does

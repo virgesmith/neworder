@@ -36,7 +36,7 @@ public:
   Environment& operator=(const Environment&&) = delete;
 
   // initialises the environment
-  static Environment& init(int rank, int size, bool verbose = true);
+  static Environment& init(int rank, int size, bool verbose = true, bool checked = true);
 
   // check for errors in the python env (use after catching py::error_already_set)
   static std::string get_error() noexcept;
@@ -52,6 +52,9 @@ public:
 
   // set logging on/off
   static void verbose(bool b = true);
+
+  // set whether checks are called
+  static void checked(bool b = true);
 
   // returns "py/no rank/size"
   std::string context(Context ctx = Context::CPP) const;
@@ -78,6 +81,10 @@ private:
 
   // log level
   bool m_verbose;
+
+  friend class Model;
+  // check mode flag
+  bool m_checked;
 
   // TODO work out why this segfaults if the dtor is called (even on exit)
   py::module* m_self;

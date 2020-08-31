@@ -8,13 +8,16 @@
 
 // This function must be used to init the environment
 // TODO can it be removed?
-no::Environment& no::Environment::init(int rank, int size, bool verbose)
+no::Environment& no::Environment::init(int rank, int size, bool verbose, bool checked)
 {
   // get static instance
   Environment& env = no::getenv();
 
   // verbose flag
   env.m_verbose = verbose;
+
+  // checks
+  env.m_checked = checked;
 
   // this hangs on throw when this code is in the (global singleton) constructor
   try 
@@ -57,6 +60,11 @@ int no::Environment::size()
 void no::Environment::verbose(bool b)
 {
   no::getenv().m_verbose = b;
+}
+
+void no::Environment::checked(bool b)
+{
+  no::getenv().m_checked = b;
 }
 
 std::string no::Environment::context(no::Environment::Context ctx) const

@@ -71,14 +71,16 @@ bool no::Model::run(py::object& model_subclass)
     model_subclass.attr("step")();
 
     // call the check method and stop if necessary
-    ok = model_subclass.attr("check")().cast<bool>();
-    if (!ok)
+    if (no::getenv().m_checked)
     {
-      no::log("t=%%(%%) %%.check() FAILED, halting model run"_s % t % timeindex % subclass_name );
-      break;
+      ok = model_subclass.attr("check")().cast<bool>();
+      if (!ok)
+      {
+        no::log("t=%%(%%) %%.check() FAILED, halting model run"_s % t % timeindex % subclass_name );
+        break;
+      }
+      no::log("t=%%(%%) %%.check() [ok]"_s % t % timeindex % subclass_name );
     }
-    no::log("t=%%(%%) %%.check() [ok]"_s % t % timeindex % subclass_name );
-  
     // call the checkpoint method as required 
     if (base.timeline().at_checkpoint())
     {
