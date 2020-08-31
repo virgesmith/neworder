@@ -2,7 +2,7 @@ site_name: neworder
 site_url: https://neworder.readthedocs.io
 site_author: Andrew P Smith
 site_description: Docmentation for the neworder microsimulation framework
-extra_javascript:
+#extra_javascript:
 #extra_css:
 repo_url: https://github.com/virgesmith/neworder
 repo_name: neworder
