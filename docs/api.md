@@ -2,8 +2,6 @@
 
 TODO update...
 
-## Classes and Modules
-
 The _neworder_ module defines the following classes and modules symbols within the `neworder` namespace:
 
 name                                 | type        | description
@@ -15,6 +13,7 @@ name                                 | type        | description
 [`stats`](#neworder.stats)           | module      | statistical functions
 [`dataframe`](#neworder.dataframe)   | module      | direct, fast manipulation of pandas DataFrames
 [`mpi`](#neworder.mpi)               | module      | inter-process communication<sup>*</sup>
+<p>
 
 and the following functions:
 
@@ -25,10 +24,11 @@ name              | description
 `python()`        | reports the python version
 `verbose(v=True)` | sets logging level
 `run(m)`          | executes a neworder model
+<p>
 
 ## Classes
 
-## `neworder.Timeline`
+### `neworder.Timeline`
 
 The `Timeline` class describes a timeline containing one of more checkpoints. The timeline can refer to either absolute time, or to the age of the cohort being modelled for case-based models.
 
@@ -57,15 +57,15 @@ name                | description
 
 ### `neworder.MonteCarlo`
 
-### Static Methods
+#### Static Methods
 
 name                                | description
 ------------------------------------|------------------------------------
-`deterministic_identical_seed(_)`   | Returns
+`deterministic_identical_seed(_)`   | Returns the same value regardless of the supplied argument
 `deterministic_independent_seed(r)` | Returns 
 `random_seed(_)`                    | Returns
 
-### Class Methods 
+#### Class Methods 
 
 name                | description
 --------------------|------------------------------------
@@ -114,13 +114,13 @@ name                  | description
 `isnever(t)`          | returns true if `t` is `never()`. (Direct comparison will always return false)
 `isnever(a)`          | returns a boolean array containing True for each element of a that `never()`. 
 
+TODO
+
+### `neworder.mpi`
 
 TODO
 
-
-### `neworder.Model`
-
-### `neworder.dtaframe`
+### `neworder.dataframe`
 
 name                           | description
 -------------------------------|------------------------------------

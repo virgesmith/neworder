@@ -22,3 +22,10 @@ _neworder_ runs in python 3.6 or above on 64-bit linux, OSX or Windows platforms
 
 but the module will work perfectly well in serial mode without these.
 
+## Support
+
+Issues and PRs can be posted at the [github repo](https://github.com/virgesmith/neworder). 
+
+## Licence
+
+MIT

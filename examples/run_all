@@ -12,5 +12,5 @@ python examples/riskpaths/model.py
 python examples/schelling/model.py
 
 # parallel module
-mpiexec -n 2 python examples/test/model.py
+mpiexec -n 2 python examples/parallel/model.py
 mpiexec -n 4 python examples/option/model.py

@@ -3,24 +3,46 @@
 
 All the source code for the examples can he found [here](https://github.com/virgesmith/neworder/tree/master/examples)
 
-__[hello_world](./examples/hello_world.md)__  A simple workflow that just says hello
+## [hello_world](./examples/hello_world.md)
 
-__[test](./examples/test.md)__ A simple test of parallel execution and communication
+A simple workflow that just says hello
 
-__[chapter1](./examples/chapter1)__ Example from the introductory chapter of _Microsimulation and Population Dynamics_ [[3]](./references.md#1)
+## [parallel](./examples/parallel.md)
 
-__[competing](./examples/competing.md)__ MODGEN Teaching model
+A simple example of parallel execution and communication
 
-__[disease](./examples/disease.md)__ Modelling the spread of an epidemic
+## [chapter1](./examples/chapter1)
 
-__[mortality](./examples/mortality.md)__ Modelling a non-homogeneous Poisson processes
+Example from the introductory chapter of _Microsimulation and Population Dynamics_ [[3]](./references.md#1)
 
-__[people](./examples/people.md)__ Demographic microsimulation
+## [competing](./examples/competing.md)
 
-__[people_multi](./examples/people_multi.md)__ Demographic microsimulation
+MODGEN Teaching model
 
-__[riskpaths](./examples/riskpaths.md)__ MODGEN Teaching model
+## [disease](./examples/disease.md)
 
-__[schelling](./examples/schelling.md)__ Schelling's segegation model
+Modelling the spread of an epidemic
 
-__[option](./examples/option.md)__ Financial derivative pricing and risk, demonstrating parallel execution
+## [mortality](./examples/mortality.md)
+
+Modelling a non-homogeneous Poisson process
+
+## [people](./examples/people.md)
+
+Demographic microsimulation
+
+## [people_multi](./examples/people_multi.md)
+
+Large-scale parallel demographic microsimulation
+
+## [riskpaths](./examples/riskpaths.md)
+
+An implementation of a MODGEN Teaching model
+
+## [schelling](./examples/schelling.md)
+
+Schelling's segregation model
+
+## [option](./examples/option.md)
+
+Financial derivative pricing and risk, demonstrating parallel execution

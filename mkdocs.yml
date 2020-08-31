@@ -1,4 +1,20 @@
 site_name: neworder
+site_url: https://neworder.readthedocs.io
+site_author: Andrew P Smith
+site_description: Docmentation for the neworder microsimulation framework
+extra_javascript:
+extra_css:
+repo_url: https://github.com/virgesmith/neworder
+repo_name: neworder
+copyright: &copy 2020 Andrew P Smith
+#google_analytics
+
+theme:
+  name: readthedocs
+  highlightjs: true
+  hljs_languages:
+      - yaml
+      - rust
 
 nav:
   - 'description.md'
