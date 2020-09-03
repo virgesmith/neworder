@@ -8,7 +8,7 @@ class Hist:
     # see https://matplotlib.org/api/_as_gen/matplotlib.pyplot.hist.html
     self.n, _bins, self.patches = plt.hist(data, numbins, facecolor='black')
 
-    ax.set_title("Case-based mortality microsim (%d people)" % len(data))
+    ax.set_title("Case-based mortality model (%d people)" % len(data))
     ax.set_xlabel("Age at Death")
     ax.set_ylabel("Persons")
 

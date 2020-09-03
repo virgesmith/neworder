@@ -3,9 +3,9 @@ import neworder
 import numpy as np
 
 class Person():
-  """ 
+  """
   MODGEN equivalent: actor Person {...}
-  Represents a single individual 
+  Represents a single individual
   """
   def __init__(self, mortality_hazard):
     """ MODGEN equivalent: Person::Start() """
@@ -34,7 +34,7 @@ class Person():
 class People(neworder.Model):
   """ A model containing an aggregration of Person objects """
   def __init__(self, mortality_hazard, n):
-    
+
     # initialise base model with a nondeterministic seed results will vary (slightly)
     super().__init__(neworder.Timeline.null(), neworder.MonteCarlo.nondeterministic_stream)
 
@@ -43,7 +43,7 @@ class People(neworder.Model):
     neworder.log("created %d individuals" % n)
 
   def step(self):
-    # sample each person's age at death. since everyone 
+    # sample each person's age at death. since everyone
     # (this is a hopelessly inefficient implementation when everyone has the same hazard rate)
     [p.time_mortality_event(self.mc()) for p in self.population]
 

@@ -1,6 +1,12 @@
 ## Agent-Based Models
 
-An implementation of the Schelling ABM [[7]](../references.md) is [here](examples/schelling/model.py). It's an almost pure python implementation, only using the timeline and logging functionality provided by the neworder framework, configured [here](examples/schelling/config.py)
+An implementation of the Schelling ABM [[7]](../references.md)
+
+The model script is [here](examples/schelling/model.py) and the model definition is [here](examples/schelling/schelling.py)
+
+It's an almost pure python implementation, only using the timeline and logging functionality provided by the neworder framework
+
+, configured [here](examples/schelling/config.py)
 
 ![Schelling](./img/schelling.gif)
 

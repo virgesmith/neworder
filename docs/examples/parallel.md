@@ -10,7 +10,7 @@ The state changes randomly to another states with a fixed probability `p_trans`.
 
 Each process starts with a population in a specific state, which in this example just corresponds to the rank of the process.  As the model evolves and individuals' state changes they are exchanged between processes so that each process holds all the individuals with the corresponding state.
 
-Finally, one process acquires the entire population and prints a summary of the state counts. 
+Finally, one process acquires the entire population and prints a summary of the state counts.
 
 To run the model,
 
@@ -35,7 +35,7 @@ from parallel import Parallel
 assert neworder.mpi.size() > 1, "This configuration requires MPI with >1 process"
 ```
 
-As always, the neworder framework expects an instance of a Model class, subclassed from `neworder.Model`, which in turn requires a `neworder.Timeline` object. 
+As always, the neworder framework expects an instance of a Model class, subclassed from `neworder.Model`, which in turn requires a `neworder.Timeline` object.
 
 ```python
 
@@ -66,7 +66,7 @@ class Parallel(neworder.Model):
     self.n = n
 
     # individuals use the index as a unique id and their initial state is the MPI rank
-    self.pop = pd.DataFrame({"id": np.array(range(neworder.mpi.rank() * n, (neworder.mpi.rank() + 1) * n)), 
+    self.pop = pd.DataFrame({"id": np.array(range(neworder.mpi.rank() * n, (neworder.mpi.rank() + 1) * n)),
                              "state": np.full(n, neworder.mpi.rank()) }).set_index("id")
 ```
 
@@ -77,7 +77,7 @@ and the step method models the transitions:
     # generate some movement
     neworder.dataframe.transition(self, self.s, self.p, self.pop, "state")
 
-    # send emigrants to other processes 
+    # send emigrants to other processes
     for s in range(neworder.mpi.size()):
       if s != neworder.mpi.rank():
         emigrants = self.pop[self.pop.state == s]

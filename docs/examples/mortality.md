@@ -1,23 +1,17 @@
-# Microsimulation and Population Dynamics
+# Mortality
 
-![Mortality histogram](./doc/examples/img/mortality_hist_100k.gif)
-
-We implement some example MODGEN models in *Microsimulation and Population Dynamics* [[3]](#references), and adapt them to run more efficiently in the `neworder` framework.
-
-TODO rewrite
-
+We implement an example MODGEN model in *Microsimulation and Population Dynamics* [[3]](#references), and adapt it to run more efficiently in the `neworder` framework.
 
 ## Mortality
 
-This is based on the example in the second chapter of the book - *The Life Table*. It uses an age-specific mortality rate and has two model implementations - a direct MODGEN port: [person.py](../../examples/mortality/person.py), and a re-implementation taking advantage of python packages: [people.py](../../examples/mortality/people.py). The latter also includes a visualisation of the results:
+This is based on the example in the second chapter of the book - *The Life Table*. It uses an age-specific mortality rate and has two model implementations. Rather than having a class to define each individual, they are store in a pandas `Dataframe` which provides fast iteration over the population. 
 
-[Mortality](../../examples/mortality/config.py).
-
-![Mortality histogram - 10000 people](./img/mortality_hist_10k.gif) ![Mortality histogram - 100000 people](./img/mortality_hist_100k.gif)
+![Mortality histogram - 100000 people](./img/mortality_hist_100k.gif)
 
 The mortality data is sourced from the NewETHPOP[[1]](../../README.md#references) project and represents the mortality rate for white British males in one of the London Boroughs.
 
-The "pythonic" implementation uses a pandas dataframe to store the population, as opposed to an array of `Person` objects representing each individual. This a struct-of-arrays rather than array-of-structs approach is, in this instance, far more efficient, running roughly three times quicker. It retains the basic algorithm:
+The first implementation steps through a case-based timeline and samples deaths using the marginal mortality rate as a series of (homogeneous) Poisson processs, as per the MODGEN example:
+
 - each year, sample time of death for alive individuals
 - if year is not at the end of the mortality table
   - if death occurs within the year, record time of death mark individual as dead
@@ -26,5 +20,23 @@ The "pythonic" implementation uses a pandas dataframe to store the population, a
   - record time of death mark individual as dead
 - take mean time of death
 
-An even more efficient implementation is to sample the time of death directly using the Lewis-Shedler [[4]](../../README.md#references) "thinning" algorithm - this approach doesn't require a time loop.
+The second implementation samples the term structure of mortality directly using the Lewis-Shedler [[4]](../../README.md#references) "thinning" algorithm - this approach doesn't even require a timeline as each individual's time of death can be sampled directly, as a nonhomogeneous Poisson process.
+
+Running the model script will execute both models
+
+```bash
+python examples/mortality/model.py
+```
+
+with output like this
+
+```test
+[py 0/1] Population = 100000
+[py 0/1] Discrete model life expectancy = 77.432356, exec time = 1.321355
+[py 0/1] Continuous model life expectancy = 77.388072, exec time = 0.161716
+```
+
+which illustrates how much more efficient the continuous implementation is (about ten times faster). Also displayed are an animated histogram of the deaths (above) and another graph comparing the two models:
+
+![Mortality rate comparison](./img/mortality.png)
 

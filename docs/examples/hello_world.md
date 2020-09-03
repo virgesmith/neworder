@@ -1,6 +1,6 @@
 # Hello World
 
-This simplest example illustrates the structure required, how it fits together and how it's executed by the framework. The annotated python code can be found here: [examples/hello_world/model.py](examples/hello_world/model.py). 
+This simplest example illustrates the structure required, how it fits together and how it's executed by the framework. The annotated python code can be found here: [examples/hello_world/model.py](examples/hello_world/model.py).
 
 To run the model:
 
@@ -12,7 +12,7 @@ python examples/hello_world/model.py
 
 The `neworder` framework expects an instance of a `Model` class, which in turn requires a `Timeline` object.
 
-This model doesn't require an explicit discrete timeline, so for models of this type a method is provided to construct an empty timeline (which is a single step of length zero). 
+This model doesn't require an explicit discrete timeline, so for models of this type a method is provided to construct an empty timeline (which is a single step of length zero).
 
 In more complex examples, the timeline would normally refer to absolute time, or for "case-based" models (to use MODGEN parlance), the age of a cohort. In some simple model configurations, each individual's history can be constructed in a single pass, and in this type of situation a null timeline is appropriate.
 
@@ -94,7 +94,7 @@ The model will output something like
 [py 0/1] Hello neworder_user
 ```
 
-or, if you change the `verbose` initialisation argument to `True`, 
+or, if you change the `verbose` initialisation argument to `True`,
 
 ```text
 [no 0/1] neworder 1.0.0/module python 3.8.2 (default, Jul 16 2020, 14:00:26)  [GCC 9.3.0]
@@ -119,7 +119,7 @@ The log output is prefixed with a source identifier in square brackets, containi
 
 ### Understanding the workflow and the output
 
-When using `Timeline.null()` the start time, end time and timestep are all zero, and there is a single step, and a single checkpoint at step 1.  
+When using `Timeline.null()` the start time, end time and timestep are all zero, and there is a single step, and a single checkpoint at step 1.
 
 First we get some information about the environment, and confirmation of the initialisation parameters:
 

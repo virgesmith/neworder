@@ -8,8 +8,7 @@ from matplotlib import colors
 
 class Schelling(neworder.Model):
   def __init__(self, timeline, gridsize, categories, similarity):
-
-    # NB missing this line ended up with memory corruption
+    # NB missing this line can cause memory corruption
     super().__init__(timeline, neworder.MonteCarlo.deterministic_identical_stream)
 
     # category 0 is empty cell
@@ -85,13 +84,6 @@ class Schelling(neworder.Model):
         nsame = np.sum(pop[i-1:i+2,j-1:j+2] == pop[i,j]) - 1
         self.sat[i,j] = (nsame > nocc * self.similarity) or (pop[i,j] == 0)
 
-
-    # for i in range(1, imax):
-    #   for j in range(1, jmax):
-    #     self.sat[i,j] = ((np.sum(self.pop[i-1:i+2,j-1:j+2] == self.pop[i,j]) - 1) / 8 > self.similarity) or (self.pop[i,j] == 0)
-    #plt.imshow(self.sat, cmap=self.cmap)
-    #plt.show()
-
     # enumerate empty cells
     empty = pd.DataFrame(pop).unstack() \
             .to_frame().reset_index() \
@@ -120,9 +112,6 @@ class Schelling(neworder.Model):
 
     self.pop.append(pop)
 
-    # plt.imshow(self.pop, cmap=self.cmap)
-    # plt.pause(0.01)
-    #neworder.log(self.pop)
     self.img.set_array(self.pop[-1])
     plt.pause(0.1)
 

@@ -21,14 +21,14 @@ class Parallel(neworder.Model):
     self.n = n
 
     # individuals use the index as a unique id and their initial state is the MPI rank
-    self.pop = pd.DataFrame({"id": np.array(range(neworder.mpi.rank() * n, (neworder.mpi.rank() + 1) * n)), 
+    self.pop = pd.DataFrame({"id": np.array(range(neworder.mpi.rank() * n, (neworder.mpi.rank() + 1) * n)),
                              "state": np.full(n, neworder.mpi.rank()) }).set_index("id")
 
   def step(self):
     # generate some movement
     neworder.dataframe.transition(self, self.s, self.p, self.pop, "state")
 
-    # send emigrants to other processes 
+    # send emigrants to other processes
     for s in range(neworder.mpi.size()):
       if s != neworder.mpi.rank():
         emigrants = self.pop[self.pop.state == s]

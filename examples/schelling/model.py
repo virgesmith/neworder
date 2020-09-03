@@ -2,8 +2,7 @@ import numpy as np
 import neworder
 from schelling import Schelling
 
-# serial mode
-neworder.verbose()
+#neworder.verbose()
 
 # category 0 is empty
 gridsize = [100,125]

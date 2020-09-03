@@ -19,7 +19,7 @@ and the following functions:
 
 name              | description
 ------------------|------------------------------------
-`log(x)`          | prints x, annotated with process information 
+`log(x)`          | prints x, annotated with process information
 `version()`       | reports the module version
 `python()`        | reports the python version
 `verbose(v=True)` | sets logging level
@@ -59,27 +59,27 @@ name                | description
 
 #### Static Methods
 
-name                                | description
-------------------------------------|------------------------------------
+name                                  | description
+--------------------------------------|------------------------------------
 `deterministic_identical_stream(_)`   | Seeds all streams with the same value
 `deterministic_independent_stream(r)` | Seeds all streams with a value based on the rank of the process
-`nondeterministic_stream(_)`          | Seeds the stream with 
+`nondeterministic_stream(_)`          | Seeds the stream with a nondeterministic value (using the C++ `std::random_device`)
 
-#### Class Methods 
+#### Class Methods
 
 name                | description
 --------------------|------------------------------------
-`MonteCarlo(seeder)`| construct a MonteCarlo object with random stream using the supplied seeder function 
+`MonteCarlo(seeder)`| construct a MonteCarlo object with random stream using the supplied seeder function
 `seed()`            | returns the seed
-`reset()`           | resets the stream  
+`reset()`           | resets the stream
 `ustream(n)`        | returns a numpy array of `n` uniform [0,1) random values
-`hazard(p,n)`         | returns a numpy array of `n` booleans simulating outcomes from a flat hazard rate `p` 
+`hazard(p,n)`         | returns a numpy array of `n` booleans simulating outcomes from a flat hazard rate `p`
 `hazard(a)`           | returns a numpy array of `len(a)` booleans simulating outcomes for each hazard rate in array `a`
 `stopping(p, n)`        | returns a numpy array of `n` sampled stopping times for a constant hazard rate of `p`
 `stopping(a)`        | returns a numpy array of sampled stopping times for an each hazard rate in array `a`
 `arrivals(p, dt, gap, n)` | returns a numpy array of length n containing arrival times for a time-dependent hazard rate p with time interval `dt` with a minimum separation of `gap` between events
 `first_arrival(p, dt, n)`    |
-`first_arrival(p, dt, n, gap)` | as above with a minimum time 
+`first_arrival(p, dt, n, gap)` | as above with a minimum time
 `next_arrival()`     |
 `next_arrival()`     |
 `next_arrival()`     |
@@ -112,7 +112,7 @@ name                  | description
 `far_future()`        | returns a floating-point number that compares greater than any other floating point number (i.e. always after)
 `never()`             | returns a floating point number that compares unequal to (and unordered w.r.t) any other number
 `isnever(t)`          | returns true if `t` is `never()`. (Direct comparison will always return false)
-`isnever(a)`          | returns a boolean array containing True for each element of a that `never()`. 
+`isnever(a)`          | returns a boolean array containing True for each element of a that `never()`.
 
 TODO
 

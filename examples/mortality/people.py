@@ -5,7 +5,7 @@ import neworder
 import ethpop
 
 class People(neworder.Model):
-  """ A simple aggregration of Persons each represented as a row in a data frame """
+  """ Persons sampled each represented as a row in a data frame """
   def __init__(self, mortality_hazard_file, n, max_age):
     # This is case-based model the timeline refers to the age of the cohort
     timeline = neworder.Timeline(0.0, max_age, [int(max_age)])
@@ -35,11 +35,11 @@ class People(neworder.Model):
     self.population.loc[alive, "Age"] = self.population.loc[alive, "Age"] + self.timeline().dt()
 
   def check(self):
-    self.prop_alive()
+    neworder.log("pct alive = %f" % (100.0 * np.mean(self.population.Alive)))
     return True
 
   def checkpoint(self):
-    neworder.log(self.calc_life_expectancy())
+    pass
 
   def die(self):
     # using indexes to subset data as cannot store a reference to a subset of the dataframe (it just copies)
@@ -53,7 +53,6 @@ class People(neworder.Model):
     # at final timestep everybody dies (at some later time) so dt is infinite
     if self.timeline().time() == self.max_age:
       dt = neworder.time.far_future()
-    #
     newly_dead = alive[r<dt]
 
     # kill off those who die before next timestep
@@ -63,15 +62,39 @@ class People(neworder.Model):
   def calc_life_expectancy(self):
     # ensure all people have died
     assert np.sum(self.population.Alive) == 0
+    return np.mean(self.population.TimeOfDeath)
+
+
+class People2(neworder.Model):
+  """ Persons sampled each represented as a row in a data frame """
+  def __init__(self, mortality_hazard_file, n, max_age):
+    # Direct sampling doesnt require a timeline
+    super().__init__(neworder.Timeline.null(), neworder.MonteCarlo.deterministic_identical_stream)
+    # initialise cohort
+    # filter by location, ethnicity and gender
+    self.mortality_hazard = ethpop.create(pd.read_csv(mortality_hazard_file), "E09000030", truncate85=False).reset_index()
+
+    self.mortality_hazard = self.mortality_hazard[(self.mortality_hazard.NewEthpop_ETH=="WBI")
+                                                & (self.mortality_hazard.DC1117EW_C_SEX==1)]
+
+    # store the largest age we have a rate for
+    self.max_rate_age = max(self.mortality_hazard.DC1117EW_C_AGE) - 1
+
+    #neworder.log(self.mortality_hazard.head())
+    self.population = pd.DataFrame(data={"TimeOfDeath": np.zeros(n)})
+
+    self.max_age = max_age
+
+  def step(self):
+    self.population["TimeOfDeath"] = self.mc().first_arrival(self.mortality_hazard.Rate.values, 1.0, len(self.population))
+
+  def checkpoint(self):
+    pass
+
+  def calc_life_expectancy(self):
 
     # in this case we can also compute the mortality directly by modelling a non-homogeneous Poisson process
     # using the Lewis-Shedler algorithm
-    self.population["TimeOfDeathNHPP"] = self.mc().first_arrival(self.mortality_hazard.Rate.values, self.timeline().dt(), len(self.population))
 
     # compare the discrete simulation value against the more direct computation
-    neworder.log("%f vs %f" % (np.mean(self.population.TimeOfDeath), np.mean(self.population.TimeOfDeathNHPP)))
     return np.mean(self.population.TimeOfDeath)
-
-  def prop_alive(self):
-    # # compute mean
-    neworder.log("pct alive = %f" % (100.0 * np.mean(self.population.Alive)))

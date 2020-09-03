@@ -68,16 +68,16 @@ TODO...
 Tests use the `pytest` framework and can be invoked serially with either
 
 ```bash
-pytest 
+pytest
 # or
 python setup.py test
 ```
 
-and in parallel by running in MPI:  
+and in parallel by running in MPI:
 
 ```bash
 mpiexec -n 2 pytest
-# or 
+# or
 mpiexec -n 2 python setup.py test
 ```
 

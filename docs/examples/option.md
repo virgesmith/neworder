@@ -1,3 +1,5 @@
+
+
 # Derivative Pricing
 
 ## Background
@@ -14,7 +16,7 @@ We can easily frame a derivative derivative pricing problem in terms of a micros
 - start with an intial (t=0) population of N (identical) underlying prices. Social scientists could refer to this as a 'cohort'.
 - evolve each price to option expiry time (t=T) using Monte-Carlo simulation of the stochastic differential equation (SDE):
 
-  dS/S = (r-q)dt + vdW
+  dS/S = (r-q)dt + &sigma dW
 
   where S is price, r is risk-free rate, q is continuous dividend yield, v is volatility and dW a Wiener process (a 1-d Brownian motion).
 - compute the option prices for each of the underlyings and take the mean
@@ -26,15 +28,45 @@ For this simple option we can also compute an analytic fair value under the Blac
 
 We use an implementation of the Monte-Carlo technique described above, and also, for comparision, the analytic solution.
 
-Additionally, we compute some market risk: sensitivities to the underlying price and volatility. In order to do this we need to run the simulation multiple times with perturbations to market data. To eliminate random noise we also want to use identical random streams in each simulation.
+Additionally, we compute some market risk: sensitivities to the underlying price and volatility. In order to do this we need to run the simulation multiple times with perturbations to market data. To eliminate random noise we also want to use identical random streams in each simulation. The model is run over 4 processes in the MPI framework to achieve this.
 
-We run the model over 4 processes in the MPI framework to achieve this:
+The `model.py` file sets up the run, providing input data, constructing, and the running the model. The input data consists of a `Dict` describing the market data, another describing the option contract, and a single model parameter (the number of paths).
 
+```python
+import neworder
+from black_scholes import BlackScholes
+
+# neworder.verbose() # defaults to False
+# neworder.checked() # defaults to True
+
+# requires 4 identical sims with perturbations to compute market sensitivities (a.k.a. Greeks)
+assert neworder.mpi.size() == 4, "This example requires 4 processes"
+
+# initialisation
+
+# market data
+market = {
+  "spot": 100.0, # underlying spot price
+  "rate": 0.02,  # risk-free interest rate
+  "divy": 0.01,  # (continuous) dividend yield
+  "vol": 0.2    # stock volatility
+}
+# (European) option instrument data
+option = {
+  "callput": "CALL",
+  "strike": 100.0,
+  "expiry": 0.75 # years
+}
+
+# model parameters
+nsims = 1000000 # number of underlyings to simulate
+
+# instantiate model
+bs_mc = BlackScholes(option, market, nsims)
+
+# run model
+neworder.run(bs_mc)
 ```
-mpiexec -n 4 python examples/option/model.py
-```
-
-The `model.py` file sets up the run, providing input data, constructing, and the running the model. The input data consists of a `Dict` describing the market data, another describing the option contract, and a single model parameter (the number of paths).   
 
 The file [black_scholes.py](../../examples/option/black_scholes.py) contains the model implementation (subclassing `neworder.Model`), with both analytic option formula and the Monte-Carlo simulation, with [helpers.py](../../examples/option/helpers.py) providing some additional functionality.
 
@@ -80,9 +112,9 @@ This method actually runs the simulation and stores the result for later use. Th
 
 #### Check
 
-Even though we explicitly requested that each process has indentical random streams, this does not guarantee the streams will stay identical, as different process could sample more or less than others, and the streams get out of step.
+Even though we explicitly requested that each process has identical random streams, this does not guarantee the streams will stay identical, as different process could sample more or less than others, and the streams get out of step.
 
-This method samples one uniform from each stream and will return `False` if any of them are different, which will halt the model (for that process). The implementation needs to be careful here is if some processes stop and others continue, a deadlock can occur when a process tries to communicate with a process that has ended. The check method must therefore insure that ALL processes either pass or fail. In the below implementation, all samples are send to a single process (0) for comparison and the result is broadcast back to every process, which can then all fail simulaneously if necessary.
+This method samples one uniform from each stream and will return `False` if any of them are different, which will halt the model (for that process). The implementation needs to be careful here is if some processes stop and others continue, a deadlock can occur when a process tries to communicate with a process that has ended. The check method must therefore ensure that ALL processes either pass or fail. In the below implementation, all samples are sent to a single process (0) for comparison and the result is broadcast back to every process, which can then all fail simultaneously if necessary.
 
 ```python
   def check(self):
@@ -108,13 +140,29 @@ Finally the checkpoint method is called at end of the timeline. Again, the calcu
 - checks the Monte-Carlo result against the analytic formula and displays the simulated price and the random error, for each process.
 - computes the sensitivities: process 0 gathers the results from the other processes and computes the finite-difference formulae.
 
+```python
+  def checkpoint(self):
+    # check and report accuracy
+    self.compare()
+    # compute and report some market risk
+    self.greeks()
+```
+
 ## Execution
 
 By default, the model has verbose mode off and checked mode on. These settings can be changed in [model.py]()
 
-To run the model.
+To run the model,
+
+
 
 ```bash
+mpiexec -n 4 python examples/option/model.py
+```
+
+which will produce something like
+
+```text
 [py 0/4] check() ok: True
 [py 0/4] mc: 7.182313 / ref: 7.201286 err=-0.26%
 [py 2/4] mc: 6.646473 / ref: 6.665127 err=-0.28%
@@ -126,5 +174,5 @@ To run the model.
 [py 0/4] vega 10bp=0.033892
 ```
 
-Note that the order of the output will vary, and log messages may even get scrambled.
+Note that the order of the output will vary, and log messages may even get intermingled.
 

@@ -5,11 +5,10 @@ The main vanishing point of this example is to illustrate how different processe
 """
 
 import neworder
-
 from black_scholes import BlackScholes
 
-#neworder.verbose()
-neworder.checked(True)
+# neworder.verbose() # defaults to False
+# neworder.checked() # defaults to True
 
 # requires 4 identical sims with perturbations to compute market sensitivities (a.k.a. Greeks)
 assert neworder.mpi.size() == 4, "This example requires 4 processes"
@@ -33,7 +32,8 @@ option = {
 # model parameters
 nsims = 1000000 # number of underlyings to simulate
 
-
+# instantiate model
 bs_mc = BlackScholes(option, market, nsims)
 
+# run model
 neworder.run(bs_mc)

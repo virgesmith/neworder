@@ -44,11 +44,12 @@ class BlackScholes(neworder.Model):
       ok = True
     # broadcast process 0's ok to all processes
     ok = comm.bcast(ok, root=0)
-    return ok   
+    return ok
 
   def checkpoint(self):
+    # check and report accuracy
     self.compare()
-    # compute some market risk
+    # compute and report some market risk
     self.greeks()
 
   def simulate(self):
