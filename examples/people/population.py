@@ -15,7 +15,7 @@ import pyramid
 class Population(neworder.Model):
   def __init__(self, timeline, inputdata, asfr, asmr, asir, asor, ascr, asxr):
 
-    super().__init__(timeline, neworder.MonteCarlo.deterministic_identical_seed)
+    super().__init__(timeline, neworder.MonteCarlo.deterministic_identical_stream)
 
     self.lad = inputdata.split("_")[1]
 

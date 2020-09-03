@@ -35,7 +35,7 @@ class HelloWorld(neworder.Model):
     NB it is *essential* to initialise the base class.
     Failing to do so will result in UNDEFINED BEHAVIOUR
     """
-    super().__init__(neworder.Timeline.null(), neworder.MonteCarlo.deterministic_independent_seed)
+    super().__init__(neworder.Timeline.null(), neworder.MonteCarlo.deterministic_independent_stream)
     self.name = None
 
   # def modify(self, rank):

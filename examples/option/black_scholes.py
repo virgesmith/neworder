@@ -9,11 +9,11 @@ comm = MPI.COMM_WORLD
 
 # Subclass neworder.Model
 class BlackScholes(neworder.Model):
-  def __init__(self, option, market, nsims=100000):
+  def __init__(self, option, market, nsims):
 
     # Using exact MC calc of GBM requires only 1 timestep
-    timeline = neworder.Timeline(0.0, option.expiry, [1])
-    super().__init__(timeline, neworder.MonteCarlo.deterministic_identical_seed)
+    timeline = neworder.Timeline(0.0, option["expiry"], [1])
+    super().__init__(timeline, neworder.MonteCarlo.deterministic_identical_stream)
 
     self.option = option
     self.market = market
@@ -21,14 +21,30 @@ class BlackScholes(neworder.Model):
 
   def modify(self, rank):
     if rank == 1:
-      self.market.spot = self.market.spot * 1.01 # delta/gamma up bump
+      self.market["spot"] *= 1.01 # delta/gamma up bump
     elif rank == 2:
-      self.market.spot = self.market.spot * 0.99 # delta/gamma down bump
+      self.market["spot"] *= 0.99 # delta/gamma down bump
     elif rank == 3:
-      self.market.vol = self.market.vol + 0.001 # 10bp upward vega
+      self.market["vol"] += 0.001 # 10bp upward vega
 
   def step(self):
     self.pv = self.simulate()
+
+  def check(self):
+    # check the rng streams are still in sync by sampling from each one, comparing, and broadcasting the result
+    # if one process fails the check and exits without notifying the others, deadlocks can result
+    r = self.mc().ustream(1)[0]
+    # send the value to process 0)
+    a = comm.gather(r, 0)
+    # process 0 checks the values
+    if neworder.mpi.rank() == 0:
+      ok = all(e == a[0] for e in a)
+      neworder.log("check() ok: %s" % ok)
+    else:
+      ok = True
+    # broadcast process 0's ok to all processes
+    ok = comm.bcast(ok, root=0)
+    return ok   
 
   def checkpoint(self):
     self.compare()
@@ -41,28 +57,28 @@ class BlackScholes(neworder.Model):
     normals = nstream(self.mc().ustream(self.nsims))
 
     # compute underlying prices at dt
-    S = self.market.spot
-    r = self.market.rate
-    q = self.market.divy
-    sigma = self.market.vol
+    S = self.market["spot"]
+    r = self.market["rate"]
+    q = self.market["divy"]
+    sigma = self.market["vol"]
     underlyings = S * np.exp((r - q - 0.5 * sigma * sigma) * dt + normals * sigma * sqrt(dt))
     # compute option prices at dt
-    if self.option.callput == "CALL":
-      fv = (underlyings - self.option.strike).clip(min=0.0).mean()
+    if self.option["callput"] == "CALL":
+      fv = (underlyings - self.option["strike"]).clip(min=0.0).mean()
     else:
-      fv = (self.option.strike - underlyings).clip(min=0.0).mean()
+      fv = (self.option["strike"] - underlyings).clip(min=0.0).mean()
 
     # discount back to val date
     return fv * exp(-r * dt)
 
   def analytic(self):
     """ Compute Black-Scholes European option price """
-    S = self.market.spot
-    K = self.option.strike
-    r = self.market.rate
-    q = self.market.divy
-    T = self.option.expiry
-    vol = self.market.vol
+    S = self.market["spot"]
+    K = self.option["strike"]
+    r = self.market["rate"]
+    q = self.market["divy"]
+    T = self.option["expiry"]
+    vol = self.market["vol"]
 
     #neworder.log("%f %f %f %f %f %f" % (S, K, r, q, T, vol))
 
@@ -73,7 +89,7 @@ class BlackScholes(neworder.Model):
     df = exp(-r * T)
     qf = exp(-q * T)
 
-    if self.option.callput == "CALL":
+    if self.option["callput"] == "CALL":
       return S * qf * norm_cdf(d1) - K * df * norm_cdf(d2)
     else:
       return -S * df * norm_cdf(-d1) + K * df * norm_cdf(-d2)
@@ -91,7 +107,6 @@ class BlackScholes(neworder.Model):
     pvs = comm.gather(self.pv, 0)
     # compute sensitivities on rank 0
     if neworder.mpi.rank() == 0:
-      neworder.log("gathered results: %s" % pvs)
       neworder.log("PV=%f" % pvs[0])
       neworder.log("delta=%f" % ((pvs[1] - pvs[2])/2))
       neworder.log("gamma=%f" % ((pvs[1] - 2*pvs[0] + pvs[2])))

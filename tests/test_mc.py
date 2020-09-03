@@ -3,7 +3,7 @@ import neworder as no
 
 def test_mc():
 
-  model = no.Model(no.Timeline.null(), no.MonteCarlo.deterministic_identical_seed)
+  model = no.Model(no.Timeline.null(), no.MonteCarlo.deterministic_identical_stream)
 
   x = model.mc().ustream(1)
   model.mc().reset()
@@ -18,10 +18,10 @@ def test_seeders():
 
   # serial tests 
   # determinisitc seeders always return the same value
-  assert no.MonteCarlo.deterministic_identical_seed(no.mpi.rank()) == no.MonteCarlo.deterministic_identical_seed(no.mpi.rank())
-  assert no.MonteCarlo.deterministic_independent_seed(no.mpi.rank()) == no.MonteCarlo.deterministic_independent_seed(no.mpi.rank())
+  assert no.MonteCarlo.deterministic_identical_stream(no.mpi.rank()) == no.MonteCarlo.deterministic_identical_stream(no.mpi.rank())
+  assert no.MonteCarlo.deterministic_independent_stream(no.mpi.rank()) == no.MonteCarlo.deterministic_independent_stream(no.mpi.rank())
   # nondeterministic seeders don't
-  assert no.MonteCarlo.random_seed(no.mpi.rank()) != no.MonteCarlo.random_seed(no.mpi.rank())
+  assert no.MonteCarlo.nondeterministic_stream(no.mpi.rank()) != no.MonteCarlo.nondeterministic_stream(no.mpi.rank())
 
   try:
     import mpi4py.MPI as mpi
@@ -32,27 +32,27 @@ def test_seeders():
   # parallel tests
 
   # all seeds equal
-  seeds = comm.gather(no.MonteCarlo.deterministic_identical_seed(no.mpi.rank()), 0)
+  seeds = comm.gather(no.MonteCarlo.deterministic_identical_stream(no.mpi.rank()), 0)
   if no.mpi.rank() == 0:
     assert len(seeds) == no.mpi.size()
     assert len(set(seeds)) == 1
 
   # all seeds different but reproducible
-  seeds = comm.gather(no.MonteCarlo.deterministic_independent_seed(no.mpi.rank()), 0)
+  seeds = comm.gather(no.MonteCarlo.deterministic_independent_stream(no.mpi.rank()), 0)
   if no.mpi.rank() == 0:
     assert len(seeds) == no.mpi.size()
     assert len(set(seeds)) == len(seeds)
-  seeds2 = comm.gather(no.MonteCarlo.deterministic_independent_seed(no.mpi.rank()), 0)
+  seeds2 = comm.gather(no.MonteCarlo.deterministic_independent_stream(no.mpi.rank()), 0)
   if no.mpi.rank() == 0:
     assert seeds == seeds2
 
   # all seeds different and not reproducible
-  seeds = comm.gather(no.MonteCarlo.random_seed(no.mpi.rank()), 0)
+  seeds = comm.gather(no.MonteCarlo.nondeterministic_stream(no.mpi.rank()), 0)
   if no.mpi.rank() == 0:
     assert len(seeds) == no.mpi.size()
     assert len(set(seeds)) == len(seeds)
   # TODO need higher time resolution on seeder
-  seeds2 = comm.gather(no.MonteCarlo.random_seed(no.mpi.rank()), 0)
+  seeds2 = comm.gather(no.MonteCarlo.nondeterministic_stream(no.mpi.rank()), 0)
   if no.mpi.rank() == 0:
     assert seeds != seeds2
 
@@ -185,7 +185,7 @@ def _test_mc_parallel(model):
     for r in range(0, no.mpi.size()):
       assert np.all(a - all_a[r] == 0.0)
 
-  mc = no.Model(no.Timeline.null(), no.MonteCarlo.deterministic_independent_seed).mc()
+  mc = no.Model(no.Timeline.null(), no.MonteCarlo.deterministic_independent_stream).mc()
 
   a = mc.ustream(5)
 

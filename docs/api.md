@@ -61,9 +61,9 @@ name                | description
 
 name                                | description
 ------------------------------------|------------------------------------
-`deterministic_identical_seed(_)`   | Returns the same value regardless of the supplied argument
-`deterministic_independent_seed(r)` | Returns 
-`random_seed(_)`                    | Returns
+`deterministic_identical_stream(_)`   | Seeds all streams with the same value
+`deterministic_independent_stream(r)` | Seeds all streams with a value based on the rank of the process
+`nondeterministic_stream(_)`          | Seeds the stream with 
 
 #### Class Methods 
 

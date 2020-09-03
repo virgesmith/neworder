@@ -9,7 +9,7 @@ import neworder
 class Parallel(neworder.Model):
   def __init__(self, timeline, p, n):
     # initialise base model (essential!)
-    super().__init__(timeline, neworder.MonteCarlo.deterministic_independent_seed)
+    super().__init__(timeline, neworder.MonteCarlo.deterministic_independent_stream)
 
     # enumerate possible states
     self.s = np.array(range(neworder.mpi.size()))

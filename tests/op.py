@@ -28,7 +28,7 @@ def test():
   t = test_.Test()
 
   # base model
-  model = neworder.Model(neworder.Timeline.null(), neworder.MonteCarlo.deterministic_identical_seed)
+  model = neworder.Model(neworder.Timeline.null(), neworder.MonteCarlo.deterministic_identical_stream)
 
   # Exp.value = p +/- 1/sqrt(N)
   h = model.mc().hazard(0.2, 10000)

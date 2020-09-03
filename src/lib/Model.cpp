@@ -13,7 +13,7 @@ no::Model::Model(Timeline& timeline, const py::function& seeder)
   : m_timeline(timeline), m_monteCarlo(seeder(no::getenv().rank()).cast<int64_t>())
 {
   no::log("neworder %%/module python %%"_s % module_version() % python_version());
-  no::log("model init: mc={seed:%%}"_s % m_monteCarlo.seed());
+  no::log("model init: timeline=%% mc=%%"_s % m_timeline.repr() % m_monteCarlo.repr());
 }
 
 
@@ -52,8 +52,7 @@ bool no::Model::run(py::object& model_subclass)
 
   const std::string& subclass_name = py::str(model_subclass).cast<std::string>();
 
-  no::log("starting model run. start time=%%, timestep=%%, checkpoint(s) at %%"_s 
-    % base.timeline().start() % base.m_timeline.dt() % base.timeline().checkpoints());
+  no::log("starting model run. start time=%%"_s % base.timeline().start());
 
   // apply the modifier, if implemented in the derived class 
   no::log("t=%%(%%) %%.modify(%%)"_s % base.timeline().time() % base.timeline().index() % subclass_name % rank);
@@ -76,7 +75,7 @@ bool no::Model::run(py::object& model_subclass)
       ok = model_subclass.attr("check")().cast<bool>();
       if (!ok)
       {
-        no::log("t=%%(%%) %%.check() FAILED, halting model run"_s % t % timeindex % subclass_name );
+        no::log("t=%%(%%) %%.check() FAILED, halting model run"_s % t % timeindex % subclass_name, true );
         break;
       }
       no::log("t=%%(%%) %%.check() [ok]"_s % t % timeindex % subclass_name );

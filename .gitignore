@@ -37,3 +37,6 @@ dist/*
 *.so
 
 *_old*
+
+# eval
+docs-sphinx/

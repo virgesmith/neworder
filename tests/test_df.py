@@ -12,7 +12,7 @@ def test_errors():
   df = pd.read_csv("./tests/df.csv")
 
   # base model for MC engine
-  model = no.Model(no.Timeline.null(), no.MonteCarlo.deterministic_identical_seed)
+  model = no.Model(no.Timeline.null(), no.MonteCarlo.deterministic_identical_stream)
 
   cats = np.array(range(4)) 
   # identity matrix means no transitions
@@ -34,7 +34,7 @@ def test():
   df = pd.read_csv("./tests/df.csv")
 
   # base model for MC engine
-  model = no.Model(no.Timeline.null(), no.MonteCarlo.deterministic_identical_seed)
+  model = no.Model(no.Timeline.null(), no.MonteCarlo.deterministic_identical_stream)
 
   cats = np.array(range(4)) 
   # identity matrix means no transitions

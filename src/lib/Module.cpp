@@ -66,10 +66,14 @@ std::string no::python_version()
 // python-visible log function defined above
 PYBIND11_MODULE(neworder, m)
 {
+  // py::options options;
+  // options.disable_function_signatures();
+#include "Module_docstr.cpp" 
+
   // utility/diagnostics
-  m.def("version", no::module_version)
+  m.def("version", no::module_version, version_docstr)
    .def("python", no::python_version)
-   .def("log", log_obj)
+   .def("log", log_obj, log_docstr)
    .def("run", no::Model::run)
    .def("verbose", no::Environment::verbose, py::arg("verbose") = true)
    .def("checked", no::Environment::checked, py::arg("checked") = true);
@@ -93,11 +97,7 @@ PYBIND11_MODULE(neworder, m)
     //.def("next", &no::Timeline::next) not exposed 
     .def("at_checkpoint", &no::Timeline::at_checkpoint)
     .def("at_end", &no::Timeline::at_end)
-    .def("__repr__", [](const no::Timeline& tl) {
-        return "<neworder.Timeline start=%% end=%% checkpoints=%% index=%%>"_s 
-          % tl.start() % tl.end() % tl.checkpoints() % tl.index();
-      }
-    );
+    .def("__repr__", &no::Timeline::repr);
 
   // Microsimulation (or ABM) model class
   py::class_<no::Model>(m, "Model")
@@ -112,9 +112,9 @@ PYBIND11_MODULE(neworder, m)
 
   // MC
   py::class_<no::MonteCarlo>(m, "MonteCarlo")
-    .def_static("deterministic_identical_seed", &no::MonteCarlo::deterministic_identical_seed)
-    .def_static("deterministic_independent_seed", &no::MonteCarlo::deterministic_independent_seed)
-    .def_static("random_seed", &no::MonteCarlo::random_seed)
+    .def_static("deterministic_identical_stream", &no::MonteCarlo::deterministic_identical_stream)
+    .def_static("deterministic_independent_stream", &no::MonteCarlo::deterministic_independent_stream)
+    .def_static("nondeterministic_stream", &no::MonteCarlo::nondeterministic_stream)
     .def("seed", &no::MonteCarlo::seed)  
     .def("reset", &no::MonteCarlo::reset)  
     .def("ustream", &no::MonteCarlo::ustream)
@@ -135,10 +135,8 @@ PYBIND11_MODULE(neworder, m)
     .def("next_arrival", [](no::MonteCarlo& mc, const py::array& startingpoints, const py::array& lambda_t, double dt) { 
         return mc.next_arrival(startingpoints, lambda_t, dt, false, 0.0); 
       })
-    .def("__repr__", [](const no::MonteCarlo& mc) {
-        return "<neworder.MonteCarlo seed=%%>"_s  % mc.seed();
-      });
-
+    .def("__repr__", &no::MonteCarlo::repr);
+    
     // .def("first_arrival", [](no::MonteCarlo& mc, const py::array& lambda_t, double dt, size_t n) { 
     //   return mc.first_arrival(lambda_t, dt, n, 0.0); 
     // })
@@ -159,8 +157,8 @@ PYBIND11_MODULE(neworder, m)
 
   // MPI submodule
   m.attr("mpi") = py::module("mpi", "multiprocess communication")
-    .def("rank", no::Environment::rank)
-    .def("size", no::Environment::size);    
+    .def("rank", no::Environment::rank, mpi_rank_docstr)
+    .def("size", no::Environment::size, mpi_size_docstr);    
     
   no::Environment::init(-1, -1, false, true);
 

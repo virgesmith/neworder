@@ -89,6 +89,12 @@ bool no::Timeline::at_end() const
   return m_index == m_checkpoints.back();
 }
 
+std::string no::Timeline::repr() const
+{
+  return "<neworder.Timeline start=%% end=%% checkpoints=%% index=%%>"_s 
+          % start() % end() % checkpoints() % index();
+}
+
 // returns a floating point number that compares less than any other number
 double no::Timeline::distant_past()
 {

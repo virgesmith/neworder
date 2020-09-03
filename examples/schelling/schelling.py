@@ -10,7 +10,7 @@ class Schelling(neworder.Model):
   def __init__(self, timeline, gridsize, categories, similarity):
 
     # NB missing this line ended up with memory corruption
-    super().__init__(timeline, neworder.MonteCarlo.deterministic_identical_seed)
+    super().__init__(timeline, neworder.MonteCarlo.deterministic_identical_stream)
 
     # category 0 is empty cell
     self.ncategories = len(categories)

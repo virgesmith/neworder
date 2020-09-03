@@ -9,7 +9,7 @@ class People(neworder.Model):
   """ A simple aggregration of Persons each represented as a row in a data frame """
   def __init__(self, timeline, fertility_hazard_file, mortality_hazard_file, lad, ethnicity, n):
 
-    super().__init__(timeline, neworder.MonteCarlo.deterministic_identical_seed)
+    super().__init__(timeline, neworder.MonteCarlo.deterministic_identical_stream)
 
     # initialise cohort
     # filter by location, ethnicity and gender

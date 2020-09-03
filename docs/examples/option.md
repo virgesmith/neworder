@@ -4,15 +4,13 @@
 
 Monte-Carlo simulation is a [common technique in quantitative finance](https://en.wikipedia.org/wiki/Monte_Carlo_methods_in_finance).
 
-A [European call option](https://en.wikipedia.org/wiki/Call_option) is a derivative contract that grants the holder the right (but not the obligation)
-to buy an underlying stock S at a fixed "strike" price K at some given future time T (the expiry). Similarly,
-a put option grants the right (but not obligation) to sell, rather than buy, at a fixed price.
+A [European call option](https://en.wikipedia.org/wiki/Call_option) is a derivative contract that grants the holder the right (but not the obligation) to buy an underlying stock S at a fixed "strike" price K at some given future time T (the expiry). Similarly, a put option grants the right (but not obligation) to sell, rather than buy, at a fixed price.
 
-In order to calculate the fair value of a derivative contract one can simulate a (large) number of paths the underlying stock may take
-(according to current market conditions and some model assumptions). We then take the mean of the derivative price for
+In order to calculate the fair value of a derivative contract one can simulate a (large) number of paths the underlying stock may take (according to current market conditions and some model assumptions). We then take the mean of the derivative price for
 each simulated path to get the value of the derivative _at expiry_. Finally this price is discounted to get the current fair value.
 
 We can easily frame a derivative derivative pricing problem in terms of a microsimulation model:
+
 - start with an intial (t=0) population of N (identical) underlying prices. Social scientists could refer to this as a 'cohort'.
 - evolve each price to option expiry time (t=T) using Monte-Carlo simulation of the stochastic differential equation (SDE):
 
@@ -36,80 +34,97 @@ We run the model over 4 processes in the MPI framework to achieve this:
 mpiexec -n 4 python examples/option/model.py
 ```
 
-TODO update
-The `model.py` file:
-- sets the parameters for the market and the option, and describes how to initialise the [market](../../examples/option/market.py) and [option](../../examples/option/option.py) objects with these parameters.
+The `model.py` file sets up the run, providing input data, constructing, and the running the model. The input data consists of a `Dict` describing the market data, another describing the option contract, and a single model parameter (the number of paths).   
 
-- defines a simple timeline [0, T] corresponding to [valuation date, expiry date] and a single timestep, which is al we require for this example.
+The file [black_scholes.py](../../examples/option/black_scholes.py) contains the model implementation (subclassing `neworder.Model`), with both analytic option formula and the Monte-Carlo simulation, with [helpers.py](../../examples/option/helpers.py) providing some additional functionality.
 
-- describes the 'modifiers' for each process: the perturbations applied to the market data in order to calculate the option price sensitivity to that market data. In this case we bump the spot up and down and the volatility up, allowing calculation of delta, gamma and vega.
+#### Constructor
 
-- defines the "transition", which in this case is simply running the Monte-Carlo simulation in one step from time zero to time T.
+The constructor takes copies of the parameters, and defines a simple timeline [0, T] corresponding to [valuation date, expiry date] and a single timestep, which is all we require for this example. It initialises the base class with the timeline, and specifies that each process use the same random stream (which reduces noise in our risk calculations):
 
-- and finally the "checkpoints" run at the end of the timeline:
-  - check the Monte-Carlo result against the analytic formula and displays the price and the random error.
-  - process 0 gathers the results from the other processes and computes the sensitivities described above.
+```python
+class BlackScholes(neworder.Model):
+  def __init__(self, option, market, nsims):
 
-The file [black_scholes.py](../../examples/option/black_scholes.py) implements the Model (by subclassing `neworder.Model`), with both analytic option formula and the Monte-Carlo simulation, with [helpers.py](../../examples/option/helpers.py) providing some additional functionality.
+    # Using exact MC calc of GBM requires only 1 timestep
+    timeline = neworder.Timeline(0.0, option["expiry"], [1])
+    super().__init__(timeline, neworder.MonteCarlo.deterministic_identical_stream)
 
-The simulation must be run with 4 processes and, to eliminate Monte-Carlo noise from the sensitivities, with each process using identical random number streams (the -c flag):
+    self.option = option
+    self.market = market
+    self.nsims = nsims
+```
+
+#### Modifier
+
+This method defines the 'modifiers' for each process: the perturbations applied to the market data in each process in order to calculate the option price sensitivity to that market data. In this case we bump the spot up and down and the volatility up in the non-root processes allowing, calculation of delta, gamma and vega by finite differencing:
+
+```python
+  def modify(self, rank):
+    if rank == 1:
+      self.market["spot"] *= 1.01 # delta/gamma up bump
+    elif rank == 2:
+      self.market["spot"] *= 0.99 # delta/gamma down bump
+    elif rank == 3:
+      self.market["vol"] += 0.001 # 10bp upward vega
+```
+
+#### Step
+
+This method actually runs the simulation and stores the result for later use. The calculation details are not shown here for brevity (see the source file):
+
+```python
+  def step(self):
+    self.pv = self.simulate()
+```
+
+#### Check
+
+Even though we explicitly requested that each process has indentical random streams, this does not guarantee the streams will stay identical, as different process could sample more or less than others, and the streams get out of step.
+
+This method samples one uniform from each stream and will return `False` if any of them are different, which will halt the model (for that process). The implementation needs to be careful here is if some processes stop and others continue, a deadlock can occur when a process tries to communicate with a process that has ended. The check method must therefore insure that ALL processes either pass or fail. In the below implementation, all samples are send to a single process (0) for comparison and the result is broadcast back to every process, which can then all fail simulaneously if necessary.
+
+```python
+  def check(self):
+    # check the rng streams are still in sync by sampling from each one, comparing, and broadcasting the result
+    # if one process fails the check and exits without notifying the others, deadlocks can result
+    r = self.mc().ustream(1)[0]
+    # send the value to process 0)
+    a = comm.gather(r, 0)
+    # process 0 checks the values
+    if neworder.mpi.rank() == 0:
+      ok = all(e == a[0] for e in a)
+    else:
+      ok = True
+    # broadcast process 0's ok to all processes
+    ok = comm.bcast(ok, root=0)
+    return ok
+```
+
+#### Checkpoint
+
+Finally the checkpoint method is called at end of the timeline. Again, the calculation detail is omitted for clarity, but the method performs two tasks:
+
+- checks the Monte-Carlo result against the analytic formula and displays the simulated price and the random error, for each process.
+- computes the sensitivities: process 0 gathers the results from the other processes and computes the finite-difference formulae.
+
+## Execution
+
+By default, the model has verbose mode off and checked mode on. These settings can be changed in [model.py]()
+
+To run the model.
 
 ```bash
-$ ./run_example.sh option 4 -c
-[no 2/4] neworder 0.0.0 env: mc=(indep:0, seed:79748) python 3.8.2 (default, Jul 16 2020, 14:00:26)  [GCC 9.3.0]
-[no 1/4] neworder 0.0.0 env: mc=(indep:0, seed:79748) python 3.8.2 (default, Jul 16 2020, 14:00:26)  [GCC 9.3.0]
-[no 0/4] neworder 0.0.0 env: mc=(indep:0, seed:79748) python 3.8.2 (default, Jul 16 2020, 14:00:26)  [GCC 9.3.0]
-[no 3/4] neworder 0.0.0 env: mc=(indep:0, seed:79748) python 3.8.2 (default, Jul 16 2020, 14:00:26)  [GCC 9.3.0]
-[no 1/4] initialise: registered object 'market'
-[no 1/4] initialise: registered object 'option'
-[no 1/4] registered transition compute_mc_price: neworder.pv = neworder.model.mc(option, market)
-[no 1/4] registered checkpoint compare_mc_price: neworder.model.compare(neworder.pv, option, market)
-[no 1/4] registered checkpoint compute_greeks: option.greeks(neworder.pv)
-[no 1/4] starting microsimulation. start time=0.000000, timestep=0.750000, checkpoint(s) at [1]
-[no 1/4] applying process-specific modifier: market.spot = market.spot * 1.01
-[no 1/4] t=0.750000(1) transition: compute_mc_price
-[no 3/4] initialise: registered object 'market'
-[no 3/4] initialise: registered object 'option'
-[no 3/4] registered transition compute_mc_price: neworder.pv = neworder.model.mc(option, market)
-[no 3/4] registered checkpoint compare_mc_price: neworder.model.compare(neworder.pv, option, market)
-[no 3/4] registered checkpoint compute_greeks: option.greeks(neworder.pv)
-[no 3/4] starting microsimulation. start time=0.000000, timestep=0.750000, checkpoint(s) at [1]
-[no 3/4] applying process-specific modifier: market.vol = market.vol + 0.001
-[no 3/4] t=0.750000(1) transition: compute_mc_price
-[no 2/4] initialise: registered object 'market'
-[no 2/4] initialise: registered object 'option'
-[no 2/4] registered transition compute_mc_price: neworder.pv = neworder.model.mc(option, market)
-[no 2/4] registered checkpoint compare_mc_price: neworder.model.compare(neworder.pv, option, market)
-[no 2/4] registered checkpoint compute_greeks: option.greeks(neworder.pv)
-[no 2/4] starting microsimulation. start time=0.000000, timestep=0.750000, checkpoint(s) at [1]
-[no 2/4] applying process-specific modifier: market.spot = market.spot * 0.99
-[no 2/4] t=0.750000(1) transition: compute_mc_price
-[no 0/4] initialise: registered object 'market'
-[no 0/4] initialise: registered object 'option'
-[no 0/4] registered transition compute_mc_price: neworder.pv = neworder.model.mc(option, market)
-[no 0/4] registered checkpoint compare_mc_price: neworder.model.compare(neworder.pv, option, market)
-[no 0/4] registered checkpoint compute_greeks: option.greeks(neworder.pv)
-[no 0/4] starting microsimulation. start time=0.000000, timestep=0.750000, checkpoint(s) at [1]
-[no 0/4] applying process-specific modifier: pass
-[no 0/4] t=0.750000(1) transition: compute_mc_price
-[no 3/4] t=0.750000(1) checkpoint: compare_mc_price
-[py 3/4] mc: 7.244002 / ref: 7.235288 err=0.12%
-[no 3/4] t=0.750000(1) checkpoint: compute_greeks
-[no 1/4] t=0.750000(1) checkpoint: compare_mc_price
-[py 1/4] mc: 7.768708 / ref: 7.760108 err=0.11%
-[no 1/4] t=0.750000(1) checkpoint: compute_greeks
-[no 1/4] SUCCESS exec time=0.026183s
-[no 3/4] SUCCESS exec time=0.025125s
-[no 2/4] t=0.750000(1) checkpoint: compare_mc_price
-[py 2/4] mc: 6.673223 / ref: 6.665127 err=0.12%
-[no 2/4] t=0.750000(1) checkpoint: compute_greeks
-[no 2/4] SUCCESS exec time=0.028023s
-[no 0/4] t=0.750000(1) checkpoint: compare_mc_price
-[py 0/4] mc: 7.209954 / ref: 7.201286 err=0.12%
-[no 0/4] t=0.750000(1) checkpoint: compute_greeks
-[py 0/4] PV=7.209954
-[py 0/4] delta=0.547743
-[py 0/4] gamma=0.022023
-[py 0/4] vega 10bp=0.034048
-[no 0/4] SUCCESS exec time=0.027773s
+[py 0/4] check() ok: True
+[py 0/4] mc: 7.182313 / ref: 7.201286 err=-0.26%
+[py 2/4] mc: 6.646473 / ref: 6.665127 err=-0.28%
+[py 1/4] mc: 7.740759 / ref: 7.760108 err=-0.25%
+[py 3/4] mc: 7.216204 / ref: 7.235288 err=-0.26%
+[py 0/4] PV=7.182313
+[py 0/4] delta=0.547143
+[py 0/4] gamma=0.022606
+[py 0/4] vega 10bp=0.033892
 ```
+
+Note that the order of the output will vary, and log messages may even get scrambled.
+

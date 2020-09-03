@@ -1,8 +1,7 @@
 
 #include "MonteCarlo.h"
 #include "Environment.h"
-//#include "Log.h"
-
+#include "Log.h"
 #include "ArrayHelpers.h"
 
 #include <vector>
@@ -12,17 +11,17 @@
 
 
 // helper functions for basic seeding strategies
-int64_t no::MonteCarlo::deterministic_independent_seed(int r)
+int64_t no::MonteCarlo::deterministic_independent_stream(int r)
 {
   return 19937 + r;
 }
 
-int64_t no::MonteCarlo::deterministic_identical_seed(int)
+int64_t no::MonteCarlo::deterministic_identical_stream(int)
 {
   return 19937;  
 }
 
-int64_t no::MonteCarlo::random_seed(int r)
+int64_t no::MonteCarlo::nondeterministic_stream(int r)
 {
   std::random_device rand;
   return ((int64_t)r << 32) + rand();
@@ -42,6 +41,12 @@ void no::MonteCarlo::reset()
 {
   m_prng.seed(m_seed); 
 }
+
+std::string no::MonteCarlo::repr() const
+{  
+  return "<neworder.MonteCarlo seed=%%>"_s % seed();
+}
+
 
 // uniform [0,1)
 double no::MonteCarlo::u01()

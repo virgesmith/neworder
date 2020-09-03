@@ -18,11 +18,11 @@ class NEWORDER_EXPORT MonteCarlo
 public:
 
   // some basic seeding strategies
-  static int64_t deterministic_independent_seed(int r);
+  static int64_t deterministic_independent_stream(int r);
 
-  static int64_t deterministic_identical_seed(int);
+  static int64_t deterministic_identical_stream(int);
 
-  static int64_t random_seed(int);
+  static int64_t nondeterministic_stream(int);
 
   // constructs given a seed
   MonteCarlo(int64_t seed);
@@ -30,6 +30,9 @@ public:
   int64_t seed() const;
 
   void reset();
+
+  // used by python __repr__
+  std::string repr() const;
 
   // Uniform random [0,1) fed from the environment's PRNG stream
   py::array ustream(py::ssize_t n);

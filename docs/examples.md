@@ -11,7 +11,7 @@ A simple workflow that just says hello
 
 A simple example of parallel execution and communication
 
-## [chapter1](./examples/chapter1)
+## [chapter1](./examples/chapter1.md)
 
 Example from the introductory chapter of _Microsimulation and Population Dynamics_ [[3]](./references.md#1)
 

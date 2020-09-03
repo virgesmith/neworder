@@ -7,7 +7,7 @@ import neworder as no
 class _TestModel(no.Model):
   def __init__(self):
     # 10 steps of 10 with checkpoint at 50 and 100
-    super().__init__(no.Timeline(0,100,[5,10]), no.MonteCarlo.deterministic_identical_seed)
+    super().__init__(no.Timeline(0,100,[5,10]), no.MonteCarlo.deterministic_identical_stream)
 
     self.step_count = 0
     self.checkpoint_count = 0
@@ -21,7 +21,7 @@ class _TestModel(no.Model):
 
 class _TestModel2(no.Model):
   def __init__(self, start, end, checkpoints):
-    super().__init__(no.Timeline(start, end, checkpoints), no.MonteCarlo.deterministic_identical_seed)
+    super().__init__(no.Timeline(start, end, checkpoints), no.MonteCarlo.deterministic_identical_stream)
 
     self.i = 0
     self.t = start

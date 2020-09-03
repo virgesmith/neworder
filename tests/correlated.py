@@ -14,7 +14,7 @@ def test():
     return True
 
   # base model for testing MC engine
-  model = neworder.Model(neworder.Timeline.null(), neworder.MonteCarlo.deterministic_identical_seed)
+  model = neworder.Model(neworder.Timeline.null(), neworder.MonteCarlo.deterministic_identical_stream)
 
   seed = model.mc().seed()
   seed0 = neworder.mpi.broadcast(seed, 0)

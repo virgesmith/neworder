@@ -14,7 +14,7 @@ class Diagnostics(neworder.Model):
   and a ends by starting an interactive shell
   """
   def __init__(self, *args):
-    super().__init__(neworder.Timeline.null(), neworder.MonteCarlo.deterministic_independent_seed)
+    super().__init__(neworder.Timeline.null(), neworder.MonteCarlo.deterministic_independent_stream)
 
   def step(self):
     neworder.log("neworder %s" % neworder.version())

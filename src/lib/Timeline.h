@@ -40,6 +40,9 @@ public:
 
   bool at_end() const;
 
+  // used by python __repr__
+  std::string repr() const;
+
   // returns a floating point number that compares unequal (and unordered) to any other number
   // thus the following all evaluate to true: never() != never(), !(x < never()), !(x >= never()) (so be careful!)
   static double never();

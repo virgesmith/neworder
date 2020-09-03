@@ -123,7 +123,7 @@ When using `Timeline.null()` the start time, end time and timestep are all zero,
 
 First we get some information about the environment, and confirmation of the initialisation parameters:
 
-```
+```text
 [no 0/1] neworder 1.0.0/module python 3.8.2 (default, Jul 16 2020, 14:00:26)  [GCC 9.3.0]
 [no 0/1] model init: mc={seed:19937}
 [no 0/1] starting model run. start time=0.000000, timestep=0.000000, checkpoint(s) at [1]
@@ -157,7 +157,7 @@ which succeeded (try making it fail and then running the model, and also removin
 which prints the result:
 
 ```text
-[py 0/1] Hello az
+[py 0/1] Hello neworder_user
 ```
 
 and finally the model reports its status and execution time:

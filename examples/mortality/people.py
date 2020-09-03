@@ -9,7 +9,7 @@ class People(neworder.Model):
   def __init__(self, mortality_hazard_file, n, max_age):
     # This is case-based model the timeline refers to the age of the cohort
     timeline = neworder.Timeline(0.0, max_age, [int(max_age)])
-    super().__init__(timeline, neworder.MonteCarlo.deterministic_identical_seed)
+    super().__init__(timeline, neworder.MonteCarlo.deterministic_identical_stream)
     # initialise cohort
     # filter by location, ethnicity and gender
     self.mortality_hazard = ethpop.create(pd.read_csv(mortality_hazard_file), "E09000030", truncate85=False).reset_index()

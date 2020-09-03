@@ -85,7 +85,7 @@ def test():
     t.check(not np.array_equal(a0, a1))
 
   # base model for MC engine
-  model = neworder.Model(neworder.Timeline.null(), neworder.MonteCarlo.deterministic_independent_seed)
+  model = neworder.Model(neworder.Timeline.null(), neworder.MonteCarlo.deterministic_independent_stream)
 
   # test ustream/sequence
   if root == neworder.mpi.rank():
