@@ -10,7 +10,7 @@ copyright: &copy 2020 Andrew P Smith
 #google_analytics
 
 theme:
-  name: readthedocs
+  name: alabaster
   highlightjs: true
   hljs_languages:
       - yaml
