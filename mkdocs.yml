@@ -40,7 +40,9 @@ nav:
     - People (parallel): ./examples/people_multi.md
     - RiskPaths: examples/riskpaths.md
     - Schelling: examples/schelling.md
-  - API Reference: api.md
+  - API:
+    - API Documentation: api.md
+    - API Reference: api_auto.md
   - References: references.md
   - About: 
     - Contributing: developer.md

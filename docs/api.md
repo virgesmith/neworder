@@ -1,4 +1,8 @@
-# API Reference
+# API Documentation
+
+!!! warning ""
+    This page will be removed when I work out how to autodocument the package into a suitable format (ideally without resorting to Sphinx)
+
 
 TODO update...
 
