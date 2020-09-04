@@ -43,6 +43,7 @@ nav:
   - API:
     - API Documentation: api.md
     - API Reference: api_auto.md
+    - Tips and Tricks: tips.md
   - References: references.md
   - About: 
     - Contributing: developer.md
