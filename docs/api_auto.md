@@ -4,7 +4,7 @@ TODO reformat raw docstrings
 
 # `neworder` module
 
-```
+```text
 Help on module neworder:
 
 NAME
@@ -189,14 +189,21 @@ CLASSES
 FUNCTIONS
     checked(...) method of builtins.PyCapsule instance
         checked(checked: bool = True) -> None
+        
+        
+        Sets the checked flag, which determines whether the model runs checks during execution
+        Args:
+        verbose: bool
+        Returns:
+        None
     
     log(...) method of builtins.PyCapsule instance
-        log(arg0: object) -> None
+        log(obj: object) -> None
         
         
-        The logging function. Prints x to the console, annotated with process information
+        The logging function. Prints obj to the console, annotated with process information
         Args:
-        x: object
+        obj: object
         Returns:
         None
     
@@ -204,17 +211,32 @@ FUNCTIONS
         python() -> str
     
     run(...) method of builtins.PyCapsule instance
-        run(arg0: object) -> bool
+        run(model: object) -> bool
+        
+        
+        Runs the model
+        Args:
+        model: Model
+        Returns:
+        bool: True if model succeeded, False otherwise
     
     verbose(...) method of builtins.PyCapsule instance
         verbose(verbose: bool = True) -> None
+        
+        
+        Sets the verbose flag, which toggles detailed runtime logs
+        Args:
+        verbose: bool
+        Returns:
+        None
     
     version(...) method of builtins.PyCapsule instance
         version() -> str
         
         
-        The version function
+        Gets the module version
         Args:
+        None
         Returns:
         str: the module version
 
@@ -226,11 +248,11 @@ FILE
 
 # `neworder.mpi` module
 
-```
+```text
 Help on module mpi in neworder:
 
 NAME
-    mpi - multiprocess communication
+    mpi - Basic MPI environment discovery
 
 FUNCTIONS
     rank(...) method of builtins.PyCapsule instance
@@ -259,7 +281,7 @@ FILE
 
 # `neworder.time` module
 
-```
+```text
 Help on built-in module time in neworder:
 
 NAME
@@ -276,9 +298,28 @@ FUNCTIONS
         isnever(*args, **kwargs)
         Overloaded function.
         
-        1. isnever(arg0: float) -> bool
+        1. isnever(t: float) -> bool
         
-        2. isnever(arg0: array) -> array
+        
+            Returns whether the value of t corresponds to "never". As "never" is implemented as a floating-point NaN, 
+            direct comparison will always fails, since NaN != NaN. 
+            Args:
+                t (float): The time.
+        
+            Returns:
+                bool: True if t is never, False otherwise
+        
+        
+        2. isnever(a: array) -> array
+        
+        
+            Returns an array of booleans corresponding to whether the element of an array correspond to "never". As "never" is 
+            implemented as a floating-point NaN, direct comparison will always fails, since NaN != NaN. 
+            Args:
+                a (array(float)): The times.
+        
+            Returns:
+                array(bool): True if corresponding input is never, False otherwise
     
     never(...) method of builtins.PyCapsule instance
         never() -> float
@@ -291,7 +332,7 @@ FILE
 
 # `neworder.stats` module
 
-```
+```text
 Help on module stats in neworder:
 
 NAME
@@ -319,11 +360,11 @@ FILE
 
 # `neworder.dataframe` module
 
-```
+```text
 Help on module dataframe in neworder:
 
 NAME
-    dataframe - direct manipulations of dataframes
+    dataframe - Direct manipulations of dataframes
 
 FUNCTIONS
     directmod(...) method of builtins.PyCapsule instance

@@ -8,7 +8,7 @@
 
 ![Mortality histogram](./docs/examples/img/mortality_hist_100k.gif)
 
-*neworder* is a microsimulation framework inspired by [openm++](https://ompp.sourceforge.io/) and MODGEN, and to a lesser extent, the python-based [LIAM2](http://liam2.plan.be/pages/about.html) tool, and can be thought of powerful best-of-both-worlds hybrid of MODGEN and LIAM2. Modellers can define their models in a a simple. well-known language, yet benefit from the efficiency of compiled code and parallel execution:
+*neworder* is a microsimulation framework inspired by [openm++](https://openmpp.org/), [MODGEN](https://www.statcan.gc.ca/eng/microsimulation/modgen/modgen) and, to a lesser extent, the python-based [LIAM2](http://liam2.plan.be/pages/about.html) tool, and can be thought of powerful best-of-both-worlds hybrid of MODGEN and LIAM2. Modellers can define their models in a a simple. well-known language, yet benefit from the efficiency of compiled code and parallel execution:
 
 - **python module**: easy to install and integrate, available on all common platforms
 - **low barriers to entry**: users need only write standard python code, little or no new coding skills required.

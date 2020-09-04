@@ -14,6 +14,8 @@
 
 #include <iostream>
 
+using namespace py::literals;
+
 namespace {
 
 // not visible to (rest of) C++ - use the function declared in Log.h
@@ -73,18 +75,19 @@ PYBIND11_MODULE(neworder, m)
   // utility/diagnostics
   m.def("version", no::module_version, version_docstr)
    .def("python", no::python_version)
-   .def("log", log_obj, log_docstr)
-   .def("run", no::Model::run)
-   .def("verbose", no::Environment::verbose, py::arg("verbose") = true)
-   .def("checked", no::Environment::checked, py::arg("checked") = true);
+   .def("log", log_obj, log_docstr, "obj"_a)
+   .def("run", no::Model::run, run_docstr, "model"_a)
+   .def("verbose", no::Environment::verbose, verbose_docstr, "verbose"_a = true)
+   .def("checked", no::Environment::checked, checked_docstr, "checked"_a = true);
 
   // time-related module
   m.attr("time") = py::module("time")
+  // TODO move static methods into namespace for consistency?
    .def("distant_past", no::Timeline::distant_past)
    .def("far_future", no::Timeline::far_future)
    .def("never", no::Timeline::never)
-   .def("isnever", no::Timeline::isnever) // scalar 
-   .def("isnever", no::isnever); // array
+   .def("isnever", no::Timeline::isnever, time_isnever_docstr, "t"_a) // scalar 
+   .def("isnever", no::isnever, time_isnever_a_docstr, "a"_a); // array
 
   py::class_<no::Timeline>(m, "Timeline")
     .def(py::init<double, double, const std::vector<size_t>&>())
@@ -150,15 +153,15 @@ PYBIND11_MODULE(neworder, m)
     .def("logit", no::logit);
  
   // dataframe manipulation  
-  m.attr("dataframe") = py::module("dataframe", "direct manipulations of dataframes")
+  m.attr("dataframe") = py::module("dataframe", "Direct manipulations of dataframes")
     .def("transition", no::df::transition)
     .def("directmod", no::df::directmod);
     //.def("linked_change", no::df::linked_change, py::return_value_policy::take_ownership);
 
   // MPI submodule
-  m.attr("mpi") = py::module("mpi", "multiprocess communication")
+  m.attr("mpi") = py::module("mpi", "Basic MPI environment discovery")
     .def("rank", no::Environment::rank, mpi_rank_docstr)
-    .def("size", no::Environment::size, mpi_size_docstr);    
+    .def("size", no::Environment::size, mpi_size_docstr);
     
   no::Environment::init(-1, -1, false, true);
 
