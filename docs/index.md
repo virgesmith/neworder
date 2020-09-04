@@ -18,14 +18,12 @@
 _neworder_ runs in python 3.6 or above on 64-bit linux, OSX or Windows platforms. In order to take advantage of the parallel execution functionality, the following are also required:
 
 - an MPI implementation, such as [mpich](https://www.mpich.org/), [open-mpi](https://www.open-mpi.org/) or [ms-mpi](https://docs.microsoft.com/en-us/message-passing-interface/microsoft-mpi)
-- the [mpi4py](https://mpi4py.readthedocs.io/en/stable/) package that provides python MPI bindings
+- the [mpi4py](https://mpi4py.readthedocs.io/en/stable/) package, which provides python MPI bindings
 
 but the module will work perfectly well in serial mode without these.
 
-## Support
+## Installation
 
-Issues and PRs can be posted at the [github repo](https://github.com/virgesmith/neworder).
+TODO (not yet available on pypi/conda)
 
-## Licence
-
-MIT
+For now see [Contributing](./developer.md) for installation steps

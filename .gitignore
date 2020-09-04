@@ -39,4 +39,4 @@ dist/*
 *_old*
 
 # eval
-docs-sphinx/
+docs/_build/

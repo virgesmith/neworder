@@ -8,6 +8,13 @@ To run the model:
 python examples/hello_world/model.py
 ```
 
+which should result in something like
+
+```text
+[py 0/1] Hello neworder_user
+```
+
+
 ## Input
 
 The `neworder` framework expects an instance of a `Model` class, which in turn requires a `Timeline` object.
@@ -70,7 +77,7 @@ Finally, the `checkpoint` methods prints the greeting:
 
 using the `neworder.log` function is preferred to plain `print` statements as they add useful context for debugging purposes. The API reference can be found [here](./reference.md)
 
-### Execution
+## Execution
 
 The model is run by first constructing an instance of our model
 
@@ -86,27 +93,21 @@ ok = neworder.run(hello_world)
 
 which returns a boolean, `True` for success.
 
-### Output
+## Output
 
-The model will output something like
-
-```text
-[py 0/1] Hello neworder_user
-```
-
-or, if you change the `verbose` initialisation argument to `True`,
+To get a better idea of what's going on, uncomment the line containing `neworder.verbose()` and rerun the model. You'll get something like
 
 ```text
 [no 0/1] neworder 1.0.0/module python 3.8.2 (default, Jul 16 2020, 14:00:26)  [GCC 9.3.0]
-[no 0/1] model init: mc={seed:19937}
-[no 0/1] starting model run. start time=0.000000, timestep=0.000000, checkpoint(s) at [1]
+[no 0/1] model init: timeline=<neworder.Timeline start=0.000000 end=0.000000 checkpoints=[1] index=0> mc=<neworder.MonteCarlo seed=19937>
+[no 0/1] starting model run. start time=0.000000
 [no 0/1] t=0.000000(0) HelloWorld.modify(0)
 [no 0/1] defaulted to no-op Model::modify()
 [no 0/1] t=0.000000(1) HelloWorld.step()
 [no 0/1] t=0.000000(1) HelloWorld.check() [ok]
 [no 0/1] t=0.000000(1) HelloWorld.checkpoint()
 [py 0/1] Hello neworder_user
-[no 0/1] SUCCESS exec time=0.000442s
+[no 0/1] SUCCESS exec time=0.000279s
 ```
 
 this output is explained line-by-line below.
@@ -117,7 +118,7 @@ The log output is prefixed with a source identifier in square brackets, containi
 
 - the process id ('rank' in MPI parlance) and the total number of processes ('size' in MPI parlance) - in serial mode these default to 0/1.
 
-### Understanding the workflow and the output
+## Understanding the workflow and the output
 
 When using `Timeline.null()` the start time, end time and timestep are all zero, and there is a single step, and a single checkpoint at step 1.
 
@@ -125,8 +126,8 @@ First we get some information about the environment, and confirmation of the ini
 
 ```text
 [no 0/1] neworder 1.0.0/module python 3.8.2 (default, Jul 16 2020, 14:00:26)  [GCC 9.3.0]
-[no 0/1] model init: mc={seed:19937}
-[no 0/1] starting model run. start time=0.000000, timestep=0.000000, checkpoint(s) at [1]
+[no 0/1] model init: timeline=<neworder.Timeline start=0.000000 end=0.000000 checkpoints=[1] index=0> mc=<neworder.MonteCarlo seed=19937>
+[no 0/1] starting model run. start time=0.000000
 ```
 
 then the model starts to run, firstly applying any per-process modifications
@@ -148,7 +149,7 @@ followed by the `check` method:
 [no 0/1] t=0.000000(1) HelloWorld.check() [ok]
 ```
 
-which succeeded (try making it fail and then running the model, and also removing the method entirely). Then the single checkpoint is reached:
+which succeeded (try making it fail and then running the model, and also removing the method entirely). We've now reached the end of our timeline and have reached the one checkpoint, so the method is called:
 
 ```text
 [no 0/1] t=0.000000(1) HelloWorld.checkpoint()
@@ -165,3 +166,7 @@ and finally the model reports its status and execution time:
 ```text
 [no 0/1] SUCCESS exec time=0.000273s
 ```
+
+## Next steps
+
+Check out some or all of the other examples...

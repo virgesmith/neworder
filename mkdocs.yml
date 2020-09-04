@@ -1,27 +1,50 @@
 site_name: neworder
 site_url: https://neworder.readthedocs.io
 site_author: Andrew P Smith
-site_description: Docmentation for the neworder microsimulation framework
+site_description: Documentation for the neworder microsimulation framework
 #extra_javascript:
 #extra_css:
 repo_url: https://github.com/virgesmith/neworder
-repo_name: neworder
+repo_name: GitHub
 copyright: &copy 2020 Andrew P Smith
 #google_analytics
 
 theme:
-  name: alabaster
-  highlightjs: true
-  hljs_languages:
-      - yaml
-      - rust
+  name: mkdocs
+  # highlightjs: true
+  # hljs_languages:
+  #     - yaml
+  #     - rust
+
+markdown_extensions:
+  - toc:
+      permalink: "¶"  
+  - admonition      
+
+  # extra:
+  #   include_toc: yes      
+  #   extra_nav_links:
+  #     Fork me on GitHub: https://github.com/iamale/rock-cli
 
 nav:
-  - 'description.md'
-  - 'installation.md'
-  - 'api.md'
-  - 'examples.md'
-  - 'developer.md'
-  - 'references.md'
-  
+  - Overview: description.md
+  - Examples:
+    - Hello World: examples/hello_world.md
+    - Parallel: examples/parallel.md
+    - Chapter1: examples/chapter1.md
+    - Mortality: examples/mortality.md
+    - Option: examples/option.md
+    - Competing: examples/competing.md
+    - Disease: examples/disease.md
+    - People: ./examples/people.md
+    - People (parallel): ./examples/people_multi.md
+    - RiskPaths: examples/riskpaths.md
+    - Schelling: examples/schelling.md
+  - API Reference: api.md
+  - References: references.md
+  - About: 
+    - Contributing: developer.md
+    - Support: support.md
+    - Licence: licence.md
+#  - 'test.md'
 
