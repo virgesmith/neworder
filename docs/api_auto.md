@@ -192,20 +192,12 @@ FUNCTIONS
         
         
         Sets the checked flag, which determines whether the model runs checks during execution
-        Args:
-        verbose: bool
-        Returns:
-        None
     
     log(...) method of builtins.PyCapsule instance
         log(obj: object) -> None
         
         
         The logging function. Prints obj to the console, annotated with process information
-        Args:
-        obj: object
-        Returns:
-        None
     
     python(...) method of builtins.PyCapsule instance
         python() -> str
@@ -215,30 +207,20 @@ FUNCTIONS
         
         
         Runs the model
-        Args:
-        model: Model
         Returns:
-        bool: True if model succeeded, False otherwise
+            bool: True if model succeeded, False otherwise
     
     verbose(...) method of builtins.PyCapsule instance
         verbose(verbose: bool = True) -> None
         
         
         Sets the verbose flag, which toggles detailed runtime logs
-        Args:
-        verbose: bool
-        Returns:
-        None
     
     version(...) method of builtins.PyCapsule instance
         version() -> str
         
         
         Gets the module version
-        Args:
-        None
-        Returns:
-        str: the module version
 
 FILE
     /mnt/data/home/az/dev/neworder/.venv-focal/lib/python3.8/site-packages/neworder-1.0.0-py3.8-linux-x86_64.egg/neworder.cpython-38-x86_64-linux-gnu.so
@@ -259,19 +241,17 @@ FUNCTIONS
         rank() -> int
         
         
-        Returns the MPI rank of the process
-        Args:
+        The MPI rank of the process
         Returns:
-        int: the MPI rank
+            int: the MPI rank
     
     size(...) method of builtins.PyCapsule instance
         size() -> int
         
         
-        Returns the MPI size (no. of processes) of the run
-        Args:
+        The MPI size (no. of processes) of the run
         Returns:
-        int: the MPI size
+            int: the MPI size
 
 FILE
     (built-in)
@@ -290,9 +270,19 @@ NAME
 FUNCTIONS
     distant_past(...) method of builtins.PyCapsule instance
         distant_past() -> float
+        
+        
+        Returns a value of t that compares less than any other value but itself and "never"
+        Returns:
+            float: -inf
     
     far_future(...) method of builtins.PyCapsule instance
         far_future() -> float
+        
+        
+        Returns a value of t that compares greater than any other value but itself and "never"
+        Returns:
+            float: +inf
     
     isnever(...) method of builtins.PyCapsule instance
         isnever(*args, **kwargs)
@@ -302,10 +292,9 @@ FUNCTIONS
         
         
             Returns whether the value of t corresponds to "never". As "never" is implemented as a floating-point NaN, 
-            direct comparison will always fails, since NaN != NaN. 
+            direct comparison will always fail, since NaN != NaN. 
             Args:
                 t (float): The time.
-        
             Returns:
                 bool: True if t is never, False otherwise
         
@@ -317,12 +306,16 @@ FUNCTIONS
             implemented as a floating-point NaN, direct comparison will always fails, since NaN != NaN. 
             Args:
                 a (array(float)): The times.
-        
             Returns:
                 array(bool): True if corresponding input is never, False otherwise
     
     never(...) method of builtins.PyCapsule instance
         never() -> float
+        
+        
+        Returns a value of t that compares unequal to any value, including but itself.
+        Returns:
+            float: nan
 
 FILE
     (built-in)

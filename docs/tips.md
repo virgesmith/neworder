@@ -10,7 +10,7 @@ Use this initialisation pattern:
 ```python
 class MyModel(neworder.Model):
   def __init__(self, timeline, seeder, args...):
-    # this line is essential
+    # this line is essential:
     super().__init__(timeline, seeder)
     # now initialise the subclass...
 ```
@@ -86,3 +86,23 @@ The key here is that there is only one result, shared between all processes. In 
 
 !!! note "Tip"
     In general, the return value of `check()` should be the logical "and" of the results from each process.
+
+## Time Comparison
+
+`neworder` uses floating-point number to represent time, and the floating-point values -inf, +inf and nan respectively to represent the concepts of the distant past, the far future and never. This allows users to define, or compare against, values that are:
+
+- before any other time value,
+- after any other time value, or
+- unequal to any time value
+
+!!! warning "NaN comparisons"
+    Due to the rules of [IEEE754 floating-point](https://en.wikipedia.org/wiki/NaN#Comparison_with_NaN), care must be taken when comparing to never, since a direct comparison will always be false, i.e.: `never() != never()`.
+
+To compare time values with "never", use the supplied function `isnever()`:
+
+```python
+import neworder
+n = neworder.time.never()
+neworder.log(n == n) # False!
+neworder.log(neworder.time.isnever(n)) # True
+```

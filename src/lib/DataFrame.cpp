@@ -59,15 +59,12 @@ void no::df::transition(no::Model& model, py::array_t<int64_t> categories, py::a
     // point to beginning of row
     double* p = no::begin<double>(matrix) + i;
     if (p[0] < 0.0 || p[0] > 1.0) 
-      // % is misinterpreted. NB to find code run cppcheck --xml 2> cppcheck,xml to find codes 
-      // cppcheck-suppress zerodiv 
-      throw std::runtime_error("invalid transition probability %% at (%%,%%)"_s % p[0] % i % 0);
+      throw std::runtime_error("invalid transition probability %% at (%%, 0)"_s % p[0] % i);
     cumprobs[i][0] = p[0];
     for (int j = 1; j < m; ++j)
     {
       if (p[j] < 0.0 || p[j] > 1.0) 
-      // cppcheck-suppress zerodiv 
-        throw std::runtime_error("invalid transition probability %% at (%%,%%)"_s % p[0] % i % 0);
+        throw std::runtime_error("invalid transition probability %% at (%%, 0)"_s % p[0] % i);
       cumprobs[i][j] = cumprobs[i][j-1] + p[j*m];
     }
     // check probabilities sum to unity within tolerance

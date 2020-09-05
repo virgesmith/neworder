@@ -83,9 +83,9 @@ PYBIND11_MODULE(neworder, m)
   // time-related module
   m.attr("time") = py::module("time")
   // TODO move static methods into namespace for consistency?
-   .def("distant_past", no::Timeline::distant_past)
-   .def("far_future", no::Timeline::far_future)
-   .def("never", no::Timeline::never)
+   .def("distant_past", no::Timeline::distant_past, time_distant_past_docstr)
+   .def("far_future", no::Timeline::far_future, time_far_future_docstr)
+   .def("never", no::Timeline::never, time_never_docstr)
    .def("isnever", no::Timeline::isnever, time_isnever_docstr, "t"_a) // scalar 
    .def("isnever", no::isnever, time_isnever_a_docstr, "a"_a); // array
 

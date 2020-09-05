@@ -7,7 +7,6 @@
 #include <string>
 
 // This function must be used to init the environment
-// TODO can it be removed?
 no::Environment& no::Environment::init(int rank, int size, bool verbose, bool checked)
 {
   // get static instance
@@ -75,9 +74,8 @@ std::string no::Environment::context(no::Environment::Context ctx) const
 }
 
 
-no::Environment::Environment() : m_init(false), m_verbose(true) 
+no::Environment::Environment() : m_rank(-1), m_size(-1), m_verbose(false), m_checked(false)
 {
-  m_verbose = false;
 } 
 
 no::Environment::~Environment() 

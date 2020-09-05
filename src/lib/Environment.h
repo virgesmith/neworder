@@ -59,21 +59,16 @@ public:
   // returns "py/no rank/size"
   std::string context(Context ctx = Context::CPP) const;
 
-  // returns the neworder env as a python object 
-  operator py::object&() { return *m_self; } 
-  operator const py::object&() const { return *m_self; } 
-
-  friend void log(const std::string& msg, bool);
-  friend NEWORDER_EXPORT void log(const py::handle& msg, bool);
-
 private:
-
-  // flag to check whether init has been called
-  bool m_init;
 
   // Singletons only
   Environment();
   friend Environment& Global::instance<Environment>();
+
+  friend class Model;
+
+  friend void log(const std::string& msg, bool);
+  friend NEWORDER_EXPORT void log(const py::handle& msg, bool);
 
   // MPI rank/size
   int m_rank;
@@ -82,12 +77,11 @@ private:
   // log level
   bool m_verbose;
 
-  friend class Model;
   // check mode flag
   bool m_checked;
 
   // TODO work out why this segfaults if the dtor is called (even on exit)
-  py::module* m_self;
+  //py::module* m_self;
 };
 
 // syntactic sugar
