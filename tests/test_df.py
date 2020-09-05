@@ -2,6 +2,7 @@
 import numpy as np
 import pandas as pd
 import neworder as no
+from math import sqrt
 
 # def sample(u, t, c):
 #   i = int(np.interp(u, t, range(len(t))))
@@ -28,6 +29,53 @@ def test_errors():
   else:
     assert False
 
+def test_basic():
+
+  N = 100000
+  # base model for MC engine
+  model = no.Model(no.Timeline.null(), no.MonteCarlo.deterministic_identical_stream)
+
+  c = [1,2,3]
+  df = pd.DataFrame({"category": [1] * N})
+
+  # no transitions, check no changes
+  t = np.identity(3)
+  no.dataframe.transition(model, c, t, df, "category")
+  assert df.category.value_counts()[1] == N
+
+  # all 1 -> 2
+  t[0,0] = 0.0
+  t[1,0] = 1.0
+  no.dataframe.transition(model, c, t, df, "category")
+  assert 1 not in df.category.value_counts()
+  assert df.category.value_counts()[2] == N
+
+  # 2 -> 1 or 3
+  t = np.array([
+    [1.0, 0.5, 0.0],
+    [0.0, 0.0, 0.0],
+    [0.0, 0.5, 1.0],
+  ])
+
+  no.dataframe.transition(model, c, t, df, "category")
+  assert 2 not in df.category.value_counts()
+  for i in [1,3]:
+    assert df.category.value_counts()[i] > N/2 - sqrt(N) and df.category.value_counts()[i] < N/2 + sqrt(N)
+
+  # spread evenly
+  t = np.ones((3,3)) / 3  
+  no.dataframe.transition(model, c, t, df, "category")
+  for i in c:
+    assert df.category.value_counts()[i] > N/3 - sqrt(N) and df.category.value_counts()[i] < N/3 + sqrt(N)
+
+  # all -> 1
+  t = np.array([
+    [1.0, 1.0, 1.0],
+    [0.0, 0.0, 0.0],
+    [0.0, 0.0, 0.0],
+  ])
+  no.dataframe.transition(model, c, t, df, "category")
+  assert df.category.value_counts()[1] == N
 
 def test():
 

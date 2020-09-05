@@ -23,7 +23,7 @@ size_t interp(const std::vector<double>& cumprob, double x)
 }
 
 
-// TODO one-off-
+// TODO non-integer categories
 // categories are all possible category labels. Order corresponds to row/col in matrix
 // matrix is a transition matrix
 void no::df::transition(no::Model& model, py::array_t<int64_t> categories, py::array_t<double> matrix, py::object &df, const std::string& colname)
