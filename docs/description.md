@@ -4,7 +4,7 @@
 
 As python and C++ have very different memory models, it's generally not advisable to directly share data, i.e. to safely have a python object and a C++ object both referencing (and potentially modifying) the same memory location. However, there is a crucial exception to this: the numpy ndarray type. This is fundamental to the operation of the framework, as it enables the C++ module to directly access (and modify) both numpy arrays and pandas data frames, facilitiating very fast implementation of algorithms operating directly on pandas DataFrames<sup>*</sup>;
 
-&ast; For instance, a common requirement in microsimulation is to randomly amend a state (given in a column in a data frame) according to a specified transition matrix. This algorithm requires a loop (i.e. each case dealt with separately) and a python implementation was benchmarked at about 1,500 cases per second. The same algorithm implemented in (compiled) C++ runs some 20,000 times faster, processing the entire test dataset (~120k rows) in under 4 milliseconds.
+&ast; For instance, a common requirement in microsimulation is a Markov chain: randomly change a state (as given by a column in a data frame) according to a specified transition matrix. This algorithm (implemented in C++) runs *over 2 or 3 orders of magnitude faster* than an equivalent python implementation depending on the length of the dataset, and still an order of magnitude faster that an optimised python implementation.
 
 ## The Framework
 

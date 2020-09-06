@@ -45,16 +45,16 @@ def test_basic():
 
   # all 1 -> 2
   t[0,0] = 0.0
-  t[1,0] = 1.0
+  t[0,1] = 1.0
   no.dataframe.transition(model, c, t, df, "category")
   assert 1 not in df.category.value_counts()
   assert df.category.value_counts()[2] == N
 
   # 2 -> 1 or 3
   t = np.array([
-    [1.0, 0.5, 0.0],
-    [0.0, 0.0, 0.0],
-    [0.0, 0.5, 1.0],
+    [1.0, 0.0, 0.0],
+    [0.5, 0.0, 0.5],
+    [0.0, 0.0, 1.0],
   ])
 
   no.dataframe.transition(model, c, t, df, "category")
@@ -70,9 +70,9 @@ def test_basic():
 
   # all -> 1
   t = np.array([
-    [1.0, 1.0, 1.0],
-    [0.0, 0.0, 0.0],
-    [0.0, 0.0, 0.0],
+    [1.0, 0.0, 0.0],
+    [1.0, 0.0, 0.0],
+    [1.0, 0.0, 0.0],
   ])
   no.dataframe.transition(model, c, t, df, "category")
   assert df.category.value_counts()[1] == N
@@ -96,14 +96,14 @@ def test():
 
   # force 2->3
   trans[2,2] = 0.0
-  trans[3,2] = 1.0
+  trans[2,3] = 1.0
   no.dataframe.transition(model, cats, trans, df, "DC2101EW_C_ETHPUK11")
   no.log(df["DC2101EW_C_ETHPUK11"].unique())
   assert len(df["DC2101EW_C_ETHPUK11"].unique()) == 1 and df["DC2101EW_C_ETHPUK11"].unique()[0] == 3
 
 
   # ~half of 3->0
-  trans[0,3] = 0.5
+  trans[3,0] = 0.5
   trans[3,3] = 0.5
   no.dataframe.transition(model, cats, trans, df, "DC2101EW_C_ETHPUK11")
   assert np.array_equal(np.sort(df["DC2101EW_C_ETHPUK11"].unique()), np.array([0, 3]))

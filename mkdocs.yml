@@ -31,6 +31,7 @@ nav:
   - Examples:
     - Hello World: examples/hello_world.md
     - Parallel: examples/parallel.md
+    - Markov Chain: examples/markov_chain.md
     - Chapter1: examples/chapter1.md
     - Mortality: examples/mortality.md
     - Option: examples/option.md

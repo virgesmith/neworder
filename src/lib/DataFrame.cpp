@@ -23,7 +23,9 @@ size_t interp(const std::vector<double>& cumprob, double x)
 }
 
 
+
 // TODO non-integer categories
+// TODO different output column?
 // categories are all possible category labels. Order corresponds to row/col in matrix
 // matrix is a transition matrix
 void no::df::transition(no::Model& model, py::array_t<int64_t> categories, py::array_t<double> matrix, py::object &df, const std::string& colname)
@@ -47,25 +49,25 @@ void no::df::transition(no::Model& model, py::array_t<int64_t> categories, py::a
   if (m != matrix.shape(0))
     throw std::runtime_error("cumulative transition matrix size (%%) is not same as length of categories (%%)"_s % matrix.shape(0) % m);
 
-  // construct checked cumulative probabilities for each state to randomly interpolate
-  // IMPORTANT NOTE: whilst numpy is row-major, pandas stores column-major, i.e. the columns are contiguous memory
-  // (transposing in python doesnt change the memory layout, it just changes the view)
-  // the code below assumes the transition matrix is column major (i.e. col sums to unity not rows)
-  // but produces a *row-major* cumulative probability matrix
+  // IMPORTANT NOTES: 
+  // - whilst numpy is row-major, pandas stores column-major, i.e. the columns are contiguous memory
+  // - transposing (square matrices at least) in python doesn't change the memory layout, it just changes the view
+  // - the code below assumes the transition matrix has a row major memory layout (i.e. row sums to unity not cols)
 
+  // construct checked cumulative probabilities for each state to randomly interpolate
   std::vector<std::vector<double>> cumprobs(m, std::vector<double>(m));
   for (int i = 0; i < m; ++i)
   {
     // point to beginning of row
-    double* p = no::begin<double>(matrix) + i;
+    double* p = no::begin<double>(matrix) + (i * m);
     if (p[0] < 0.0 || p[0] > 1.0) 
       throw std::runtime_error("invalid transition probability %% at (%%, 0)"_s % p[0] % i);
     cumprobs[i][0] = p[0];
     for (int j = 1; j < m; ++j)
     {
       if (p[j] < 0.0 || p[j] > 1.0) 
-        throw std::runtime_error("invalid transition probability %% at (%%, 0)"_s % p[0] % i);
-      cumprobs[i][j] = cumprobs[i][j-1] + p[j*m];
+        throw std::runtime_error("invalid transition probability %% at (%%, %%)"_s % p[0] % i % j);
+      cumprobs[i][j] = cumprobs[i][j-1] + p[j];
     }
     // check probabilities sum to unity within tolerance
     if (fabs(cumprobs[i][m-1] - 1.0) > std::numeric_limits<double>::epsilon())
@@ -79,35 +81,31 @@ void no::df::transition(no::Model& model, py::array_t<int64_t> categories, py::a
     lookup[no::at<int64_t>(categories, Index_t<1>{i})] = (int64_t)i;
   }
 
-  // no::log("row %% %% %% %%..."_s % p[0] % p[1] % p[2] % p[3]);
-  // no::log("col %% %% %% %%..."_s % p[0] % p[m] % p[2*m] % p[3*m]);
-
-  // std::mt19937& prng = no::getenv().prng();
-
   py::ssize_t n = col.size();
 
   Timer t;
   // define a base model to init the MC engine
-  py::array_t<double> r = model.mc().ustream(n);
-  // if bottleneck, can access through
-  // auto p = r.unchecked<1>();
-  // x = p[i];
+  py::array_t<double> rpy = model.mc().ustream(n);
+
+  // possible unsafe access?
+  double* r = no::begin<double>(rpy);
+  int64_t* pcat = no::begin<int64_t>(categories);
 
   for (py::ssize_t i = 0; i < n; ++i)
   {
-    // look up the index, ignoring values that havent been explicitly set in categories (like -1)
+    // look up the index, ignoring values that haven't been explicitly set in categories (like -1)
     auto it = lookup.find(no::at<int64_t>(col, Index_t<1>{i}));
     if (it == lookup.end())
       continue;
     int64_t j = it->second;
-    py::ssize_t k = interp(cumprobs[j], no::at<double>(r, Index_t<1>{i}));
+    py::ssize_t k = interp(cumprobs[j], r[i]/*no::at<double>(r, Index_t<1>{i})*/);
     //no::log("interp %%:%% -> %%"_s % j % r[i] % k);
-    no::at<int64_t>(col, Index_t<1>{i}) = no::at<int64_t>(categories, Index_t<1>{k});
+    no::at<int64_t>(col, Index_t<1>{i}) = pcat[k]; //no::at<int64_t>(categories, Index_t<1>{k});
   }
-  no::log("transition %% elapsed: %%"_s % n % t.elapsed_s());
+  //no::log("transition %% elapsed: %%"_s % n % t.elapsed_s());
 }
 
-// example of directly modifying a DF?
+// example of directly modifying a DF
 void no::df::directmod(no::Model& model, py::object& df, const std::string& colname)
 {
   // .values? pd.Series -> np.array?

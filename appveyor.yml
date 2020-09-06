@@ -45,7 +45,7 @@ notifications:
   - provider: Email
     to:
     - '{{commitAuthorEmail}}'
-    on_build_failure: true
+    on_build_success: false
   - provider: Slack
     incoming_webhook:
       secure: TgkWvYaiFVyz5lbNkDXlHJmYThnK+VJ3C07q7N5BE9pxgpMkDKDSY+7Mc9NLxZngJ18ErQll/v9GxuDqG/9qHIFs3EuJ9Sh3XVaEkKyJBsZOWFfP/mWY+pQljqjNxsWm
