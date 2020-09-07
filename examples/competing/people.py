@@ -1,15 +1,16 @@
 
 import numpy as np
 import pandas as pd
-from matplotlib import pyplot as plt
-import neworder
+import neworder as no
 import ethpop
 
-class People(neworder.Model):
+class People(no.Model):
   """ A simple aggregration of Persons each represented as a row in a data frame """
-  def __init__(self, timeline, fertility_hazard_file, mortality_hazard_file, lad, ethnicity, n):
+  def __init__(self, dt, fertility_hazard_file, mortality_hazard_file, lad, ethnicity, n):
 
-    super().__init__(timeline, neworder.MonteCarlo.deterministic_identical_stream)
+    super().__init__(no.Timeline.null(), no.MonteCarlo.deterministic_identical_stream)
+
+    self.dt = dt # time resolution of fertility/mortality data
 
     # initialise cohort
     # filter by location, ethnicity and gender
@@ -26,53 +27,22 @@ class People(neworder.Model):
     # store the largest age we have a rate for
     self.max_rate_age = int(max(self.mortality_hazard.DC1117EW_C_AGE) - 1)
 
-    #neworder.log(self.mortality_hazard.head())
     self.population = pd.DataFrame(data={"Parity": np.zeros(n, dtype=int),
-                                         "TimeOfBaby1": neworder.time.far_future(),
-                                         "TimeOfDeath": np.zeros(n, dtype=float)})
+                                         "TimeOfDeath": no.time.far_future()})
 
   def step(self):
-    self.age()
+    self.population["TimeOfDeath"] = self.mc().first_arrival(self.mortality_hazard.Rate.values, self.dt, len(self.population))
 
-  def checkpoint(self):
-    self.stats()
-    self.plot()
+    births = self.mc().arrivals(self.fertility_hazard.Rate.values, self.dt, 0.75, len(self.population))
 
-  def plot(self):
-    buckets = range(50)
-
-    # add some time on the end to capture (most of) those who die over the max simulation age
-    #plt.hist(self.population.TimeOfDeath, buckets, color='black')
-
-    b = [ self.population.TimeOfBaby1[~np.isnan(self.population.TimeOfBaby1)],
-          self.population.TimeOfBaby2[~np.isnan(self.population.TimeOfBaby2)],
-          self.population.TimeOfBaby3[~np.isnan(self.population.TimeOfBaby3)],
-          self.population.TimeOfBaby4[~np.isnan(self.population.TimeOfBaby4)] ]
-    plt.hist(b, buckets, stacked=True)
-    #plt.savefig("./doc/examples/img/competing_hist_100k.png")
-    plt.legend(["Birth 1", "Birth 2", "Birth 3", "Birth 4"])
-    plt.xlabel("Age (y)")
-    plt.ylabel("Frequency")
-    plt.show()
-
-  def age(self):
-    self.population["TimeOfDeath"] = self.mc().first_arrival(self.mortality_hazard.Rate.values, 1.0, len(self.population))
-
-    #neworder.timeline.dt()
-    births = self.mc().arrivals(self.fertility_hazard.Rate.values, 1.0, 0.75, len(self.population))
-
-    #neworder.log(births)
+    # the number of columns is governed by the maximum number of arrivals in the births data 
     for i in range(births.shape[1]):
       col = "TimeOfBaby" + str(i+1)
       self.population[col] = births[:,i]
       # remove births that would have occured after death
-      self.population.loc[self.population[col] > self.population.TimeOfDeath, col] = neworder.time.never()
-      self.population.Parity = self.population.Parity + ~np.isnan(self.population[col])
+      self.population.loc[self.population[col] > self.population.TimeOfDeath, col] = no.time.never()
+      self.population.Parity = self.population.Parity + ~no.time.isnever(self.population[col].values)
 
-
-  def stats(self):
-    # # compute mean
-    neworder.log("birth rate = %f" % np.mean(self.population.Parity))
-    neworder.log("pct mother = %f" % (100.0 * np.mean(self.population.Parity > 0)))
-    neworder.log("life exp. = %f" % np.mean(self.population.TimeOfDeath))
-    #return True
+  def checkpoint(self):
+    # nothing more to do
+    pass

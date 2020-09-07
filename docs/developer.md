@@ -12,7 +12,7 @@ The original embedded configuration is still provided (on linux platforms only).
 
 ## Repo
 
-The source code [is here](https://github.org/virgesmith/neworder).
+The source code is on [github](https://github.com/virgesmith/neworder).
 
 ## Dependencies
 
