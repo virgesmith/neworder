@@ -64,21 +64,21 @@ class DiseaseModel(neworder.Model):
     # from uninfected
     # from asymptomatic
     self.transitions[State.ASYMPTOMATIC,State.ASYMPTOMATIC] = 1 - lambda_12 * dt - lambda_15 * dt
-    self.transitions[State.MILD,        State.ASYMPTOMATIC] = lambda_12 * dt
-    self.transitions[State.RECOVERED,   State.ASYMPTOMATIC] = lambda_15 * dt
+    self.transitions[State.ASYMPTOMATIC,State.MILD] = lambda_12 * dt
+    self.transitions[State.ASYMPTOMATIC,State.RECOVERED] = lambda_15 * dt
     # from mild
     self.transitions[State.MILD,        State.MILD]         = 1 - lambda_23 * dt - lambda_25 * dt
-    self.transitions[State.SEVERE,      State.MILD]         = lambda_23 * dt
-    self.transitions[State.RECOVERED,   State.MILD]         = lambda_25 * dt
+    self.transitions[State.MILD,        State.SEVERE]         = lambda_23 * dt
+    self.transitions[State.MILD,        State.RECOVERED]         = lambda_25 * dt
     # from severe
     self.transitions[State.SEVERE,      State.SEVERE]       = 1 - lambda_34 * dt - lambda_35 * dt
-    self.transitions[State.CRITICAL,    State.SEVERE]       = lambda_34 * dt
-    self.transitions[State.RECOVERED,   State.SEVERE]       = lambda_35 * dt
+    self.transitions[State.SEVERE,    State.CRITICAL]       = lambda_34 * dt
+    self.transitions[State.SEVERE,   State.RECOVERED]       = lambda_35 * dt
     # from critical
     # TODO back to severe?
     self.transitions[State.CRITICAL,    State.CRITICAL]     = 1 - lambda_45 * dt - lambda_46 * dt
-    self.transitions[State.RECOVERED,   State.CRITICAL]     = lambda_45 * dt
-    self.transitions[State.DECEASED,    State.CRITICAL]     = lambda_46 * dt
+    self.transitions[State.CRITICAL,   State.RECOVERED]     = lambda_45 * dt
+    self.transitions[State.CRITICAL,    State.DECEASED]     = lambda_46 * dt
     # from recovered/dead
     self.transitions[State.RECOVERED,   State.RECOVERED]    = 1.0
     self.transitions[State.DECEASED,    State.DECEASED]     = 1.0
@@ -121,19 +121,19 @@ class DiseaseModel(neworder.Model):
     raw_infection_rate = len(self.pop[self.pop.State.isin(INFECTIOUS)]) * self.r / self.npeople
     self.p_infect[self.timeline().index()] = raw_infection_rate
     self.transitions[State.UNINFECTED,State.UNINFECTED] = 1 - raw_infection_rate * dt
-    self.transitions[State.ASYMPTOMATIC, State.UNINFECTED] = raw_infection_rate * dt
+    self.transitions[State.UNINFECTED, State.ASYMPTOMATIC] = raw_infection_rate * dt
 
     # adjust severe->recovery transition according to bed capacity - make recovery less likely
     severe_adj = max(1.0, len(self.pop[self.pop.State == State.SEVERE]) / self.severe_care_cap)
     self.transitions[State.SEVERE,      State.SEVERE]       = 1 - lambda_34 * dt - lambda_35 * dt / severe_adj
-    self.transitions[State.CRITICAL,    State.SEVERE]       = lambda_34 * dt
-    self.transitions[State.RECOVERED,   State.SEVERE]       = lambda_35 * dt / severe_adj
+    self.transitions[State.SEVERE,    State.CRITICAL]       = lambda_34 * dt
+    self.transitions[State.SEVERE,   State.RECOVERED]       = lambda_35 * dt / severe_adj
 
     # adjust critical->recovery transition according to ccu bed capacity - make recovery less likely
     critical_adj = max(1.0, len(self.pop[self.pop.State == State.CRITICAL]) / self.critical_care_cap)
-    self.transitions[State.DECEASED,   State.CRITICAL]      = lambda_46 * dt
+    self.transitions[State.CRITICAL,   State.DECEASED]      = lambda_46 * dt
     self.transitions[State.CRITICAL,    State.CRITICAL]     = 1 - lambda_45 * dt / critical_adj - lambda_46 * dt
-    self.transitions[State.RECOVERED,    State.CRITICAL]    = lambda_45 * dt / critical_adj
+    self.transitions[State.CRITICAL,    State.RECOVERED]    = lambda_45 * dt / critical_adj
 
     neworder.dataframe.transition(self, ALLSTATES, self.transitions, self.pop, "State")
     self.summary = self.summary.append(self.pop.State.value_counts())

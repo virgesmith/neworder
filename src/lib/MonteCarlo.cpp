@@ -95,7 +95,7 @@ py::array no::MonteCarlo::arrivals(const py::array& lambda_t, double dt, double 
   // validate lambdas - but what exactly is valid?
   if (pl[nl-1] != 0.0)
   {
-    throw std::runtime_error("Multiple-arrival Non-homogeneous Poisson process requires a zero final hazard rate");
+    throw py::value_error("Multiple-arrival Non-homogeneous Poisson process requires a zero final hazard rate");
   }
 
   // What is the optimal lambda_u? For now largest value

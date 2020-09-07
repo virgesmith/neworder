@@ -18,7 +18,7 @@ no::Timeline::Timeline(double start, double end, const std::vector<size_t>& chec
   // validate
   if (n < 1)
   {
-    std::runtime_error("checkpoints must contain at least one value (the last step)");
+    py::value_error("checkpoints must contain at least one value (the last step)");
   }
 
   // validate checkpoints monotonic and on timeline
@@ -26,7 +26,7 @@ no::Timeline::Timeline(double start, double end, const std::vector<size_t>& chec
   {
     if (m_checkpoints[i] <= m_checkpoints[i-1])
     {
-      throw std::runtime_error("invalid timeline: checkpoint %% (%%) is not strictly greater than previous (%%)"_s 
+      throw py::value_error("invalid timeline: checkpoint %% (%%) is not strictly greater than previous (%%)"_s 
         % i % m_checkpoints[i] % m_checkpoints[i-1]);
     }
   }

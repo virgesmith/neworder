@@ -9,6 +9,7 @@
 #include "NPArray.h"
 #include "DataFrame.h"
 #include "Log.h"
+#include "Error.h"
 
 #include "NewOrder.h"
 
@@ -182,6 +183,8 @@ PYBIND11_MODULE(neworder, m)
   //   .def(py::self * double())
   //   .def(double() * py::self)
   //   ;  
+
+  py::register_exception_translator(no::exception_translator);
 
 }
 

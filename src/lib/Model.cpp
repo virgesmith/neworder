@@ -6,6 +6,7 @@
 #include "Log.h"
 #include "Environment.h"
 #include "Inspect.h"
+#include "Error.h"
 
 #include <pybind11/pybind11.h>
 
@@ -25,7 +26,7 @@ void no::Model::modify(int)
 
 void no::Model::step()
 {
-  throw std::runtime_error("Model.step() method must be overridden");
+  throw no::NotImplementedError("Model.step() method must be overridden");
 }
 
 bool no::Model::check()
@@ -37,7 +38,7 @@ bool no::Model::check()
 
 void no::Model::checkpoint()
 {
-  throw std::runtime_error("Model.checkpoint() method must be overridden");
+  throw no::NotImplementedError("Model.checkpoint() method must be overridden");
 }
 
 

@@ -10,6 +10,10 @@ The original embedded configuration is still provided (on linux platforms only).
 
 `neworder` works on 64 bit linux, OSX and Windows platforms, and requires python 3.6 or higher. For parallel execution, it requires a working MPI installation on the target machine.
 
+## Repo
+
+The source code [is here](https://github.org/virgesmith/neworder).
+
 ## Dependencies
 
 ### Pip / virtualenv
