@@ -4,7 +4,7 @@ We implement an example MODGEN model in *Microsimulation and Population Dynamics
 
 ## Mortality
 
-This is based on the example in the second chapter of the book - *The Life Table*. It uses an age-specific mortality rate and has two model implementations. Rather than having a class to define each individual, they are store in a pandas `Dataframe` which provides fast iteration over the population. 
+This is based on the example in the second chapter of the book - *The Life Table*. It uses an age-specific mortality rate and has two model implementations. Rather than having a class to define each individual, they are store in a pandas `Dataframe` which provides fast iteration over the population.
 
 ![Mortality histogram - 100000 people](./img/mortality_hist_100k.gif)
 

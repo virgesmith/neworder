@@ -114,11 +114,11 @@ This method actually runs the simulation and stores the result for later use. Th
 
 Even though we explicitly requested that each process has identical random streams, this does not guarantee the streams will stay identical, as different process could sample more or less than others, and the streams get out of step.
 
-This method samples one uniform from each stream and will return `False` if any of them are different, which will halt the model (for that process). 
+This method samples one uniform from each stream and will return `False` if any of them are different, which will halt the model (for that process).
 
 !!! danger "Deadlocks"
-    The implementation needs to be careful here is if some processes stop and others continue, a deadlock can occur when a process tries to communicate with a process that has ended. The check method must therefore ensure that ALL processes either pass or fail. 
-    
+    The implementation needs to be careful here is if some processes stop and others continue, a deadlock can occur when a process tries to communicate with a process that has ended. The check method must therefore ensure that ALL processes either pass or fail.
+
 In the below implementation, all samples are sent to a single process (0) for comparison and the result is broadcast back to every process, which can then all fail simultaneously if necessary.
 
 ```python

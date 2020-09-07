@@ -18,11 +18,11 @@ class MyModel(neworder.Model):
 ## Custom Seeding Strategies
 
 !!! note "Note"
-    `neworder` random streams use the Mersenne Twister generator, as implemented in the C++ standard library. 
+    `neworder` random streams use the Mersenne Twister generator, as implemented in the C++ standard library.
 
 `neworder` provides three seeding strategy functions which initialise the model's random stream so that they are either identical, independent, or non-reproducible (and independent).
 
-If necessary, you can supply your own seeding strategy, for instance if you required some processes to have independent streams, and some identical streams. 
+If necessary, you can supply your own seeding strategy, for instance if you required some processes to have independent streams, and some identical streams.
 
 !!! note ""
     The seeder function must accept an `int` (even if unused) and return an `int`
@@ -42,7 +42,7 @@ which returns the same seed for all odd-ranked processes and a different seed fo
 
 ```python
 class MyModel(neworder.Model):
-  def __init__(self, timeline, args...): 
+  def __init__(self, timeline, args...):
     super().__init__(timeline, lambda r: (r % 2) + 12345)
     ...
 ```
@@ -60,7 +60,7 @@ The "option" example relies on identical streams to reduce noise when computing 
 ## Deadlocks
 
 !!! danger "Failure is All-Or-Nothing"
-    If checks fail, or any other error occurs in a parallel run, other processes must be notified, otherwise deadlocks can occur. 
+    If checks fail, or any other error occurs in a parallel run, other processes must be notified, otherwise deadlocks can occur.
 
 Blocking communications between processes will deadlock if, for instance, the receiving process has ended due to an error. This will cause the entire run to hang (and may impact your HPC bill). The option example, as described above, has a check for random stream synchronisation that looks like this:
 
@@ -82,7 +82,7 @@ Blocking communications between processes will deadlock if, for instance, the re
     return ok
 ```
 
-The key here is that there is only one result, shared between all processes. In this case only one process is performing the check and broadcasting the result to the others. 
+The key here is that there is only one result, shared between all processes. In this case only one process is performing the check and broadcasting the result to the others.
 
 !!! note "Tip"
     In general, the return value of `check()` should be the logical "and" of the results from each process.
@@ -106,3 +106,21 @@ n = neworder.time.never()
 neworder.log(n == n) # False!
 neworder.log(neworder.time.isnever(n)) # True
 ```
+
+## Project Structure
+
+Although obvious to many users, in order to promote reusability, it is recommended to separate out functionality into separate logical units, for example:
+
+- model execution - defining the parameters of the model and running it
+- model definition - the actual model
+- model data - loading and preprocessing of input data
+- result visualisation
+
+This allows for
+
+- the same model to be used with different parameters and/or input data,
+- the model to be run on different plaforms without modification (think desktop vs HPC cluster vs web service).
+- visualisations tailored to the platform you are working on.
+- running multiple models from one script.
+
+This pattern is largely adhered to in the examples provided, although in many of the examples there isn't enough data/preprocessing to warrant separating the model script from the data functionality.

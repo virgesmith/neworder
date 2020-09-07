@@ -8,8 +8,8 @@ class MarkovChain(no.Model):
     super().__init__(timeline, no.MonteCarlo.deterministic_identical_stream)
     self.npeople = npeople
 
-    self.pop = pd.DataFrame(data = {"state": np.full(npeople, 0),  
-                                    "t1": no.time.never(), 
+    self.pop = pd.DataFrame(data = {"state": np.full(npeople, 0),
+                                    "t1": no.time.never(),
                                     "t2": no.time.never() })
 
     self.states = states
@@ -21,7 +21,7 @@ class MarkovChain(no.Model):
   def transition_py(self, colname):
     def _interp(cumprob, x):
       lbound = 0
-      while lbound < len(cumprob) - 1: 
+      while lbound < len(cumprob) - 1:
         if cumprob[lbound] > x:
           break
         lbound += 1
@@ -47,7 +47,7 @@ class MarkovChain(no.Model):
     # comment the above line and uncomment this line to use the faster C++ implementation
     no.dataframe.transition(self, self.states, self.transition_matrix, self.pop, "state")
     self.summary = self.summary.append(self.pop.state.value_counts().transpose())#, ignore_index=True)
-  
+
   def checkpoint(self):
     self.summary["t"] = np.linspace(self.timeline().start(), self.timeline().end(), self.timeline().nsteps() + 1)
     #self.summary.set_index(np.linspace(self.timeline().start(), self.timeline().end(), self.timeline().nsteps() + 1), drop=True, inplace=True)

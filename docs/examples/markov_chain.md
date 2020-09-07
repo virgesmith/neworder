@@ -15,7 +15,7 @@ We use a time horizon of 100 (arbitrary units) with 100 steps and a population o
 
 The model `MarkovChain` additionally implements a python-only equivalent of the `neworder.dataframe.transition()` function, which has been optimised to use the pandas `apply()` rather than an explicit loop over the datafame.
 
-The model takes about 45s to run (depending on platform). Changing `MarkovChain.step()` function to use `neworder`'s C++ implementation result in a run time of 4.9s, close to a a factor of 10 speedup. 
+The model takes about 45s to run (depending on platform). Changing `MarkovChain.step()` function to use `neworder`'s C++ implementation result in a run time of 4.9s, close to a a factor of 10 speedup.
 
 
 ![population evolution](./img/markov_chain.png)
