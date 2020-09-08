@@ -47,6 +47,7 @@ nav:
     - Tips and Tricks: tips.md
   - References: references.md
   - About: 
+    - Citing: citing.md
     - Contributing: developer.md
     - Support: support.md
     - Licence: licence.md

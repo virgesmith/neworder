@@ -18,53 +18,89 @@ const char* checked_docstr = R"docstr(
 const char* run_docstr = R"docstr(
     Runs the model
     Returns:
-        bool: True if model succeeded, False otherwise
+        True if model succeeded, False otherwise
 )docstr";
 
 const char* mpi_rank_docstr = R"docstr(
-    The MPI rank of the process
-    Returns:
-        int: the MPI rank
+    Returns the MPI rank of the process
 )docstr";
 
 const char* mpi_size_docstr = R"docstr(
-    The MPI size (no. of processes) of the run
-    Returns:
-        int: the MPI size 
+    Returns the MPI size (no. of processes) of the run
 )docstr";
 
 const char* time_distant_past_docstr = R"docstr(
     Returns a value that compares less than any other value but itself and "never"
     Returns:
-        float: -inf
+        -inf
 )docstr";
 
 const char* time_far_future_docstr = R"docstr(
     Returns a value that compares greater than any other value but itself and "never"
     Returns:
-        float: +inf
+        +inf
 )docstr";
 
 const char* time_never_docstr = R"docstr(
     Returns a value that compares unequal to any value, including but itself.
     Returns:
-        float: nan
+        nan
 )docstr";
 
 const char* time_isnever_docstr = R"docstr(
     Returns whether the value of t corresponds to "never". As "never" is implemented as a floating-point NaN, 
     direct comparison will always fail, since NaN != NaN. 
     Args:
-        t (float): The time.
+        t: The time.
     Returns:
-        bool: True if t is never, False otherwise
+        True if t is never, False otherwise
 )docstr";
 
 const char* time_isnever_a_docstr = R"docstr(
     Returns an array of booleans corresponding to whether the element of an array correspond to "never". As "never" is 
     implemented as a floating-point NaN, direct comparison will always fails, since NaN != NaN. 
     Args:
-        a (array(float)): The times.
+        t: The times.
     Returns:
-        array(bool): True if corresponding input is never, False otherwise
+        Booleans, True where corresponding input value is never, False otherwise
+)docstr";
+
+
+const char* stats_logistic_docstr = R"docstr(
+    Computes the logistic function on the supplied values. 
+    Args:
+        x: The input values.
+        k: The growth rate
+        x0: the midpoint location
+    Returns:
+        The function values
+)docstr";
+
+const char* stats_logistic_docstr_2 = R"docstr(
+    Computes the logistic function with x0=0 on the supplied values. 
+    Args:
+        x: The input values.
+        k: The growth rate
+    Returns:
+        The function values
+)docstr";
+
+const char* stats_logistic_docstr_1 = R"docstr(
+    Computes the logistic function with k=1 and x0=0 on the supplied values. 
+    Args:
+        x: The input values.
+    Returns:
+        The function values
+)docstr";
+
+const char* stats_logit_docstr = R"docstr(
+    Computes the logit function on the supplied values. 
+    Args:
+        x: The input probability values in (0,1).
+    Returns:
+        The function values (log-odds)
+)docstr";
+
+// temporary
+const char* empty_docstr = R"docstr(
 )docstr";

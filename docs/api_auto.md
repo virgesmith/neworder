@@ -17,6 +17,8 @@ CLASSES
         Timeline
     
     class Model(pybind11_builtins.pybind11_object)
+     |  The base model class from which all neworder models should be subclassed
+     |  
      |  Method resolution order:
      |      Model
      |      pybind11_builtins.pybind11_object
@@ -37,7 +39,7 @@ CLASSES
      |      mc(self: neworder.Model) -> no::MonteCarlo
      |  
      |  modify(...)
-     |      modify(self: neworder.Model, arg0: int) -> None
+     |      modify(self: neworder.Model, r: int) -> None
      |  
      |  step(...)
      |      step(self: neworder.Model) -> None
@@ -52,6 +54,8 @@ CLASSES
      |      Create and return a new object.  See help(type) for accurate signature.
     
     class MonteCarlo(pybind11_builtins.pybind11_object)
+     |  The model's Monte-Carlo engine
+     |  
      |  Method resolution order:
      |      MonteCarlo
      |      pybind11_builtins.pybind11_object
@@ -66,37 +70,47 @@ CLASSES
      |      __repr__(self: neworder.MonteCarlo) -> str
      |  
      |  arrivals(...)
-     |      arrivals(self: neworder.MonteCarlo, arg0: array, arg1: float, arg2: float, arg3: int) -> array
+     |      arrivals(self: neworder.MonteCarlo, lambda: numpy.ndarray[float64], dt: float, mingap: float, n: int) -> numpy.ndarray[float64]
      |  
      |  first_arrival(...)
      |      first_arrival(*args, **kwargs)
      |      Overloaded function.
      |      
-     |      1. first_arrival(self: neworder.MonteCarlo, arg0: array, arg1: float, arg2: int, arg3: float) -> array
+     |      1. first_arrival(self: neworder.MonteCarlo, lambda: numpy.ndarray[float64], dt: float, n: int, minval: float) -> numpy.ndarray[float64]
      |      
-     |      2. first_arrival(self: neworder.MonteCarlo, arg0: array, arg1: float, arg2: int) -> array
+     |      
+     |      
+     |      
+     |      2. first_arrival(self: neworder.MonteCarlo, mc: numpy.ndarray[float64], lambda: float, n: int) -> numpy.ndarray[float64]
+     |      
+     |      dt_a
      |  
      |  hazard(...)
      |      hazard(*args, **kwargs)
      |      Overloaded function.
      |      
-     |      1. hazard(self: neworder.MonteCarlo, arg0: float, arg1: int) -> array
+     |      1. hazard(self: neworder.MonteCarlo, p: float, n: int) -> numpy.ndarray[float64]
      |      
-     |      simulate outcomes from a flat hazard rate
      |      
-     |      2. hazard(self: neworder.MonteCarlo, arg0: array) -> array
      |      
-     |      simulate outcomes from hazard rates
+     |      
+     |      2. hazard(self: neworder.MonteCarlo, p: numpy.ndarray[float64]) -> numpy.ndarray[float64]
      |  
      |  next_arrival(...)
      |      next_arrival(*args, **kwargs)
      |      Overloaded function.
      |      
-     |      1. next_arrival(self: neworder.MonteCarlo, arg0: array, arg1: array, arg2: float, arg3: bool, arg4: float) -> array
+     |      1. next_arrival(self: neworder.MonteCarlo, startingpoints: numpy.ndarray[float64], lambda: numpy.ndarray[float64], dt: float, relative: bool, minsep: float) -> numpy.ndarray[float64]
      |      
-     |      2. next_arrival(self: neworder.MonteCarlo, arg0: array, arg1: array, arg2: float, arg3: bool) -> array
      |      
-     |      3. next_arrival(self: neworder.MonteCarlo, arg0: array, arg1: array, arg2: float) -> array
+     |      
+     |      
+     |      2. next_arrival(self: neworder.MonteCarlo, arg0: numpy.ndarray[float64], arg1: numpy.ndarray[float64], arg2: float, arg3: bool) -> numpy.ndarray[float64]
+     |      
+     |      
+     |      
+     |      
+     |      3. next_arrival(self: neworder.MonteCarlo, arg0: numpy.ndarray[float64], arg1: numpy.ndarray[float64], arg2: float) -> numpy.ndarray[float64]
      |  
      |  reset(...)
      |      reset(self: neworder.MonteCarlo) -> None
@@ -108,28 +122,27 @@ CLASSES
      |      stopping(*args, **kwargs)
      |      Overloaded function.
      |      
-     |      1. stopping(self: neworder.MonteCarlo, arg0: float, arg1: int) -> array
+     |      1. stopping(self: neworder.MonteCarlo, p: float, n: int) -> numpy.ndarray[float64]
      |      
-     |      simulate stopping times from a flat hazard rate
      |      
-     |      2. stopping(self: neworder.MonteCarlo, arg0: array) -> array
      |      
-     |      simulate stopping times from hazard rates
+     |      
+     |      2. stopping(self: neworder.MonteCarlo, p: numpy.ndarray[float64]) -> numpy.ndarray[float64]
      |  
      |  ustream(...)
-     |      ustream(self: neworder.MonteCarlo, arg0: int) -> array
+     |      ustream(self: neworder.MonteCarlo, n: int) -> numpy.ndarray[float64]
      |  
      |  ----------------------------------------------------------------------
      |  Static methods defined here:
      |  
      |  deterministic_identical_stream(...) from builtins.PyCapsule
-     |      deterministic_identical_stream(arg0: int) -> int
+     |      deterministic_identical_stream(r: int) -> int
      |  
      |  deterministic_independent_stream(...) from builtins.PyCapsule
-     |      deterministic_independent_stream(arg0: int) -> int
+     |      deterministic_independent_stream(r: int) -> int
      |  
      |  nondeterministic_stream(...) from builtins.PyCapsule
-     |      nondeterministic_stream(arg0: int) -> int
+     |      nondeterministic_stream(r: int) -> int
      |  
      |  ----------------------------------------------------------------------
      |  Static methods inherited from pybind11_builtins.pybind11_object:
@@ -138,6 +151,8 @@ CLASSES
      |      Create and return a new object.  See help(type) for accurate signature.
     
     class Timeline(pybind11_builtins.pybind11_object)
+     |  Timestepping functionality
+     |  
      |  Method resolution order:
      |      Timeline
      |      pybind11_builtins.pybind11_object
@@ -146,12 +161,7 @@ CLASSES
      |  Methods defined here:
      |  
      |  __init__(...)
-     |      __init__(*args, **kwargs)
-     |      Overloaded function.
-     |      
-     |      1. __init__(self: neworder.Timeline, arg0: float, arg1: float, arg2: List[int]) -> None
-     |      
-     |      2. __init__(self: neworder.Timeline) -> None
+     |      __init__(self: neworder.Timeline, start: float, end: float, checkpoints: List[int]) -> None
      |  
      |  __repr__(...)
      |      __repr__(self: neworder.Timeline) -> str
@@ -214,7 +224,7 @@ FUNCTIONS
         
         Runs the model
         Returns:
-            bool: True if model succeeded, False otherwise
+            True if model succeeded, False otherwise
     
     verbose(...) method of builtins.PyCapsule instance
         verbose(verbose: bool = True) -> None
@@ -247,17 +257,13 @@ FUNCTIONS
         rank() -> int
         
         
-        The MPI rank of the process
-        Returns:
-            int: the MPI rank
+        Returns the MPI rank of the process
     
     size(...) method of builtins.PyCapsule instance
         size() -> int
         
         
-        The MPI size (no. of processes) of the run
-        Returns:
-            int: the MPI size
+        Returns the MPI size (no. of processes) of the run
 
 FILE
     (built-in)
@@ -280,7 +286,7 @@ FUNCTIONS
         
         Returns a value that compares less than any other value but itself and "never"
         Returns:
-            float: -inf
+            -inf
     
     far_future(...) method of builtins.PyCapsule instance
         far_future() -> float
@@ -288,7 +294,7 @@ FUNCTIONS
         
         Returns a value that compares greater than any other value but itself and "never"
         Returns:
-            float: +inf
+            +inf
     
     isnever(...) method of builtins.PyCapsule instance
         isnever(*args, **kwargs)
@@ -300,20 +306,20 @@ FUNCTIONS
             Returns whether the value of t corresponds to "never". As "never" is implemented as a floating-point NaN, 
             direct comparison will always fail, since NaN != NaN. 
             Args:
-                t (float): The time.
+                t: The time.
             Returns:
-                bool: True if t is never, False otherwise
+                True if t is never, False otherwise
         
         
-        2. isnever(a: array) -> array
+        2. isnever(y: numpy.ndarray[float64]) -> numpy.ndarray[bool]
         
         
             Returns an array of booleans corresponding to whether the element of an array correspond to "never". As "never" is 
             implemented as a floating-point NaN, direct comparison will always fails, since NaN != NaN. 
             Args:
-                a (array(float)): The times.
+                t: The times.
             Returns:
-                array(bool): True if corresponding input is never, False otherwise
+                Booleans, True where corresponding input value is never, False otherwise
     
     never(...) method of builtins.PyCapsule instance
         never() -> float
@@ -321,7 +327,7 @@ FUNCTIONS
         
         Returns a value that compares unequal to any value, including but itself.
         Returns:
-            float: nan
+            nan
 
 FILE
     (built-in)
@@ -342,14 +348,47 @@ FUNCTIONS
         logistic(*args, **kwargs)
         Overloaded function.
         
-        1. logistic(arg0: array, arg1: float, arg2: float) -> array
+        1. logistic(x: numpy.ndarray[float64], x0: float, k: float) -> numpy.ndarray[float64]
         
-        2. logistic(arg0: array, arg1: float) -> array
         
-        3. logistic(arg0: array) -> array
+            Computes the logistic function on the supplied values. 
+            Args:
+                x: The input values.
+                k: The growth rate
+                x0: the midpoint location
+            Returns:
+                The function values
+        
+        
+        2. logistic(x: numpy.ndarray[float64], k: float) -> numpy.ndarray[float64]
+        
+        
+            Computes the logistic function with x0=0 on the supplied values. 
+            Args:
+                x: The input values.
+                k: The growth rate
+            Returns:
+                The function values
+        
+        
+        3. logistic(x: numpy.ndarray[float64]) -> numpy.ndarray[float64]
+        
+        
+            Computes the logistic function with k=1 and x0=0 on the supplied values. 
+            Args:
+                x: The input values.
+            Returns:
+                The function values
     
     logit(...) method of builtins.PyCapsule instance
-        logit(arg0: array) -> array
+        logit(x: numpy.ndarray[float64]) -> numpy.ndarray[float64]
+        
+        
+        Computes the logit function on the supplied values. 
+        Args:
+            x: The input probability values in (0,1).
+        Returns:
+            The function values (log-odds)
 
 FILE
     (built-in)
@@ -367,10 +406,10 @@ NAME
 
 FUNCTIONS
     directmod(...) method of builtins.PyCapsule instance
-        directmod(arg0: neworder.Model, arg1: object, arg2: str) -> None
+        directmod(model: neworder.Model, df: object, colname: str) -> None
     
     transition(...) method of builtins.PyCapsule instance
-        transition(arg0: neworder.Model, arg1: numpy.ndarray[int64], arg2: numpy.ndarray[float64], arg3: object, arg4: str) -> None
+        transition(model: neworder.Model, categories: numpy.ndarray[int64], transition_matrix: numpy.ndarray[float64], df: object, colname: str) -> None
 
 FILE
     (built-in)

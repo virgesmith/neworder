@@ -21,10 +21,10 @@ int64_t no::MonteCarlo::deterministic_identical_stream(int)
   return 19937;  
 }
 
-int64_t no::MonteCarlo::nondeterministic_stream(int r)
+int64_t no::MonteCarlo::nondeterministic_stream(int)
 {
   std::random_device rand;
-  return ((int64_t)r << 32) + rand();
+  return (static_cast<int64_t>(rand()) << 32) + rand();
 }
 
 //
@@ -55,39 +55,39 @@ double no::MonteCarlo::u01()
   return m_prng() * SCALE;
 }
 
-py::array no::MonteCarlo::ustream(py::ssize_t n)
+py::array_t<double> no::MonteCarlo::ustream(py::ssize_t n)
 {
   return no::make_array<double>({n}, [&](){ return u01(); });
 }
 
 // simple hazard constant probability 
-py::array no::MonteCarlo::hazard(double prob, py::ssize_t n)
+py::array_t<double> no::MonteCarlo::hazard(double prob, py::ssize_t n)
 {
   return no::make_array<int>({n}, [&]() { return (u01() < prob) ? 1 : 0; });
 }
 
 // hazard with varying probablities 
-py::array no::MonteCarlo::hazard(const py::array& prob)
+py::array_t<double> no::MonteCarlo::hazard(const py::array_t<double>& prob)
 {
   return no::unary_op<int, double>(prob, [&](double p){ return u01() < p ? 1 : 0; });
 }
 
 // computes stopping times 
-py::array no::MonteCarlo::stopping(double prob, py::ssize_t n)
+py::array_t<double> no::MonteCarlo::stopping(double prob, py::ssize_t n)
 {
   double rprob = 1.0 / prob;
 
   return no::make_array<double>({n}, [&]() { return -::log(u01()) * rprob; });
 }
 
-py::array no::MonteCarlo::stopping(const py::array& prob)
+py::array_t<double> no::MonteCarlo::stopping(const py::array_t<double>& prob)
 {
   return no::unary_op<double, double>(prob, [&](double p) { return -::log(u01()) / p; });
 }
 
 
 // multiple-arrival (0+) process 
-py::array no::MonteCarlo::arrivals(const py::array& lambda_t, double dt, double gap, size_t n)
+py::array_t<double> no::MonteCarlo::arrivals(const py::array_t<double>& lambda_t, double dt, double gap, size_t n)
 {
   const double* pl = no::cbegin<double>(lambda_t);
   size_t nl = lambda_t.size();
@@ -131,7 +131,7 @@ py::array no::MonteCarlo::arrivals(const py::array& lambda_t, double dt, double 
     //no::log("%%: %%"_s % i % times[i]);
   }
 
-  py::array nptimes = no::empty<double>({n, imax - 1});
+  py::array_t<double> nptimes = no::empty<double>({n, imax - 1});
   no::fill(nptimes, no::Timeline::never());
   double* pa = no::begin<double>(nptimes);
 
@@ -147,7 +147,7 @@ py::array no::MonteCarlo::arrivals(const py::array& lambda_t, double dt, double 
   return nptimes;
 }
 
-py::array no::MonteCarlo::first_arrival(const py::array& lambda_t, double dt, size_t n, double minval)
+py::array_t<double> no::MonteCarlo::first_arrival(const py::array_t<double>& lambda_t, double dt, size_t n, double minval)
 {
   const double* pl = no::cbegin<double>(lambda_t);
   size_t nl = lambda_t.size();
@@ -156,7 +156,7 @@ py::array no::MonteCarlo::first_arrival(const py::array& lambda_t, double dt, si
   double lambda_u = *std::max_element(pl, pl + nl);
   double lambda_i;
 
-  py::array times = no::empty_array<double>({static_cast<py::ssize_t>(n)});
+  py::array_t<double> times = no::empty_array<double>({static_cast<py::ssize_t>(n)});
   double* pt = no::begin<double>(times);
   double tmax = (nl - 1) * dt;
 
@@ -182,7 +182,7 @@ py::array no::MonteCarlo::first_arrival(const py::array& lambda_t, double dt, si
 
 // next-arrival process - times of transition from a state arrived at at startingpoints to a subsequent state, with an optional deterministic minimum separation
 // if the state hasn't been arrived at (no::never())
-py::array no::MonteCarlo::next_arrival(const py::array& startingpoints, const py::array& lambda_t, double dt, bool relative, double minsep)
+py::array_t<double> no::MonteCarlo::next_arrival(const py::array_t<double>& startingpoints, const py::array_t<double>& lambda_t, double dt, bool relative, double minsep)
 {
   py::ssize_t n = startingpoints.size();
 
@@ -194,7 +194,7 @@ py::array no::MonteCarlo::next_arrival(const py::array& startingpoints, const py
   double lambda_u = *std::max_element(pl, pl + nl);
   double lambda_i;
 
-  py::array times = no::empty_array<double>({n});
+  py::array_t<double> times = no::empty_array<double>({n});
   double* pt = no::begin<double>(times);
 
   for (py::ssize_t i = 0; i < n; ++i)
