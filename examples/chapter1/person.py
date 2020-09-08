@@ -12,7 +12,7 @@ class Person():
     self.alive = True
     # MODGEN would automatically create time and age, though they are not needed for this simple example
     self.mortality_hazard = mortality_hazard
-    self.time_mortality = -1.0 # to be computed later
+    self.time_mortality = neworder.time.never() # to be computed later
 
   def finish(self):
     """ MODGEN equivalent: Person::Finish() """
@@ -43,8 +43,8 @@ class People(neworder.Model):
     neworder.log("created %d individuals" % n)
 
   def step(self):
-    # sample each person's age at death. since everyone
-    # (this is a hopelessly inefficient implementation when everyone has the same hazard rate)
+    # sample each person's age at death.
+    # (this is not an efficient implementation when everyone has the same hazard rate)
     [p.time_mortality_event(self.mc()) for p in self.population]
 
   def checkpoint(self):
