@@ -32,8 +32,8 @@ echo \`\`\`text >> $output
 python -m pydoc neworder.stats >> $output
 echo \`\`\` >> $output
 echo  >> $output
-echo "# \`neworder.dataframe\` module" >> $output
+echo "# \`neworder.df\` module" >> $output
 echo >> $output
 echo \`\`\`text >> $output
-python -m pydoc neworder.dataframe >> $output
+python -m pydoc neworder.df >> $output
 echo \`\`\` >> $output

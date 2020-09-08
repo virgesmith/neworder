@@ -60,7 +60,7 @@ def python_impl(m, df):
 def cpp_impl(m, df):
 
   start = time.time()
-  no.dataframe.transition(m, c, t, df, "LC4408_C_AHTHUK11")
+  no.df.transition(m, c, t, df, "LC4408_C_AHTHUK11")
   return len(df), time.time() - start, df.LC4408_C_AHTHUK11.values
 
 
@@ -74,13 +74,13 @@ def cpp_impl(m, df):
   # # no transitions
   # t = np.identity(3)
 
-  # no.dataframe.transition(m, c, t, df, "n")
+  # no.df.transition(m, c, t, df, "n")
   # no.log(df.n.value_counts()[1] == 1000)
 
   # # all 1 -> 2
   # t[0,0] = 0.0
   # t[1,0] = 1.0
-  # no.dataframe.transition(m, c, t, df, "n")
+  # no.df.transition(m, c, t, df, "n")
   # no.log(df.n.value_counts()[2] == 1000)
 
   # # all 2 -> 1 or 3
@@ -90,12 +90,12 @@ def cpp_impl(m, df):
   #   [0.0, 0.5, 1.0],
   # ])
 
-  # no.dataframe.transition(m, c, t, df, "n")
+  # no.df.transition(m, c, t, df, "n")
   # no.log(2 not in df.n.value_counts())#[2] == 1000)
   # no.log(df.n.value_counts())
 
   # t = np.ones((3,3)) / 3  
-  # no.dataframe.transition(m, c, t, df, "n")
+  # no.df.transition(m, c, t, df, "n")
   # no.log(df.n.value_counts())
   # for i in c:
   #   no.log(df.n.value_counts()[i] > n/3 - sqrt(n) and df.n.value_counts()[i] < n/3 + sqrt(n))
@@ -105,7 +105,7 @@ def cpp_impl(m, df):
   #   [0.0, 0.0, 0.0],
   #   [0.0, 0.0, 0.0],
   # ])
-  # no.dataframe.transition(m, c, t, df, "n")
+  # no.df.transition(m, c, t, df, "n")
   # no.log(df.n.value_counts())
 
 if __name__ == "__main__":

@@ -23,7 +23,7 @@ def test_errors():
   df["DC2101EW_C_ETHPUK11"]= df["DC2101EW_C_ETHPUK11"].astype(np.int32)
 
   try:
-    no.dataframe.transition(model, cats, trans, df, "DC2101EW_C_ETHPUK11")
+    no.df.transition(model, cats, trans, df, "DC2101EW_C_ETHPUK11")
   except Exception:
     assert True
   else:
@@ -40,13 +40,13 @@ def test_basic():
 
   # no transitions, check no changes
   t = np.identity(3)
-  no.dataframe.transition(model, c, t, df, "category")
+  no.df.transition(model, c, t, df, "category")
   assert df.category.value_counts()[1] == N
 
   # all 1 -> 2
   t[0,0] = 0.0
   t[0,1] = 1.0
-  no.dataframe.transition(model, c, t, df, "category")
+  no.df.transition(model, c, t, df, "category")
   assert 1 not in df.category.value_counts()
   assert df.category.value_counts()[2] == N
 
@@ -57,14 +57,14 @@ def test_basic():
     [0.0, 0.0, 1.0],
   ])
 
-  no.dataframe.transition(model, c, t, df, "category")
+  no.df.transition(model, c, t, df, "category")
   assert 2 not in df.category.value_counts()
   for i in [1,3]:
     assert df.category.value_counts()[i] > N/2 - sqrt(N) and df.category.value_counts()[i] < N/2 + sqrt(N)
 
   # spread evenly
   t = np.ones((3,3)) / 3  
-  no.dataframe.transition(model, c, t, df, "category")
+  no.df.transition(model, c, t, df, "category")
   for i in c:
     assert df.category.value_counts()[i] > N/3 - sqrt(N) and df.category.value_counts()[i] < N/3 + sqrt(N)
 
@@ -74,7 +74,7 @@ def test_basic():
     [1.0, 0.0, 0.0],
     [1.0, 0.0, 0.0],
   ])
-  no.dataframe.transition(model, c, t, df, "category")
+  no.df.transition(model, c, t, df, "category")
   assert df.category.value_counts()[1] == N
 
 def test():
@@ -88,7 +88,7 @@ def test():
   # identity matrix means no transitions
   trans = np.identity(len(cats))
 
-  no.dataframe.transition(model, cats, trans, df, "DC2101EW_C_ETHPUK11")
+  no.df.transition(model, cats, trans, df, "DC2101EW_C_ETHPUK11")
 
   assert len(df["DC2101EW_C_ETHPUK11"].unique()) == 1 and df["DC2101EW_C_ETHPUK11"].unique()[0] == 2
 
@@ -97,7 +97,7 @@ def test():
   # force 2->3
   trans[2,2] = 0.0
   trans[2,3] = 1.0
-  no.dataframe.transition(model, cats, trans, df, "DC2101EW_C_ETHPUK11")
+  no.df.transition(model, cats, trans, df, "DC2101EW_C_ETHPUK11")
   no.log(df["DC2101EW_C_ETHPUK11"].unique())
   assert len(df["DC2101EW_C_ETHPUK11"].unique()) == 1 and df["DC2101EW_C_ETHPUK11"].unique()[0] == 3
 
@@ -105,7 +105,7 @@ def test():
   # ~half of 3->0
   trans[3,0] = 0.5
   trans[3,3] = 0.5
-  no.dataframe.transition(model, cats, trans, df, "DC2101EW_C_ETHPUK11")
+  no.df.transition(model, cats, trans, df, "DC2101EW_C_ETHPUK11")
   assert np.array_equal(np.sort(df["DC2101EW_C_ETHPUK11"].unique()), np.array([0, 3]))
 
 

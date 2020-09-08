@@ -22,7 +22,7 @@ def test_basics():
 def test_submodules():
   assert(hasattr(no, "mpi"))
   assert(hasattr(no, "stats"))
-  assert(hasattr(no, "dataframe"))
+  assert(hasattr(no, "df"))
 
 def test_dummy_model():
   class DummyModel(no.Model):

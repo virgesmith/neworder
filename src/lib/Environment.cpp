@@ -1,5 +1,4 @@
 #include "Environment.h"
-#include "Inspect.h"
 #include "Module.h"
 #include "Log.h"
 

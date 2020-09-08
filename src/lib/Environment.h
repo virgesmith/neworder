@@ -7,18 +7,10 @@
 #include "NewOrder.h"
 #include "ArrayHelpers.h"
 
-#include <pybind11/embed.h>
-
 #include <random>
 #include <string>
 
 namespace no {
-
-// duplication of data between python/C++
-// for scalar, either (whichever is the most efficient):
-// - access the (immutable?) python vars via m_self->attr(""), or
-// - define the var in C++ and provide a python accessor function
-// for numpy arrays (and pandas DataFrames), C++ and python ref the same data
 
 class NEWORDER_EXPORT Environment
 {
@@ -79,9 +71,6 @@ private:
 
   // check mode flag
   bool m_checked;
-
-  // TODO work out why this segfaults if the dtor is called (even on exit)
-  //py::module* m_self;
 };
 
 // syntactic sugar

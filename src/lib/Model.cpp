@@ -5,7 +5,6 @@
 #include "Timer.h"
 #include "Log.h"
 #include "Environment.h"
-#include "Inspect.h"
 #include "Error.h"
 
 #include <pybind11/pybind11.h>
@@ -13,7 +12,7 @@
 no::Model::Model(Timeline& timeline, const py::function& seeder) 
   : m_timeline(timeline), m_monteCarlo(seeder(no::getenv().rank()).cast<int64_t>())
 {
-  no::log("neworder %%/module python %%"_s % module_version() % python_version());
+  no::log("neworder %%/module python %%"_s % module_version() % no::getenv().python_version());
   no::log("model init: timeline=%% mc=%%"_s % m_timeline.repr() % m_monteCarlo.repr());
 }
 
@@ -46,7 +45,6 @@ bool no::Model::run(py::object& model_subclass)
 {
   // extract the base class
   no::Model& base = model_subclass.cast<no::Model&>();
-  no::Runtime runtime("neworder");
   Timer timer;
 
   int rank = no::getenv().rank();

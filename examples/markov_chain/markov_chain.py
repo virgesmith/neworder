@@ -17,7 +17,7 @@ class MarkovChain(no.Model):
     self.summary = pd.DataFrame(columns = states)
     self.summary = self.summary.append(self.pop.state.value_counts().transpose())
 
-  # pure python equivalent implementation of neworder.dataframe.transition, to illustrate the performance gain
+  # pure python equivalent implementation of no.df.transition, to illustrate the performance gain
   def transition_py(self, colname):
     def _interp(cumprob, x):
       lbound = 0
@@ -45,7 +45,7 @@ class MarkovChain(no.Model):
   def step(self):
     #self.transition_py("state")
     # comment the above line and uncomment this line to use the faster C++ implementation
-    no.dataframe.transition(self, self.states, self.transition_matrix, self.pop, "state")
+    no.df.transition(self, self.states, self.transition_matrix, self.pop, "state")
     self.summary = self.summary.append(self.pop.state.value_counts().transpose())#, ignore_index=True)
 
   def checkpoint(self):

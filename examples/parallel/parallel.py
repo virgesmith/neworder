@@ -26,7 +26,7 @@ class Parallel(neworder.Model):
 
   def step(self):
     # generate some movement
-    neworder.dataframe.transition(self, self.s, self.p, self.pop, "state")
+    neworder.df.transition(self, self.s, self.p, self.pop, "state")
 
     # send emigrants to other processes
     for s in range(neworder.mpi.size()):

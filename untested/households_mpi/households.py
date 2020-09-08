@@ -51,7 +51,7 @@ class Households:
     
   def age(self, dt):
     col = "LC4408_C_AHTHUK11"
-    no.dataframe.transition(self.cat[col], self.t, self.pop, "LC4408_C_AHTHUK11")
+    no.df.transition(self.cat[col], self.t, self.pop, "LC4408_C_AHTHUK11")
 
     # ensure area totals match projections
     for lad in self.pop["LAD"].unique():

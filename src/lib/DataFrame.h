@@ -18,4 +18,6 @@ void directmod(no::Model& model, py::object& df, const std::string& colname);
 
 //py::object append(const py::object& df1, const py::object& df2);
 
-}} //no::df
+}
+
+} //no::df

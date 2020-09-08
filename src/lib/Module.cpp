@@ -4,7 +4,6 @@
 #include "Timeline.h"
 #include "Model.h"
 #include "Environment.h"
-#include "Inspect.h"
 #include "MonteCarlo.h"
 #include "NPArray.h"
 #include "DataFrame.h"
@@ -27,44 +26,19 @@ void log_obj(const py::object& msg)
 
 }
 
-
-no::Runtime::Runtime(const std::string& local_module) : m_local(local_module)
-{
-}
-
-py::object no::Runtime::operator()(const std::tuple<std::string, CommandType>& cmd) const 
-{
-  // evaluate the local namespace at the last minute as they don't update dynamically?
-  py::dict locals = py::module::import("__main__").attr("__dict__");
-  if (!m_local.empty())
-  {
-    //locals = py::module::import(m_local.c_str()).attr("__dict__");
-    locals[m_local.c_str()] = py::module::import(m_local.c_str());
-  }
-
-  if (std::get<1>(cmd) == CommandType::Exec)
-  {
-    py::exec(std::get<0>(cmd).c_str(), py::globals(), locals);
-    return py::none();
-  }
-  else
-  {
-    return py::eval(std::get<0>(cmd).c_str(), py::globals(), locals);
-  }
-}
-
 // jump through hoops as msvc seems to strip quotes from defines, so need to add them here
 #define STR2(x) #x
 #define STR(x) STR2(x)
+
 const char* no::module_version()
 {
   return STR(NEWORDER_VERSION);
 }
 
-std::string no::python_version()
-{
-  return no::getenv().python_version();
-}
+// std::string no::python_version()
+// {
+//   return no::getenv().python_version();
+// }
 
 // python-visible log function defined above
 PYBIND11_MODULE(neworder, m)
@@ -75,7 +49,7 @@ PYBIND11_MODULE(neworder, m)
 
   // utility/diagnostics
   m.def("version", no::module_version, version_docstr)
-   .def("python", no::python_version)
+   .def("python", [](){ no::getenv().python_version(); })
    .def("log", log_obj, log_docstr, "obj"_a)
    .def("run", no::Model::run, run_docstr, "model"_a)
    .def("verbose", no::Environment::verbose, verbose_docstr, "verbose"_a = true)
@@ -156,7 +130,7 @@ PYBIND11_MODULE(neworder, m)
     .def("logit", no::logit);
  
   // dataframe manipulation  
-  m.attr("dataframe") = py::module("dataframe", "Direct manipulations of dataframes")
+  m.attr("df") = py::module("df", "Direct manipulations of dataframes")
     .def("transition", no::df::transition)
     .def("directmod", no::df::directmod);
     //.def("linked_change", no::df::linked_change, py::return_value_policy::take_ownership);
@@ -168,22 +142,7 @@ PYBIND11_MODULE(neworder, m)
     
   no::Environment::init(-1, -1, false, true);
 
-  // Example of wrapping an STL container
-  // py::class_<std::vector<double>>("DVector", py::init<int>())
-  //   .def("__len__", &std::vector<double>::size)
-  //   .def("clear", &std::vector<double>::clear)
-  //   .def("__getitem__", &vector_get<double>/*, py::return_value_policy<py::copy_non_const_reference>()*/)
-  //   .def("__setitem__", &vector_set<double>, py::with_custodian_and_ward<1,2>()) // to let container keep value
-  //   .def("__str__", &no::vector_to_string<double>)
-  //   .def("tolist", &no::vector_to_py_list<double>)
-  //   .def("fromlist", &no::py_list_to_vector<double>)
-  //   // operators
-  //   .def(py::self + double())
-  //   .def(double() + py::self)
-  //   .def(py::self * double())
-  //   .def(double() * py::self)
-  //   ;  
-
+  // Maps custom C++ execptions to python ones
   py::register_exception_translator(no::exception_translator);
 
 }
