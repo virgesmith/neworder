@@ -119,24 +119,24 @@ PYBIND11_MODULE(neworder, m)
     .def("first_arrival", &no::MonteCarlo::first_arrival, 
                           empty_docstr,
                           "lambda"_a, "dt"_a, "n"_a, "minval"_a)
-    .def("first_arrival", [](no::MonteCarlo& mc, const py::array_t<double>& lambda_t, double dt, size_t n) { 
-                            return mc.first_arrival(lambda_t, dt, n, 0.0); 
+    .def("first_arrival", [](no::MonteCarlo& self, const py::array_t<double>& lambda_t, double dt, size_t n) { 
+                            return self.first_arrival(lambda_t, dt, n, 0.0); 
                           }, 
                           empty_docstr,
-                          "mc"_a, "lambda"_a, "dt_a", "n"_a)
+                          "lambda"_a, "dt"_a, "n"_a)
     .def("next_arrival", &no::MonteCarlo::next_arrival, 
                          empty_docstr,
                          "startingpoints"_a, "lambda"_a, "dt"_a, "relative"_a, "minsep"_a)
-    .def("next_arrival", [](no::MonteCarlo& mc, const py::array_t<double>& startingpoints, const py::array_t<double>& lambda_t, double dt, bool relative) { 
-                           return mc.next_arrival(startingpoints, lambda_t, dt, relative, 0.0); 
+    .def("next_arrival", [](no::MonteCarlo& self, const py::array_t<double>& startingpoints, const py::array_t<double>& lambda_t, double dt, bool relative) { 
+                           return self.next_arrival(startingpoints, lambda_t, dt, relative, 0.0); 
                          }, 
-                         empty_docstr/*,
-                         "mc"_a, "startingpoints"_a, "lambda"_a, "dt"_a, "relative"_a*/)
-    .def("next_arrival", [](no::MonteCarlo& mc, const py::array_t<double>& startingpoints, const py::array_t<double>& lambda_t, double dt) { 
-                           return mc.next_arrival(startingpoints, lambda_t, dt, false, 0.0); 
+                         empty_docstr,
+                         "startingpoints"_a, "lambda"_a, "dt"_a, "relative"_a)
+    .def("next_arrival", [](no::MonteCarlo& self, const py::array_t<double>& startingpoints, const py::array_t<double>& lambda_t, double dt) { 
+                           return self.next_arrival(startingpoints, lambda_t, dt, false, 0.0); 
                          }, 
-                         empty_docstr/*,
-                         "mc"_a, "startingpoints"_a, "lambda"_a, "dt"_a*/)
+                         empty_docstr,
+                         "startingpoints"_a, "lambda"_a, "dt"_a)
     .def("__repr__", &no::MonteCarlo::repr, empty_docstr);
     
     // .def("first_arrival", [](no::MonteCarlo& mc, const py::array_t<double>& lambda_t, double dt, size_t n) { 

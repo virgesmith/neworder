@@ -81,9 +81,7 @@ CLASSES
      |      
      |      
      |      
-     |      2. first_arrival(self: neworder.MonteCarlo, mc: numpy.ndarray[float64], lambda: float, n: int) -> numpy.ndarray[float64]
-     |      
-     |      dt_a
+     |      2. first_arrival(self: neworder.MonteCarlo, lambda: numpy.ndarray[float64], dt: float, n: int) -> numpy.ndarray[float64]
      |  
      |  hazard(...)
      |      hazard(*args, **kwargs)
@@ -105,12 +103,12 @@ CLASSES
      |      
      |      
      |      
-     |      2. next_arrival(self: neworder.MonteCarlo, arg0: numpy.ndarray[float64], arg1: numpy.ndarray[float64], arg2: float, arg3: bool) -> numpy.ndarray[float64]
+     |      2. next_arrival(self: neworder.MonteCarlo, startingpoints: numpy.ndarray[float64], lambda: numpy.ndarray[float64], dt: float, relative: bool) -> numpy.ndarray[float64]
      |      
      |      
      |      
      |      
-     |      3. next_arrival(self: neworder.MonteCarlo, arg0: numpy.ndarray[float64], arg1: numpy.ndarray[float64], arg2: float) -> numpy.ndarray[float64]
+     |      3. next_arrival(self: neworder.MonteCarlo, startingpoints: numpy.ndarray[float64], lambda: numpy.ndarray[float64], dt: float) -> numpy.ndarray[float64]
      |  
      |  reset(...)
      |      reset(self: neworder.MonteCarlo) -> None
