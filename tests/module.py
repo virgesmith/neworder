@@ -87,7 +87,7 @@ def test():
   df = pd.read_csv("../../tests/df.csv")
 
   # modify df passing directly
-  no.df.directmod(model, df, "DC2101EW_C_ETHPUK11")
+  no.df.testfunc(model, df, "DC2101EW_C_ETHPUK11")
   t.check(np.array_equal(df["DC2101EW_C_ETHPUK11"].values, np.zeros(len(df)) + 3))
 
   df = pd.read_csv("../../tests/df.csv")

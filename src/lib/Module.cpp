@@ -82,13 +82,15 @@ PYBIND11_MODULE(neworder, m)
 
   // Microsimulation (or ABM) model class
   py::class_<no::Model>(m, "Model", "The base model class from which all neworder models should be subclassed")
-    .def(py::init<no::Timeline&, const py::function&>())
-    .def("timeline", &no::Model::timeline, py::return_value_policy::reference)
-    .def("mc", &no::Model::mc, py::return_value_policy::reference, empty_docstr)
-    .def("modify", &no::Model::modify, empty_docstr, "r"_a)
-    .def("step", &no::Model::step, empty_docstr)
-    .def("check", &no::Model::check, empty_docstr)
-    .def("checkpoint", &no::Model::checkpoint, empty_docstr);
+    .def(py::init<no::Timeline&, const py::function&>(), 
+         model_init_docstr, 
+         "timeline"_a, "seeder"_a)
+    .def("timeline", &no::Model::timeline, py::return_value_policy::reference, model_timeline_docstr)
+    .def("mc", &no::Model::mc, py::return_value_policy::reference, model_mc_docstr)
+    .def("modify", &no::Model::modify, model_modify_docstr, "r"_a)
+    .def("step", &no::Model::step, model_step_docstr)
+    .def("check", &no::Model::check, model_check_docstr)
+    .def("checkpoint", &no::Model::checkpoint, model_checkpoint_docstr);
     // NB the all-important run function is not exposed to python, it can only be executed via the `neworder.run` function
 
   // MC
@@ -160,8 +162,8 @@ PYBIND11_MODULE(neworder, m)
  
   // dataframe manipulation  
   m.attr("df") = py::module("df", "Direct manipulations of dataframes")
-    .def("transition", no::df::transition, empty_docstr, "model"_a, "categories"_a, "transition_matrix"_a, "df"_a, "colname"_a)
-    .def("directmod", no::df::directmod, empty_docstr, "model"_a, "df"_a, "colname"_a);
+    .def("transition", no::df::transition, df_transition_docstr, "model"_a, "categories"_a, "transition_matrix"_a, "df"_a, "colname"_a)
+    .def("testfunc", no::df::testfunc, df_testfunc_docstr, "model"_a, "df"_a, "colname"_a);
     //.def("linked_change", no::df::linked_change, py::return_value_policy::take_ownership);
 
   // MPI submodule
@@ -173,7 +175,6 @@ PYBIND11_MODULE(neworder, m)
 
   // Map custom C++ exceptions to python ones
   py::register_exception_translator(no::exception_translator);
-
 }
 
 

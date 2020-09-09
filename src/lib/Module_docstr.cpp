@@ -1,4 +1,6 @@
 
+// top-level functions
+
 const char* version_docstr = R"docstr(
     Gets the module version
 )docstr";
@@ -21,6 +23,48 @@ const char* run_docstr = R"docstr(
         True if model succeeded, False otherwise
 )docstr";
 
+// Timeline
+
+// TODO
+
+// MonteCarlo
+
+// TODO
+
+// The Model class
+
+const char* model_init_docstr = R"docstr(
+    Constructs a model object from a timeline and a seeder function
+)docstr";
+const char* model_timeline_docstr = R"docstr(
+    Returns the model's timeline object
+)docstr";
+const char* model_mc_docstr = R"docstr(
+    Returns the models Monte-Carlo engine
+)docstr";
+const char* model_modify_docstr = R"docstr(
+    User-overridden function used to modify state in a per-process basis for multiprocess model runs.
+    Default behaviour is to do nothing. 
+    This function should not be called directly, it is used by the Model.run() function 
+)docstr";
+const char* model_step_docstr = R"docstr(
+    User-implemented function used to advance state of a model.
+    Default behaviour raises NotImplementedError. 
+    This function should not be called directly, it is used by the Model.run() function 
+)docstr";
+const char* model_check_docstr = R"docstr(
+    User-overridden function used check internal state at each timestep.
+    Default behaviour is to do nothing. 
+    This function should not be called directly, it is used by the Model.run() function 
+)docstr";
+const char* model_checkpoint_docstr = R"docstr(
+    User-implemented function for custom processing at certain points in the model run (at a minimum the final timestep).
+    Default behaviour raises NotImplementedError. 
+    This function should not be called directly, it is used by the Model.run() function 
+)docstr";
+
+// MPI 
+
 const char* mpi_rank_docstr = R"docstr(
     Returns the MPI rank of the process
 )docstr";
@@ -28,6 +72,8 @@ const char* mpi_rank_docstr = R"docstr(
 const char* mpi_size_docstr = R"docstr(
     Returns the MPI size (no. of processes) of the run
 )docstr";
+
+// Time
 
 const char* time_distant_past_docstr = R"docstr(
     Returns a value that compares less than any other value but itself and "never"
@@ -65,6 +111,7 @@ const char* time_isnever_a_docstr = R"docstr(
         Booleans, True where corresponding input value is never, False otherwise
 )docstr";
 
+// Statistical functions
 
 const char* stats_logistic_docstr = R"docstr(
     Computes the logistic function on the supplied values. 
@@ -100,6 +147,23 @@ const char* stats_logit_docstr = R"docstr(
     Returns:
         The function values (log-odds)
 )docstr";
+
+// Dataframe manipulation
+
+const char* df_transition_docstr = R"docstr(
+    Randomly changes categorical data in a dataframe, according to supplied transition probabilities. 
+    Args:
+        model: The model (for access to the MonteCarlo engine).
+        categories: The set of possible categories
+        transition_matrix: The probabilities of transitions between categories
+        df: The dataframe, which is modified in-place
+        colname: The name of the column in the dataframe
+)docstr";
+
+const char* df_testfunc_docstr = R"docstr(
+    Test function for direct dataframe manipulation. Results may vary. Don not use.
+)docstr";
+
 
 // temporary
 const char* empty_docstr = R"docstr(

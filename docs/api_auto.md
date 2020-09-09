@@ -2,7 +2,7 @@
 
 TODO reformat raw docstrings
 
-# `neworder` module
+## `neworder` module
 
 ```text
 Help on module neworder:
@@ -27,25 +27,54 @@ CLASSES
      |  Methods defined here:
      |  
      |  __init__(...)
-     |      __init__(self: neworder.Model, arg0: neworder.Timeline, arg1: function) -> None
+     |      __init__(self: neworder.Model, timeline: neworder.Timeline, seeder: function) -> None
+     |      
+     |      
+     |      Constructs a model object from a timeline and a seeder function
      |  
      |  check(...)
      |      check(self: neworder.Model) -> bool
+     |      
+     |      
+     |      User-overridden function used check internal state at each timestep.
+     |      Default behaviour is to do nothing. 
+     |      This function should not be called directly, it is used by the Model.run() function
      |  
      |  checkpoint(...)
      |      checkpoint(self: neworder.Model) -> None
+     |      
+     |      
+     |      User-implemented function for custom processing at certain points in the model run (at a minimum the final timestep).
+     |      Default behaviour raises NotImplementedError. 
+     |      This function should not be called directly, it is used by the Model.run() function
      |  
      |  mc(...)
      |      mc(self: neworder.Model) -> no::MonteCarlo
+     |      
+     |      
+     |      Returns the models Monte-Carlo engine
      |  
      |  modify(...)
      |      modify(self: neworder.Model, r: int) -> None
+     |      
+     |      
+     |      User-overridden function used to modify state in a per-process basis for multiprocess model runs.
+     |      Default behaviour is to do nothing. 
+     |      This function should not be called directly, it is used by the Model.run() function
      |  
      |  step(...)
      |      step(self: neworder.Model) -> None
+     |      
+     |      
+     |      User-implemented function used to advance state of a model.
+     |      Default behaviour raises NotImplementedError. 
+     |      This function should not be called directly, it is used by the Model.run() function
      |  
      |  timeline(...)
      |      timeline(self: neworder.Model) -> neworder.Timeline
+     |      
+     |      
+     |      Returns the model's timeline object
      |  
      |  ----------------------------------------------------------------------
      |  Static methods inherited from pybind11_builtins.pybind11_object:
@@ -242,7 +271,7 @@ FILE
 
 ```
 
-# `neworder.mpi` module
+## `neworder.mpi` module
 
 ```text
 Help on module mpi in neworder:
@@ -269,7 +298,7 @@ FILE
 
 ```
 
-# `neworder.time` module
+## `neworder.time` module
 
 ```text
 Help on built-in module time in neworder:
@@ -333,7 +362,7 @@ FILE
 
 ```
 
-# `neworder.stats` module
+## `neworder.stats` module
 
 ```text
 Help on module stats in neworder:
@@ -394,7 +423,7 @@ FILE
 
 ```
 
-# `neworder.df` module
+## `neworder.df` module
 
 ```text
 Help on module df in neworder:
@@ -403,11 +432,23 @@ NAME
     df - Direct manipulations of dataframes
 
 FUNCTIONS
-    directmod(...) method of builtins.PyCapsule instance
-        directmod(model: neworder.Model, df: object, colname: str) -> None
+    testfunc(...) method of builtins.PyCapsule instance
+        testfunc(model: neworder.Model, df: object, colname: str) -> None
+        
+        
+        Test function for direct dataframe manipulation. Results may vary. Don not use.
     
     transition(...) method of builtins.PyCapsule instance
         transition(model: neworder.Model, categories: numpy.ndarray[int64], transition_matrix: numpy.ndarray[float64], df: object, colname: str) -> None
+        
+        
+        Randomly changes categorical data in a dataframe, according to supplied transition probabilities. 
+        Args:
+            model: The model (for access to the MonteCarlo engine).
+            categories: The set of possible categories
+            transition_matrix: The probabilities of transitions between categories
+            df: The dataframe, which is modified in-place
+            colname: The name of the column in the dataframe
 
 FILE
     (built-in)

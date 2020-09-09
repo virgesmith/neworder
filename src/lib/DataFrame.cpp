@@ -118,7 +118,7 @@ void dump(const T* p, py::ssize_t n)
 
 
 // example of directly modifying a DF testing different dtypes
-void no::df::directmod(no::Model& model, py::object& df, const std::string& colname)
+void no::df::testfunc(no::Model& model, py::object& df, const std::string& colname)
 {
   // .values? pd.Series -> np.array?
   py::array arr = df.attr(colname.c_str()); //.request();
