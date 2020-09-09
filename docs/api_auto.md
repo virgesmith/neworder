@@ -1,5 +1,10 @@
 # API Reference
 
+
+!!! note "API documentation"
+    We have yet to get an mkdoc plugin working with the pybind11 module.
+
+
 ## `neworder` module
 
 ```text

@@ -4,7 +4,7 @@
 
 output=docs/api_auto.md
 
-echo "# API Reference" > $output
+cat docs/api_auto.md_header > $output
 echo >> $output
 echo "## \`neworder\` module" >> $output
 echo >> $output

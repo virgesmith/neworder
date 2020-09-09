@@ -10,7 +10,7 @@ copyright: &copy 2020 Andrew P Smith
 #google_analytics
 
 theme:
-  name: mkdocs
+  name: material
   # highlightjs: true
   # hljs_languages:
   #     - yaml
@@ -21,13 +21,18 @@ markdown_extensions:
       permalink: "¶"  
   - admonition      
 
+
+# plugins:
+#   - search
+#   - mkdocstrings
+  
   # extra:
   #   include_toc: yes      
   #   extra_nav_links:
   #     Fork me on GitHub: https://github.com/iamale/rock-cli
 
 nav:
-  - Overview: description.md
+  - Description: description.md
   - Examples:
     - Hello World: examples/hello_world.md
     - Parallel: examples/parallel.md
@@ -42,7 +47,6 @@ nav:
     - RiskPaths: examples/riskpaths.md
     - Schelling: examples/schelling.md
   - API:
-    - API Documentation: api.md
     - API Reference: api_auto.md
     - Tips and Tricks: tips.md
   - References: references.md
