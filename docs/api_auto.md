@@ -1,14 +1,12 @@
 # API Reference
 
-TODO reformat raw docstrings
-
 ## `neworder` module
 
 ```text
 Help on module neworder:
 
 NAME
-    neworder
+    neworder - A dynamic microsimulation framework
 
 CLASSES
     pybind11_builtins.pybind11_object(builtins.object)
@@ -17,217 +15,314 @@ CLASSES
         Timeline
     
     class Model(pybind11_builtins.pybind11_object)
-     |  The base model class from which all neworder models should be subclassed
-     |  
-     |  Method resolution order:
-     |      Model
-     |      pybind11_builtins.pybind11_object
-     |      builtins.object
-     |  
-     |  Methods defined here:
-     |  
-     |  __init__(...)
-     |      __init__(self: neworder.Model, timeline: neworder.Timeline, seeder: function) -> None
-     |      
-     |      
-     |      Constructs a model object from a timeline and a seeder function
-     |  
-     |  check(...)
-     |      check(self: neworder.Model) -> bool
-     |      
-     |      
-     |      User-overridden function used check internal state at each timestep.
-     |      Default behaviour is to do nothing. 
-     |      This function should not be called directly, it is used by the Model.run() function
-     |  
-     |  checkpoint(...)
-     |      checkpoint(self: neworder.Model) -> None
-     |      
-     |      
-     |      User-implemented function for custom processing at certain points in the model run (at a minimum the final timestep).
-     |      Default behaviour raises NotImplementedError. 
-     |      This function should not be called directly, it is used by the Model.run() function
-     |  
-     |  mc(...)
-     |      mc(self: neworder.Model) -> no::MonteCarlo
-     |      
-     |      
-     |      Returns the models Monte-Carlo engine
-     |  
-     |  modify(...)
-     |      modify(self: neworder.Model, r: int) -> None
-     |      
-     |      
-     |      User-overridden function used to modify state in a per-process basis for multiprocess model runs.
-     |      Default behaviour is to do nothing. 
-     |      This function should not be called directly, it is used by the Model.run() function
-     |  
-     |  step(...)
-     |      step(self: neworder.Model) -> None
-     |      
-     |      
-     |      User-implemented function used to advance state of a model.
-     |      Default behaviour raises NotImplementedError. 
-     |      This function should not be called directly, it is used by the Model.run() function
-     |  
-     |  timeline(...)
-     |      timeline(self: neworder.Model) -> neworder.Timeline
-     |      
-     |      
-     |      Returns the model's timeline object
-     |  
-     |  ----------------------------------------------------------------------
-     |  Static methods inherited from pybind11_builtins.pybind11_object:
-     |  
-     |  __new__(*args, **kwargs) from pybind11_builtins.pybind11_type
-     |      Create and return a new object.  See help(type) for accurate signature.
+        The base model class from which all neworder models should be subclassed
+        
+        Method resolution order:
+            Model
+            pybind11_builtins.pybind11_object
+            builtins.object
+        
+        Methods defined here:
+        
+        __init__(...)
+            __init__(self: neworder.Model, timeline: neworder.Timeline, seeder: function) -> None
+            
+            
+            Constructs a model object from a timeline and a seeder function
+        
+        check(...)
+            check(self: neworder.Model) -> bool
+            
+            
+            User-overridable method used to check internal state at each timestep.
+            Default behaviour is to simply return True. 
+            Returning False will halt the model run.
+            This function should not be called directly, it is used by the Model.run() function 
+            
+            Returns:
+                True if checks are ok, False otherwise.
+        
+        checkpoint(...)
+            checkpoint(self: neworder.Model) -> None
+            
+            
+            User-overridable for custom processing at certain points in the model run (at a minimum the final timestep).
+            Default behaviour raises NotImplementedError. 
+            This function should not be called directly, it is used by the Model.run() function
+        
+        mc(...)
+            mc(self: neworder.Model) -> no::MonteCarlo
+            
+            
+            Returns the models Monte-Carlo engine
+        
+        modify(...)
+            modify(self: neworder.Model, r: int) -> None
+            
+            
+            User-overridable method used to modify state in a per-process basis for multiprocess model runs.
+            Default behaviour is to do nothing. 
+            This function should not be called directly, it is used by the Model.run() function
+        
+        step(...)
+            step(self: neworder.Model) -> None
+            
+            
+            User-implemented method used to advance state of a model.
+            Default behaviour raises NotImplementedError. 
+            This function should not be called directly, it is used by the Model.run() function
+        
+        timeline(...)
+            timeline(self: neworder.Model) -> neworder.Timeline
+            
+            
+            Returns the model's timeline object
+        
+        ----------------------------------------------------------------------
+        Static methods inherited from pybind11_builtins.pybind11_object:
+        
+        __new__(*args, **kwargs) from pybind11_builtins.pybind11_type
+            Create and return a new object.  See help(type) for accurate signature.
     
     class MonteCarlo(pybind11_builtins.pybind11_object)
-     |  The model's Monte-Carlo engine
-     |  
-     |  Method resolution order:
-     |      MonteCarlo
-     |      pybind11_builtins.pybind11_object
-     |      builtins.object
-     |  
-     |  Methods defined here:
-     |  
-     |  __init__(self, /, *args, **kwargs)
-     |      Initialize self.  See help(type(self)) for accurate signature.
-     |  
-     |  __repr__(...)
-     |      __repr__(self: neworder.MonteCarlo) -> str
-     |  
-     |  arrivals(...)
-     |      arrivals(self: neworder.MonteCarlo, lambda: numpy.ndarray[float64], dt: float, mingap: float, n: int) -> numpy.ndarray[float64]
-     |  
-     |  first_arrival(...)
-     |      first_arrival(*args, **kwargs)
-     |      Overloaded function.
-     |      
-     |      1. first_arrival(self: neworder.MonteCarlo, lambda: numpy.ndarray[float64], dt: float, n: int, minval: float) -> numpy.ndarray[float64]
-     |      
-     |      
-     |      
-     |      
-     |      2. first_arrival(self: neworder.MonteCarlo, lambda: numpy.ndarray[float64], dt: float, n: int) -> numpy.ndarray[float64]
-     |  
-     |  hazard(...)
-     |      hazard(*args, **kwargs)
-     |      Overloaded function.
-     |      
-     |      1. hazard(self: neworder.MonteCarlo, p: float, n: int) -> numpy.ndarray[float64]
-     |      
-     |      
-     |      
-     |      
-     |      2. hazard(self: neworder.MonteCarlo, p: numpy.ndarray[float64]) -> numpy.ndarray[float64]
-     |  
-     |  next_arrival(...)
-     |      next_arrival(*args, **kwargs)
-     |      Overloaded function.
-     |      
-     |      1. next_arrival(self: neworder.MonteCarlo, startingpoints: numpy.ndarray[float64], lambda: numpy.ndarray[float64], dt: float, relative: bool, minsep: float) -> numpy.ndarray[float64]
-     |      
-     |      
-     |      
-     |      
-     |      2. next_arrival(self: neworder.MonteCarlo, startingpoints: numpy.ndarray[float64], lambda: numpy.ndarray[float64], dt: float, relative: bool) -> numpy.ndarray[float64]
-     |      
-     |      
-     |      
-     |      
-     |      3. next_arrival(self: neworder.MonteCarlo, startingpoints: numpy.ndarray[float64], lambda: numpy.ndarray[float64], dt: float) -> numpy.ndarray[float64]
-     |  
-     |  reset(...)
-     |      reset(self: neworder.MonteCarlo) -> None
-     |  
-     |  seed(...)
-     |      seed(self: neworder.MonteCarlo) -> int
-     |  
-     |  stopping(...)
-     |      stopping(*args, **kwargs)
-     |      Overloaded function.
-     |      
-     |      1. stopping(self: neworder.MonteCarlo, p: float, n: int) -> numpy.ndarray[float64]
-     |      
-     |      
-     |      
-     |      
-     |      2. stopping(self: neworder.MonteCarlo, p: numpy.ndarray[float64]) -> numpy.ndarray[float64]
-     |  
-     |  ustream(...)
-     |      ustream(self: neworder.MonteCarlo, n: int) -> numpy.ndarray[float64]
-     |  
-     |  ----------------------------------------------------------------------
-     |  Static methods defined here:
-     |  
-     |  deterministic_identical_stream(...) from builtins.PyCapsule
-     |      deterministic_identical_stream(r: int) -> int
-     |  
-     |  deterministic_independent_stream(...) from builtins.PyCapsule
-     |      deterministic_independent_stream(r: int) -> int
-     |  
-     |  nondeterministic_stream(...) from builtins.PyCapsule
-     |      nondeterministic_stream(r: int) -> int
-     |  
-     |  ----------------------------------------------------------------------
-     |  Static methods inherited from pybind11_builtins.pybind11_object:
-     |  
-     |  __new__(*args, **kwargs) from pybind11_builtins.pybind11_type
-     |      Create and return a new object.  See help(type) for accurate signature.
+        The model's Monte-Carlo engine
+        
+        Method resolution order:
+            MonteCarlo
+            pybind11_builtins.pybind11_object
+            builtins.object
+        
+        Methods defined here:
+        
+        __init__(self, /, *args, **kwargs)
+            Initialize self.  See help(type(self)) for accurate signature.
+        
+        __repr__(...)
+            __repr__(self: neworder.MonteCarlo) -> str
+            
+            
+            Prints a human-readable representation of the MonteCarlo engine
+        
+        arrivals(...)
+            arrivals(self: neworder.MonteCarlo, lambda: numpy.ndarray[float64], dt: float, mingap: float, n: int) -> numpy.ndarray[float64]
+            
+            
+            Returns an array of n arrays of multiple arrival times from a nonhomogeneous Poisson process (with hazard rate lambda[i], time interval dt),
+            with a minimum separation between events of mingap. Sampling uses the Lewis-Shedler "thinning" algorithm
+            The final value of lambda must be zero, and thus arrivals don't always occur, indicated by a value of neworder.time.never()
+            The inner dimension of the returned 2d array is governed by the the maximum number of arrivals sampled, and will thus vary
+        
+        first_arrival(...)
+            first_arrival(*args, **kwargs)
+            Overloaded function.
+            
+            1. first_arrival(self: neworder.MonteCarlo, lambda: numpy.ndarray[float64], dt: float, n: int, minval: float) -> numpy.ndarray[float64]
+            
+            
+                Returns an array of length n of first arrival times from a nonhomogeneous Poisson process (with hazard rate lambda[i], time interval dt),
+                with a minimum start time of minval. Sampling uses the Lewis-Shedler "thinning" algorithm
+                If the final value of lambda is zero, no arrival is indicated by a value of neworder.time.never()
+            
+            
+            2. first_arrival(self: neworder.MonteCarlo, lambda: numpy.ndarray[float64], dt: float, n: int) -> numpy.ndarray[float64]
+            
+            
+                Returns an array of length n of first arrival times from a nonhomogeneous Poisson process (with hazard rate lambda[i], time interval dt),
+                with no minimum start time. Sampling uses the Lewis-Shedler "thinning" algorithm
+                If the final value of lambda is zero, no arrival is indicated by a value of neworder.time.never()
+        
+        hazard(...)
+            hazard(*args, **kwargs)
+            Overloaded function.
+            
+            1. hazard(self: neworder.MonteCarlo, p: float, n: int) -> numpy.ndarray[float64]
+            
+            
+                Returns an array of ones (with hazard rate lambda) or zeros of length n
+            
+            
+            2. hazard(self: neworder.MonteCarlo, p: numpy.ndarray[float64]) -> numpy.ndarray[float64]
+            
+            
+                Returns an array of ones (with hazard rate lambda[i]) or zeros for each element in p
+        
+        next_arrival(...)
+            next_arrival(*args, **kwargs)
+            Overloaded function.
+            
+            1. next_arrival(self: neworder.MonteCarlo, startingpoints: numpy.ndarray[float64], lambda: numpy.ndarray[float64], dt: float, relative: bool, minsep: float) -> numpy.ndarray[float64]
+            
+            
+                Returns an array of length n of subsequent arrival times from a nonhomogeneous Poisson process (with hazard rate lambda[i], time interval dt),
+                with start times given by startingpoints with a minimum offset of mingap. Sampling uses the Lewis-Shedler "thinning" algorithm.
+                If the relative flag is True, then lambda[0] corresponds to start time + mingap, not to absolute time
+                If the final value of lambda is zero, no arrival is indicated by a value of neworder.time.never()
+            
+            
+            2. next_arrival(self: neworder.MonteCarlo, startingpoints: numpy.ndarray[float64], lambda: numpy.ndarray[float64], dt: float, relative: bool) -> numpy.ndarray[float64]
+            
+            
+                Returns an array of length n of subsequent arrival times from a nonhomogeneous Poisson process (with hazard rate lambda[i], time interval dt),
+                with start times given by startingpoints. Sampling uses the Lewis-Shedler "thinning" algorithm.
+                If the relative flag is True, then lambda[0] corresponds to start time, not to absolute time
+                If the final value of lambda is zero, no arrival is indicated by a value of neworder.time.never()
+            
+            
+            3. next_arrival(self: neworder.MonteCarlo, startingpoints: numpy.ndarray[float64], lambda: numpy.ndarray[float64], dt: float) -> numpy.ndarray[float64]
+            
+            
+                Returns an array of length n of subsequent arrival times from a nonhomogeneous Poisson process (with hazard rate lambda[i], time interval dt),
+                with start times given by startingpoints. Sampling uses the Lewis-Shedler "thinning" algorithm.
+                If the final value of lambda is zero, no arrival is indicated by a value of neworder.time.never()
+        
+        reset(...)
+            reset(self: neworder.MonteCarlo) -> None
+            
+            
+            Resets the generator using the original seed.
+            Use with care, esp in multi-process models with identical streams
+        
+        seed(...)
+            seed(self: neworder.MonteCarlo) -> int
+            
+            
+            Returns the seed used to initialise the random stream
+        
+        stopping(...)
+            stopping(*args, **kwargs)
+            Overloaded function.
+            
+            1. stopping(self: neworder.MonteCarlo, lambda: float, n: int) -> numpy.ndarray[float64]
+            
+            
+                Returns an array of stopping times (with hazard rate lambda) of length n
+            
+            
+            2. stopping(self: neworder.MonteCarlo, lambda: numpy.ndarray[float64]) -> numpy.ndarray[float64]
+            
+            
+                Returns an array of stopping times (with hazard rate lambda[i]) for each element in lambda
+        
+        ustream(...)
+            ustream(self: neworder.MonteCarlo, n: int) -> numpy.ndarray[float64]
+            
+            
+            Returns an array of uniform random [0,1) variates of length n
+        
+        ----------------------------------------------------------------------
+        Static methods defined here:
+        
+        deterministic_identical_stream(...) from builtins.PyCapsule
+            deterministic_identical_stream(r: int) -> int
+            
+            
+            Returns a deterministic seed (19937). Input argument is ignored
+        
+        deterministic_independent_stream(...) from builtins.PyCapsule
+            deterministic_independent_stream(r: int) -> int
+            
+            
+            Returns a deterministic seed that is a function of the input (19937+r).
+            The model uses the MPI rank as the input argument, allowing for differently seeded streams in each process
+        
+        nondeterministic_stream(...) from builtins.PyCapsule
+            nondeterministic_stream(r: int) -> int
+            
+            
+            Returns a random seed from the platform's random_device. Input argument is ignored
+        
+        ----------------------------------------------------------------------
+        Static methods inherited from pybind11_builtins.pybind11_object:
+        
+        __new__(*args, **kwargs) from pybind11_builtins.pybind11_type
+            Create and return a new object.  See help(type) for accurate signature.
     
     class Timeline(pybind11_builtins.pybind11_object)
-     |  Timestepping functionality
-     |  
-     |  Method resolution order:
-     |      Timeline
-     |      pybind11_builtins.pybind11_object
-     |      builtins.object
-     |  
-     |  Methods defined here:
-     |  
-     |  __init__(...)
-     |      __init__(self: neworder.Timeline, start: float, end: float, checkpoints: List[int]) -> None
-     |  
-     |  __repr__(...)
-     |      __repr__(self: neworder.Timeline) -> str
-     |  
-     |  at_checkpoint(...)
-     |      at_checkpoint(self: neworder.Timeline) -> bool
-     |  
-     |  at_end(...)
-     |      at_end(self: neworder.Timeline) -> bool
-     |  
-     |  dt(...)
-     |      dt(self: neworder.Timeline) -> float
-     |  
-     |  end(...)
-     |      end(self: neworder.Timeline) -> float
-     |  
-     |  index(...)
-     |      index(self: neworder.Timeline) -> int
-     |  
-     |  nsteps(...)
-     |      nsteps(self: neworder.Timeline) -> int
-     |  
-     |  start(...)
-     |      start(self: neworder.Timeline) -> float
-     |  
-     |  time(...)
-     |      time(self: neworder.Timeline) -> float
-     |  
-     |  ----------------------------------------------------------------------
-     |  Static methods defined here:
-     |  
-     |  null(...) from builtins.PyCapsule
-     |      null() -> neworder.Timeline
-     |  
-     |  ----------------------------------------------------------------------
-     |  Static methods inherited from pybind11_builtins.pybind11_object:
-     |  
-     |  __new__(*args, **kwargs) from pybind11_builtins.pybind11_type
-     |      Create and return a new object.  See help(type) for accurate signature.
+        Timestepping functionality
+        
+        Method resolution order:
+            Timeline
+            pybind11_builtins.pybind11_object
+            builtins.object
+        
+        Methods defined here:
+        
+        __init__(...)
+            __init__(self: neworder.Timeline, start: float, end: float, checkpoints: List[int]) -> None
+            
+            
+            Constructs a timeline from start to end, with the checkpoints given by a non-empty list of ascending integers.
+            The total number of steps and the step size is determined by the final checkpoint value
+        
+        __repr__(...)
+            __repr__(self: neworder.Timeline) -> str
+            
+            
+            Prints a human-readable representation of the timeline
+        
+        at_checkpoint(...)
+            at_checkpoint(self: neworder.Timeline) -> bool
+            
+            
+            Returns True if the current step is a checkpoint
+        
+        at_end(...)
+            at_end(self: neworder.Timeline) -> bool
+            
+            
+            Returns True if the current step is the end of the timeline
+        
+        dt(...)
+            dt(self: neworder.Timeline) -> float
+            
+            
+            Returns the step size size of the timeline
+        
+        end(...)
+            end(self: neworder.Timeline) -> float
+            
+            
+            Returns the time of the end of the timeline
+        
+        index(...)
+            index(self: neworder.Timeline) -> int
+            
+            
+            Returns the index of the current step in the timeline
+        
+        nsteps(...)
+            nsteps(self: neworder.Timeline) -> int
+            
+            
+            Returns the number of steps in the timeline
+        
+        start(...)
+            start(self: neworder.Timeline) -> float
+            
+            
+            Returns the time of the start of the timeline
+        
+        time(...)
+            time(self: neworder.Timeline) -> float
+            
+            
+            Returns the time of the current step in the timeline
+        
+        ----------------------------------------------------------------------
+        Static methods defined here:
+        
+        null(...) from builtins.PyCapsule
+            null() -> neworder.Timeline
+            
+            
+            Returns a "null" timeline, where the start and end times are zero and there is a single step and checkpoint
+            Useful for continuous-time models with no explicit (discrete) timeline
+        
+        ----------------------------------------------------------------------
+        Static methods inherited from pybind11_builtins.pybind11_object:
+        
+        __new__(*args, **kwargs) from pybind11_builtins.pybind11_type
+            Create and return a new object.  See help(type) for accurate signature.
 
 FUNCTIONS
     checked(...) method of builtins.PyCapsule instance
@@ -436,7 +531,7 @@ FUNCTIONS
         testfunc(model: neworder.Model, df: object, colname: str) -> None
         
         
-        Test function for direct dataframe manipulation. Results may vary. Don not use.
+        Test function for direct dataframe manipulation. Results may vary. Do not use.
     
     transition(...) method of builtins.PyCapsule instance
         transition(model: neworder.Model, categories: numpy.ndarray[int64], transition_matrix: numpy.ndarray[float64], df: object, colname: str) -> None

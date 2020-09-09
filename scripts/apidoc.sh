@@ -6,8 +6,6 @@ output=docs/api_auto.md
 
 echo "# API Reference" > $output
 echo >> $output
-echo "TODO reformat raw docstrings" >> $output
-echo >> $output
 echo "## \`neworder\` module" >> $output
 echo >> $output
 echo \`\`\`text >> $output
@@ -37,3 +35,7 @@ echo >> $output
 echo \`\`\`text >> $output
 python -m pydoc neworder.df >> $output
 echo \`\`\` >> $output
+
+# remove pipes
+sed -i "s/|/ /g" $output
+

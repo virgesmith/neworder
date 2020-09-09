@@ -24,12 +24,138 @@ const char* run_docstr = R"docstr(
 )docstr";
 
 // Timeline
+const char* timeline_init_docstr = R"docstr(
+    Constructs a timeline from start to end, with the checkpoints given by a non-empty list of ascending integers.
+    The total number of steps and the step size is determined by the final checkpoint value
+)docstr";
 
-// TODO
+const char* timeline_null_docstr = R"docstr(
+    Returns a "null" timeline, where the start and end times are zero and there is a single step and checkpoint
+    Useful for continuous-time models with no explicit (discrete) timeline
+)docstr";
+
+const char* timeline_start_docstr = R"docstr(
+    Returns the time of the start of the timeline
+)docstr";
+
+const char* timeline_end_docstr = R"docstr(
+    Returns the time of the end of the timeline
+)docstr";
+
+const char* timeline_index_docstr = R"docstr(
+    Returns the index of the current step in the timeline
+)docstr";
+
+const char* timeline_time_docstr = R"docstr(
+    Returns the time of the current step in the timeline
+)docstr";
+
+const char* timeline_dt_docstr = R"docstr(
+    Returns the step size size of the timeline
+)docstr";
+
+const char* timeline_nsteps_docstr = R"docstr(
+    Returns the number of steps in the timeline
+)docstr";
+
+const char* timeline_at_checkpoint_docstr = R"docstr(
+    Returns True if the current step is a checkpoint
+)docstr";
+
+const char* timeline_at_end_docstr = R"docstr(
+    Returns True if the current step is the end of the timeline
+)docstr";
+
+const char* timeline_repr_docstr = R"docstr(
+    Prints a human-readable representation of the timeline
+)docstr";
 
 // MonteCarlo
 
-// TODO
+const char* mc_deterministic_identical_stream_docstr = R"docstr(
+    Returns a deterministic seed (19937). Input argument is ignored
+)docstr";
+
+const char* mc_deterministic_independent_stream_docstr = R"docstr(
+    Returns a deterministic seed that is a function of the input (19937+r).
+    The model uses the MPI rank as the input argument, allowing for differently seeded streams in each process
+)docstr";
+
+const char* mc_nondeterministic_stream_docstr = R"docstr(
+    Returns a random seed from the platform's random_device. Input argument is ignored
+)docstr";
+
+const char* mc_seed_docstr = R"docstr(
+    Returns the seed used to initialise the random stream
+)docstr";
+
+const char* mc_reset_docstr = R"docstr(
+    Resets the generator using the original seed.
+    Use with care, esp in multi-process models with identical streams
+)docstr";
+
+const char* mc_ustream_docstr = R"docstr(
+    Returns an array of uniform random [0,1) variates of length n
+)docstr";
+
+const char* mc_hazard_docstr = R"docstr(
+    Returns an array of ones (with hazard rate lambda) or zeros of length n
+)docstr";
+
+const char* mc_hazard_a_docstr = R"docstr(
+    Returns an array of ones (with hazard rate lambda[i]) or zeros for each element in p
+)docstr";
+
+const char* mc_stopping_docstr = R"docstr(
+    Returns an array of stopping times (with hazard rate lambda) of length n
+)docstr";
+
+const char* mc_stopping_a_docstr = R"docstr(
+    Returns an array of stopping times (with hazard rate lambda[i]) for each element in lambda
+)docstr";
+
+const char* mc_arrivals_docstr = R"docstr(
+    Returns an array of n arrays of multiple arrival times from a nonhomogeneous Poisson process (with hazard rate lambda[i], time interval dt),
+    with a minimum separation between events of mingap. Sampling uses the Lewis-Shedler "thinning" algorithm
+    The final value of lambda must be zero, and thus arrivals don't always occur, indicated by a value of neworder.time.never()
+    The inner dimension of the returned 2d array is governed by the the maximum number of arrivals sampled, and will thus vary 
+)docstr";
+
+const char* mc_first_arrival_docstr = R"docstr(
+    Returns an array of length n of first arrival times from a nonhomogeneous Poisson process (with hazard rate lambda[i], time interval dt),
+    with a minimum start time of minval. Sampling uses the Lewis-Shedler "thinning" algorithm
+    If the final value of lambda is zero, no arrival is indicated by a value of neworder.time.never()
+)docstr";
+
+const char* mc_first_arrival3_docstr = R"docstr(
+    Returns an array of length n of first arrival times from a nonhomogeneous Poisson process (with hazard rate lambda[i], time interval dt),
+    with no minimum start time. Sampling uses the Lewis-Shedler "thinning" algorithm
+    If the final value of lambda is zero, no arrival is indicated by a value of neworder.time.never()
+)docstr";
+
+const char* mc_next_arrival_docstr = R"docstr(
+    Returns an array of length n of subsequent arrival times from a nonhomogeneous Poisson process (with hazard rate lambda[i], time interval dt),
+    with start times given by startingpoints with a minimum offset of mingap. Sampling uses the Lewis-Shedler "thinning" algorithm.
+    If the relative flag is True, then lambda[0] corresponds to start time + mingap, not to absolute time
+    If the final value of lambda is zero, no arrival is indicated by a value of neworder.time.never()
+)docstr";
+
+const char* mc_next_arrival4_docstr = R"docstr(
+    Returns an array of length n of subsequent arrival times from a nonhomogeneous Poisson process (with hazard rate lambda[i], time interval dt),
+    with start times given by startingpoints. Sampling uses the Lewis-Shedler "thinning" algorithm.
+    If the relative flag is True, then lambda[0] corresponds to start time, not to absolute time
+    If the final value of lambda is zero, no arrival is indicated by a value of neworder.time.never()
+)docstr";
+
+const char* mc_next_arrival3_docstr = R"docstr(
+    Returns an array of length n of subsequent arrival times from a nonhomogeneous Poisson process (with hazard rate lambda[i], time interval dt),
+    with start times given by startingpoints. Sampling uses the Lewis-Shedler "thinning" algorithm.
+    If the final value of lambda is zero, no arrival is indicated by a value of neworder.time.never()
+)docstr";
+
+const char* mc_repr_docstr = R"docstr(
+    Prints a human-readable representation of the MonteCarlo engine
+)docstr";
 
 // The Model class
 
@@ -43,22 +169,26 @@ const char* model_mc_docstr = R"docstr(
     Returns the models Monte-Carlo engine
 )docstr";
 const char* model_modify_docstr = R"docstr(
-    User-overridden function used to modify state in a per-process basis for multiprocess model runs.
+    User-overridable method used to modify state in a per-process basis for multiprocess model runs.
     Default behaviour is to do nothing. 
     This function should not be called directly, it is used by the Model.run() function 
 )docstr";
 const char* model_step_docstr = R"docstr(
-    User-implemented function used to advance state of a model.
+    User-implemented method used to advance state of a model.
     Default behaviour raises NotImplementedError. 
     This function should not be called directly, it is used by the Model.run() function 
 )docstr";
 const char* model_check_docstr = R"docstr(
-    User-overridden function used check internal state at each timestep.
-    Default behaviour is to do nothing. 
+    User-overridable method used to check internal state at each timestep.
+    Default behaviour is to simply return True. 
+    Returning False will halt the model run.
     This function should not be called directly, it is used by the Model.run() function 
+
+    Returns:
+        True if checks are ok, False otherwise.
 )docstr";
 const char* model_checkpoint_docstr = R"docstr(
-    User-implemented function for custom processing at certain points in the model run (at a minimum the final timestep).
+    User-overridable for custom processing at certain points in the model run (at a minimum the final timestep).
     Default behaviour raises NotImplementedError. 
     This function should not be called directly, it is used by the Model.run() function 
 )docstr";
@@ -161,10 +291,6 @@ const char* df_transition_docstr = R"docstr(
 )docstr";
 
 const char* df_testfunc_docstr = R"docstr(
-    Test function for direct dataframe manipulation. Results may vary. Don not use.
+    Test function for direct dataframe manipulation. Results may vary. Do not use.
 )docstr";
 
-
-// temporary
-const char* empty_docstr = R"docstr(
-)docstr";

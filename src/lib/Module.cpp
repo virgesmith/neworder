@@ -35,17 +35,15 @@ const char* no::module_version()
   return STR(NEWORDER_VERSION);
 }
 
-// std::string no::python_version()
-// {
-//   return no::getenv().python_version();
-// }
 
 // python-visible log function defined above
 PYBIND11_MODULE(neworder, m)
 {
   // py::options options;
   // options.disable_function_signatures();
-#include "Module_docstr.cpp" 
+#include "Module_docstr.cpp"
+
+  m.doc() = "A dynamic microsimulation framework";
 
   // utility/diagnostics
   m.def("version", no::module_version, version_docstr)
@@ -65,20 +63,20 @@ PYBIND11_MODULE(neworder, m)
    .def("isnever", no::isnever, time_isnever_a_docstr, "y"_a); // array
 
   py::class_<no::Timeline>(m, "Timeline", "Timestepping functionality")
-    .def(py::init<double, double, const std::vector<size_t>&>(), empty_docstr, "start"_a, "end"_a, "checkpoints"_a)
+    .def(py::init<double, double, const std::vector<size_t>&>(), timeline_init_docstr, "start"_a, "end"_a, "checkpoints"_a)
     //.def(py::init<>())
-    .def_static("null", []() { return no::Timeline(); }, empty_docstr) // calls default ctor (rust workaround, pyo3 doesnt permit multiple ctors)
+    .def_static("null", []() { return no::Timeline(); }, timeline_null_docstr) // calls default ctor (rust workaround, pyo3 doesnt permit multiple ctors)
     // Only const accessors exposed to python
-    .def("start", &no::Timeline::start, empty_docstr)
-    .def("end", &no::Timeline::end, empty_docstr)
-    .def("index", &no::Timeline::index, empty_docstr)
-    .def("time", &no::Timeline::time, empty_docstr)
-    .def("dt", &no::Timeline::dt, empty_docstr)
-    .def("nsteps", &no::Timeline::nsteps, empty_docstr)
+    .def("start", &no::Timeline::start, timeline_start_docstr)
+    .def("end", &no::Timeline::end, timeline_end_docstr)
+    .def("index", &no::Timeline::index, timeline_index_docstr)
+    .def("time", &no::Timeline::time, timeline_time_docstr)
+    .def("dt", &no::Timeline::dt, timeline_dt_docstr)
+    .def("nsteps", &no::Timeline::nsteps, timeline_nsteps_docstr)
     //.def("next", &no::Timeline::next) not exposed 
-    .def("at_checkpoint", &no::Timeline::at_checkpoint, empty_docstr)
-    .def("at_end", &no::Timeline::at_end, empty_docstr)
-    .def("__repr__", &no::Timeline::repr, empty_docstr);
+    .def("at_checkpoint", &no::Timeline::at_checkpoint, timeline_at_checkpoint_docstr)
+    .def("at_end", &no::Timeline::at_end, timeline_at_end_docstr)
+    .def("__repr__", &no::Timeline::repr, timeline_repr_docstr);
 
   // Microsimulation (or ABM) model class
   py::class_<no::Model>(m, "Model", "The base model class from which all neworder models should be subclassed")
@@ -96,50 +94,50 @@ PYBIND11_MODULE(neworder, m)
   // MC
   py::class_<no::MonteCarlo>(m, "MonteCarlo", "The model's Monte-Carlo engine")
     // constructor is NOT exposed to python, can only be created withing a model
-    .def_static("deterministic_identical_stream", &no::MonteCarlo::deterministic_identical_stream, empty_docstr, "r"_a)
-    .def_static("deterministic_independent_stream", &no::MonteCarlo::deterministic_independent_stream, empty_docstr, "r"_a)
-    .def_static("nondeterministic_stream", &no::MonteCarlo::nondeterministic_stream, empty_docstr, "r"_a)
-    .def("seed", &no::MonteCarlo::seed, empty_docstr)
-    .def("reset", &no::MonteCarlo::reset, empty_docstr)  
-    .def("ustream", &no::MonteCarlo::ustream, empty_docstr, "n"_a)
+    .def_static("deterministic_identical_stream", &no::MonteCarlo::deterministic_identical_stream, mc_deterministic_identical_stream_docstr, "r"_a)
+    .def_static("deterministic_independent_stream", &no::MonteCarlo::deterministic_independent_stream, mc_deterministic_independent_stream_docstr, "r"_a)
+    .def_static("nondeterministic_stream", &no::MonteCarlo::nondeterministic_stream, mc_nondeterministic_stream_docstr, "r"_a)
+    .def("seed", &no::MonteCarlo::seed, mc_seed_docstr)
+    .def("reset", &no::MonteCarlo::reset, mc_reset_docstr)  
+    .def("ustream", &no::MonteCarlo::ustream, mc_ustream_docstr, "n"_a)
     // explicitly give function type for overloads 
     .def("hazard", py::overload_cast<double, py::ssize_t>(&no::MonteCarlo::hazard), 
-                   empty_docstr,
+                   mc_hazard_docstr,
                    "p"_a, "n"_a)
     .def("hazard", py::overload_cast<const py::array_t<double>&>(&no::MonteCarlo::hazard), 
-                   empty_docstr,
+                   mc_hazard_a_docstr,
                    "p"_a)
     .def("stopping", py::overload_cast<double, py::ssize_t>(&no::MonteCarlo::stopping), 
-                     empty_docstr,
-                     "p"_a, "n"_a)
+                     mc_stopping_docstr,
+                     "lambda"_a, "n"_a)
     .def("stopping", py::overload_cast<const py::array_t<double>&>(&no::MonteCarlo::stopping), 
-                     empty_docstr,
-                     "p"_a)
+                     mc_stopping_a_docstr,
+                     "lambda"_a)
     .def("arrivals", &no::MonteCarlo::arrivals, 
-                     empty_docstr,
+                     mc_arrivals_docstr,
                      "lambda"_a , "dt"_a, "mingap"_a, "n"_a)
     .def("first_arrival", &no::MonteCarlo::first_arrival, 
-                          empty_docstr,
+                          mc_first_arrival_docstr,
                           "lambda"_a, "dt"_a, "n"_a, "minval"_a)
     .def("first_arrival", [](no::MonteCarlo& self, const py::array_t<double>& lambda_t, double dt, size_t n) { 
                             return self.first_arrival(lambda_t, dt, n, 0.0); 
                           }, 
-                          empty_docstr,
+                          mc_first_arrival3_docstr,
                           "lambda"_a, "dt"_a, "n"_a)
     .def("next_arrival", &no::MonteCarlo::next_arrival, 
-                         empty_docstr,
+                         mc_next_arrival_docstr,
                          "startingpoints"_a, "lambda"_a, "dt"_a, "relative"_a, "minsep"_a)
     .def("next_arrival", [](no::MonteCarlo& self, const py::array_t<double>& startingpoints, const py::array_t<double>& lambda_t, double dt, bool relative) { 
                            return self.next_arrival(startingpoints, lambda_t, dt, relative, 0.0); 
                          }, 
-                         empty_docstr,
+                         mc_next_arrival4_docstr,
                          "startingpoints"_a, "lambda"_a, "dt"_a, "relative"_a)
     .def("next_arrival", [](no::MonteCarlo& self, const py::array_t<double>& startingpoints, const py::array_t<double>& lambda_t, double dt) { 
                            return self.next_arrival(startingpoints, lambda_t, dt, false, 0.0); 
                          }, 
-                         empty_docstr,
+                         mc_next_arrival3_docstr,
                          "startingpoints"_a, "lambda"_a, "dt"_a)
-    .def("__repr__", &no::MonteCarlo::repr, empty_docstr);
+    .def("__repr__", &no::MonteCarlo::repr, mc_repr_docstr);
     
     // .def("first_arrival", [](no::MonteCarlo& mc, const py::array_t<double>& lambda_t, double dt, size_t n) { 
     //   return mc.first_arrival(lambda_t, dt, n, 0.0); 
