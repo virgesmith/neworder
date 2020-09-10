@@ -159,8 +159,6 @@ By default, the model has verbose mode off and checked mode on. These settings c
 
 To run the model,
 
-
-
 ```bash
 mpiexec -n 4 python examples/option/model.py
 ```
@@ -180,4 +178,3 @@ which will produce something like
 ```
 
 Note that the order of the output will vary, and log messages may even get intermingled.
-

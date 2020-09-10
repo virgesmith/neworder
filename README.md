@@ -33,11 +33,15 @@ but the module will work perfectly well in serial mode without these.
 
 ## Installation
 
-TODO...
-```bash
-pip install
-```
+### PyPI
+
+TODO
+
+### Conda
+
+TODO
 
 ## Tutorial
 
-To get started first see the detailed documentation [here](https://neworder.readthedocs.io). Then, check out the [Hello World](./docs/examples/hello_world.md) example, followed by some of [other examples](./docs/examples/examples.md).
+To get started first see the detailed documentation [here](https://neworder.readthedocs.io). Then, check out "Hello World"
+and other examples.

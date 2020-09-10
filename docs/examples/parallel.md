@@ -38,7 +38,6 @@ assert neworder.mpi.size() > 1, "This configuration requires MPI with >1 process
 As always, the neworder framework expects an instance of a Model class, subclassed from `neworder.Model`, which in turn requires a `neworder.Timeline` object.
 
 ```python
-
 population_size = 100
 p_trans = 0.01
 timeline = neworder.Timeline(0, 10, [10])
@@ -94,16 +93,14 @@ and the step method models the transitions:
         if len(immigrants):
           neworder.log("received %d immigrants from %d" % (len(immigrants), s))
           self.pop = self.pop.append(immigrants)
-
 ```
 
 
-```
+```python
   def check(self):
     """ Ensure we havent lost (or gained) anybody """
     totals = comm.gather(len(self.pop), root=0)
     if neworder.mpi.rank() == 0:
       return sum(totals) == self.n * neworder.mpi.size()
     return True
-
 ```

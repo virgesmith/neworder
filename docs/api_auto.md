@@ -1,8 +1,7 @@
 # API Reference
 
-
 !!! note "API documentation"
-    We have yet to get an mkdoc plugin working with the pybind11 module.
+    We have yet to get an API doc plugin working with the pybind11 module. In the meantime, the raw docstrings are reproduced verbatim below.
 
 
 ## `neworder` module

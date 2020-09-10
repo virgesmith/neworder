@@ -20,16 +20,12 @@ markdown_extensions:
   - toc:
       permalink: "¶"  
   - admonition      
+  - codehilite
 
-
-# plugins:
-#   - search
-#   - mkdocstrings
-  
-  # extra:
-  #   include_toc: yes      
-  #   extra_nav_links:
-  #     Fork me on GitHub: https://github.com/iamale/rock-cli
+plugins:
+  - search
+#  - mkpdfs
+#  - mkdocstrings
 
 nav:
   - Description: description.md
@@ -43,7 +39,7 @@ nav:
     - Competing: examples/competing.md
     - Disease: examples/disease.md
     - People: ./examples/people.md
-    - People (parallel): ./examples/people_multi.md
+    #- People (parallel): ./examples/people_multi.md
     - RiskPaths: examples/riskpaths.md
     - Schelling: examples/schelling.md
   - API:

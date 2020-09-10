@@ -1,7 +1,5 @@
 # API Reference
 
 !!! note "API documentation"
-    MkDocs doesn't natively support API documentation, encouraging documenters to use examples and tutorials to explain how to use their software packages. We broadly agree with this stance, but also believe that API documentation has it's place and provides a useful appendix the main documentation.
-
-    We hope that the examples and the [tips and tricks](./tips.md) are useful, but also provide the (raw) module docstrings below for completeness. 
+    We have yet to get an API doc plugin working with the pybind11 module. In the meantime, the raw docstrings are reproduced verbatim below.
 

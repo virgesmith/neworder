@@ -14,7 +14,6 @@ which should result in something like
 [py 0/1] Hello neworder_user
 ```
 
-
 ## Input
 
 The `neworder` framework expects an instance of a `Model` class, which in turn requires a `Timeline` object.
@@ -43,25 +42,20 @@ class HelloWorld(neworder.Model):
   def __init__(self):
     super().__init__(neworder.Timeline.null())
     self.name = None
-...
 ```
 
 the `modify` method is not relevant in this single-process example so it not implemented. Here's the `step` method:
 
 ```python
-...
   def step(self):
     self.name = os.getlogin()
-...
 ```
 
 and the `check` method simply confirms that the username was changed by the step method:
 
 ```python
-...
   def check(self):
     return self.name is not None
-...
 ```
 
 Note that the this method must return a boolean, if not `True` the neworder runtime will assume an error and stop execution.
@@ -69,10 +63,8 @@ Note that the this method must return a boolean, if not `True` the neworder runt
 Finally, the `checkpoint` methods prints the greeting:
 
 ```python
-...
   def checkpoint(self):
     neworder.log("Hello %s" % self.name)
-...
 ```
 
 using the `neworder.log` function is preferred to plain `print` statements as they add useful context for debugging purposes. The API reference can be found [here](./reference.md)
