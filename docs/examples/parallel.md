@@ -1,28 +1,18 @@
-# Parallel execution
+# Parallel Execution
 
 This example illustrates how data can be exchanged and synchronised between processes. The code for this examples can be found [here](https://github.com/virgesmith/neworder/tree/master/examples/parallel).
 
-The basic idea is that we have a population with a single arbitrary state property which can take one of `N` values, and each process holds the part of the population in one of the possible states.
+The basic idea is that we have a population with a single arbitrary state property which can take one of `N` values, where `N` is the number of processes, and each process initially holds the part of the population in the corresponding state. As time evolves, indvidual's states change at random, and the processes exchange individuals to keep their own population homegeneous.
 
-Each population is stored in a pandas `Dataframe`. At the start these is an equal population in each state (and thus for each process).
+Each population is stored in a pandas `Dataframe`. At the start these is an equal population in each process (and thus in each state).
 
-The state changes randomly to another states with a fixed probability `p_trans`. At each timestep.
-
-Each process starts with a population in a specific state, which in this example just corresponds to the rank of the process.  As the model evolves and individuals' state changes they are exchanged between processes so that each process holds all the individuals with the corresponding state.
+The states transition randomly with a fixed probability `p_trans`.
 
 Finally, one process acquires the entire population and prints a summary of the state counts.
 
-To run the model,
+## Setup
 
-```bash
-mpiexec -n 2 python examples/parallel/model.py
-```
-
-adjusting the path as necessary, and optionally increasing the number of processes from 2.
-
-## Input
-
-Firstly we import the necessary modules switch on verbose mode, and check we are running in parallel mode:
+Firstly we import the necessary modules and check we are running in parallel mode:
 
 ```python
 import neworder
@@ -35,7 +25,7 @@ from parallel import Parallel
 assert neworder.mpi.size() > 1, "This configuration requires MPI with >1 process"
 ```
 
-As always, the neworder framework expects an instance of a Model class, subclassed from `neworder.Model`, which in turn requires a `neworder.Timeline` object.
+As always, the neworder framework expects an instance of a Model class, subclassed from `neworder.Model`, which in turn requires a `neworder.Timeline` object:
 
 ```python
 population_size = 100
@@ -45,7 +35,9 @@ timeline = neworder.Timeline(0, 10, [10])
 model = Parallel(timeline, p_trans, population_size)
 ```
 
-Now each process has a population of 100 individuals, each of which has a probability of changing state of 1% at each of the ten (unit) timesteps.
+Each process has an initial population of 100 individuals, each of which has a probability of changing state of 1% at each of the ten (unit) timesteps.
+
+## The Model
 
 Here's the model constructor:
 
@@ -53,7 +45,7 @@ Here's the model constructor:
 class Parallel(neworder.Model):
   def __init__(self, timeline, p, n):
     # initialise base model (essential!)
-    super().__init__(timeline, neworder.MonteCarlo.deterministic_independent_seed)
+    super().__init__(timeline, neworder.MonteCarlo.nondeterministic_stream)
 
     # enumerate possible states
     self.s = np.array(range(neworder.mpi.size()))
@@ -69,7 +61,7 @@ class Parallel(neworder.Model):
                              "state": np.full(n, neworder.mpi.rank()) }).set_index("id")
 ```
 
-and the step method models the transitions:
+and the step method, which performs the state transitions:
 
 ```python
   def step(self):
@@ -95,12 +87,69 @@ and the step method models the transitions:
           self.pop = self.pop.append(immigrants)
 ```
 
+And, just to be sure we account for everyone:
 
 ```python
   def check(self):
-    """ Ensure we havent lost (or gained) anybody """
+    # Ensure we haven't lost (or gained) anybody
     totals = comm.gather(len(self.pop), root=0)
     if neworder.mpi.rank() == 0:
-      return sum(totals) == self.n * neworder.mpi.size()
-    return True
+      if sum(totals) != self.n * neworder.mpi.size():
+        return False
+
+    # And check we only have individuals that we should have
+    return len(self.pop[self.pop.state != neworder.mpi.rank()]) == 0
+```
+
+Finally, the (single) checkpoint aggregates the populations 
+
+```python
+  def checkpoint(self):
+    # wait until any slower-running processes catch up
+    comm.Barrier()
+    # then process 0 assembles all the data and prints a summary
+    pops = comm.gather(self.pop, root=0)
+    if neworder.mpi.rank() == 0:
+      for r in range(1, neworder.mpi.size()):
+        pops[0] = pops[0].append(pops[r])
+      neworder.log("State counts (total %d):" % len(pops[0]))
+      neworder.log(pops[0]["state"].value_counts())
+```
+
+## Execution
+
+As usual, to run the model we just call
+
+```python
+neworder.run(model)
+```
+
+Or from the command line, something like
+
+```bash
+mpiexec -n 8 python examples/parallel/model.py
+```
+
+adjusting the path as necessary, and optionally changing the number of processes.
+
+## Output
+
+Results will vary as the random streams are not deterministic in this example, but you should see something like:
+
+```text
+...
+[py 6/8] received 2 immigrants from 1
+[py 6/8] received 1 immigrants from 2
+[py 6/8] received 2 immigrants from 3
+[py 6/8] received 1 immigrants from 4
+[py 0/8] State counts (total 800):
+[py 0/8] 6    118
+2    118
+5    106
+0    101
+7     92
+4     89
+3     88
+1     88
+Name: state, dtype: int64
 ```

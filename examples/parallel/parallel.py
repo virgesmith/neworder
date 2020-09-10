@@ -9,7 +9,7 @@ import neworder
 class Parallel(neworder.Model):
   def __init__(self, timeline, p, n):
     # initialise base model (essential!)
-    super().__init__(timeline, neworder.MonteCarlo.deterministic_independent_stream)
+    super().__init__(timeline, neworder.MonteCarlo.nondeterministic_stream)
 
     # enumerate possible states
     self.s = np.array(range(neworder.mpi.size()))
@@ -47,15 +47,22 @@ class Parallel(neworder.Model):
           self.pop = self.pop.append(immigrants)
 
   def check(self):
-    """ Ensure we havent lost (or gained) anybody """
+    # Ensure we haven't lost (or gained) anybody
     totals = comm.gather(len(self.pop), root=0)
     if neworder.mpi.rank() == 0:
-      return sum(totals) == self.n * neworder.mpi.size()
-    return True
+      if sum(totals) != self.n * neworder.mpi.size():
+        return False
+    
+    # And check we only have individuals that we should have
+    return len(self.pop[self.pop.state != neworder.mpi.rank()]) == 0
 
   def checkpoint(self):
+    # wait until any slower-running processes catch up
     comm.Barrier()
-    neworder.log("len(pop)=%d" % len(self.pop))
-
-    # check we only have status = rank now
-    assert len(self.pop[self.pop.state != neworder.mpi.rank()]) == 0
+    # then process 0 assembles all the data and prints a summary
+    pops = comm.gather(self.pop, root=0)
+    if neworder.mpi.rank() == 0:
+      for r in range(1, neworder.mpi.size()):
+        pops[0] = pops[0].append(pops[r])
+      neworder.log("State counts (total %d):" % len(pops[0]))
+      neworder.log(pops[0]["state"].value_counts())
