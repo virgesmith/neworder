@@ -2,7 +2,6 @@
 #include "Log.h"
 #include "Environment.h"
 
-#include <iostream>
 
 // User-defined string literal and overloaded % operator allow for easy vaguely pythonic construction of log messages, e.g.
 // no::log("the value of %% plus %% is %%"_s % 2 % "2" % 4.0);
@@ -28,12 +27,12 @@ std::string to_string_impl(const std::string& v)
 void no::log(const std::string& msg, bool override_verbose)
 {
   if (override_verbose || no::getenv().m_verbose)
-    std::cout << no::getenv().context() << msg << std::endl;
+    py::print(no::getenv().context(), msg);
 }
 
 // not visible to python
 void no::log(const py::handle& msg, bool override_verbose)
 {
   if (override_verbose || no::getenv().m_verbose)
-    std::cout << no::getenv().context() << msg << std::endl;
+    py::print(no::getenv().context(), msg);
 }

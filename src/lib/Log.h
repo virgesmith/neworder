@@ -7,7 +7,6 @@
 #include <type_traits>
 #include <sstream>
 #include <iomanip>
-#include <iostream>
 
 
 // C++14 implements the ""s literal -> std::string but there are so many issues with it (namespace, gcc warnings)

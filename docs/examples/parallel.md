@@ -96,12 +96,16 @@ And, just to be sure we account for everyone:
     if neworder.mpi.rank() == 0:
       if sum(totals) != self.n * neworder.mpi.size():
         return False
-
     # And check we only have individuals that we should have
-    return len(self.pop[self.pop.state != neworder.mpi.rank()]) == 0
+    out_of_place = comm.gather(len(self.pop[self.pop.state != neworder.mpi.rank()]))
+    if neworder.mpi.rank() == 0:
+      neworder.log(out_of_place)
+      if any(out_of_place):
+        return False
+    return True
 ```
 
-Finally, the (single) checkpoint aggregates the populations 
+Finally, the (single) checkpoint aggregates the populations and prints a summary of the populations in each state. 
 
 ```python
   def checkpoint(self):
@@ -112,8 +116,7 @@ Finally, the (single) checkpoint aggregates the populations
     if neworder.mpi.rank() == 0:
       for r in range(1, neworder.mpi.size()):
         pops[0] = pops[0].append(pops[r])
-      neworder.log("State counts (total %d):" % len(pops[0]))
-      neworder.log(pops[0]["state"].value_counts())
+      neworder.log("State counts (total %d):\n%s" % (len(pops[0]), pops[0]["state"].value_counts().to_string()))
 ```
 
 ## Execution

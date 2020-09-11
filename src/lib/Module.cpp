@@ -12,8 +12,6 @@
 
 #include "NewOrder.h"
 
-#include <iostream>
-
 using namespace py::literals;
 
 namespace {
@@ -21,7 +19,7 @@ namespace {
 // not visible to (rest of) C++ - use the function declared in Log.h
 void log_obj(const py::object& msg)
 {
-  std::cout << no::getenv().context(no::Environment::Context::PY) << msg << std::endl;
+  py::print(no::getenv().context(no::Environment::Context::PY), msg);
 }
 
 }
