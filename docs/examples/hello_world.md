@@ -1,20 +1,8 @@
 # Hello World
 
-This simplest example illustrates the structure required, how it fits together and how it's executed by the framework. The annotated python code can be found here: [examples/hello_world/model.py](examples/hello_world/model.py).
+This simple example illustrates the structure required, how it fits together and how it's executed by the framework.
 
-To run the model:
-
-```bash
-python examples/hello_world/model.py
-```
-
-which should result in something like
-
-```text
-[py 0/1] Hello neworder_user
-```
-
-## Input
+## Model Definition
 
 The `neworder` framework expects an instance of a `Model` class, which in turn requires a `Timeline` object.
 
@@ -67,7 +55,7 @@ Finally, the `checkpoint` methods prints the greeting:
     neworder.log("Hello %s" % self.name)
 ```
 
-using the `neworder.log` function is preferred to plain `print` statements as they add useful context for debugging purposes. The API reference can be found [here](./reference.md)
+using the `neworder.log` function is preferred to plain `print` statements as they add useful context for debugging purposes. The API reference can be found [here](../references.md)
 
 ## Execution
 
@@ -84,6 +72,18 @@ ok = neworder.run(hello_world)
 ```
 
 which returns a boolean, `True` for success.
+
+From the command line, run the model:
+
+```bash
+python examples/hello_world/model.py
+```
+
+which should result in something like
+
+```text
+[py 0/1] Hello neworder_user
+```
 
 ## Output
 
@@ -162,3 +162,5 @@ and finally the model reports its status and execution time:
 ## Next steps
 
 Check out some or all of the other examples...
+
+## [Examples Source Code](https://github.com/virgesmith/neworder/tree/master/examples)

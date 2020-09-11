@@ -44,7 +44,7 @@ nav:
     - Option: examples/option.md
     - Competing: examples/competing.md
     - Disease: examples/disease.md
-    - People: ./examples/people.md
+    #- People: ./examples/people.md
     #- People (parallel): ./examples/people_multi.md
     - RiskPaths: examples/riskpaths.md
     - Schelling: examples/schelling.md

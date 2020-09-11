@@ -1,13 +1,11 @@
-## Agent-Based Models
+# Schelling's Segregation Model
 
 An implementation of the Schelling ABM [[7]](../references.md)
 
-The model script is [here](examples/schelling/model.py) and the model definition is [here](examples/schelling/schelling.py)
-
 It's an almost pure python implementation, only using the timeline and logging functionality provided by the neworder framework
-
-, configured [here](examples/schelling/config.py)
 
 ![Schelling](./img/schelling.gif)
 
 In the above example, the similarity threshold is 50% and the cells composition is: 30% empty, 30% red, 30% blue and 10% green, on a 80 x 100 grid.
+
+## [Examples Source Code](https://github.com/virgesmith/neworder/tree/master/examples)

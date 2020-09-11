@@ -21,5 +21,4 @@ The model `MarkovChain` additionally implements a python-only equivalent of the 
 
 The model takes about 45s to run (depending on platform). Changing `MarkovChain.step()` function to use `neworder`'s C++ implementation results in a run time of 4.9s, close to a factor of 10 speedup. Note though that the C++ implementation can only operate integer state data. If the state is expressed as another type, e.g. a string, consider changing the format, or just use the python implementation. 
 
-
 ![population evolution](./img/markov_chain.png)

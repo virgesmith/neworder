@@ -8,7 +8,7 @@ This is based on the example in the second chapter of the book - *The Life Table
 
 ![Mortality histogram - 100000 people](./img/mortality_hist_100k.gif)
 
-The mortality data is sourced from the NewETHPOP[[1]](../../README.md#references) project and represents the mortality rate for white British males in one of the London Boroughs.
+The mortality data is sourced from the NewETHPOP[[1]](../references.md) project and represents the mortality rate for white British males in one of the London Boroughs.
 
 The first implementation steps through a case-based timeline and samples deaths using the marginal mortality rate as a series of (homogeneous) Poisson processs, as per the MODGEN example:
 
@@ -20,7 +20,7 @@ The first implementation steps through a case-based timeline and samples deaths 
   - record time of death mark individual as dead
 - take mean time of death
 
-The second implementation samples the term structure of mortality directly using the Lewis-Shedler [[4]](../../README.md#references) "thinning" algorithm - this approach doesn't even require a timeline as each individual's time of death can be sampled directly, as a nonhomogeneous Poisson process.
+The second implementation samples the term structure of mortality directly using the Lewis-Shedler [[4]](../references.md) "thinning" algorithm - this approach doesn't even require a timeline as each individual's time of death can be sampled directly, as a nonhomogeneous Poisson process.
 
 Running the model script will execute both models
 

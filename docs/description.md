@@ -14,36 +14,27 @@ In terms of parallel execution, the following use-cases are supported:
 
 - splitting a large problem over multiple cores.
 - performing parallel runs with:
-  - perturbations to the model dynamics for sensitivity analysis
-  - independent RNGs for convergence analysis
+    - perturbations to the model dynamics for sensitivity analysis
+    - independent RNGs for convergence analysis
 
 ## Provision
 
-The framework essentially provides a mechanism to iterate over a timeline, and perform operations at specified points on that timeline. This is what we call the _model_.
+The framework essentially provides a mechanism to iterate over a timeline, and perform operations at all points on the timeline, plus extra operations at pre-specified points on that timeline. This is what we call the _model_.
 
-Each model has its own random number stream, and when running in parallel, each stream can be configured to be independent or identical to the other streams. Note that identical streams _do not_ guarantee identical results, as
+Each model has its own random number stream, and when running in parallel, each stream can be configured to be independent or identical to the other streams. 
 
 - the main "loop" over the timeline.
 - a resettable, independent<sup>*</sup> random number stream per process. (MT19937)
 - a parallel execution framework supporting:
-  - modes for sensitivity analysis and convergence analysis:
-    - the ability to modify the inputs/dynamics for each process.
-    - the ability to run each process with either independent or identical random number streams.
-  - interprocess communication and synchronisation
+    - modes for sensitivity analysis and convergence analysis:
+        - the ability to modify the inputs/dynamics for each process.
+        - the ability to run each process with either independent or identical random number streams.
+    - interprocess communication and synchronisation, via the `mpi4py` package.
 - a library of Monte-Carlo methods.
-- a mechanism to specify python code to be run during the course of the simulation (i.e. deferred).
-- fast implementations of common algorithms that require explicit loops. (e.g. one benchmarked at over 4 orders of magnitude faster than a pure python implementation.)
-- a logging framework.
+- fast dataframe manipulation.
+- logging facilities.
 
-Where possible, the functionality available in existing python libraries should be used. The framework specifically does not provide:
-
-- arrays: use numpy wherever possible. The framework can access numpy arrays directly.
-- data frames: use pandas wherever possible. Data frames are accessible in the framework via numpy arrays.
-- visualisation: use e.g. matplotlib
-
-That said, the model developer should avoid loops in python code - it is an interpreted language and loops will be executed much more slowly than compiled code.
-
-The section below lists minimal requirements that must be met, and those that - if specified - will be used:
+Where possible, the functionality available in existing python libraries should be leveraged. The framework specifically does not provide any data structures but can operate efficiently on numpy arrays, and thus also pandas `Series` and `DataFrame` objects.
 
 ## Requirements
 
@@ -57,7 +48,7 @@ In order to construct a functioning model, the minimal requirements of the model
   - `checkpoint`
 - set a seeding policy for the random stream (3 are provided)
 - instantiate an instance of the subclass with the timeline and seeding policy
-- call the `neworder.run` function
+- the simply call the `neworder.run` function
 
 and the following are optional:
 

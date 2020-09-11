@@ -76,9 +76,7 @@ bs_mc = BlackScholes(option, market, nsims)
 neworder.run(bs_mc)
 ```
 
-The file [black_scholes.py](../../examples/option/black_scholes.py) contains the model implementation (subclassing `neworder.Model`), with both analytic option formula and the Monte-Carlo simulation, with [helpers.py](../../examples/option/helpers.py) providing some additional functionality.
-
-#### Constructor
+### Constructor
 
 The constructor takes copies of the parameters, and defines a simple timeline [0, T] corresponding to [valuation date, expiry date] and a single timestep, which is all we require for this example. It initialises the base class with the timeline, and specifies that each process use the same random stream (which reduces noise in our risk calculations):
 
@@ -95,7 +93,7 @@ class BlackScholes(neworder.Model):
     self.nsims = nsims
 ```
 
-#### Modifier
+### Modifier
 
 This method defines the 'modifiers' for each process: the perturbations applied to the market data in each process in order to calculate the option price sensitivity to that market data. In this case we bump the spot up and down and the volatility up in the non-root processes allowing, calculation of delta, gamma and vega by finite differencing:
 
@@ -109,7 +107,7 @@ This method defines the 'modifiers' for each process: the perturbations applied 
       self.market["vol"] += 0.001 # 10bp upward vega
 ```
 
-#### Step
+### Step
 
 This method actually runs the simulation and stores the result for later use. The calculation details are not shown here for brevity (see the source file):
 
@@ -118,7 +116,7 @@ This method actually runs the simulation and stores the result for later use. Th
     self.pv = self.simulate()
 ```
 
-#### Check
+### Check
 
 Even though we explicitly requested that each process has identical random streams, this does not guarantee the streams will stay identical, as different process could sample more or less than others, and the streams get out of step.
 
@@ -146,7 +144,7 @@ In the below implementation, all samples are sent to a single process (0) for co
     return ok
 ```
 
-#### Checkpoint
+### Checkpoint
 
 Finally the checkpoint method is called at end of the timeline. Again, the calculation detail is omitted for clarity, but the method performs two tasks:
 

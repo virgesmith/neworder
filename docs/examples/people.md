@@ -1,5 +1,5 @@
 
-# Polulation Microsimulation (Serial)
+# Population Microsimulation
 
 In this example, the input data is a csv file containing a microsynthesised 2011 population of Newcastle generated from UK census data, by age, gender and ethnicity. The transitions modelled are: ageing, births, deaths and migrations.
 

@@ -41,7 +41,7 @@ And then install the python dependencies...
 
 ...for all the examples to run:
 
-```bash
+```bash.
 pip install -r requirements.txt
 ```
 
@@ -101,7 +101,7 @@ or
 mpiexec -n <N> python examples/<name>/model.py
 ```
 
-See [Examples](examples.md) for more detail on each example.
+See the Examples section for more details.
 
 ### Package
 

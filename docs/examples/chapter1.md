@@ -6,7 +6,7 @@ This example is based on the example in the introductory chapter of [*Microsimul
 
 This is a simple example - a basic cohort model using continuous-time case-based simulation of mortality (only) for a homogeneous population, using a constant mortality hazard rate. The `neworder` implementation is as direct a port of the MODGEN model, as far as possible.
 
-The model configuration is [here](../../examples/chapter1/model.py) and the implementation [here](../../examples/chapter1/person.py)
+TODO source snippets... 
 
 Some example output:
 
@@ -26,3 +26,5 @@ Some example output:
 ```
 
 In the `neworder` framework, a more natural (and efficient) implementation would not use a class instance to represent an individual, but rather use a pandas DataFrame to store the population, with each row representing an individual, allowing bulk operations on the entire population. This approach is taken in some of the more complex examples, see for example [mortality](./mortality.md).
+
+## [Examples Source Code](https://github.com/virgesmith/neworder/tree/master/examples)

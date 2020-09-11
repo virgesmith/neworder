@@ -7,10 +7,6 @@ RiskPaths is a well-known MODGEN model that is primarily used for teaching purpo
 
 Counts of transitions by age: first pregnancy (purple), beginning of first union (blue), end of first union (ochre), start of second union (green), end of second union (red).
 
-See also:
-
-- the [model configuration](../examples/riskpaths/model.py)
-- the [model implementation](examples/riskpaths/riskpaths.py), and
-- the [input data](examples/riskpaths/data.py)
-
 Note: the mortality rate used in this model does not have a realistic age structure - events that take place in later years have little bearing on the outcome, which is time of first pregnancy.
+
+## [Examples Source Code](https://github.com/virgesmith/neworder/tree/master/examples)
