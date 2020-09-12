@@ -6,7 +6,7 @@ site_description: Documentation for the neworder microsimulation framework
 #extra_css:
 repo_url: https://github.com/virgesmith/neworder
 repo_name: GitHub
-copyright: &copy 2020 Andrew P Smith
+copyright: "&copy 2020 Andrew P Smith"
 #google_analytics
 
 theme:
@@ -30,6 +30,9 @@ extra_javascript:
       
 plugins:
   - search
+  - macros:
+      module_name: docs.macros
+#      include_dir: examples
 #  - mkpdfs
 #  - mkdocstrings
 
@@ -39,7 +42,7 @@ nav:
     - Hello World: examples/hello_world.md
     - Parallel: examples/parallel.md
     - Markov Chain: examples/markov_chain.md
-    - Chapter1: examples/chapter1.md
+    - Chapter 1: examples/chapter1.md
     - Mortality: examples/mortality.md
     - Option: examples/option.md
     - Competing: examples/competing.md

@@ -2,6 +2,7 @@
 import neworder
 import numpy as np
 
+#!person!
 class Person():
   """
   MODGEN equivalent: actor Person {...}
@@ -30,7 +31,9 @@ class Person():
     """ MODGEN equivalent: void Person::MortalityEvent() """
     # NB this is not used in this implementation
     self.alive = False
+#!person!
 
+#!constructor!
 class People(neworder.Model):
   """ A model containing an aggregration of Person objects """
   def __init__(self, mortality_hazard, n):
@@ -41,19 +44,26 @@ class People(neworder.Model):
     # initialise population
     self.population = [ Person(mortality_hazard) for _ in range(n) ]
     neworder.log("created %d individuals" % n)
+#!constructor!
 
+#!step!
   def step(self):
     # sample each person's age at death.
     # (this is not an efficient implementation when everyone has the same hazard rate)
     [p.time_mortality_event(self.mc()) for p in self.population]
+#!step!
 
+#!checkpoint!
   def checkpoint(self):
     # compute mean sampled life expectancy against theoretical
     sample_le = sum([p.time_mortality for p in self.population]) / len(self.population)
     actual_le = 1.0 / self.population[0].mortality_hazard
     error = sample_le - actual_le
     neworder.log("Life expectancy = %.2f years (sampling error=%.2f years)" % (sample_le, error))
+#!checkpoint!
 
+#!alive!
   def alive(self, t):
     return np.mean([p.state(t) for p in self.population])
+#!alive!
 
