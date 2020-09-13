@@ -21,8 +21,8 @@ class Parallel(neworder.Model):
     # record initial population size
     self.n = n
 
-    # individuals use the index as a unique id and their initial state is the MPI rank
-    self.pop = pd.DataFrame({"id": np.array(range(neworder.mpi.rank() * n, (neworder.mpi.rank() + 1) * n)),
+    # individuals get a unique id and their initial state is the MPI rank
+    self.pop = pd.DataFrame({"id": neworder.df.unique_index(n),
                              "state": np.full(n, neworder.mpi.rank()) }).set_index("id")
 #!constructor!
 
