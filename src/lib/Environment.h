@@ -48,6 +48,9 @@ public:
   // set whether checks are called
   static void checked(bool b = true);
 
+  // return a unique value (for e.g. dataframe indices)
+  int64_t unique_index();
+
   // returns "py/no rank/size"
   std::string context(Context ctx = Context::CPP) const;
 
@@ -71,6 +74,9 @@ private:
 
   // check mode flag
   bool m_checked;
+
+  // unique counter
+  int64_t m_uniqueIndex;
 };
 
 // syntactic sugar

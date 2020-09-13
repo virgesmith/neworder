@@ -280,6 +280,15 @@ const char* stats_logit_docstr = R"docstr(
 
 // Dataframe manipulation
 
+const char* df_unique_index_docstr = R"docstr(
+    Generates an array of unique values, even across multiple processes, that can be used to uniquely index multiple dataframes.
+    Args:
+        n: The number of required index values.
+    Returns:
+        The unique index values
+)docstr";
+
+
 const char* df_transition_docstr = R"docstr(
     Randomly changes categorical data in a dataframe, according to supplied transition probabilities. 
     Args:

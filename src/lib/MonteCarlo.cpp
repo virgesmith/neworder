@@ -57,7 +57,7 @@ double no::MonteCarlo::u01()
 
 py::array_t<double> no::MonteCarlo::ustream(py::ssize_t n)
 {
-  return no::make_array<double>({n}, [&](){ return u01(); });
+  return no::make_array<double>({n}, [this](){ return u01(); });
 }
 
 // simple hazard constant probability 
@@ -69,7 +69,7 @@ py::array_t<double> no::MonteCarlo::hazard(double prob, py::ssize_t n)
 // hazard with varying probablities 
 py::array_t<double> no::MonteCarlo::hazard(const py::array_t<double>& prob)
 {
-  return no::unary_op<int, double>(prob, [&](double p){ return u01() < p ? 1 : 0; });
+  return no::unary_op<int, double>(prob, [this](double p){ return u01() < p ? 1 : 0; });
 }
 
 // computes stopping times 
@@ -82,7 +82,7 @@ py::array_t<double> no::MonteCarlo::stopping(double prob, py::ssize_t n)
 
 py::array_t<double> no::MonteCarlo::stopping(const py::array_t<double>& prob)
 {
-  return no::unary_op<double, double>(prob, [&](double p) { return -::log(u01()) / p; });
+  return no::unary_op<double, double>(prob, [this](double p) { return -::log(u01()) / p; });
 }
 
 

@@ -31,6 +31,10 @@ def test_errors():
 
 def test_basic():
 
+  # test unique index generation
+  idx = no.df.unique_index(100)
+  assert np.array_equal(idx, np.arange(no.mpi.rank(), 100 * no.mpi.size(), step=no.mpi.size()))
+
   N = 100000
   # base model for MC engine
   model = no.Model(no.Timeline.null(), no.MonteCarlo.deterministic_identical_stream)

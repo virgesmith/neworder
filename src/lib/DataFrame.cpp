@@ -5,6 +5,8 @@
 #include "MonteCarlo.h"
 #include "Timer.h"
 #include "Log.h"
+#include "Environment.h"
+#include "ArrayHelpers.h"
 
 #include "NewOrder.h"
 
@@ -22,6 +24,19 @@ size_t interp(const std::vector<double>& cumprob, double x)
   return lbound;
 }
 
+
+py::array no::df::unique_index(size_t n)
+//py::array_t<int64_t> no::df::unique_index(size_t n)
+{
+  no::Environment& env = no::getenv();
+  return no::make_array<int64_t>({n}, [&]() { return env.unique_index(); });
+  // py::array_t<int64_t> indices = py::array_t<int64_t>({n}); 
+  // for (size_t i = 0)
+  // {
+  //   indices[i] = env.unique_index();
+  // }
+  // return indices;
+}
 
 
 // TODO non-integer categories?

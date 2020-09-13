@@ -548,6 +548,16 @@ FUNCTIONS
             transition_matrix: The probabilities of transitions between categories
             df: The dataframe, which is modified in-place
             colname: The name of the column in the dataframe
+    
+    unique_index(...) method of builtins.PyCapsule instance
+        unique_index(n: int) -> array
+        
+        
+        Generates an array of unique values, even across multiple processes, that can be used to uniquely index multiple dataframes.
+        Args:
+            n: The number of required index values.
+        Returns:
+            The unique index values
 
 FILE
     (built-in)

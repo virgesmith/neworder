@@ -33,6 +33,9 @@ no::Environment& no::Environment::init(int rank, int size, bool verbose, bool ch
     env.get_error(); // flush the error
     no::log("WARNING: mpi4py module not found, assuming serial mode", true);
   }
+
+  env.m_uniqueIndex = static_cast<int64_t>(env.m_rank);
+
   return env;
 }
 
@@ -72,6 +75,12 @@ std::string no::Environment::context(no::Environment::Context ctx) const
   return idstrings[(int)ctx];
 }
 
+int64_t no::Environment::unique_index() 
+{
+  int64_t current = m_uniqueIndex;
+  m_uniqueIndex += m_size;
+  return current;
+}
 
 no::Environment::Environment() : m_rank(-1), m_size(-1), m_verbose(false), m_checked(false)
 {
