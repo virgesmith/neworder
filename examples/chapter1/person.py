@@ -21,7 +21,7 @@ class Person():
 
   def state(self, t):
     """ Returns the person's state (alive/dead) at age t """
-    return True if self.time_mortality > t else False
+    return self.time_mortality > t
 
   def time_mortality_event(self, mc):
     """ MODGEN equivalent: TIME Person::timeMortalityEvent() """

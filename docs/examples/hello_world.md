@@ -22,56 +22,27 @@ This (somewhat contrived) example initialised a model with a username, which is 
 
 Firstly we create our model class, subclassing `neworder.Model`:
 
-```python
-import neworder
+{{ include_snippet("./examples/hello_world/model.py", "class") }}
 
-class HelloWorld(neworder.Model):
+and provide a constructor that initialises the base class:
 
-  def __init__(self):
-    super().__init__(neworder.Timeline.null())
-    self.name = None
-```
+{{ include_snippet("./examples/hello_world/model.py", "constructor") }}
 
-the `modify` method is not relevant in this single-process example so it not implemented. Here's the `step` method:
 
-```python
-  def step(self):
-    self.name = os.getlogin()
-```
+the `modify` method is not relevant in this single-process example so it not implemented (see the [option](./option.md) example for more on this). The `step`, `check` and `checkpoint` methods gets the username, check its been set, and print a greeting ,respectively. Here's their implementations:
 
-and the `check` method simply confirms that the username was changed by the step method:
+{{ include_snippet("./examples/hello_world/model.py", "methods") }}
 
-```python
-  def check(self):
-    return self.name is not None
-```
+Note that the `check` method does not return `True`, the model execution will halt.
 
-Note that the this method must return a boolean, if not `True` the neworder runtime will assume an error and stop execution.
-
-Finally, the `checkpoint` methods prints the greeting:
-
-```python
-  def checkpoint(self):
-    neworder.log("Hello %s" % self.name)
-```
-
-using the `neworder.log` function is preferred to plain `print` statements as they add useful context for debugging purposes. The API reference can be found [here](../references.md)
+The `checkpoint`method prints the result using the `neworder.log` function, which is preferred to plain `print` statements as the output is annotated with useful context.
 
 ## Execution
 
-The model is run by first constructing an instance of our model
+The model is run by simply constructing an instance of our model and passing it to the `run` method:
 
-```python
-hello_world = HelloWorld()
-```
+{{ include_snippet("./examples/hello_world/model.py", "script") }}
 
-then invoking it like so
-
-```python
-ok = neworder.run(hello_world)
-```
-
-which returns a boolean, `True` for success.
 
 From the command line, run the model:
 

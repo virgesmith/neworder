@@ -56,8 +56,6 @@ Some example output:
 [py 0/1] Age 90 survival rate = 28.3%
 [py 0/1] Age 100 survival rate = 24.7%
 ```
-And with a constant mortality rate we see time of death heavily skewed towards younger ages than would be expected.
-
-In the `neworder` framework, a more natural (and efficient) implementation would not use a class instance to represent an individual, but rather use a pandas DataFrame to store the population, with each row representing an individual, allowing bulk operations on the entire population. This approach is taken in some of the more complex examples, see for example [mortality](./mortality.md).
+and clearly a constant mortality rate isn't realistic as we see far more deaths at younger ages, and far less at older ages, than would be expected. The example [mortality](./mortality.md) introduces a model with a time-dependent mortality hazard rate and shows how the framework can very efficiently model this.
 
 ## [Examples Source Code](https://github.com/virgesmith/neworder/tree/master/examples)

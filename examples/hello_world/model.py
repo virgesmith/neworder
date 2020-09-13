@@ -6,15 +6,9 @@ It subclasses neworder.Model adds implements a toy model which
 - say hello, which is called at the end of the "simulation".
 """
 
+#!class!
 import os
 import neworder
-
-# seeding strategy example as a function
-def _seeder(_):
-  return 19937
-
-# seeding strategy as an anonymous function
-_seeder2 = lambda r: 19937 + r
 
 class HelloWorld(neworder.Model):
   """
@@ -23,20 +17,23 @@ class HelloWorld(neworder.Model):
   - step
   - check (optional)
   - checkpoint
-  The neworder runtime will automatically execute the model, looping over the timeline and calling the methods above
+  The neworder.run() function will execute the model, looping over the timeline and calling the methods above
   """
+#!class!
 
+#!constructor!
   def __init__(self):
     """
     In this example we don't have an explicit timeline,
     We create a null timeline, corresponding to a single instantaneous transition,
-    and initialised the base class with this
+    and initialise the base class with this
 
     NB it is *essential* to initialise the base class.
     Failing to do so will result in UNDEFINED BEHAVIOUR
     """
     super().__init__(neworder.Timeline.null(), neworder.MonteCarlo.deterministic_independent_stream)
     self.name = None
+#!constructor!
 
   # def modify(self, rank):
   #   """
@@ -55,6 +52,7 @@ class HelloWorld(neworder.Model):
     """
     return self.__class__.__name__
 
+#!methods!
   def step(self):
     """
     Transitions to run at each timestep.
@@ -81,9 +79,13 @@ class HelloWorld(neworder.Model):
     Returns: NoneType
     """
     neworder.log("Hello %s" % self.name)
+#!methods!
 
+#!script!
 # uncomment for verbose output
 #neworder.verbose()
+# uncomment to disable checks
+#neworder.checked(False)
 
 # construct the model
 hello_world = HelloWorld()
@@ -91,3 +93,4 @@ hello_world = HelloWorld()
 # run the model and check it worked
 ok = neworder.run(hello_world)
 if not ok: neworder.log("model failed!")
+#!script!

@@ -1,3 +1,4 @@
+#!constructor!
 import numpy as np
 import pandas as pd
 from mpi4py import MPI
@@ -23,7 +24,9 @@ class Parallel(neworder.Model):
     # individuals use the index as a unique id and their initial state is the MPI rank
     self.pop = pd.DataFrame({"id": np.array(range(neworder.mpi.rank() * n, (neworder.mpi.rank() + 1) * n)),
                              "state": np.full(n, neworder.mpi.rank()) }).set_index("id")
+#!constructor!
 
+#!step!
   def step(self):
     # generate some movement
     neworder.df.transition(self, self.s, self.p, self.pop, "state")
@@ -45,21 +48,24 @@ class Parallel(neworder.Model):
         if len(immigrants):
           neworder.log("received %d immigrants from %d" % (len(immigrants), s))
           self.pop = self.pop.append(immigrants)
+#!step!
 
+#!check!
   def check(self):
     # Ensure we haven't lost (or gained) anybody
     totals = comm.gather(len(self.pop), root=0)
     if neworder.mpi.rank() == 0:
       if sum(totals) != self.n * neworder.mpi.size():
         return False
-    # And check we only have individuals that we should have
+    # And check each process only has individuals that it should have
     out_of_place = comm.gather(len(self.pop[self.pop.state != neworder.mpi.rank()]))
     if neworder.mpi.rank() == 0:
-      neworder.log(out_of_place)
       if any(out_of_place):
         return False
     return True
+#!check!
 
+#!checkpoint!
   def checkpoint(self):
     # wait until any slower-running processes catch up
     comm.Barrier()
@@ -69,3 +75,4 @@ class Parallel(neworder.Model):
       for r in range(1, neworder.mpi.size()):
         pops[0] = pops[0].append(pops[r])
       neworder.log("State counts (total %d):\n%s" % (len(pops[0]), pops[0]["state"].value_counts().to_string()))
+#!checkpoint!
