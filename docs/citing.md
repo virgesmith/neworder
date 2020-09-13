@@ -1,6 +1,6 @@
 # Citing `neworder`
 
-BibTex: 
+BibTex:
 
 ```bibtex
 @software{neworder,

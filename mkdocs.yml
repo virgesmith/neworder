@@ -2,8 +2,6 @@ site_name: neworder
 site_url: https://neworder.readthedocs.io
 site_author: Andrew P Smith
 site_description: Documentation for the neworder microsimulation framework
-#extra_javascript:
-#extra_css:
 repo_url: https://github.com/virgesmith/neworder
 repo_name: GitHub
 copyright: "&copy 2020 Andrew P Smith"
@@ -11,10 +9,10 @@ copyright: "&copy 2020 Andrew P Smith"
 
 theme:
   name: material
-  # highlightjs: true
-  # hljs_languages:
-  #     - yaml
-  #     - rust
+  palette:
+    scheme: default
+    primary: blue grey
+    accent: red
 
 markdown_extensions:
   - toc:
@@ -23,6 +21,7 @@ markdown_extensions:
   - codehilite
   - pymdownx.arithmatex:
       generic: true
+
 extra_javascript:
   - js/config.js
   - https://polyfill.io/v3/polyfill.min.js?features=es6
@@ -32,7 +31,7 @@ plugins:
   - search
   - macros:
       module_name: docs.macros
-#      include_dir: examples
+      # include_dir: examples
 #  - mkpdfs
 #  - mkdocstrings
 
@@ -47,7 +46,7 @@ nav:
     - Option: examples/option.md
     - Competing: examples/competing.md
     - Disease: examples/disease.md
-    #- People: ./examples/people.md
+    - People: ./examples/people.md
     #- People (parallel): ./examples/people_multi.md
     - RiskPaths: examples/riskpaths.md
     - Schelling: examples/schelling.md

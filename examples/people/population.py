@@ -1,5 +1,5 @@
 """
- population.py
+ population.py: Model implementation for population microsimulation
 """
 
 import pandas as pd
@@ -10,8 +10,6 @@ from helpers import *
 import ethpop
 import pyramid
 
-
-# TODO only support single LAD...? (LAD-specific dynamics)
 class Population(neworder.Model):
   def __init__(self, timeline, inputdata, asfr, asmr, asir, asor, ascr, asxr):
 
@@ -36,9 +34,9 @@ class Population(neworder.Model):
     self.immigration = ethpop.local_rate_rescale_from_absolute(ethpop.create(pd.read_csv(ascr), self.lad), base_pop)
     self.emigration = ethpop.local_rate_rescale_from_absolute(ethpop.create(pd.read_csv(asxr), self.lad), base_pop)
 
-    # Force flat rates for testing purposes
-    #self.in_migration.Rate = 0.05
-    #self.out_migration.Rate = 0.05
+    # TODO problem (scaling issue?) with international migration rates causeing population to grow exponentially
+    # #self.in_migration.Rate = 0.05
+    # #self.out_migration.Rate = 0.05
     self.immigration.Rate = 0.01
     self.emigration.Rate = 0.005
 
@@ -57,8 +55,9 @@ class Population(neworder.Model):
     self.age()
 
   def checkpoint(self):
-    self.write_table()
-    self.plot_pyramid()
+    #self.write_table()
+    # TODO animated pyramid
+    #self.plot_pyramid()
 
   def age(self):
     # Increment age by timestep and update census age categorty (used for ASFR/ASMR lookup)
@@ -74,7 +73,7 @@ class Population(neworder.Model):
     # Now map the appropriate fertility rate to each female
     # might be a more efficient way of generating this array
     rates = females.join(self.fertility, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].values
-    # Then randomly determine if a birth occurred (neworder callback)
+    # Then randomly determine if a birth occurred
     h = self.mc().hazard(rates * self.timeline().dt())
 
     # The babies are a clone of the new mothers, with with changed PID, reset age and randomised gender (keeping location and ethnicity)
@@ -143,7 +142,7 @@ class Population(neworder.Model):
     self.data = self.data.append(intl_incoming)
     self.counter = self.counter + len(intl_incoming)
 
-    # international emigrtion
+    # international emigration
     intl_out_rates = self.data.join(self.emigration, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].values
     h_intl_out = self.mc().hazard(intl_out_rates * self.timeline().dt())
     # remove outgoing migrants

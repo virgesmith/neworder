@@ -7,11 +7,10 @@ Firstly we have 3 arbitrary states: 0, 1 and 2. The initial population starts in
 \[
 \begin{pmatrix}
 1-p_{01}-p_{02} & p_{01}   & p_{02}   \\
-0               & 1-p_{12} & p_{12}   \\  
+0               & 1-p_{12} & p_{12}   \\
 p_{20}          & 0        & 1-p_{20}
 \end{pmatrix}
 \]
-
 
 Each transition is modelled as a Poisson process with different mean arrival times \(\mu_{ij}=1/\lambda_{ij}\), which generate the probabilities above by \(p_{ij}=\lambda_{ij}.\delta t\)
 
@@ -34,3 +33,5 @@ The model takes about 45s to run (depending on platform). Changing `MarkovChain.
 ## Output
 
 ![population evolution](./img/markov_chain.png)
+
+## [Examples Source Code](https://github.com/virgesmith/neworder/tree/master/examples)

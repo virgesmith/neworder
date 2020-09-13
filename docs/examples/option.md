@@ -10,7 +10,7 @@ A [European call option](https://en.wikipedia.org/wiki/Call_option) is a derivat
 
 In order to calculate the fair value of a derivative contract one can simulate a (large) number of paths the underlying stock may take (according to current market conditions. The model assumes that the evolution of the underlying is given by the stochastic differential equation (SDE):
 
-\[ 
+\[
 \frac{dS}{S} = (r-q)dt + \sigma dW
 \]
 
@@ -184,3 +184,5 @@ which will produce something like
 ```
 
 Note that the order of the output will vary, and log messages may even get intermingled.
+
+## [Examples Source Code](https://github.com/virgesmith/neworder/tree/master/examples)

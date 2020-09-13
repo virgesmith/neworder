@@ -36,7 +36,7 @@ Note that `neworder.df.transition` modifies the dataframe in-place. The `check` 
 
 {{ include_snippet("examples/parallel/parallel.py", "check") }}
 
-Finally, the (single) checkpoint aggregates the populations and prints a summary of the populations in each state. 
+Finally, the (single) checkpoint aggregates the populations and prints a summary of the populations in each state.
 
 {{ include_snippet("examples/parallel/parallel.py", "checkpoint") }}
 

@@ -1,4 +1,4 @@
-#!constructor!
+# !constructor! this is a tag for inserting code snippets into the documentation
 import numpy as np
 import pandas as pd
 from mpi4py import MPI
@@ -26,7 +26,7 @@ class Parallel(neworder.Model):
                              "state": np.full(n, neworder.mpi.rank()) }).set_index("id")
 #!constructor!
 
-#!step!
+  # !step!
   def step(self):
     # generate some movement
     neworder.df.transition(self, self.s, self.p, self.pop, "state")
@@ -48,9 +48,9 @@ class Parallel(neworder.Model):
         if len(immigrants):
           neworder.log("received %d immigrants from %d" % (len(immigrants), s))
           self.pop = self.pop.append(immigrants)
-#!step!
+  # !step!
 
-#!check!
+  # !check!
   def check(self):
     # Ensure we haven't lost (or gained) anybody
     totals = comm.gather(len(self.pop), root=0)
@@ -63,9 +63,9 @@ class Parallel(neworder.Model):
       if any(out_of_place):
         return False
     return True
-#!check!
+  # !check!
 
-#!checkpoint!
+  # !checkpoint!
   def checkpoint(self):
     # wait until any slower-running processes catch up
     comm.Barrier()
@@ -75,4 +75,4 @@ class Parallel(neworder.Model):
       for r in range(1, neworder.mpi.size()):
         pops[0] = pops[0].append(pops[r])
       neworder.log("State counts (total %d):\n%s" % (len(pops[0]), pops[0]["state"].value_counts().to_string()))
-#!checkpoint!
+  # !checkpoint!

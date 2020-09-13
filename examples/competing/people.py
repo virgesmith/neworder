@@ -35,7 +35,7 @@ class People(no.Model):
 
     births = self.mc().arrivals(self.fertility_hazard.Rate.values, self.dt, 0.75, len(self.population))
 
-    # the number of columns is governed by the maximum number of arrivals in the births data 
+    # the number of columns is governed by the maximum number of arrivals in the births data
     for i in range(births.shape[1]):
       col = "TimeOfBaby" + str(i+1)
       self.population[col] = births[:,i]

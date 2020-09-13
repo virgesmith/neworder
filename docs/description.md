@@ -21,7 +21,7 @@ In terms of parallel execution, the following use-cases are supported:
 
 The framework essentially provides a mechanism to iterate over a timeline, and perform operations at all points on the timeline, plus extra operations at pre-specified points on that timeline. This is what we call the _model_.
 
-Each model has its own random number stream, and when running in parallel, each stream can be configured to be independent or identical to the other streams. 
+Each model has its own random number stream, and when running in parallel, each stream can be configured to be independent or identical to the other streams.
 
 - the main "loop" over the timeline.
 - a resettable, independent<sup>*</sup> random number stream per process. (MT19937)

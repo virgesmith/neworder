@@ -1,11 +1,11 @@
 
 # Population Microsimulation
 
-In this example, the input data is a csv file containing a microsynthesised 2011 population of Newcastle generated from UK census data, by age, gender and ethnicity. The transitions modelled are: ageing, births, deaths and migrations.
+## Overview
 
-Ageing simply increments individual's ages according to the timestep.
+In this example, the input data is a csv file containing a microsynthesised 2011 population of Newcastle generated from UK census data, by age, gender and ethnicity. The transitions modelled are: ageing, births, deaths and migrations, over a period of 40 years to 2051.
 
-Births, deaths and migrations are are modelled using Monte-Carlo sampling (modelling a Poisson process) of distributions parameterised by age, sex and ethnicity-specific fertility, mortality and migration rates respectively, which are drawn from the NewETHPOP[[1]](#references) project.
+Births, deaths and migrations are are modelled using Monte-Carlo sampling (modelling a Poisson process) of distributions parameterised by age, sex and ethnicity-specific fertility, mortality and migration rates respectively, which are drawn from the NewETHPOP[[1]](#references.md) project.
 
 For the fertility model newborns simply inherit their mother's location and ethnicity, are born aged zero, and have a randomly selected gender (even probability). The migration model is an 'in-out' model, i.e. it is not a full origin-destination model. Flows are either inward from 'elsewhere' or outward to 'elsewhere'.
 
@@ -29,37 +29,40 @@ During the simulation, at each timestep the check code computes and displays som
 
 At each checkpoint, the current population is written to a csv file.
 
-See [config.py](examples/people/config.py) for the simulation setup and [population.py](examples/people/population.py) for details of the model implementation.
+# Setup
 
-The file [helpers.py](examples/people/helpers.py) defines some helper functions, primarily to reformat input data into a format that can be used efficiently.
+{{ include_snippet("examples/people/model.py") }}
+
+# Model Implementation
+
+population.py:
+
+{{ include_snippet("examples/people/population.py") }}
+
+# Execution
+
+As always, to run:
 
 ```bash
-$ time ./run_example.sh people
-[no 0/1] env: seed=19937 python 3.6.6 (default, Sep 12 2018, 18:26:19)  [GCC 8.0.1 20180414 (experimental) [trunk revision 259383]]
-[no 0/1] starting microsimulation...
-[no 0/1] t=2011.250000 initialise: people
-[no 0/1] t=2012.250000 transition: age
-[no 0/1] t=2012.250000 transition: fertility
-[no 0/1] t=2012.250000 transition: migration
-[no 0/1] t=2012.250000 transition: mortality
-[no 0/1] t=2012.250000 check: check
-[py 0/1] check OK: time=2012.250 size=281728 mean_age=37.47, pct_female=49.84 net_migration=1409 (23626-23765+2927-1379)
-...
-[no 0/1] t=2049.250000 transition: age
-[no 0/1] t=2049.250000 transition: fertility
-[no 0/1] t=2049.250000 transition: migration
-[no 0/1] t=2049.250000 transition: mortality
-[no 0/1] t=2049.250000 check: check
-[py 0/1] check OK: time=2049.250 size=566509 mean_age=40.16, pct_female=49.69 net_migration=27142 (70953-46534+5673-2950)
-[no 0/1] t=2050.250000 transition: age
-[no 0/1] t=2050.250000 transition: fertility
-[no 0/1] t=2050.250000 transition: migration
-[no 0/1] t=2050.250000 transition: mortality
-[no 0/1] t=2050.250000 check: check
-[py 0/1] check OK: time=2050.250 size=594350 mean_age=40.42, pct_female=49.94 net_migration=30095 (75464-48243+6003-3129)
-[no 0/1] t=2050.250000 checkpoint: write_table
-[py 0/1] writing ./examples/people/dm_E08000021_2050.250.csv
-[no 0/1] SUCCESS
+python examples/people/model.py
 ```
 
-This 40 year simulation of a population of about 280,000 more than doubling (no exogenous constraints) executed in about 25s on a single core on a desktop machine.
+# Output
+
+```text
+PYTHONPATH=examples/shared python examples/people/model.py 
+[py 0/1]  check OK: time=2012.000 size=288296 mean_age=37.25, pct_female=49.84 net_migration=5193.0 (27378.0-23545.0+2791.0-1431.0)
+[py 0/1]  check OK: time=2013.000 size=294194 mean_age=37.15, pct_female=49.80 net_migration=4270.0 (27932.0-25172.0+2935.0-1425.0)
+[py 0/1]  check OK: time=2014.000 size=297005 mean_age=37.25, pct_female=49.59 net_migration=1173.0 (27051.0-27431.0+3057.0-1504.0)
+[py 0/1]  check OK: time=2015.000 size=297301 mean_age=37.47, pct_female=49.37 net_migration=-1271.0 (27130.0-29819.0+2938.0-1520.0)
+[py 0/1]  check OK: time=2016.000 size=298170 mean_age=37.64, pct_female=49.39 net_migration=-575.0 (27239.0-29283.0+2937.0-1468.0)
+[py 0/1]  check OK: time=2017.000 size=299832 mean_age=37.80, pct_female=49.30 net_migration=115.0 (26318.0-27709.0+2989.0-1483.0)
+[py 0/1]  check OK: time=2018.000 size=301725 mean_age=37.94, pct_female=49.23 net_migration=499.0 (25950.0-26920.0+2999.0-1530.0)
+[py 0/1]  writing ./examples/people/dm_E08000021_2018.000.csv
+[py 0/1]  check OK: time=2019.000 size=303383 mean_age=38.07, pct_female=49.18 net_migration=283.0 (25668.0-26828.0+3014.0-1571.0)
+[py 0/1]  check OK: time=2020.000 size=305316 mean_age=38.17, pct_female=49.06 net_migration=453.0 (25754.0-26754.0+3008.0-1555.0)
+[py 0/1]  check OK: time=2021.000 size=307537 mean_age=38.29, pct_female=48.94 net_migration=810.0 (25436.0-26162.0+3070.0-1534.0)
+[py 0/1]  writing ./examples/people/dm_E08000021_2021.000.csv
+```
+
+This 40 year simulation of a population of about 280,000 more than doubling (no exogenous constraints) executed in under 30s on a single core of a medium-spec machine.

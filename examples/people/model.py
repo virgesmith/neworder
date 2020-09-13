@@ -1,11 +1,11 @@
 
-""" config.py
-Microsimulation config
 """
+model.py: Population Microsimulation - births, deaths and migration by age, gender and ethnicity
+"""
+import time
+
 import neworder
-
 from population import Population
-
 
 # define some global variables describing where the starting population and the parameters of the dynamics come from
 initial_population = "examples/people/ssm_E08000021_MSOA11_ppp_2011.csv"
@@ -20,12 +20,12 @@ ascr = "examples/shared/NewETHPOP_immig.csv"
 # emigration
 asxr = "examples/shared/NewETHPOP_emig.csv"
 
-# this model isnt meant for parallel execution
-assert neworder.mpi.size() == 1, "This example is configured to be run as a single process only"
-
 # define the evolution timeline
-timeline = neworder.Timeline(2011, 2021, [7,10])
+timeline = neworder.Timeline(2011, 2051, [10,20,30,40])
 
 population = Population(timeline, initial_population, asfr, asmr, asir, asor, ascr, asxr)
 
-neworder.run(population)
+start = time.time()
+ok = neworder.run(population)
+neworder.log("run time = %.2fs" % (time.time() - start))
+
