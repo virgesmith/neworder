@@ -41,16 +41,15 @@ population.py:
 
 # Execution
 
-As always, to run:
+The model requires code in the shared directory, so this needs to be added to `PYTHONPATH`:
 
 ```bash
-python examples/people/model.py
+PYTHONPATH=examples/shared python examples/people/model.py
 ```
 
 # Output
 
 ```text
-PYTHONPATH=examples/shared python examples/people/model.py 
 [py 0/1]  check OK: time=2012.000 size=288296 mean_age=37.25, pct_female=49.84 net_migration=5193.0 (27378.0-23545.0+2791.0-1431.0)
 [py 0/1]  check OK: time=2013.000 size=294194 mean_age=37.15, pct_female=49.80 net_migration=4270.0 (27932.0-25172.0+2935.0-1425.0)
 [py 0/1]  check OK: time=2014.000 size=297005 mean_age=37.25, pct_female=49.59 net_migration=1173.0 (27051.0-27431.0+3057.0-1504.0)
