@@ -1,6 +1,5 @@
 
-""" pyramid plots
-"""
+""" pyramid plots """
 
 import matplotlib.pyplot as plt
 
@@ -21,8 +20,8 @@ def plot(ages, males, females):
   #axes[1].set(yticks=ages)
   axes[0].invert_xaxis()
   for ax in axes.flat:
-      ax.margins(0.03)
-      ax.grid(True)
+    ax.margins(0.03)
+    ax.grid(True)
   fig.tight_layout()
   fig.subplots_adjust(wspace=0.125)
   plt.show()

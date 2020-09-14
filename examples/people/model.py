@@ -29,3 +29,6 @@ start = time.time()
 ok = neworder.run(population)
 neworder.log("run time = %.2fs" % (time.time() - start))
 
+neworder.log(neworder.df.unique_index(1))
+
+

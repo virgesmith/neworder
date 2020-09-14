@@ -40,85 +40,29 @@ Additionally, we compute some market risk: sensitivities to the underlying price
 
 The `model.py` file sets up the run, providing input data, constructing, and the running the model. The input data consists of a `Dict` describing the market data, another describing the option contract, and a single model parameter (the number of paths).
 
-```python
-import neworder
-from black_scholes import BlackScholes
-
-# neworder.verbose() # defaults to False
-# neworder.checked() # defaults to True
-
-# requires 4 identical sims with perturbations to compute market sensitivities (a.k.a. Greeks)
-assert neworder.mpi.size() == 4, "This example requires 4 processes"
-
-# initialisation
-
-# market data
-market = {
-  "spot": 100.0, # underlying spot price
-  "rate": 0.02,  # risk-free interest rate
-  "divy": 0.01,  # (continuous) dividend yield
-  "vol": 0.2    # stock volatility
-}
-# (European) option instrument data
-option = {
-  "callput": "CALL",
-  "strike": 100.0,
-  "expiry": 0.75 # years
-}
-
-# model parameters
-nsims = 1000000 # number of underlyings to simulate
-
-# instantiate model
-bs_mc = BlackScholes(option, market, nsims)
-
-# run model
-neworder.run(bs_mc)
-```
+{{ include_snippet("examples/option/model.py")}}
 
 ### Constructor
 
 The constructor takes copies of the parameters, and defines a simple timeline [0, T] corresponding to [valuation date, expiry date] and a single timestep, which is all we require for this example. It initialises the base class with the timeline, and specifies that each process use the same random stream (which reduces noise in our risk calculations):
 
-```python
-class BlackScholes(neworder.Model):
-  def __init__(self, option, market, nsims):
-
-    # Using exact MC calc of GBM requires only 1 timestep
-    timeline = neworder.Timeline(0.0, option["expiry"], [1])
-    super().__init__(timeline, neworder.MonteCarlo.deterministic_identical_stream)
-
-    self.option = option
-    self.market = market
-    self.nsims = nsims
-```
+{{ include_snippet("examples/option/black_scholes.py", "constructor") }}
 
 ### Modifier
 
 This method defines the 'modifiers' for each process: the perturbations applied to the market data in each process in order to calculate the option price sensitivity to that market data. In this case we bump the spot up and down and the volatility up in the non-root processes allowing, calculation of delta, gamma and vega by finite differencing:
 
-```python
-  def modify(self, rank):
-    if rank == 1:
-      self.market["spot"] *= 1.01 # delta/gamma up bump
-    elif rank == 2:
-      self.market["spot"] *= 0.99 # delta/gamma down bump
-    elif rank == 3:
-      self.market["vol"] += 0.001 # 10bp upward vega
-```
+{{ include_snippet("examples/option/black_scholes.py", "modifier") }}
 
 ### Step
 
 This method actually runs the simulation and stores the result for later use. The calculation details are not shown here for brevity (see the source file):
 
-```python
-  def step(self):
-    self.pv = self.simulate()
-```
+{{ include_snippet("examples/option/black_scholes.py", "step") }}
 
 ### Check
 
-Even though we explicitly requested that each process has identical random streams, this does not guarantee the streams will stay identical, as different process could sample more or less than others, and the streams get out of step.
+Even though we explicitly requested that each process has identical random streams, this doesn't guarantee the streams will stay identical, as different process could sample more or less than others, and the streams get out of step.
 
 This method samples one uniform from each stream and will return `False` if any of them are different, which will halt the model (for that process).
 
@@ -127,22 +71,7 @@ This method samples one uniform from each stream and will return `False` if any 
 
 In the below implementation, all samples are sent to a single process (0) for comparison and the result is broadcast back to every process, which can then all fail simultaneously if necessary.
 
-```python
-  def check(self):
-    # check the rng streams are still in sync by sampling from each one, comparing, and broadcasting the result
-    # if one process fails the check and exits without notifying the others, deadlocks can result
-    r = self.mc().ustream(1)[0]
-    # send the value to process 0)
-    a = comm.gather(r, 0)
-    # process 0 checks the values
-    if neworder.mpi.rank() == 0:
-      ok = all(e == a[0] for e in a)
-    else:
-      ok = True
-    # broadcast process 0's ok to all processes
-    ok = comm.bcast(ok, root=0)
-    return ok
-```
+{{ include_snippet("examples/option/black_scholes.py", "check") }}
 
 ### Checkpoint
 
@@ -151,13 +80,7 @@ Finally the checkpoint method is called at end of the timeline. Again, the calcu
 - checks the Monte-Carlo result against the analytic formula and displays the simulated price and the random error, for each process.
 - computes the sensitivities: process 0 gathers the results from the other processes and computes the finite-difference formulae.
 
-```python
-  def checkpoint(self):
-    # check and report accuracy
-    self.compare()
-    # compute and report some market risk
-    self.greeks()
-```
+{{ include_snippet("examples/option/black_scholes.py", "checkpoint") }}
 
 ## Execution
 
@@ -168,21 +91,18 @@ To run the model,
 ```bash
 mpiexec -n 4 python examples/option/model.py
 ```
-
 which will produce something like
 
 ```text
-[py 0/4] check() ok: True
-[py 0/4] mc: 7.182313 / ref: 7.201286 err=-0.26%
-[py 2/4] mc: 6.646473 / ref: 6.665127 err=-0.28%
-[py 1/4] mc: 7.740759 / ref: 7.760108 err=-0.25%
-[py 3/4] mc: 7.216204 / ref: 7.235288 err=-0.26%
-[py 0/4] PV=7.182313
-[py 0/4] delta=0.547143
-[py 0/4] gamma=0.022606
-[py 0/4] vega 10bp=0.033892
+[py 2/4]  mc: 6.646473 / ref: 6.665127 err=-0.28%
+[py 3/4]  mc: 7.216204 / ref: 7.235288 err=-0.26%
+[py 1/4]  mc: 7.740759 / ref: 7.760108 err=-0.25%
+[py 0/4]  check() ok: True
+[py 0/4]  mc: 7.182313 / ref: 7.201286 err=-0.26%
+[py 0/4]  PV=7.182313
+[py 0/4]  delta=0.547143
+[py 0/4]  gamma=0.022606
+[py 0/4]  vega 10bp=0.033892
 ```
-
-Note that the order of the output will vary, and log messages may even get intermingled.
 
 ## [Examples Source Code](https://github.com/virgesmith/neworder/tree/master/examples)

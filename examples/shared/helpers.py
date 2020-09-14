@@ -5,9 +5,9 @@ Common helper functionality
 import numpy as np
 
 def check(data):
-  # check no duplicated PID
-  if len(data[data.duplicated(['PID'], keep=False)].head()):
-    raise ValueError("Duplicate PIDs found")
+  # check no duplicated unique indices
+  if len(data[data.index.duplicated(keep=False)].head()):
+    raise ValueError("Duplicate indices found")
   # Valid ETH, SEX, AGE
   if not np.array_equal(sorted(data.DC1117EW_C_SEX.unique()), [1,2]):
     raise ValueError("invalid gender value")

@@ -18,18 +18,13 @@ class Population(neworder.Model):
     self.lad = inputdata.split("_")[1]
 
     self.data = pd.read_csv(inputdata)
-    # TODO replace PID with neworder.df.unique_index
-    self.data.set_index(neworder.df.unique_index(len(self.data)), drop=True)
+    self.data.set_index(neworder.df.unique_index(len(self.data)), inplace=True, drop=True)
 
     self.fertility = ethpop.create(pd.read_csv(asfr), self.lad)
     self.mortality = ethpop.create(pd.read_csv(asmr), self.lad)
     # assume the in-migration rates are based on the national population and need to be rescaled...
     base_pop = len(self.data)
-    # deal with census-merged LADs
-    if self.lad == "E09000001" or self.lad == "E09000033":
-      base_pop = 219340 + 7397
-    elif self.lad == "E06000052" or self.lad == "E06000053":
-      raise NotImplementedError("Cornwall CM LAD adj")
+
     self.in_migration = ethpop.local_rate_from_national_rate(ethpop.create(pd.read_csv(asir), self.lad), base_pop)
     # assume the out-migration rates don't require adjustment
     self.out_migration = ethpop.create(pd.read_csv(asor), self.lad)
@@ -58,7 +53,7 @@ class Population(neworder.Model):
   def checkpoint(self):
     #self.write_table()
     # TODO animated pyramid
-    #self.plot_pyramid()
+    self.plot_pyramid()
     pass
 
   def age(self):
@@ -80,7 +75,7 @@ class Population(neworder.Model):
 
     # The babies are a clone of the new mothers, with with changed PID, reset age and randomised gender (keeping location and ethnicity)
     newborns = females[h == 1].copy()
-    newborns.PID = neworder.df.unique_index(len(newborns))
+    newborns.set_index(neworder.df.unique_index(len(newborns)), inplace=True, drop=True)
     newborns.Age = self.mc().ustream(len(newborns)) # born within the last 12 months
     newborns.DC1117EW_C_AGE = 1 # this is 0-1 in census category
     # NOTE: do not convert to pd.Series here to stay as this has its own index which conflicts with the main table
@@ -116,7 +111,7 @@ class Population(neworder.Model):
 
     # Append incomers to main population
     # Assign a new id
-    incoming.PID = neworder.df.unique_index(len(incoming))
+    incoming.set_index(neworder.df.unique_index(len(incoming)), inplace=True, drop=True)
     incoming.Area = self.lad
     # assign a new random fractional age based on census age category
     incoming.Age = incoming.DC1117EW_C_AGE - self.mc().ustream(len(incoming)).tolist()
@@ -134,7 +129,7 @@ class Population(neworder.Model):
     h_intl_in = self.mc().hazard(intl_in_rates * self.timeline().dt())
 
     intl_incoming = self.data[h_intl_in == 1].copy()
-    intl_incoming.PID = neworder.df.unique_index(len(intl_incoming))
+    intl_incoming.set_index(neworder.df.unique_index(len(intl_incoming)), inplace=True, drop=True)
     intl_incoming.Area = "INTL" #self.lad
     # assign a new random fractional age based on census age category
     intl_incoming.Age = intl_incoming.DC1117EW_C_AGE - self.mc().ustream(len(intl_incoming))
@@ -175,12 +170,11 @@ class Population(neworder.Model):
   def write_table(self):
     filename = "./examples/people/dm_{}_{:.3f}.csv".format(self.lad, self.timeline().time())
     neworder.log("writing %s" % filename)
-    return self.data.to_csv(filename, index=False)
+    return self.data.to_csv(filename)
 
   def plot_pyramid(self):
-    s = self.data.groupby(by=["DC1117EW_C_SEX", "DC1117EW_C_AGE"])["PID"].agg("count").reset_index()
+    s = self.data.groupby(by=["DC1117EW_C_SEX", "DC1117EW_C_AGE"])["DC1117EW_C_SEX"].count()
     a = range(85) #s.DC1117EW_C_AGE.unique() - 1
-    m = s[s.DC1117EW_C_SEX == 1].PID
-    f = s[s.DC1117EW_C_SEX == 2].PID
-
+    m = s[s.index.isin([1], level="DC1117EW_C_SEX")]
+    f = s[s.index.isin([2], level="DC1117EW_C_SEX")]
     pyramid.plot(a, m, f)

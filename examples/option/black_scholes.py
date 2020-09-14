@@ -9,6 +9,7 @@ comm = MPI.COMM_WORLD
 
 # Subclass neworder.Model
 class BlackScholes(neworder.Model):
+  # !constructor!
   def __init__(self, option, market, nsims):
 
     # Using exact MC calc of GBM requires only 1 timestep
@@ -18,7 +19,9 @@ class BlackScholes(neworder.Model):
     self.option = option
     self.market = market
     self.nsims = nsims
+  # !constructor!
 
+  # !modifier!
   def modify(self, rank):
     if rank == 1:
       self.market["spot"] *= 1.01 # delta/gamma up bump
@@ -26,10 +29,14 @@ class BlackScholes(neworder.Model):
       self.market["spot"] *= 0.99 # delta/gamma down bump
     elif rank == 3:
       self.market["vol"] += 0.001 # 10bp upward vega
+  # !modifier!
 
+  # !step!
   def step(self):
     self.pv = self.simulate()
+  # !step!
 
+  # !check!
   def check(self):
     # check the rng streams are still in sync by sampling from each one, comparing, and broadcasting the result
     # if one process fails the check and exits without notifying the others, deadlocks can result
@@ -45,12 +52,15 @@ class BlackScholes(neworder.Model):
     # broadcast process 0's ok to all processes
     ok = comm.bcast(ok, root=0)
     return ok
+  # !check!
 
+  # !checkpoint!
   def checkpoint(self):
     # check and report accuracy
     self.compare()
     # compute and report some market risk
     self.greeks()
+  # !checkpoint!
 
   def simulate(self):
     # get the time from the environment

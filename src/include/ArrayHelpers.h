@@ -3,12 +3,9 @@
 
 #include "NewOrder.h"
 
-#include "pybind11/numpy.h"
-
+#include <pybind11/numpy.h>
 #include <array>
 
-
-// TODO if bottleneck help compiler's SIMD vectorisation using ideally openmp directives
 
 namespace no {
 
@@ -54,7 +51,6 @@ template<typename T>
 const T& at(py::array_t<T>& a, const Index_t<0>& index);
 
 
-// TODO use typed array
 template<typename T>
 T* begin(py::array_t<T>& a)
 {
@@ -183,11 +179,5 @@ T sum(const py::array_t<T>& a)
   T sum = 0;
   return std::accumulate(a.begin(), a.end(), sum);
 }
-
-// template<typename T> T sum(const py::array& x)
-// {
-//   return std::accumulate(no::cbegin<T>(x), no::cend<T>(x), T(0));
-// } 
-
   
 }

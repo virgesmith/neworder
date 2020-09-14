@@ -37,7 +37,7 @@ def define_env(env):
         if tag in l:
           span.append(i)
       if len(span) != 2:
-        return "```ERROR %s (%s) missing %s tags '%s'```" % (filename, code_style, 2-len(span), tag)
+        return "```ERROR %s (%s) too few/many tags (%s) for '%s'```" % (filename, code_style, len(span), tag)
       lines = lines[span[0]+1: span[1]]
 
     #line_range = lines[start_line+1:end_line]
