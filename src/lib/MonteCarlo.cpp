@@ -87,7 +87,7 @@ py::array_t<double> no::MonteCarlo::stopping(const py::array_t<double>& prob)
 
 
 // multiple-arrival (0+) process 
-py::array_t<double> no::MonteCarlo::arrivals(const py::array_t<double>& lambda_t, double dt, double gap, size_t n)
+py::array_t<double> no::MonteCarlo::arrivals(const py::array_t<double>& lambda_t, double dt, double gap, py::ssize_t n)
 {
   const double* pl = no::cbegin<double>(lambda_t);
   size_t nl = lambda_t.size();
@@ -107,7 +107,7 @@ py::array_t<double> no::MonteCarlo::arrivals(const py::array_t<double>& lambda_t
   double tmax = (nl - 1) * dt;
   size_t imax = 0;
 
-  for (size_t i = 0; i < n; ++i)
+  for (size_t i = 0; i < static_cast<size_t>(n); ++i)
   {
     // rejection sampling
     double pt = 0.0;
@@ -131,9 +131,9 @@ py::array_t<double> no::MonteCarlo::arrivals(const py::array_t<double>& lambda_t
     //no::log("%%: %%"_s % i % times[i]);
   }
 
-  py::array_t<double> nptimes = no::empty<double>({n, imax - 1});
+  py::array_t<double> nptimes({n, static_cast<py::ssize_t>(imax - 1)});
   no::fill(nptimes, no::Timeline::never());
-  double* pa = no::begin<double>(nptimes);
+  double* pa = no::begin(nptimes); //.begin();
 
   for (size_t i = 0; i < times.size(); ++i)
   {
@@ -147,7 +147,7 @@ py::array_t<double> no::MonteCarlo::arrivals(const py::array_t<double>& lambda_t
   return nptimes;
 }
 
-py::array_t<double> no::MonteCarlo::first_arrival(const py::array_t<double>& lambda_t, double dt, size_t n, double minval)
+py::array_t<double> no::MonteCarlo::first_arrival(const py::array_t<double>& lambda_t, double dt, py::ssize_t n, double minval)
 {
   const double* pl = no::cbegin<double>(lambda_t);
   size_t nl = lambda_t.size();
@@ -156,11 +156,11 @@ py::array_t<double> no::MonteCarlo::first_arrival(const py::array_t<double>& lam
   double lambda_u = *std::max_element(pl, pl + nl);
   double lambda_i;
 
-  py::array_t<double> times = no::empty_array<double>({static_cast<py::ssize_t>(n)});
+  py::array_t<double> times(static_cast<size_t>(n));
   double* pt = no::begin<double>(times);
   double tmax = (nl - 1) * dt;
 
-  for (size_t i = 0; i < n; ++i)
+  for (size_t i = 0; i < static_cast<size_t>(n); ++i)
   {
     // rejection sampling
     pt[i] = minval;
@@ -184,7 +184,7 @@ py::array_t<double> no::MonteCarlo::first_arrival(const py::array_t<double>& lam
 // if the state hasn't been arrived at (no::never())
 py::array_t<double> no::MonteCarlo::next_arrival(const py::array_t<double>& startingpoints, const py::array_t<double>& lambda_t, double dt, bool relative, double minsep)
 {
-  py::ssize_t n = startingpoints.size();
+  size_t n = startingpoints.size();
 
   const double* pl = no::cbegin<double>(lambda_t);
   size_t nl = lambda_t.size();
@@ -194,13 +194,13 @@ py::array_t<double> no::MonteCarlo::next_arrival(const py::array_t<double>& star
   double lambda_u = *std::max_element(pl, pl + nl);
   double lambda_i;
 
-  py::array_t<double> times = no::empty_array<double>({n});
+  py::array_t<double> times(n);
   double* pt = no::begin<double>(times);
 
-  for (py::ssize_t i = 0; i < n; ++i)
+  for (size_t i = 0; i < n; ++i)
   {
     // account for any deterministic time lag (e.g. 9 months between births)
-    double offset = no::at<double>(startingpoints, {i}) + minsep;
+    double offset = no::at<double>(startingpoints, {static_cast<py::ssize_t>(i)}) + minsep;
     // skip if we haven't actually arrived at the state to transition from
     if (no::Timeline::isnever(offset))
     {

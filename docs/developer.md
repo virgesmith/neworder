@@ -57,6 +57,12 @@ Now install the local package
 python setup.py install
 ```
 
+If you want to use a specific compiler you can do something like this:
+
+```
+CC=clang python setup.py install
+```
+
 And a simple test that all is ok:
 
 ```bash

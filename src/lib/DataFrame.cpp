@@ -39,13 +39,14 @@ py::array no::df::unique_index(size_t n)
 void no::df::transition(no::Model& model, py::array_t<int64_t> categories, py::array_t<double> matrix, py::object &df, const std::string& colname)
 {
   // Extract column from DF as np.array
-  py::array col = df.attr(colname.c_str());
+  py::array col_untyped = df.attr(colname.c_str());
 
   // check col and categories are int64
-  if (!col.dtype().is(py::dtype::of<int64_t>()))
+  if (!col_untyped.dtype().is(py::dtype::of<int64_t>()))
   {
     throw py::type_error("dataframe transitions can only be performed on columns containing int64 values");
   }
+  py::array_t<int64_t> col = col_untyped;
 
   py::ssize_t m = categories.size();
 

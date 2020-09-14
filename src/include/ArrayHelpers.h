@@ -15,9 +15,9 @@ namespace no {
 template<size_t D>
 using Index_t = std::array<py::ssize_t, D>;
 
-// this should be faster than using initializer_list as the compiler can optimise better
+// this should be faster than using initializer_list as the compiler can optimise better?
 template<typename T, size_t D=1>
-T& at(py::array& a, const Index_t<D>& index)
+T& at(py::array_t<T>& a, const Index_t<D>& index)
 {
   assert(a.ndim() == D);
   T* buf = (T*)a.request().ptr;
@@ -32,11 +32,11 @@ T& at(py::array& a, const Index_t<D>& index)
 
 // no impl for D=0
 template<typename T>
-T& at(py::array& a, const Index_t<0>& index);
+T& at(py::array_t<T>& a, const Index_t<0>& index);
 
 
 template<typename T, size_t D=1>
-const T& at(const py::array& a, const Index_t<D>& index)
+const T& at(const py::array_t<T>& a, const Index_t<D>& index)
 {
   assert(a.ndim() == D);
   T* buf = (T*)a.request().ptr;
@@ -51,58 +51,52 @@ const T& at(const py::array& a, const Index_t<D>& index)
 
 // no impl for D=0
 template<typename T>
-const T& at(py::array& a, const Index_t<0>& index);
+const T& at(py::array_t<T>& a, const Index_t<0>& index);
 
 
+// TODO use typed array
 template<typename T>
-T* begin(py::array& a)
+T* begin(py::array_t<T>& a)
 {
   assert(a.itemsize() == sizeof(T));
   return (T*)a.request().ptr;
 }
 
 template<typename T>
-const T* cbegin(const py::array& a)
+const T* cbegin(const py::array_t<T>& a)
 {
   assert(a.itemsize() == sizeof(T));
   return (const T*)a.request().ptr;
 }
 
 template<typename T>
-T* end(py::array& a)
+T* end(py::array_t<T>& a)
 {
   assert(a.itemsize() == sizeof(T));
   return (T*)a.request().ptr + a.size();
 }
 
 template<typename T>
-const T* cend(const py::array& a)
+const T* cend(const py::array_t<T>& a)
 {
   assert(a.itemsize() == sizeof(T));
   return (const T*)a.request().ptr + a.size();
 }
 
-// Uninitialised 1d array
-template<typename T, size_t D=1>
-py::array empty_array(const Index_t<D>& d)
-{
-  return py::array_t<T>(d);
-}
-
 // Create a 1d array, initialising with a function
 // e.g. "ones" is make_array<double>(n, [](){ return 1.0; })
 template<typename T, size_t D=1>
-py::array make_array(const Index_t<D>& n, const std::function<T()>& f)
+py::array_t<T> make_array(const Index_t<D>& n, const std::function<T()>& f)
 {
-  py::array a = empty_array<T>(n); 
-  std::generate(begin<T>(a), end<T>(a), f);
+  py::array_t<T> a(n); 
+  std::generate(begin(a), end(a), f);
   return a;
 }
 
 template<typename T>
-py::array& fill(py::array& a, T val)
+py::array_t<T>& fill(py::array_t<T>& a, T val)
 {
-  std::fill(begin<double>(a), end<double>(a), val);
+  std::fill(begin(a), end(a), val);
   return a;
 }
 
@@ -177,13 +171,7 @@ py::array_t<R> binary_op(const py::array_t<A0>& arg0, const py::array_t<A1>& arg
 }
 
 template<typename T>
-py::array empty(const std::initializer_list<size_t>& shape)
-{
-  return py::array_t<T>(shape);
-}
-
-template<typename T>
-py::array zeros(const std::initializer_list<size_t>& shape)
+py::array_t<T> zeros(const std::initializer_list<py::ssize_t>& shape)
 {
   py::array_t<T> a(shape);
   return fill(a, T(0));
@@ -195,5 +183,11 @@ T sum(const py::array_t<T>& a)
   T sum = 0;
   return std::accumulate(a.begin(), a.end(), sum);
 }
+
+// template<typename T> T sum(const py::array& x)
+// {
+//   return std::accumulate(no::cbegin<T>(x), no::cend<T>(x), T(0));
+// } 
+
   
 }

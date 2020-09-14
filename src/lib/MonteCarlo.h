@@ -50,10 +50,10 @@ public:
   py::array_t<double> stopping(const py::array_t<double>& prob);
 
   // multiple-arrival (0+) process (requires that final hazard rate is zero)
-  py::array_t<double> arrivals(const py::array_t<double>& lambda_t, double dt, double gap, size_t n);
+  py::array_t<double> arrivals(const py::array_t<double>& lambda_t, double dt, double gap, py::ssize_t n);
 
   // compute arrival times given a nonhomogeneous Poisson process specified by lambda
-  py::array_t<double> first_arrival(const py::array_t<double>& lambda_t, double dt, size_t n, double minval);
+  py::array_t<double> first_arrival(const py::array_t<double>& lambda_t, double dt, py::ssize_t n, double minval);
 
   // given an array of arrival times at one state, sample times of arrival of subsequent event optionally with a minumum separation minsep
   // relative = true means lambda_t is relative to the starting point *plus minsep*

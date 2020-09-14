@@ -18,6 +18,8 @@ class Population(neworder.Model):
     self.lad = inputdata.split("_")[1]
 
     self.data = pd.read_csv(inputdata)
+    # TODO replace PID with neworder.df.unique_index
+    self.data.set_index(neworder.df.unique_index(len(self.data)), drop=True)
 
     self.fertility = ethpop.create(pd.read_csv(asfr), self.lad)
     self.mortality = ethpop.create(pd.read_csv(asmr), self.lad)
@@ -41,7 +43,6 @@ class Population(neworder.Model):
     self.emigration.Rate = 0.005
 
     # use this to identify people (uniquely only within this table)
-    self.counter = len(self.data)
 
     # Reformatting of input data is required to match Ethpop categories
     # actual age is randomised within the bound of the category
@@ -58,6 +59,7 @@ class Population(neworder.Model):
     #self.write_table()
     # TODO animated pyramid
     #self.plot_pyramid()
+    pass
 
   def age(self):
     # Increment age by timestep and update census age categorty (used for ASFR/ASMR lookup)
@@ -78,15 +80,13 @@ class Population(neworder.Model):
 
     # The babies are a clone of the new mothers, with with changed PID, reset age and randomised gender (keeping location and ethnicity)
     newborns = females[h == 1].copy()
-    newborns.PID = range(self.counter, self.counter + len(newborns))
+    newborns.PID = neworder.df.unique_index(len(newborns))
     newborns.Age = self.mc().ustream(len(newborns)) # born within the last 12 months
     newborns.DC1117EW_C_AGE = 1 # this is 0-1 in census category
     # NOTE: do not convert to pd.Series here to stay as this has its own index which conflicts with the main table
     newborns.DC1117EW_C_SEX = self.mc().hazard(0.5, len(newborns)) + 1
 
-    # Finally append newborns to main population and adjust counter
     self.data = self.data.append(newborns)
-    self.counter = self.counter + len(newborns)
 
   def deaths(self):
     # neworder.log("deaths({:.3f})".format(self.timeline().dt()))
@@ -114,14 +114,13 @@ class Population(neworder.Model):
 
     incoming = self.data[h_in == 1].copy()
 
-    # Append incomers to main population and adjust counter
+    # Append incomers to main population
     # Assign a new id
-    incoming.PID = range(self.counter, self.counter + len(incoming))
+    incoming.PID = neworder.df.unique_index(len(incoming))
     incoming.Area = self.lad
     # assign a new random fractional age based on census age category
     incoming.Age = incoming.DC1117EW_C_AGE - self.mc().ustream(len(incoming)).tolist()
     self.data = self.data.append(incoming)
-    self.counter = self.counter + len(incoming)
 
     # internal emigration:
     out_rates = self.data.join(self.out_migration, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].values
@@ -135,12 +134,11 @@ class Population(neworder.Model):
     h_intl_in = self.mc().hazard(intl_in_rates * self.timeline().dt())
 
     intl_incoming = self.data[h_intl_in == 1].copy()
-    intl_incoming.PID = range(self.counter, self.counter + len(intl_incoming))
+    intl_incoming.PID = neworder.df.unique_index(len(intl_incoming))
     intl_incoming.Area = "INTL" #self.lad
     # assign a new random fractional age based on census age category
     intl_incoming.Age = intl_incoming.DC1117EW_C_AGE - self.mc().ustream(len(intl_incoming))
     self.data = self.data.append(intl_incoming)
-    self.counter = self.counter + len(intl_incoming)
 
     # international emigration
     intl_out_rates = self.data.join(self.emigration, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].values
