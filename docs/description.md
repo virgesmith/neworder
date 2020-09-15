@@ -29,9 +29,7 @@ Each model has its own random number stream, and when running in parallel, each 
     - modes for sensitivity analysis and convergence analysis:
         - the ability to modify the inputs/dynamics for each process.
         - the ability to run each process with either independent or identical random number streams.
-
     - interprocess communication and synchronisation, via the `mpi4py` package.
-
 - a library of Monte-Carlo methods.
 - fast dataframe manipulation.
 - logging facilities.
@@ -45,9 +43,9 @@ In order to construct a functioning model, the minimal requirements of the model
 - define a timeline over which the model runs
 - create a subclass of `neworder.Model`
 - implement the following class methods:
-  - a constructor
-  - `step`
-  - `checkpoint`
+    - a constructor
+    - `step`
+    - `checkpoint`
 - set a seeding policy for the random stream (3 are provided)
 - instantiate an instance of the subclass with the timeline and seeding policy
 - the simply call the `neworder.run` function
