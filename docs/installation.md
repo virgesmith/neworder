@@ -10,20 +10,18 @@ _neworder_ runs in python 3.6 or above on 64-bit linux, OSX or Windows platforms
 
 ...but the it will work perfectly well in serial mode without these extra packages.
 
-## Installation
-
-### PyPI
+## PyPI
 
 TODO...
 ```bash
 pip install
 ```
 
-### Conda-forge
+## Conda-forge
 
 TODO...
 
-### Docker
+## Docker
 
 ```bash
 docker pull virgesmith/neworder

@@ -59,7 +59,7 @@ python setup.py install
 
 If you want to use a specific compiler you can do something like this:
 
-```
+```bash
 CC=clang python setup.py install
 ```
 

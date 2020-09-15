@@ -1,5 +1,4 @@
 
-
 # Derivative Pricing
 
 ## Background

@@ -29,17 +29,17 @@ During the simulation, at each timestep the check code computes and displays som
 
 At each checkpoint, the current population is written to a csv file.
 
-# Setup
+## Setup
 
 {{ include_snippet("examples/people/model.py") }}
 
-# Model Implementation
+## Model Implementation
 
 population.py:
 
 {{ include_snippet("examples/people/population.py") }}
 
-# Execution
+## Execution
 
 The model requires code in the shared directory, so this needs to be added to `PYTHONPATH`:
 
@@ -47,7 +47,7 @@ The model requires code in the shared directory, so this needs to be added to `P
 PYTHONPATH=examples/shared python examples/people/model.py
 ```
 
-# Output
+## Output
 
 ```text
 [py 0/1]  check OK: time=2012.000 size=288296 mean_age=37.25, pct_female=49.84 net_migration=5193.0 (27378.0-23545.0+2791.0-1431.0)

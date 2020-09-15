@@ -27,7 +27,7 @@ If necessary, you can supply your own seeding strategy, for instance if you requ
 !!! note ""
     The seeder function must accept an `int` (even if unused) and return an `int`
 
-```
+```python
 def hybrid_seeder(rank):
   return (rank % 2) + 12345
 ```

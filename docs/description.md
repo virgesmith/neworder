@@ -19,7 +19,7 @@ In terms of parallel execution, the following use-cases are supported:
 
 ## Provision
 
-The framework essentially provides a mechanism to iterate over a timeline, and perform operations at all points on the timeline, plus extra operations at pre-specified points on that timeline. This is what we call the _model_.
+The framework essentially provides a mechanism to iterate over a timeline, and perform operations at all points on the timeline, plus extra operations at pre-specified points on that timeline. This is what we call the *model*.
 
 Each model has its own random number stream, and when running in parallel, each stream can be configured to be independent or identical to the other streams.
 
@@ -29,7 +29,9 @@ Each model has its own random number stream, and when running in parallel, each 
     - modes for sensitivity analysis and convergence analysis:
         - the ability to modify the inputs/dynamics for each process.
         - the ability to run each process with either independent or identical random number streams.
+
     - interprocess communication and synchronisation, via the `mpi4py` package.
+
 - a library of Monte-Carlo methods.
 - fast dataframe manipulation.
 - logging facilities.
