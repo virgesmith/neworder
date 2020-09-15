@@ -176,8 +176,7 @@ py::array_t<T> zeros(const std::initializer_list<py::ssize_t>& shape)
 template<typename T>
 T sum(const py::array_t<T>& a)
 {
-  T sum = 0;
-  return std::accumulate(a.begin(), a.end(), sum);
+  return std::accumulate(a.begin(), a.end(), T(0));
 }
   
 }

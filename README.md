@@ -25,9 +25,10 @@ The main documentation is hosted at [readthedocs.io](https://neworder.readthedoc
 
 ## System Requirements
 
-_neworder_ runs in python 3.6 or above on 64-bit linux, OSX or Windows platforms. In order to take advantage of the parallel execution functionality, the following are also required: 
-  - an MPI implementation, such as [mpich](https://www.mpich.org/), [open-mpi](https://www.open-mpi.org/) or [ms-mpi](https://docs.microsoft.com/en-us/message-passing-interface/microsoft-mpi)
-  - the [mpi4py](https://mpi4py.readthedocs.io/en/stable/) package that provides python MPI bindings
+*neworder* runs in python 3.6 or above on 64-bit linux, OSX or Windows platforms. In order to take advantage of the parallel execution functionality, the following are also required: 
+
+- an MPI implementation, such as [mpich](https://www.mpich.org/), [open-mpi](https://www.open-mpi.org/) or [ms-mpi](https://docs.microsoft.com/en-us/message-passing-interface/microsoft-mpi)
+- the [mpi4py](https://mpi4py.readthedocs.io/en/stable/) package that provides python MPI bindings
 
 but the module will work perfectly well in serial mode without these.
 
@@ -35,7 +36,11 @@ but the module will work perfectly well in serial mode without these.
 
 ### PyPI
 
-TODO
+Pre-release now available on [test.pypi.org](https://test.pypi.org/project/neworder/):
+
+```bash
+pip install -i https://test.pypi.org/simple/ neworder
+```
 
 ### Conda
 

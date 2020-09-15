@@ -9,6 +9,9 @@ import setuptools
 
 # see https://github.com/pybind/python_example
 
+def readme():
+  with open('README.md') as f:
+    return f.read()
 
 def version():
   """ The file VERSION in the project root is now the single source of version info """
@@ -147,8 +150,9 @@ setup(
     author='Andrew P Smith',
     author_email='a.p.smith@leeds.ac.uk',
     url='https://github.com/virgesmith/neworder',
-    description='A microsimulation framework',
-    long_description='',
+    description='A dynamic microsimulation framework',
+    long_description = readme(),
+    long_description_content_type="text/markdown",
     ext_modules=ext_modules,
     setup_requires=['pybind11>=2.5.0', 'pytest-runner'],
     tests_require=['pytest'],    
