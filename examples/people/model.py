@@ -7,28 +7,27 @@ import time
 import neworder
 from population import Population
 
-# define some global variables describing where the starting population and the parameters of the dynamics come from
-initial_population = "examples/people/ssm_E08000021_MSOA11_ppp_2011.csv"
-asfr = "examples/shared/NewETHPOP_fertility.csv"
-asmr = "examples/shared/NewETHPOP_mortality.csv"
-# internal in-migration
-asir = "examples/shared/NewETHPOP_inmig.csv"
-# internal out-migration
-asor = "examples/shared/NewETHPOP_outmig.csv"
-# immigration
-ascr = "examples/shared/NewETHPOP_immig.csv"
-# emigration
-asxr = "examples/shared/NewETHPOP_emig.csv"
+#neworder.verbose()
+
+# input data
+initial_population = "examples/people/E08000021_MSOA11_2011.csv"
+# age, gender and ethnicity-specific rates
+fertility_rate_data = "examples/people/ethpop_fertility.csv"
+mortality_rate_data = "examples/people/ethpop_mortality.csv"
+in_migration_rate_data = "examples/people/ethpop_inmig.csv"
+out_migration_rate_data = "examples/people/ethpop_outmig.csv"
 
 # define the evolution timeline
 timeline = neworder.Timeline(2011, 2051, [10,20,30,40])
 
-population = Population(timeline, initial_population, asfr, asmr, asir, asor, ascr, asxr)
+# create the model
+population = Population(timeline, initial_population, fertility_rate_data, mortality_rate_data, in_migration_rate_data, out_migration_rate_data)
 
+# run the model
 start = time.time()
 ok = neworder.run(population)
 neworder.log("run time = %.2fs" % (time.time() - start))
+assert ok
 
-neworder.log(neworder.df.unique_index(1))
 
 

@@ -89,14 +89,14 @@ The key here is that there is only one result, shared between all processes. In 
 
 ## Time Comparison
 
-`neworder` uses floating-point number to represent time, and the floating-point values -inf, +inf and nan respectively to represent the concepts of the distant past, the far future and never. This allows users to define, or compare against, values that are:
+`neworder` uses 64-bit floating-point numbers to represent time, and the values -inf, +inf and nan respectively to represent the concepts of the distant past, the far future and never. This allows users to define, or compare against, values that are:
 
 - before any other time value,
 - after any other time value, or
 - unequal to any time value
 
 !!! warning "NaN comparisons"
-    Due to the rules of [IEEE754 floating-point](https://en.wikipedia.org/wiki/NaN#Comparison_with_NaN), care must be taken when comparing to never, since a direct comparison will always be false, i.e.: `never() != never()`.
+    Due to the rules of [IEEE754 floating-point](https://en.wikipedia.org/wiki/NaN#Comparison_with_NaN), care must be taken when comparing to NaN/never, since a direct comparison will always be false, i.e.: `never() != never()`.
 
 To compare time values with "never", use the supplied function `isnever()`:
 
@@ -112,9 +112,9 @@ neworder.log(neworder.time.isnever(n)) # True
 Although obvious to many users, in order to promote reusability, it is recommended to separate out functionality into separate logical units, for example:
 
 - model execution - defining the parameters of the model and running it
-- model definition - the actual model
+- model definition - the actual model implementation
 - model data - loading and preprocessing of input data
-- result visualisation
+- result postprocessing and visualisation
 
 This allows for
 
@@ -123,4 +123,4 @@ This allows for
 - visualisations tailored to the platform you are working on.
 - running multiple models from one script.
 
-This pattern is largely adhered to in the examples provided, although in many of the examples there isn't enough data/preprocessing to warrant separating the model script from the data functionality.
+The examples use canned (i.e. already preprocessed) data but otherwise adhere to this pattern.

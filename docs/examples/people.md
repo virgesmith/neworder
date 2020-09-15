@@ -64,4 +64,4 @@ PYTHONPATH=examples/shared python examples/people/model.py
 [py 0/1]  writing ./examples/people/dm_E08000021_2021.000.csv
 ```
 
-This 40 year simulation of a population of about 280,000 more than doubling (no exogenous constraints) executed in under 30s on a single core of a medium-spec machine.
+This 40 year simulation of an initial population of about 280,000 growing to over half a million (no exogenous constraints) executed in about 15s on a single core of a medium-spec machine.
