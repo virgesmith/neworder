@@ -81,7 +81,7 @@ ext_modules = [
       get_pybind_include(),
     ],
     #extra_compile_args=cxxflags(),
-    depends=list_files(["src/include", "src/lib"], ["h"]),
+    depends=["VERSION"] + list_files(["src/include", "src/lib"], ["h"]),
     language='c++'
   ),
 ]

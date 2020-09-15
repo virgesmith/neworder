@@ -1,8 +1,8 @@
 # neworder
 
-![PyPI](https://img.shields.io/pypi/v/neworder)
-![PyPI - Python Version](https://img.shields.io/pypi/pyversions/neworder)
-![PyPI - Downloads](https://img.shields.io/pypi/dm/neworder)
+[![PyPI](https://img.shields.io/pypi/v/neworder)](https://pypi.org/project/neworder/)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/neworder)](https://pypi.org/project/neworder/)
+[![PyPI - Downloads](https://img.shields.io/pypi/dm/neworder)](https://pypi.org/project/neworder/)
 
 [![Build Status](https://travis-ci.org/virgesmith/neworder.png?branch=master)](https://travis-ci.org/virgesmith/neworder) 
 [![Build status](https://ci.appveyor.com/api/projects/status/oycn4is2insoiun7?svg=true)](https://ci.appveyor.com/project/virgesmith/neworder)
