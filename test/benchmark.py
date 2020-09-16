@@ -8,7 +8,7 @@ from math import sqrt
 no.verbose()
 
 # define some global variables describing where the starting population and the parameters of the dynamics come from
-INITIAL_POPULATION = "./tests/ssm_hh_E09000001_OA11_2011.csv"
+INITIAL_POPULATION = "./ssm_hh_E09000001_OA11_2011.csv"
 
 t = np.array([
   [0.9,  0.05, 0.05, 0.,   0.,   0.  ],

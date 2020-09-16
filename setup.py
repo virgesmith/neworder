@@ -124,7 +124,7 @@ setup(
   version=version(),
   author='Andrew P Smith',
   author_email='a.p.smith@leeds.ac.uk',
-  url='https://github.com/virgesmith/neworder',
+  url='https://neworder.readthedocs.io',
   description='A dynamic microsimulation framework',
   long_description = readme(),
   long_description_content_type="text/markdown",
@@ -132,10 +132,10 @@ setup(
   setup_requires=['pybind11>=2.5.0', 'pytest-runner'],
   tests_require=['pytest'],    
   cmdclass={'build_ext': BuildExt},
-  classifiers=(
+  classifiers=[
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
-  ),    
+  ],    
   zip_safe=False,
 )

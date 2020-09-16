@@ -14,7 +14,7 @@ def test():
 
   t = test_.Test()
 
-  df = pd.read_csv("../../tests/df.csv")
+  df = pd.read_csv("../../test/df.csv")
 
   # base model for MC engine
   model = no.Model(no.Timeline.null(), no.MonteCarlo.deterministic_identical_stream)

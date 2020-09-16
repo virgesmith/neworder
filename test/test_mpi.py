@@ -40,7 +40,7 @@ if no.mpi.size() != 1:
       y = comm.recv(source=0)
       assert np.array_equal(x,y)
 
-    df = pd.read_csv("./tests/ssm_E09000001_MSOA11_ppp_2011.csv")
+    df = pd.read_csv("./test/df2.csv")
     if no.mpi.rank() == 0:
       comm.send(df, dest=1)
     if no.mpi.rank() == 1:

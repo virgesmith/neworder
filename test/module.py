@@ -84,13 +84,13 @@ def test():
   # # DataFrame ops
 
   # modify df passing column
-  df = pd.read_csv("../../tests/df.csv")
+  df = pd.read_csv("../../test/df.csv")
 
   # modify df passing directly
   no.df.testfunc(model, df, "DC2101EW_C_ETHPUK11")
   t.check(np.array_equal(df["DC2101EW_C_ETHPUK11"].values, np.zeros(len(df)) + 3))
 
-  df = pd.read_csv("../../tests/df.csv")
+  df = pd.read_csv("../../test/df.csv")
   cats = np.array(range(4))
   transitions = np.identity(len(cats)) * 0 + 0.25
   #no.log(transitions)

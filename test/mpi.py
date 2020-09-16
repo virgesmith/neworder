@@ -41,7 +41,7 @@ def test():
     neworder.log("MPI: 0 sent {}={} 1 recd {}={}".format(type(x), x, type(y), y))
     t.check(np.array_equal(x,y))
 
-  df = pd.read_csv("../../tests/ssm_E09000001_MSOA11_ppp_2011.csv")
+  df = pd.read_csv("../../test/df2.csv")
   if neworder.mpi.rank() == 0:
     neworder.log("sending (as csv) df len %d rows from 0" % len(df))
     neworder.mpi.send_csv(df, 1)
