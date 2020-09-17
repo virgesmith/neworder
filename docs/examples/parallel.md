@@ -4,39 +4,45 @@ This example illustrates how data can be exchanged and synchronised between proc
 
 The basic idea is that we have a population with a single arbitrary state property which can take one of `N` values, where `N` is the number of processes, and each process initially holds the part of the population in the corresponding state. As time evolves, indvidual's states change at random, and the processes exchange individuals to keep their own population homegeneous.
 
-Each population is stored in a pandas `Dataframe`. At the start these is an equal population in each process (and thus in each state).
+Each population is stored in a pandas `DataFrame`. At the start these is an equal population in each process (and thus in each state).
 
-The states transition randomly with a fixed probability `p_trans`.
+The states transition randomly with a fixed probability \(p\) at each timestep, and those that change are redistributed amongst the processes.
 
 Finally, one process acquires the entire population and prints a summary of the state counts.
 
-## Setup
+## Setup (`model.py`)
 
-Firstly we import the necessary modules and check we are running in parallel mode:
+Firstly, we import the necessary modules and check we are running in parallel mode:
 
 {{ include_snippet("examples/parallel/model.py", "setup") }}
 
-`neworder` caches the MPI rank and size, which are assumed to be constant, for efficiency, and the functions `neworder.mpi.rank()` and `neworder.mpi.size()` can be used to inspect these values. As always, the neworder framework expects an instance of a Model class, subclassed from `neworder.Model`, which in turn requires a `neworder.Timeline` object:
+!!! note "MPI"
+    Whilst `neworder` doesn't provide MPI communication functionality, it caches the MPI rank and size (which are assumed to be constant), and the functions `neworder.mpi.rank()` and `neworder.mpi.size()` can be used to inspect these values. 
+    
+As always, the neworder framework expects an instance of a model class, subclassed from `neworder.Model`, which in turn requires a `neworder.Timeline` object:
 
 {{ include_snippet("examples/parallel/model.py", "run") }}
 
-Each process has an initial population of 100 individuals, each of which has a probability of changing state of 1% at each of the ten (unit) timesteps.
+So each process has an initial population of 100 individuals, each of which has a 1% probability of changing to another given state at each of the ten (unit) timesteps.
 
-## The Model
+## The Model (`parallel.py`)
 
 Here's the model constructor:
 
 {{ include_snippet("examples/parallel/parallel.py", "constructor") }}
 
-The `step` method performs the state transitions at each timestep:
+The `step` method, which is called at every timestep performs the state transitions. Note that `neworder.df.transition` modifies the dataframe in-place. Then, sends individuals with changed state to the appropriate process and receives appropriate individuals from the other processes:
 
 {{ include_snippet("examples/parallel/parallel.py", "step") }}
 
-Note that `neworder.df.transition` modifies the dataframe in-place. The `check` method accounts for everyone:
+!!! warning "Blocking communication"
+    The above implementation uses *blocking communication*, which means that all processes send and receive from each other, even if they send an empty dataframe: a given process cannot know in advance if it's not going to receive data from another process, and will deadlock if it tries to receive data from a process that hasn't sent any. MPI does have non-blocking communication protocols, which are more complex to implement. For more info see the mpi4py [documentation](https://mpi4py.readthedocs.io/en/stable/overview.html?highlight=nonblocking#nonblocking-communications).
+
+The `check` method accounts for everyone being present and in the right place (i.e. process):
 
 {{ include_snippet("examples/parallel/parallel.py", "check") }}
 
-Finally, the (single) checkpoint aggregates the populations and prints a summary of the populations in each state.
+For an explanation of why it's implemented like this, see [here](../tips.md#deadlocks). Finally, the (single) checkpoint aggregates the populations and prints a summary of the populations in each state.
 
 {{ include_snippet("examples/parallel/parallel.py", "checkpoint") }}
 

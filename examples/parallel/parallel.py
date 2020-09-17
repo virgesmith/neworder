@@ -13,9 +13,9 @@ class Parallel(neworder.Model):
     super().__init__(timeline, neworder.MonteCarlo.nondeterministic_stream)
 
     # enumerate possible states
-    self.s = np.array(range(neworder.mpi.size()))
+    self.s = np.arange(neworder.mpi.size())
 
-    # create transition matrix
+    # create transition matrix with all off-diagonal probabilities equal to p
     self.p = np.identity(neworder.mpi.size()) * (1 - neworder.mpi.size() * p) + p
 
     # record initial population size
@@ -67,12 +67,9 @@ class Parallel(neworder.Model):
 
   # !checkpoint!
   def checkpoint(self):
-    # wait until any slower-running processes catch up
-    comm.Barrier()
-    # then process 0 assembles all the data and prints a summary
+    # process 0 assembles all the data and prints a summary
     pops = comm.gather(self.pop, root=0)
     if neworder.mpi.rank() == 0:
-      for r in range(1, neworder.mpi.size()):
-        pops[0] = pops[0].append(pops[r])
-      neworder.log("State counts (total %d):\n%s" % (len(pops[0]), pops[0]["state"].value_counts().to_string()))
+      pops = pd.concat(pops)
+      neworder.log("State counts (total %d):\n%s" % (len(pops), pops["state"].value_counts().to_string()))
   # !checkpoint!

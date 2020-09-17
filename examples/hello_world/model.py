@@ -104,7 +104,7 @@ neworder.verbose()
 # uncomment to disable checks entirely
 # neworder.checked(False)
 
-# construct the model with the population size and the chances to talking
+# construct the model with the population size and the probability of becoming talkative
 hello_world = HelloWorld(10, 0.5)
 
 # run the model and check it worked
