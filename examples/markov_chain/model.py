@@ -5,7 +5,6 @@ import neworder as no
 from markov_chain import MarkovChain
 import visualisation
 
-
 # Logging and checking options
 #no.verbose()
 no.checked()

@@ -3,7 +3,7 @@
 ## Model Initialisation
 
 !!! danger "Memory Corruption"
-    When instantiating the model class, it is imperative that the base class is explicitly initialised. Python does not enforce this, and memory corruption can occur.
+    When instantiating the model class, it is imperative that the base class is explicitly initialised. Python does not enforce this, and memory corruption will occur if this is not done.
 
 Use this initialisation pattern:
 
@@ -18,9 +18,9 @@ class MyModel(neworder.Model):
 ## Custom Seeding Strategies
 
 !!! note "Note"
-    `neworder` random streams use the Mersenne Twister generator, as implemented in the C++ standard library.
+    `neworder` random streams use the Mersenne Twister pseudorandom generator, as implemented in the C++ standard library.
 
-`neworder` provides three seeding strategy functions which initialise the model's random stream so that they are either identical, independent, or non-reproducible (and independent).
+`neworder` provides three seeding strategy functions which initialise the model's random stream so that they are either non-reproducible, or reproducible and either identical or independent across parallel runs. Typically, a user would select identical streams (and perturbed inputs) for sensitivity analysis, and independent streams (with indentical inputs) for convergence analysis.
 
 If necessary, you can supply your own seeding strategy, for instance if you required some processes to have independent streams, and some identical streams.
 
@@ -47,12 +47,27 @@ class MyModel(neworder.Model):
     ...
 ```
 
+If there was a requirement for multiple processes to all have the same nondeterministic stream, you could implement a seeding strategy like so:
+
+```python
+from mpi4py import MPI
+comm = MPI.COMM_WORLD
+
+def nondeterministic_identical_stream(_r):
+  # only process 0 gets a seed 
+  seed = neworder.MonteCarlo.nondeterministic_stream(0) if neworder.mpi.rank() == 0 else None
+  # then broadcasts it to the other processes
+  seed = comm.bcast(seed, root=0)
+  return seed
+
+```
+
 ## Identical Streams
 
 !!! warning "Synchronisation"
     Identically initialised random streams only stay in sync if the same number of samples are taken from each one .
 
-The "option" example relies on identical streams to reduce noise when computing differences. It implements a `check` step that compares a single sample from each process and fails if any are different (see below).
+The "option" example relies on identical streams to reduce noise when computing differences for sensitivity analysis. It implements a `check` step that compares a single sample from each process and fails if any are different (see below).
 
 !!! note "Stream Comparisons"
     Comparing output of each generator only gives a (very) probable assessment. The only surefire way to determine identical streams is to compare the internal states of each generator. This functionality is not currently implemented.
@@ -107,13 +122,32 @@ neworder.log(n == n) # False!
 neworder.log(neworder.time.isnever(n)) # True
 ```
 
+## Types
+
+!!! warning "Static typing"
+    Unlike python, C++ is a *statically typed* language and so `neworder` is strict about types.
+
+If an argument to a `neworder` method or function is not the correct type, it will fail immediately (as opposed to python, which will fail only if an invalid operation for the given type is attempted). This applies to contained types (`dtype`) too. This function expects an integer, and will do this if you pass it a floating-point argument:
+
+```python
+>>> import neworder
+>>> neworder.df.unique_index(3.0)
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+TypeError: unique_index(): incompatible function arguments. The following argument types are supported:
+    1. (n: int) -> numpy.ndarray[int64]
+
+Invoked with: 3.0
+```
+
 ## Project Structure
 
-Although obvious to many users, in order to promote reusability, it is recommended to separate out functionality into separate logical units, for example:
+Although obvious to many users, in order to promote reusability, it is recommended to separate out functionality into logical units, for example:
 
-- model execution - defining the parameters of the model and running it
+
 - model definition - the actual model implementation
 - model data - loading and preprocessing of input data
+- model execution - defining the parameters of the model and running it
 - result postprocessing and visualisation
 
 This allows for
@@ -123,4 +157,4 @@ This allows for
 - visualisations tailored to the platform you are working on.
 - running multiple models from one script.
 
-The examples use canned (i.e. already preprocessed) data but otherwise adhere to this pattern.
+The examples use canned (i.e. already preprocessed) data but otherwise largely adhere to this pattern.

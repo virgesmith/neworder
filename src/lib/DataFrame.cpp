@@ -25,7 +25,7 @@ size_t interp(const std::vector<double>& cumprob, double x)
 }
 
 
-py::array no::df::unique_index(size_t n)
+py::array_t<int64_t> no::df::unique_index(size_t n)
 {
   no::Environment& env = no::getenv();
   return no::make_array<int64_t>({static_cast<py::ssize_t>(n)}, [&]() { return env.unique_index(); });

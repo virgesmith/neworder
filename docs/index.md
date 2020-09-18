@@ -24,6 +24,16 @@ but the module will work perfectly well in serial mode without these.
 
 ## Installation
 
-TODO (not yet available on pypi/conda)
+### PyPI
 
-For now see [Contributing](./developer.md) for installation steps
+```bash
+pip install neworder
+```
+
+### Conda
+
+TODO (not yet available on conda)
+
+### Github
+
+See [Contributing](./developer.md) for installation steps.
