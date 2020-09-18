@@ -35,7 +35,7 @@ and provide a constructor that initialises the base class and a DataFrame contai
 {{ include_snippet("./examples/hello_world/model.py", "constructor") }}
 
 !!! note "Unique Indexing"
-    The `neworder.df.unique_index()` provides a mechanism to guarantee unique indices for DataFrames, even for parallel runs. This allows individuals to be exchanged and tracked between processes without conflicting indices.  
+    The `neworder.df.unique_index()` provides a mechanism to guarantee unique indices for DataFrames, even for parallel runs. This allows individuals to be exchanged and tracked between processes without conflicting indices.
 
 The `step` method randomly samples new values for the "talkative" attribute, using the `neworder.MonteCarlo.hazard` method
 

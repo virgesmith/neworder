@@ -9,7 +9,8 @@ _inline_code_styles = {
   ".cpp": "cpp",
   ".c": "c",
   ".rs": "rs",
-  ".js": "js"
+  ".js": "js",
+  ".md": None
 }
 
 def define_env(env):
@@ -24,7 +25,7 @@ def define_env(env):
     full_filename = os.path.join(env.project_dir, filename)
 
     _, file_type = os.path.splitext(filename)
-    # default to # for comment string, and text for inline code style
+    # default to literal "text" for inline code style
     code_style = _inline_code_styles.get(file_type, "text")
 
     with open(full_filename, 'r') as f:
@@ -41,7 +42,11 @@ def define_env(env):
       lines = lines[span[0]+1: span[1]]
 
     #line_range = lines[start_line+1:end_line]
-    return "```%s\n" % code_style + "".join(lines) + "```" 
+    text = "".join(lines)
+    if code_style is not None:
+      return "```%s\n" % code_style + "".join(lines) + "```" 
+    else:
+      return text
 
 # if __name__ == "__main__":
 #   print(_include_snippet("examples/chapter1/model.py", "tag"))

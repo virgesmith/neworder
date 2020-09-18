@@ -18,7 +18,7 @@ This is provided by:
 - a **Timeline**: the time horizon over which to run the model
 - a **MonteCarlo** engine: a dedicated random number stream for each model instance, with specific configurations for parallel streams
 - a library of Monte-Carlo methods and statistical functions
-- data manipulation functions optimised for pandas DataFrames 
+- data manipulation functions optimised for pandas DataFrames
 - support for a parallel execution using MPI (via the `mpi4py` package).
 
 `neworder` explicitly does not provide any tools for things like visualisation, and users can thus use whatever packages they are most comfortable with. The examples, however, do provide various visualisations using `matplotlib`.

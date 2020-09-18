@@ -54,7 +54,7 @@ from mpi4py import MPI
 comm = MPI.COMM_WORLD
 
 def nondeterministic_identical_stream(_r):
-  # only process 0 gets a seed 
+  # only process 0 gets a seed
   seed = neworder.MonteCarlo.nondeterministic_stream(0) if neworder.mpi.rank() == 0 else None
   # then broadcasts it to the other processes
   seed = comm.bcast(seed, root=0)
@@ -122,12 +122,12 @@ neworder.log(n == n) # False!
 neworder.log(neworder.time.isnever(n)) # True
 ```
 
-## Types
+## Data Types
 
 !!! warning "Static typing"
     Unlike python, C++ is a *statically typed* language and so `neworder` is strict about types.
 
-If an argument to a `neworder` method or function is not the correct type, it will fail immediately (as opposed to python, which will fail only if an invalid operation for the given type is attempted). This applies to contained types (`dtype`) too. This function expects an integer, and will do this if you pass it a floating-point argument:
+If an argument to a `neworder` method or function is not the correct type, it will fail immediately (as opposed to python, which will fail only if an invalid operation for the given type is attempted). This applies to contained types (numpy's `dtype`) too. In the example below, the function is expecting an integer, and will complain if you pass it a floating-point argument:
 
 ```python
 >>> import neworder
@@ -144,17 +144,16 @@ Invoked with: 3.0
 
 Although obvious to many users, in order to promote reusability, it is recommended to separate out functionality into logical units, for example:
 
-
 - model definition - the actual model implementation
 - model data - loading and preprocessing of input data
 - model execution - defining the parameters of the model and running it
 - result postprocessing and visualisation
 
-This allows for
+This makes life much easier when you want to:
 
-- the same model to be used with different parameters and/or input data,
-- the model to be run on different plaforms without modification (think desktop vs HPC cluster vs web service).
-- visualisations tailored to the platform you are working on.
-- running multiple models from one script.
+- use the same model with different parameters and/or input data,
+- run the model on different plaforms without modification (think desktop vs HPC cluster vs web service).
+- have visualisations tailored to the platform you are working on.
+- run multiple models from one script.
 
 The examples use canned (i.e. already preprocessed) data but otherwise largely adhere to this pattern.

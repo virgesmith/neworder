@@ -4,13 +4,18 @@
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/neworder)](https://pypi.org/project/neworder/)
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/neworder)](https://pypi.org/project/neworder/)
 
+[![Anaconda-Server Version Badge](https://anaconda.org/conda-forge/neworder/badges/version.svg)](https://anaconda.org/conda-forge/neworder)
+[![Anaconda-Server Downloads Badge](https://anaconda.org/conda-forge/neworder/badges/downloads.svg)](https://anaconda.org/conda-forge/neworder)
+
+[![License](https://img.shields.io/github/license/mashape/apistatus.svg)](https://opensource.org/licenses/MIT)
 [![DOI](https://zenodo.org/badge/111997710.svg)](https://zenodo.org/badge/latestdoi/111997710)
 
 [![Build Status](https://travis-ci.org/virgesmith/neworder.png?branch=master)](https://travis-ci.org/virgesmith/neworder) 
 [![Build status](https://ci.appveyor.com/api/projects/status/oycn4is2insoiun7?svg=true)](https://ci.appveyor.com/project/virgesmith/neworder)
-[![License](https://img.shields.io/github/license/mashape/apistatus.svg)](https://opensource.org/licenses/MIT)
 [![Documentation Status](https://readthedocs.org/projects/neworder/badge/?version=latest)](https://neworder.readthedocs.io/en/latest/?badge=latest)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/2f3d4cbf0d174b07b527c64b700db77f)](https://www.codacy.com/app/virgesmith/neworder?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=virgesmith/neworder&amp;utm_campaign=Badge_Grade)
+
+[//]: # (!readme!)
 
 *neworder* is a microsimulation framework inspired by [openm++](https://openmpp.org/), [MODGEN](https://www.statcan.gc.ca/eng/microsimulation/modgen/modgen) and, to a lesser extent, the python-based [LIAM2](http://liam2.plan.be/pages/about.html) tool, and can be thought of powerful best-of-both-worlds hybrid of MODGEN and LIAM2. Modellers can define their models in a a simple. well-known language, yet benefit from the efficiency of compiled code and parallel execution:
 
@@ -23,10 +28,6 @@
 - **compatibility**: operate directly on numpy arrays and pandas DataFrames
 - **scalability**: can be run on a desktop or a HPC cluster, supporting parallel execution using MPI.
 
-## Documentation
-
-The main documentation is hosted at [readthedocs.io](https://neworder.readthedocs.io)
-
 ## System Requirements
 
 *neworder* runs in python 3.6 or above on 64-bit linux, OSX or Windows platforms. In order to take advantage of the parallel execution functionality, the following are also required: 
@@ -38,9 +39,9 @@ but the module will work perfectly well in serial mode without these.
 
 ## Installation
 
-### PyPI
+Note: `neworder` is currently in pre-release.
 
-Pre-release now available:
+### PyPI
 
 ```bash
 pip install neworder
@@ -48,9 +49,14 @@ pip install neworder
 
 ### Conda
 
-TODO
+```bash
+conda install -c conda-forge neworder
+```
 
-## Tutorial
+[//]: # (!readme!)
+
+## Documentation
 
 To get started first see the detailed documentation [here](https://neworder.readthedocs.io). Then, check out "Hello World"
-and other examples.
+and the other examples.
+
