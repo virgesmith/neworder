@@ -1,9 +1,8 @@
 # neworder
 
-[![PyPI](https://img.shields.io/pypi/v/neworder)](https://pypi.org/project/neworder/)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/neworder)](https://pypi.org/project/neworder/)
+[![PyPI](https://img.shields.io/pypi/v/neworder)](https://pypi.org/project/neworder/)
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/neworder)](https://pypi.org/project/neworder/)
-
 [![Anaconda-Server Version Badge](https://anaconda.org/conda-forge/neworder/badges/version.svg)](https://anaconda.org/conda-forge/neworder)
 [![Anaconda-Server Downloads Badge](https://anaconda.org/conda-forge/neworder/badges/downloads.svg)](https://anaconda.org/conda-forge/neworder)
 

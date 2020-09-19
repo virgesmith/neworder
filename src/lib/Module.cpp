@@ -45,7 +45,6 @@ PYBIND11_MODULE(neworder, m)
 
   // utility/diagnostics
   m.def("version", no::module_version, version_docstr)
-   .def("python", [](){ no::getenv().python_version(); })
    .def("log", log_obj, log_docstr, "obj"_a)
    .def("run", no::Model::run, run_docstr, "model"_a)
    .def("verbose", no::Environment::verbose, verbose_docstr, "verbose"_a = true)

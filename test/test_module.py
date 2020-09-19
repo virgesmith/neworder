@@ -9,9 +9,9 @@ def test_basics():
   with open("VERSION") as f:
     assert f.readline().rstrip() == no.version()
 
-  # just check you can call the functions
-  no.python()
   assert hasattr(no, "verbose")
+  assert hasattr(no, "checked")
+  # just check you can call the functions
   no.log("testing")
   no.log(1)
   no.log(no)

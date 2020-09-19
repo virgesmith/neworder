@@ -12,8 +12,7 @@
 no::Model::Model(Timeline& timeline, const py::function& seeder) 
   : m_timeline(timeline), m_monteCarlo(seeder(no::getenv().rank()).cast<int64_t>())
 {
-  no::log("neworder %%/module python %%"_s % module_version() % no::getenv().python_version());
-  no::log("model init: timeline=%% mc=%%"_s % m_timeline.repr() % m_monteCarlo.repr());
+  no::log("neworder %% model init: timeline=%% mc=%%"_s % module_version() % m_timeline.repr() % m_monteCarlo.repr());
 }
 
 

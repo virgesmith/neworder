@@ -33,9 +33,6 @@ public:
   // check for errors in the python env (use after catching py::error_already_set)
   static std::string get_error() noexcept;
 
-  // returns the python version
-  static std::string python_version();
-
   // MPI rank (0 if serial)
   static int rank();
 

@@ -52,7 +52,7 @@ nav:
     #- People (parallel): ./examples/people_multi.md
     - Schelling: examples/schelling.md
   - API:
-    - API Reference: api_auto.md
+    - API Reference: api.md
     - Tips and Tricks: tips.md
   - References: references.md
   - About: 

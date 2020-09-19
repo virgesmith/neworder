@@ -120,16 +120,3 @@ std::string no::Environment::get_error() noexcept
   }
   return "unable to determine python error";
 }
-
-std::string no::Environment::python_version()
-{
-  static std::string version_string;
-  // Get and display python version - only do once
-  if (version_string.empty())
-  {
-    py::module sys = py::module::import("sys");
-    version_string = sys.attr("version").cast<std::string>();
-    std::replace(version_string.begin(), version_string.end(), '\n', ' ');
-  }
-  return version_string;
-}
