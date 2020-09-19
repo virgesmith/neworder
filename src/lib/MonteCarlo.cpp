@@ -120,7 +120,7 @@ py::array_t<double> no::MonteCarlo::arrivals(const py::array_t<double>& lambda_t
         lambda_i = pl[ std::min((size_t)(pt / dt), nl-1) ];
         if (pt > tmax && lambda_i == 0.0)
         {
-          pt = no::Timeline::never();
+          pt = no::time::never();
           break;
         }
       } while (u01() > lambda_i / lambda_u);
@@ -132,7 +132,7 @@ py::array_t<double> no::MonteCarlo::arrivals(const py::array_t<double>& lambda_t
   }
 
   py::array_t<double> nptimes({n, static_cast<py::ssize_t>(imax - 1)});
-  no::fill(nptimes, no::Timeline::never());
+  no::fill(nptimes, no::time::never());
   double* pa = no::begin(nptimes); //.begin();
 
   for (size_t i = 0; i < times.size(); ++i)
@@ -172,7 +172,7 @@ py::array_t<double> no::MonteCarlo::first_arrival(const py::array_t<double>& lam
       // deal with open case (event not certain to happen)
       if (pt[i] > tmax && lambda_i == 0.0)
       {
-        pt[i] = no::Timeline::never();
+        pt[i] = no::time::never();
         break;
       }
     } while (u01() > lambda_i / lambda_u);
@@ -202,9 +202,9 @@ py::array_t<double> no::MonteCarlo::next_arrival(const py::array_t<double>& star
     // account for any deterministic time lag (e.g. 9 months between births)
     double offset = no::at<double>(startingpoints, {static_cast<py::ssize_t>(i)}) + minsep;
     // skip if we haven't actually arrived at the state to transition from
-    if (no::Timeline::isnever(offset))
+    if (no::time::isnever(offset))
     {
-      pt[i] = no::Timeline::never();
+      pt[i] = no::time::never();
       continue;
     }
     // offset if lambdas in absolute time (not relative to start point)
@@ -216,7 +216,7 @@ py::array_t<double> no::MonteCarlo::next_arrival(const py::array_t<double>& star
       lambda_i = pl[ std::min((size_t)(pt[i] / dt), nl-1) ];
       if (pt[i] > tmax && lambda_i == 0.0)
       {
-        pt[i] = no::Timeline::never();
+        pt[i] = no::time::never();
         break;
       }
     } while (u01() > lambda_i / lambda_u);

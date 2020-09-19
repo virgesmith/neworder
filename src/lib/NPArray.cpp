@@ -2,9 +2,9 @@
 #include "Timeline.h"
 
 // the vectorised (nparray) implementation of Timeline::isnever
-py::array_t<bool> no::isnever(const py::array_t<double>& x)
+py::array_t<bool> no::time::isnever_a(const py::array_t<double>& x)
 {
-  return no::unary_op<bool, double>(x, Timeline::isnever);
+  return no::unary_op<bool, double>(x, time::isnever);
 }
 
 py::array_t<double> no::logistic(const py::array_t<double>& x, double x0, double k)
