@@ -104,4 +104,4 @@ which will produce something like
 [py 0/4]  vega 10bp=0.033892
 ```
 
-## [Examples Source Code](https://github.com/virgesmith/neworder/tree/master/examples)
+{{ include_snippet("./docs/examples/src.md") }}

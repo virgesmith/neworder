@@ -8,4 +8,4 @@ It's an almost pure python implementation, only using the timeline and logging f
 
 In the above example, the similarity threshold is 50% and the cells composition is: 30% empty, 30% red, 30% blue and 10% green, on a 80 x 100 grid.
 
-## [Examples Source Code](https://github.com/virgesmith/neworder/tree/master/examples)
+{{ include_snippet("./docs/examples/src.md") }}

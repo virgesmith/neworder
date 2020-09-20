@@ -58,4 +58,4 @@ Some example output:
 ```
 and clearly a constant mortality rate isn't realistic as we see far more deaths at younger ages, and far less at older ages, than would be expected. The example [mortality](./mortality.md) introduces a model with a time-dependent mortality hazard rate and shows how the framework can very efficiently model this.
 
-## [Examples Source Code](https://github.com/virgesmith/neworder/tree/master/examples)
+{{ include_snippet("./docs/examples/src.md") }}

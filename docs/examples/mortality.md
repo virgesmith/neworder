@@ -40,3 +40,4 @@ which illustrates how much more efficient the continuous implementation is (abou
 
 ![Mortality rate comparison](./img/mortality.png)
 
+{{ include_snippet("./docs/examples/src.md") }}

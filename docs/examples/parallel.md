@@ -79,4 +79,4 @@ Results will vary as the random streams are not deterministic in this example, b
 3     87
 ```
 
-## [Examples Source Code](https://github.com/virgesmith/neworder/tree/master/examples/parallel)
+{{ include_snippet("./docs/examples/src.md") }}

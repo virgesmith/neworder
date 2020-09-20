@@ -49,18 +49,19 @@ PYTHONPATH=examples/shared python examples/people/model.py
 ## Output
 
 ```text
-[py 0/1]  check OK: time=2012.000 size=288296 mean_age=37.25, pct_female=49.84 net_migration=5193.0 (27378.0-23545.0+2791.0-1431.0)
-[py 0/1]  check OK: time=2013.000 size=294194 mean_age=37.15, pct_female=49.80 net_migration=4270.0 (27932.0-25172.0+2935.0-1425.0)
-[py 0/1]  check OK: time=2014.000 size=297005 mean_age=37.25, pct_female=49.59 net_migration=1173.0 (27051.0-27431.0+3057.0-1504.0)
-[py 0/1]  check OK: time=2015.000 size=297301 mean_age=37.47, pct_female=49.37 net_migration=-1271.0 (27130.0-29819.0+2938.0-1520.0)
-[py 0/1]  check OK: time=2016.000 size=298170 mean_age=37.64, pct_female=49.39 net_migration=-575.0 (27239.0-29283.0+2937.0-1468.0)
-[py 0/1]  check OK: time=2017.000 size=299832 mean_age=37.80, pct_female=49.30 net_migration=115.0 (26318.0-27709.0+2989.0-1483.0)
-[py 0/1]  check OK: time=2018.000 size=301725 mean_age=37.94, pct_female=49.23 net_migration=499.0 (25950.0-26920.0+2999.0-1530.0)
-[py 0/1]  writing ./examples/people/dm_E08000021_2018.000.csv
-[py 0/1]  check OK: time=2019.000 size=303383 mean_age=38.07, pct_female=49.18 net_migration=283.0 (25668.0-26828.0+3014.0-1571.0)
-[py 0/1]  check OK: time=2020.000 size=305316 mean_age=38.17, pct_female=49.06 net_migration=453.0 (25754.0-26754.0+3008.0-1555.0)
-[py 0/1]  check OK: time=2021.000 size=307537 mean_age=38.29, pct_female=48.94 net_migration=810.0 (25436.0-26162.0+3070.0-1534.0)
-[py 0/1]  writing ./examples/people/dm_E08000021_2021.000.csv
+...
+[py 0/1]  check OK: time=2044.000 size=399199 mean_age=39.73, pct_female=48.41 net_migration=12181.0 (45857.0-33676.0)
+[py 0/1]  check OK: time=2045.000 size=412334 mean_age=39.82, pct_female=48.43 net_migration=12824.0 (48139.0-35315.0)
+[py 0/1]  check OK: time=2046.000 size=426426 mean_age=39.93, pct_female=48.49 net_migration=13954.0 (50436.0-36482.0)
+[py 0/1]  check OK: time=2047.000 size=442034 mean_age=40.06, pct_female=48.65 net_migration=15587.0 (53304.0-37717.0)
+[py 0/1]  check OK: time=2048.000 size=458712 mean_age=40.18, pct_female=48.81 net_migration=16712.0 (56205.0-39493.0)
+[py 0/1]  check OK: time=2049.000 size=477050 mean_age=40.37, pct_female=48.96 net_migration=18540.0 (58914.0-40374.0)
+[py 0/1]  check OK: time=2050.000 size=496943 mean_age=40.59, pct_female=49.10 net_migration=20368.0 (62157.0-41789.0)
+[py 0/1]  check OK: time=2051.000 size=518993 mean_age=40.86, pct_female=49.30 net_migration=22545.0 (65413.0-42868.0)
+[py 0/1]  writing ./examples/people/output/dm_E08000021_2051.000.csv
+[py 0/1]  run time = 21.05s
 ```
 
-This 40 year simulation of an initial population of about 280,000 growing to over half a million (no exogenous constraints) executed in about 15s on a single core of a medium-spec machine.
+This 40 year simulation of an initial population of about 280,000 growing to over half a million (no exogenous constraints) executed in about 20s on a single core of a medium-spec machine.
+
+{{ include_snippet("./docs/examples/src.md") }}

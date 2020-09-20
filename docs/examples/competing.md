@@ -5,3 +5,5 @@ This is a case-based continuous-time microsimulation of the competing risks of (
 The figure below shows the distribution of up to four births (stacked) plus mortality.
 
 ![Competing Fertility-Mortality histogram](./img/competing_hist_100k.png)
+
+{{ include_snippet("./docs/examples/src.md") }}

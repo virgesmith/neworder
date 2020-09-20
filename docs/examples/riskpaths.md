@@ -8,4 +8,4 @@ Counts of transitions by age: first pregnancy (purple), beginning of first union
 
 Note: the mortality rate used in this model does not have a realistic age structure - events that take place in later years have little bearing on the outcome, which is time of first pregnancy.
 
-## [Examples Source Code](https://github.com/virgesmith/neworder/tree/master/examples)
+{{ include_snippet("./docs/examples/src.md") }}
