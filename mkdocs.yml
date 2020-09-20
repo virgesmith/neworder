@@ -33,23 +33,20 @@ plugins:
       module_name: docs.macros
       # include_dir: examples
 #  - mkpdfs
-#  - mkdocstrings
 
 nav:
   - Home: index.md
   - Description: description.md
   - Examples:
-    - Hello World: examples/hello_world.md
+    - Hello World: examples/hello-world.md
     - Parallel: examples/parallel.md
-    - Markov Chain: examples/markov_chain.md
+    - Markov Chain: examples/markov-chain.md
     - Chapter 1: examples/chapter1.md
     - Mortality: examples/mortality.md
     - Competing: examples/competing.md
     - RiskPaths: examples/riskpaths.md
-    #- Disease: examples/disease.md
     - People: ./examples/people.md
     - Option: examples/option.md
-    #- People (parallel): ./examples/people_multi.md
     - Schelling: examples/schelling.md
   - API:
     - API Reference: api.md
