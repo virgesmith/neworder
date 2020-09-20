@@ -29,6 +29,10 @@ class Population(neworder.Model):
     # actual age is randomised within the bound of the category (NB category values are age +1)
     self.population["Age"] = self.population.DC1117EW_C_AGE - self.mc().ustream(len(self.population))
 
+    self.output_dir = "./examples/people/output"
+    if not os.path.exists(self.output_dir):
+      os.makedirs(self.output_dir)
+
   def step(self):
     self.births()
     self.deaths()
@@ -136,7 +140,7 @@ class Population(neworder.Model):
       return False
     if min(self.population.DC1117EW_C_AGE.unique().astype(int)) < 1 or \
       max(self.population.DC1117EW_C_AGE.unique().astype(int)) > 86:
-      neworder.log("invalid catgorical age value")
+      neworder.log("invalid categorical age value")
       return False
     # this can go below zero for cat 86+
     if (self.population.DC1117EW_C_AGE - self.population.Age).max() >= 1.0:
@@ -149,7 +153,7 @@ class Population(neworder.Model):
     return True # Faith
 
   def write_table(self):
-    filename = "./examples/people/dm_{}_{:.3f}.csv".format(self.lad, self.timeline().time())
+    filename = "{}/dm_{}_{:.3f}.csv".format(self.output_dir, self.lad, self.timeline().time())
     neworder.log("writing %s" % filename)
     return self.population.to_csv(filename)
 

@@ -1,41 +1,11 @@
 #!/bin/bash
 
-# this is truly horrible, but sed doesnt like multiline strings and pydoc churns out garish html if used within python
+# generate api doc -> apidoc.md
+python scripts/docstr2md.py
 
-output=docs/api_auto.md
-
-cat docs/api_auto.md_header > $output
-echo >> $output
-echo "## \`neworder\` module" >> $output
-echo >> $output
-echo \`\`\`text >> $output
-python -m pydoc neworder >> $output
-echo \`\`\` >> $output
-echo  >> $output
-echo "## \`neworder.mpi\` module" >> $output
-echo >> $output
-echo \`\`\`text >> $output
-python -m pydoc neworder.mpi >> $output
-echo \`\`\` >> $output
-echo  >> $output
-echo "## \`neworder.time\` module" >> $output
-echo >> $output
-echo \`\`\`text >> $output
-python -m pydoc neworder.time >> $output
-echo \`\`\` >> $output
-echo  >> $output
-echo "## \`neworder.stats\` module" >> $output
-echo >> $output
-echo \`\`\`text >> $output
-python -m pydoc neworder.stats >> $output
-echo \`\`\` >> $output
-echo  >> $output
-echo "## \`neworder.df\` module" >> $output
-echo >> $output
-echo \`\`\`text >> $output
-python -m pydoc neworder.df >> $output
-echo \`\`\` >> $output
-
-# remove pipes
-sed -i "s/|/ /g" $output
+# zip examples
+find ./examples -type d -name __pycache__ -o -name output > excluded
+tar zcfv docs/examples/src.tgz -X excluded ./examples
+rm excluded
+zip -r docs/examples/src.zip examples -x "*/__pycache__/*" -x "*/output/*"
 

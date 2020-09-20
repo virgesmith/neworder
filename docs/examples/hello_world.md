@@ -158,4 +158,4 @@ Try re-running the model with different input parameters, or changing the seedin
 
 Then, check out some or all of the other examples...
 
-## [Examples Source Code](https://github.com/virgesmith/neworder/tree/master/examples)
+{{ include_snippet("./docs/examples/src.md") }}

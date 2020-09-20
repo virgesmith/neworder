@@ -672,7 +672,7 @@ The function values (log-odds)
 
 !!! note "module"
 
-temporal values and comparison
+Temporal values and comparison
 
 ### `neworder.time.distant_past`
 

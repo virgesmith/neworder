@@ -68,7 +68,7 @@ void no::df::transition(no::Model& model, py::array_t<int64_t> categories, py::a
   for (int i = 0; i < m; ++i)
   {
     // point to beginning of row
-    double* p = no::begin<double>(matrix) + (i * m);
+    double* p = no::begin(matrix) + (i * m);
     if (p[0] < 0.0 || p[0] > 1.0) 
       throw py::value_error("invalid transition probability %% at (%%, 0)"_s % p[0] % i);
     cumprobs[i][0] = p[0];
@@ -97,7 +97,7 @@ void no::df::transition(no::Model& model, py::array_t<int64_t> categories, py::a
   py::array_t<double> rpy = model.mc().ustream(n);
 
   // possible unsafe access?
-  double* r = no::begin<double>(rpy);
+  double* r = no::begin(rpy);
   int64_t* pcat = no::begin<int64_t>(categories);
 
   for (py::ssize_t i = 0; i < n; ++i)
@@ -107,7 +107,7 @@ void no::df::transition(no::Model& model, py::array_t<int64_t> categories, py::a
     if (it == lookup.end())
       continue;
     int64_t j = it->second;
-    py::ssize_t k = interp(cumprobs[j], r[i]/*no::at<double>(r, Index_t<1>{i})*/);
+    py::ssize_t k = interp(cumprobs[j], r[i]/*no::at(r, Index_t<1>{i})*/);
     //no::log("interp %%:%% -> %%"_s % j % r[i] % k);
     no::at<int64_t>(col, Index_t<1>{i}) = pcat[k]; //no::at<int64_t>(categories, Index_t<1>{k});
   }

@@ -89,7 +89,7 @@ py::array_t<double> no::MonteCarlo::stopping(const py::array_t<double>& prob)
 // multiple-arrival (0+) process 
 py::array_t<double> no::MonteCarlo::arrivals(const py::array_t<double>& lambda_t, double dt, double gap, py::ssize_t n)
 {
-  const double* pl = no::cbegin<double>(lambda_t);
+  const double* pl = no::cbegin(lambda_t);
   size_t nl = lambda_t.size();
 
   // validate lambdas - but what exactly is valid?
@@ -149,7 +149,7 @@ py::array_t<double> no::MonteCarlo::arrivals(const py::array_t<double>& lambda_t
 
 py::array_t<double> no::MonteCarlo::first_arrival(const py::array_t<double>& lambda_t, double dt, py::ssize_t n, double minval)
 {
-  const double* pl = no::cbegin<double>(lambda_t);
+  const double* pl = no::cbegin(lambda_t);
   size_t nl = lambda_t.size();
 
   // What is the optimal lambda_u? For now largest value
@@ -157,7 +157,7 @@ py::array_t<double> no::MonteCarlo::first_arrival(const py::array_t<double>& lam
   double lambda_i;
 
   py::array_t<double> times(static_cast<size_t>(n));
-  double* pt = no::begin<double>(times);
+  double* pt = no::begin(times);
   double tmax = (nl - 1) * dt;
 
   for (size_t i = 0; i < static_cast<size_t>(n); ++i)
@@ -186,7 +186,7 @@ py::array_t<double> no::MonteCarlo::next_arrival(const py::array_t<double>& star
 {
   size_t n = startingpoints.size();
 
-  const double* pl = no::cbegin<double>(lambda_t);
+  const double* pl = no::cbegin(lambda_t);
   size_t nl = lambda_t.size();
   double tmax = (nl - 1) * dt;
 
@@ -195,12 +195,12 @@ py::array_t<double> no::MonteCarlo::next_arrival(const py::array_t<double>& star
   double lambda_i;
 
   py::array_t<double> times(n);
-  double* pt = no::begin<double>(times);
+  double* pt = no::begin(times);
 
   for (size_t i = 0; i < n; ++i)
   {
     // account for any deterministic time lag (e.g. 9 months between births)
-    double offset = no::at<double>(startingpoints, {static_cast<py::ssize_t>(i)}) + minsep;
+    double offset = no::at(startingpoints, {static_cast<py::ssize_t>(i)}) + minsep;
     // skip if we haven't actually arrived at the state to transition from
     if (no::time::isnever(offset))
     {
