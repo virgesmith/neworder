@@ -1,5 +1,6 @@
-
 # Derivative Pricing
+
+This example showcases how to run parallel simulations, each with slightly different input data, in order to compute sensitivities to the input paramters.
 
 ## Background
 
@@ -13,17 +14,20 @@ In order to calculate the fair value of a derivative contract one can simulate a
 \frac{dS}{S} = (r-q)dt + \sigma dW
 \]
 
-where \(S\) is price, \(r\) is risk-free rate, \(q\) is continuous dividend yield, \(\sigma\) is volatility and \(dW\) a Wiener process (a 1-d Brownian motion).
+where \(S\) is price, \(r\) is risk-free rate, \(q\) is continuous dividend yield, \(\sigma\) is volatility and \(dW\) a Wiener process (a 1-d Brownian motion), and the value of the option \(V\) is
 
-We then take the mean of the derivative price for
-each simulated path to get the value of the derivative _at expiry_. Finally this price is discounted to get the current fair value.
+\[
+V(0) = e^{-rT}.\text{max}\left( S(T)-K,0 \right)
+\]
 
-We can easily frame a derivative derivative pricing problem in terms of a microsimulation model:
+We can compute this by simulating paths to get \(S(T)\) and taking the mean. The first term above discounts back to \(t=0\), so we get the *current* fair value.
 
-- start with an intial \(t=0\) population of \(N\) (identical) underlying prices. Social scientists could refer to this as a 'cohort'.
-- evolve each price to option expiry time \(t=T\) using Monte-Carlo simulation
-- compute the option prices for each of the underlyings and take the mean
-- discount the option price back to valuation date \(t=0\)
+We can easily frame this derivative pricing problem in terms of a microsimulation model:
+
+- start with an intial \(t=0\) population of \(N\) (identical) underlying prices \(S(0)\). Social scientists could refer to this as a 'cohort'.
+- evolve each price to option expiry time \(S(T)\) using Monte-Carlo simulation
+
+We then compute the mean of the discounted option prices for each of the underlying prices to get the result.
 
 For this simple option we can also compute an analytic fair value under the Black-Scholes model, and use this to determine the accuracy of the Monte-Carlo simulation. We also demonstrate the capabilities neworder has in terms of sensitivity analysis, by using multiple processes to compute finite-difference approximations to the following risk measures:
 
