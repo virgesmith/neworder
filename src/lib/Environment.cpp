@@ -82,8 +82,9 @@ int64_t no::Environment::unique_index()
   return current;
 }
 
-no::Environment::Environment() : m_rank(-1), m_size(-1), m_verbose(false), m_checked(false)
+no::Environment::Environment() : m_rank(-1), m_size(-1), m_verbose(false), m_checked(false), m_halt(false)
 {
+  // Note: m_unique_id is only set when MPI env is resolved
 } 
 
 no::Environment::~Environment() 
@@ -102,7 +103,7 @@ std::string no::Environment::get_error() noexcept
     PyErr_Fetch(&exc, &val, &tb);
     PyErr_NormalizeException(&exc, &val, &tb);
 
-    py::handle hexc(exc), hval(/*py::allow_null*/(val)), htb(/*py::allow_null*/(tb));
+    py::handle hexc(exc), hval(/*py::allow_null(*/val/*)*/), htb(/*py::allow_null(*/tb/*)*/);
 
     PyErr_Clear();
     if(!hval)

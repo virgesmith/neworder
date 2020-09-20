@@ -27,6 +27,12 @@ void no::Model::step()
   throw no::NotImplementedError("Model.step() method must be overridden");
 }
 
+void no::Model::halt()
+{
+  no::log("sending halt signal to Model::run()");
+  no::getenv().m_halt = true;
+}
+
 bool no::Model::check()
 {
   // verbose only
@@ -64,8 +70,18 @@ bool no::Model::run(py::object& model_subclass)
     double t = base.timeline().time();
     int timeindex = base.timeline().index();
 
-    no::log("t=%%(%%) %%.step()"_s % t % timeindex % subclass_name );
+    no::log("t=%%(%%) %%.step()"_s % t % timeindex % subclass_name);
     model_subclass.attr("step")();
+
+    // check python hasn't signalled early termination
+    if (no::getenv().m_halt)
+    {
+      no::log("t=%%(%%) received halt signal"_s % t % timeindex);
+      no::getenv().m_halt = false;
+      // reset the flag
+      break;
+    }
+
 
     // call the check method and stop if necessary
     if (no::getenv().m_checked)

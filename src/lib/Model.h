@@ -33,6 +33,9 @@ public:
   virtual bool check(); // optional
   virtual void checkpoint(); // compulsory
 
+  // set the halt flag
+  void halt();
+
 private:
   Timeline m_timeline;
   MonteCarlo m_monteCarlo;

@@ -192,6 +192,10 @@ const char* model_checkpoint_docstr = R"docstr(
     Default behaviour raises NotImplementedError. 
     This function should not be called directly, it is used by the Model.run() function 
 )docstr";
+const char* model_halt_docstr = R"docstr(
+    Signal to the model to stop execution at the end of the current timestep, e.g. if some convergence criterion has been met.
+    For trapping exceptional/error conditions, prefer to return False from the Model.check() function 
+)docstr";
 
 // MPI 
 

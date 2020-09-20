@@ -115,6 +115,10 @@ class Schelling(neworder.Model):
     self.img.set_array(self.pop[-1])
     plt.pause(0.1)
 
+    # finish early if everyone satisfied
+    if len(unsat) == 0:
+      self.halt()
+
   def checkpoint(self):
     pass
     # self.animate()

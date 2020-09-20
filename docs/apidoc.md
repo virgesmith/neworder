@@ -52,6 +52,20 @@ This function should not be called directly, it is used by the Model.run() funct
 
 
 
+### `neworder.Model.halt`
+
+!!! note "instance method"
+
+```python
+halt(self: neworder.Model) -> None
+```
+
+
+Signal to the model to stop execution at the end of the current timestep, e.g. if some convergence criterion has been met.
+For trapping exceptional/error conditions, prefer to return False from the Model.check() function 
+
+
+
 ### `neworder.Model.mc`
 
 !!! note "instance method"

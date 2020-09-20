@@ -74,6 +74,9 @@ private:
 
   // unique counter
   int64_t m_uniqueIndex;
+
+  // (non-error condition) halt flag
+  bool m_halt;
 };
 
 // syntactic sugar

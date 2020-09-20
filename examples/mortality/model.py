@@ -15,7 +15,7 @@ max_age = 100.0
 
 # Get some mortality rate data
 mortality_hazard_file = "examples/shared/NewETHPOP_mortality.csv"
-population_size = 1000000
+population_size = 100000
 
 neworder.log("Population = %d" % population_size)
 
