@@ -109,17 +109,3 @@ mpiexec -n <N> python examples/<name>/model.py
 
 See the Examples section for more details.
 
-### Package
-
-#### Pip
-
-TODO...
-
-#### Conda
-
-TODO...
-
-#### Docker
-
-Use the supplied [Dockerfile](./Dockerfile) and build, tag and push as required.
-

@@ -58,4 +58,3 @@ conda install -c conda-forge neworder
 
 To get started first see the detailed documentation [here](https://neworder.readthedocs.io). Then, check out "Hello World"
 and the other examples.
-

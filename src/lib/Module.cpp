@@ -51,12 +51,10 @@ PYBIND11_MODULE(neworder, m)
    .def("checked", no::Environment::checked, checked_docstr, "checked"_a = true);
 
   // time-related module
-  m.attr("time") = py::module("time")
+  m.attr("time") = py::module("time", "Temporal values and comparison")
    .def("distant_past", no::time::distant_past, time_distant_past_docstr)
    .def("far_future", no::time::far_future, time_far_future_docstr)
    .def("never", no::time::never, time_never_docstr)
-  //  .def("isnever", py::overload_cast<double>(no::time::isnever), time_isnever_docstr, "t"_a) // scalar 
-  //  .def("isnever", py::overload_cast<const py::array_t<double>&>(no::time::isnever_a), time_isnever_a_docstr, "y"_a); // array
    .def("isnever", no::time::isnever, time_isnever_docstr, "t"_a) // scalar 
    .def("isnever", no::time::isnever_a, time_isnever_a_docstr, "t"_a); // array
 

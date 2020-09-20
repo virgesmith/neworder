@@ -532,11 +532,7 @@ unique_index(n: int) -> numpy.ndarray[int64]
 ```
 
 
-Generates an array of unique values, even across multiple processes, that can be used to uniquely index multiple dataframes.
-Args:
-n: The number of required index values.
-Returns:
-The unique index values
+Generates an array of n unique values, even across multiple processes, that can be used to unambiguously index multiple dataframes.
 
 
 
@@ -676,7 +672,7 @@ The function values (log-odds)
 
 !!! note "module"
 
-__doc__ empty
+temporal values and comparison
 
 ### `neworder.time.distant_past`
 
@@ -688,8 +684,6 @@ distant_past() -> float
 
 
 Returns a value that compares less than any other value but itself and "never"
-Returns:
--inf
 
 
 
@@ -703,8 +697,6 @@ far_future() -> float
 
 
 Returns a value that compares greater than any other value but itself and "never"
-Returns:
-+inf
 
 
 
@@ -724,23 +716,15 @@ Overloaded function.
 
 Returns whether the value of t corresponds to "never". As "never" is implemented as a floating-point NaN, 
 direct comparison will always fail, since NaN != NaN. 
-Args:
-t: The time.
-Returns:
-True if t is never, False otherwise
 
 
 ```python
- isnever(y: numpy.ndarray[float64]) -> numpy.ndarray[bool]
+ isnever(t: numpy.ndarray[float64]) -> numpy.ndarray[bool]
 ```
 
 
 Returns an array of booleans corresponding to whether the element of an array correspond to "never". As "never" is 
 implemented as a floating-point NaN, direct comparison will always fails, since NaN != NaN. 
-Args:
-t: The times.
-Returns:
-Booleans, True where corresponding input value is never, False otherwise
 
 
 
@@ -754,8 +738,6 @@ never() -> float
 
 
 Returns a value that compares unequal to any value, including but itself.
-Returns:
-nan
 
 
 

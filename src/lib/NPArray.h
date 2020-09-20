@@ -1,7 +1,7 @@
 #pragma once
 
 #include "NewOrder.h"
-#include "ArrayHelpers.h"
+#include <pybind11/numpy.h>
 
 #include <numeric>
 // "vectorised" functions operating on, and/or returning numpy arrays, using the generic helper functions in ArrayHelpers.h

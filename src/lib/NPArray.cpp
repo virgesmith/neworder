@@ -1,4 +1,5 @@
 #include "NPArray.h"
+#include "ArrayHelpers.h"
 #include "Timeline.h"
 
 // the vectorised (nparray) implementation of Timeline::isnever

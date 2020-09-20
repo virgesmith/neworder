@@ -207,38 +207,24 @@ const char* mpi_size_docstr = R"docstr(
 
 const char* time_distant_past_docstr = R"docstr(
     Returns a value that compares less than any other value but itself and "never"
-    Returns:
-        -inf
 )docstr";
 
 const char* time_far_future_docstr = R"docstr(
     Returns a value that compares greater than any other value but itself and "never"
-    Returns:
-        +inf
 )docstr";
 
 const char* time_never_docstr = R"docstr(
     Returns a value that compares unequal to any value, including but itself.
-    Returns:
-        nan
 )docstr";
 
 const char* time_isnever_docstr = R"docstr(
     Returns whether the value of t corresponds to "never". As "never" is implemented as a floating-point NaN, 
     direct comparison will always fail, since NaN != NaN. 
-    Args:
-        t: The time.
-    Returns:
-        True if t is never, False otherwise
 )docstr";
 
 const char* time_isnever_a_docstr = R"docstr(
     Returns an array of booleans corresponding to whether the element of an array correspond to "never". As "never" is 
     implemented as a floating-point NaN, direct comparison will always fails, since NaN != NaN. 
-    Args:
-        t: The times.
-    Returns:
-        Booleans, True where corresponding input value is never, False otherwise
 )docstr";
 
 // Statistical functions
@@ -281,11 +267,7 @@ const char* stats_logit_docstr = R"docstr(
 // Dataframe manipulation
 
 const char* df_unique_index_docstr = R"docstr(
-    Generates an array of unique values, even across multiple processes, that can be used to uniquely index multiple dataframes.
-    Args:
-        n: The number of required index values.
-    Returns:
-        The unique index values
+    Generates an array of n unique values, even across multiple processes, that can be used to unambiguously index multiple dataframes.
 )docstr";
 
 
