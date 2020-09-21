@@ -9,7 +9,7 @@ import time
 from plot import plot
 
 #neworder.verbose()
-# checks disabled to emphasis performance differences
+# checks disabled to emphasise performance differences
 neworder.checked(False)
 
 max_age = 100.0
@@ -34,4 +34,6 @@ neworder.run(mortality_continuous)
 end = time.perf_counter()
 neworder.log("Continuous model life expectancy = %f, exec time = %f" % (mortality_continuous.calc_life_expectancy(), end - start))
 
-plot(mortality_discrete.population, mortality_continuous.population)
+hist_file = "docs/examples/img/mortality_%dk.png" % (population_size//1000)
+anim_file = "docs/examples/img/mortality_hist_%dk.gif" % (population_size//1000)
+plot(mortality_discrete.population, mortality_continuous.population, hist_file, anim_file)

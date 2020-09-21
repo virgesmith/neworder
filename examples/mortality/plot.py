@@ -15,10 +15,11 @@ class Hist:
     ax.set_xlabel("Age at Death")
     ax.set_ylabel("Persons")
 
-    self.anim = animation.FuncAnimation(fig, self.__animate, interval=100, frames=numbins, repeat=True, repeat_delay=3000)
+    self.anim = animation.FuncAnimation(fig, self.__animate, interval=100, frames=numbins, repeat=False)
 
   def save(self, filename):
-    self.anim.save(filename, dpi=80, writer='imagemagick')
+    # there seems to be no way of preventing passing the loop once setting to the saved gif and it loops forever, which is very annoying
+    self.anim.save(filename, dpi=80, writer=animation.ImageMagickWriter(extra_args=["-loop", "1"]))
 
   def show(self):
     plt.show()
