@@ -20,8 +20,8 @@ def define_env(env):
   #   return "```some python code here: %s```\n" % s
 
   @env.macro
-  def include_snippet(filename, tag=None):
-    """ looks for code in <filename> between lines containing "#!<tag>" """
+  def include_snippet(filename, tag=None, show_filename=True):
+    """ looks for code in <filename> between lines containing "!<tag>!" """
     full_filename = os.path.join(env.project_dir, filename)
 
     _, file_type = os.path.splitext(filename)
@@ -41,12 +41,15 @@ def define_env(env):
         return "```ERROR %s (%s) too few/many tags (%s) for '%s'```" % (filename, code_style, len(span), tag)
       lines = lines[span[0]+1: span[1]]
 
-    #line_range = lines[start_line+1:end_line]
-    text = "".join(lines)
-    if code_style is not None:
-      return "```%s\n" % code_style + "".join(lines) + "```" 
+    if show_filename:
+      footer = "\n[file: **%s**]\n" % filename
     else:
-      return text
+      footer = ""
+    #line_range = lines[start_line+1:end_line]
+    if code_style is not None:
+      return "```%s\n" % code_style + "".join(lines) + "```" + footer
+    else:
+      return "".join(lines) + footer
 
 # if __name__ == "__main__":
 #   print(_include_snippet("examples/chapter1/model.py", "tag"))

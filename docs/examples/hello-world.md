@@ -2,9 +2,11 @@
 
 This simple example illustrates the basic model structure, how it all fits together and how it's executed by the framework.
 
+{{ include_snippet("./docs/examples/src.md", show_filename=False) }}
+
 ## Model Definition and Execution
 
-The framework runs a model via the `run` function, which takes an instance of a `Model` class. All models contain, at a minimum:
+The framework runs a model via the `neworder.run` function, which takes an instance of a `Model` class. All models contain, at a minimum:
 
 - an instance of `neworder.Timeline`
 - an instance of a `neworder.MonteCarlo` engine
@@ -71,8 +73,7 @@ which should result in something like
 To get a better idea of what's going on, uncomment the line containing `neworder.verbose()` and rerun the model. You'll get something like
 
 ```text
-[no 0/1]  neworder 0.0.6/module python 3.8.2 (default, Jul 16 2020, 14:00:26)  [GCC 9.3.0]
-[no 0/1]  model init: timeline=<neworder.Timeline start=0.000000 end=0.000000 checkpoints=[1] index=0> mc=<neworder.MonteCarlo seed=-8336252954299816065>
+[no 0/1]  neworder 0.0.6 model init: timeline=<neworder.Timeline start=0.000000 end=0.000000 checkpoints=[1] index=0> mc=<neworder.MonteCarlo seed=-6269278596024524741>
 [no 0/1]  starting model run. start time=0.000000
 [no 0/1]  t=0.000000(0) HelloWorld.modify(0)
 [no 0/1]  defaulted to no-op Model::modify()
@@ -80,7 +81,6 @@ To get a better idea of what's going on, uncomment the line containing `neworder
 [no 0/1]  defaulted to no-op Model::check()
 [no 0/1]  t=0.000000(1) HelloWorld.check() [ok]
 [no 0/1]  t=0.000000(1) HelloWorld.checkpoint()
-[py 0/1]  Hello from 0
 [py 0/1]  Hello from 3
 [py 0/1]  Hello from 4
 [py 0/1]  Hello from 6
@@ -158,4 +158,3 @@ Try re-running the model with different input parameters, or changing the seedin
 
 Then, check out some or all of the other examples...
 
-{{ include_snippet("./docs/examples/src.md") }}

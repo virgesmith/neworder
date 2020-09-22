@@ -28,6 +28,8 @@ During the simulation, at each timestep the check code computes and displays som
 
 At each checkpoint, the current population is written to a csv file.
 
+{{ include_snippet("./docs/examples/src.md", show_filename=False) }}
+
 ## Setup
 
 {{ include_snippet("examples/people/model.py") }}
@@ -63,5 +65,3 @@ PYTHONPATH=examples/shared python examples/people/model.py
 ```
 
 This 40 year simulation of an initial population of about 280,000 growing to over half a million (no exogenous constraints) executed in about 20s on a single core of a medium-spec machine.
-
-{{ include_snippet("./docs/examples/src.md") }}

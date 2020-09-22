@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import neworder
 
+# !disc_ctor!
 class PeopleDiscrete(neworder.Model):
   """ Persons sampled each represented as a row in a data frame """
   def __init__(self, mortality_hazard_file, n, max_age):
@@ -17,25 +18,34 @@ class PeopleDiscrete(neworder.Model):
     self.max_rate_age = max(self.mortality_hazard.DC1117EW_C_AGE) - 1
 
     #neworder.log(self.mortality_hazard.head())
-    self.population = pd.DataFrame(data={"alive": np.full(n, True),
-                                         "age": np.zeros(n),
-                                         "age_at_death": np.zeros(n)})
+    self.population = pd.DataFrame(index=neworder.df.unique_index(n),
+                                   data={"alive": True,
+                                         "age": 0.0,
+                                         "age_at_death": neworder.time.far_future()})
 
     self.max_age = max_age
+# !disc_ctor!
 
+  # !disc_step!
   def step(self):
     # kill off some people
     self.die()
     # age the living only
     alive = self.population.loc[self.population.alive].index
     self.population.loc[alive, "age"] = self.population.loc[alive, "age"] + self.timeline().dt()
+  # !disc_step!
 
   def check(self):
     neworder.log("pct alive = %f" % (100.0 * np.mean(self.population.alive)))
     return True
 
+  # !disc_checkpoint!
   def checkpoint(self):
-    pass
+    # ensure all people have died
+    assert np.sum(self.population.alive) == 0
+    # the calc life expectancy
+    self.life_expectancy = np.mean(self.population.age_at_death)
+  # !disc_checkpoint!
 
   def die(self):
     # using indexes to subset data as cannot store a reference to a subset of the dataframe (it just copies)
@@ -53,17 +63,13 @@ class PeopleDiscrete(neworder.Model):
 
     # kill off those who die before next timestep
     self.population.loc[newly_dead, "alive"] = False
+    # and set the age at death according to the stopping time above
     self.population.loc[newly_dead, "age_at_death"] = self.population.loc[newly_dead, "age"] + r[r<dt]
 
-  def calc_life_expectancy(self):
-    # ensure all people have died
-    assert np.sum(self.population.alive) == 0
-    return np.mean(self.population.age_at_death)
-
-
+# !cont_ctor!
 class PeopleContinuous(neworder.Model):
   """ Persons sampled each represented as a row in a data frame """
-  def __init__(self, mortality_hazard_file, n, max_age):
+  def __init__(self, mortality_hazard_file, n, dt):
     # Direct sampling doesnt require a timeline
     super().__init__(neworder.Timeline.null(), neworder.MonteCarlo.deterministic_identical_stream)
     # initialise cohort
@@ -73,19 +79,25 @@ class PeopleContinuous(neworder.Model):
     self.max_rate_age = max(self.mortality_hazard.DC1117EW_C_AGE) - 1
 
     #neworder.log(self.mortality_hazard.head())
-    self.population = pd.DataFrame(data={"age_at_death": np.zeros(n)})
+    self.population = pd.DataFrame(index=neworder.df.unique_index(n), 
+                                   data={"age_at_death": neworder.time.far_future()})
 
-    self.max_age = max_age
+    # the time interval of the mortality data values
+    self.dt = dt
+# !cont_ctor!
 
+  # !cont_step!
   def step(self):
-    self.population.age_at_death = self.mc().first_arrival(self.mortality_hazard.Rate.values, 1.0, len(self.population))
+    self.population.age_at_death = self.mc().first_arrival(self.mortality_hazard.Rate.values, self.dt, len(self.population))
+  # !cont_step!
 
+  # !cont_check!
   def check(self):
     # ensure all times of death are finite 
-    return self.population.age_at_death.isnull().sum() == 0    
+    return self.population.age_at_death.isnull().sum() == 0  
+  # !cont_check!
 
+  # !cont_checkpoint!
   def checkpoint(self):
-    pass
-
-  def calc_life_expectancy(self):
-    return np.mean(self.population.age_at_death)
+    self.life_expectancy = np.mean(self.population.age_at_death)
+  # !cont_checkpoint!

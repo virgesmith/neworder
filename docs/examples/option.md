@@ -1,6 +1,8 @@
 # Derivative Pricing
 
-This example showcases how to run parallel simulations, each with slightly different input data, in order to compute sensitivities to the input paramters.
+This example showcases how to run parallel simulations, each with slightly different input data, in order to compute sensitivities to the input parameters.
+
+{{ include_snippet("./docs/examples/src.md", show_filename=False) }}
 
 ## Background
 

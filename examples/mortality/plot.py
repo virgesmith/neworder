@@ -33,16 +33,19 @@ class Hist:
 
 
 def plot(pop_disc, pop_cont, filename=None, anim_filename=None):
-  #sns.set()
-  y1, x1 = np.histogram(pop_disc.age_at_death, int(max(pop_disc.age)))
+  bins = int(max(pop_disc.age_at_death.max(), pop_cont.age_at_death.max())) + 1
+  rng = (0.0, float(bins))
+  y1, x1 = np.histogram(pop_disc.age_at_death, bins, range=rng)
   plt.plot(x1[1:], y1)
-  y2, x2 = np.histogram(pop_cont.age_at_death, int(max(pop_disc.age)))
+  y2, x2 = np.histogram(pop_cont.age_at_death, bins, range=rng)
   plt.plot(x2[1:], y2)
   plt.title("Mortality model sampling algorithm comparison")
   plt.legend(["Discrete", "Continuous"])
+  plt.xlabel("Age at Death")
+  plt.ylabel("Persons")
 
   if filename is not None:
-    plt.savefig(filename)
+    plt.savefig(filename, dpi=80)
 
   h = Hist(pop_disc.age_at_death, int(max(pop_disc.age)))
   if anim_filename is not None:

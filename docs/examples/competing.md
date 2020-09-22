@@ -6,4 +6,4 @@ The figure below shows the distribution of up to four births (stacked) plus mort
 
 ![Competing Fertility-Mortality histogram](./img/competing_hist_100k.png)
 
-{{ include_snippet("./docs/examples/src.md") }}
+{{ include_snippet("./docs/examples/src.md", show_filename=False) }}

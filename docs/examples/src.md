@@ -1,5 +1,6 @@
-## Examples Source Code
+!!! note "Examples Source Code"
+    Source code for all the examples can be downloaded using one of the the links below:
 
-**[neworder-examples-src.tgz](./neworder-examples-src.tgz)** | **[neworder-examples-src.zip](./neworder-examples-src.zip)**
+    **[neworder-examples-src.tgz](./neworder-examples-src.tgz)** | **[neworder-examples-src.zip](./neworder-examples-src.zip)**
 
-(See the included file `requirements.txt` for dependencies.)
+    The contained file `requirements.txt` lists the package dependencies.

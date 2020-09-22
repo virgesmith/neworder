@@ -10,6 +10,8 @@ which has a mean, i.e. life expectancy, of \(\mu=1/\lambda\).
 
 The `neworder` implementation is as direct a port of the MODGEN model, as far as possible.
 
+{{ include_snippet("./docs/examples/src.md", show_filename=False) }}
+
 ## Input
 
 Here's the code that sets up and runs the model:
@@ -57,5 +59,3 @@ Some example output:
 [py 0/1] Age 100 survival rate = 24.7%
 ```
 and clearly a constant mortality rate isn't realistic as we see far more deaths at younger ages, and far less at older ages, than would be expected. The example [mortality](./mortality.md) introduces a model with a time-dependent mortality hazard rate and shows how the framework can very efficiently model this.
-
-{{ include_snippet("./docs/examples/src.md") }}

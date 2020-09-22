@@ -10,7 +10,9 @@ The states transition randomly with a fixed probability \(p\) at each timestep, 
 
 Finally, one process acquires the entire population and prints a summary of the state counts.
 
-## Setup (`model.py`)
+{{ include_snippet("./docs/examples/src.md", show_filename=False) }}
+
+## Setup
 
 Firstly, we import the necessary modules and check we are running in parallel mode:
 
@@ -25,7 +27,7 @@ As always, the neworder framework expects an instance of a model class, subclass
 
 So each process has an initial population of 100 individuals, each of which has a 1% probability of changing to another given state at each of the ten (unit) timesteps.
 
-## The Model (`parallel.py`)
+## The Model
 
 Here's the model constructor:
 
@@ -78,5 +80,3 @@ Results will vary as the random streams are not deterministic in this example, b
 5     96
 3     87
 ```
-
-{{ include_snippet("./docs/examples/src.md") }}
