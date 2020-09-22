@@ -87,4 +87,3 @@ The visualisations (see examples source code) show an animated histogram of the 
 and a comparison of the age to death distributions from the two implementations:
 
 ![Mortality rate comparison](./img/mortality_100k.png)
-

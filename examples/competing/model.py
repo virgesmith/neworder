@@ -2,28 +2,24 @@
 Competing risks - fertility & mortality
 """
 import neworder
-
+# model implementation
 from people import People
+# separate visualisation code
+from visualise import plot
 
-from visualise import stats, plot
+#neworder.verbose()
 
-neworder.verbose()
-
-# This is a continuous-time case-based model so no timeline is required...
-# ... but we do need a delta-t between entries in fertility/mortality data
+# create model
+# data are for white British women in a London Borough at 1 year time resolution
 dt = 1.0 # years
-
-# Choose a simple linearly increasing mortality rate: 0.1% aged 0 to 2.5% aged 100
-fertility_hazard_file = "examples/shared/NewETHPOP_fertility.csv"
-mortality_hazard_file = "examples/shared/NewETHPOP_mortality.csv"
+fertility_hazard_file = "examples/competing/ethpop_fertility_wbi.csv"
+mortality_hazard_file = "examples/competing/ethpop_mortality_wbi.csv"
 population_size = 100000
-lad = "E09000030"
-ethnicity = "WBI"
+pop = People(dt, fertility_hazard_file, mortality_hazard_file, population_size)
 
-pop = People(dt, fertility_hazard_file, mortality_hazard_file, lad, ethnicity, population_size)
-
+# run model
 neworder.run(pop)
 
-# visualise
+# visualise results
 plot(pop)
-stats(pop)
+
