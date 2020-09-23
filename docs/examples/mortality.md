@@ -4,6 +4,8 @@ We implement the example *The Life Table* from the second chapter of the book *M
 
 This example implments the model in two different ways: firstly a discrete case-based microsimulation, and again using a continuous sampling methodology, showcasing how the latter can be much more efficient. Rather than having a class to represent an individual, as would be standard in a MODGEN implementation, individuals are stored in a pandas `Dataframe` which provides fast iteration over the population.
 
+![Mortality histogram](./img/mortality_hist_100k_noloop.gif)
+
 {{ include_snippet("./docs/examples/src.md", show_filename=False) }}
 
 ## Inputs
@@ -80,10 +82,6 @@ with output like this
 
 which illustrates how much more efficient the continuous implementation is (about ten times faster). 
 
-The visualisations (see examples source code) show an animated histogram of the deaths:
-
-![Mortality histogram](./img/mortality_hist_100k_noloop.gif)
-
-and a comparison of the age to death distributions from the two implementations:
+The visualisations (see examples source code for details) show an animated histogram of the deaths (above), and a comparison of the age to death distributions from the two implementations:
 
 ![Mortality rate comparison](./img/mortality_100k.png)

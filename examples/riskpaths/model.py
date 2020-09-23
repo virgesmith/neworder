@@ -1,6 +1,6 @@
 """
 RiskPaths
-This will be a neworder implementation of the RiskPaths MODGEN model
+This is a neworder implementation of the RiskPaths MODGEN model
 
 See:
 https://www.statcan.gc.ca/eng/microsimulation/modgen/new/chap3/chap3
@@ -17,15 +17,20 @@ https://www.statcan.gc.ca/eng/microsimulation/modgen/new/chap4/chap4
 
 """
 import neworder
+from data import max_age
 from riskpaths import RiskPaths
+from visualisation import plot
 
 # serial mode
-neworder.verbose()
+#neworder.verbose()
 
 population_size = 100000
 
-timeline = neworder.Timeline(0, 100, [1])
+# single step (continuous model)
+timeline = neworder.Timeline(0, max_age, [1])
 
 riskpaths = RiskPaths(timeline, population_size)
 
 neworder.run(riskpaths)
+
+plot(riskpaths)

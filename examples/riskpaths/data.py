@@ -1,7 +1,6 @@
 
 import numpy as np
 from enum import Enum
-from helpers import *
 
 # classification UNION_STATE
 class UnionState(Enum):
@@ -16,7 +15,18 @@ class Parity(Enum):
   CHILDLESS = 0
   PREGNANT = 1
 
-# Dynamics parameters from https://github.com/virgesmith/ompp/blob/master/models/RiskPaths/parameters/Default/RiskPaths.dat
+
+def partition(start, finish, step=1):
+  """ Helper function to return an inclusive equal-spaced range, i.e. finish will be the last element """
+  # ensure finish is always included
+  return np.append(np .arange(start, finish, step), finish)
+
+# Dynamics parameters 
+
+# Age of Consent at which the fertility rates begin
+min_age = 15.0
+max_age = 100.0
+
 # //LABEL(RiskPaths) RiskPaths
 # parameters {
 # 	logical	CanDie = FALSE; // Switch to turn mortality on
@@ -26,16 +36,14 @@ class Parity(Enum):
 # 		(100) .01, 1,
 # 	};
 
-# Age of Consent at which the fertility rates begin
-min_age = 15.0
-max_age = 100.0
-
+# flat mortality up to age 100 in 1y intervals
 mortality_rate = np.full(int(max_age), 0.01)
 mortality_rate[-1] = 1.0
+mortality_delta_t = 1.0
 
 # fertility rates given in 2.5y chunks from 15 to 40 incl
-delta_t = 2.5
-AgeintState = partition(min_age, 40, delta_t)
+fertility_delta_t = 2.5
+AgeintState = partition(min_age, 40, fertility_delta_t)
 
 # 	 // Age baseline for first pregnancy
 # 	double	AgeBaselinePreg1[AGEINT_STATE] = {
@@ -72,7 +80,7 @@ r_preg = np.array([0.0648, 1.0000, 0.2523, 0.0648, 0.8048, 0.0648])
 
 # UnionDuration = [1, 3, 5, 9, 13]
 # currently need to modify above to have equal spacing
-delta_t_u = 2.0
+union_delta_t = 2.0
 #                         1          3          5          7          9         11         13
 r_u2f = np.array([0.1995702, 0.1353028, 0.1099149, 0.1099149, 0.0261186, 0.0261186, 0.0456905])
 
