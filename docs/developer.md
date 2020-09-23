@@ -4,15 +4,15 @@
 
 In order to make `neworder` easier to package, distribute and integrate with other packages/frameworks, it is now provided as a python module. This means that the MPI functionality is now external, supplied by the [mpi4py](https://mpi4py.readthedocs.io/en/stable/) package.
 
-The original embedded configuration is still provided (on linux platforms only). See the branch called "embedded".
+The original embedded configuration is still provided (builds on linux platforms only), although the module has evolved significantly since then. See the "embedded" branch if you're interested.
 
 ## Requirements
 
-`neworder` works on 64 bit linux, OSX and Windows platforms, and requires python 3.6 or higher. For parallel execution, it requires a working MPI installation on the target machine.
+`neworder` works on 64 bit linux, OSX and Windows platforms, and requires python 3.6 or higher. For parallel execution, it requires an MPI environment (e.g. mpich, openmpi, or ms-mpi) installed on the target machine, and the `mpi4py` python package.
 
 ## Repo
 
-The source code is on [github](https://github.com/virgesmith/neworder).
+The source code is on [github](https://github.com/virgesmith/neworder). To contribute, please fork the repository and submit a PR.
 
 ## Dependencies
 
@@ -71,9 +71,19 @@ python -c "import neworder"
 
 ### Conda
 
-TODO...
+```
+conda create -q -n neworder-env python=3.8
+conda activate neworder-env      
+conda install gxx_linux-64 mpich numpy pandas pybind11 pytest mpi4py
+```
 
-### Test
+Then, as above
+
+```bash
+python setup.py install
+```
+
+## Test
 
 Tests use the `pytest` framework and can be invoked serially with either
 
@@ -91,9 +101,10 @@ mpiexec -n 2 pytest
 mpiexec -n 2 python setup.py test
 ```
 
-Important note: if the parallel tests are invoked without an installed `mpi4py` package, they will run as if in serial mode which won't invoke the parallel tests. If in doubt check the test log for warnings.
+!!! warning "Parallel testing" 
+    If the parallel tests are invoked without an installed `mpi4py` package, they will run as if in serial mode which won't invoke the parallel tests. If in doubt check the test log for warnings.
 
-### Run Examples
+## Running the Examples
 
 Some examples are configured to run as a single process only and some must have multiple processes (i.e. MPI). If the latter, prefix the python call with `mpiexec -n <N>`:
 
@@ -107,5 +118,5 @@ or
 mpiexec -n <N> python examples/<name>/model.py
 ```
 
-See the Examples section for more details.
+See the Examples section for details on each example.
 

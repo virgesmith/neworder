@@ -1,6 +1,7 @@
 # macros for mkdocs-macros-plugin
 
 import os
+import requests
 
 _inline_code_styles = {
   ".py": "python",
@@ -18,6 +19,27 @@ def define_env(env):
   # @env.macro
   # def test(s):
   #   return "```some python code here: %s```\n" % s
+
+  @env.macro
+  def insert_version():
+    with open("./VERSION") as f:
+      return f.readline().rstrip()
+
+  @env.macro
+  def insert_doi():
+    response = requests.get('https://zenodo.org/api/records', params={'q': '4031821'})
+
+    if response.status_code == 200:
+      result = response.json()
+      if "hits" in result and \
+         "hits" in result["hits"] and \
+         len(result["hits"]["hits"]) > 0 and \
+         "doi" in result["hits"]["hits"][0]:
+        return result["hits"]["hits"][0]["doi"]
+      else:
+        return "[json error retrieving doi]"
+    return "[http error %d retrieving doi]" % response.status_code
+
 
   @env.macro
   def include_snippet(filename, tag=None, show_filename=True):
