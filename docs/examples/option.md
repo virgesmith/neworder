@@ -8,7 +8,7 @@ This example showcases how to run parallel simulations, each with slightly diffe
 
 Monte-Carlo simulation is a [common technique in quantitative finance](https://en.wikipedia.org/wiki/Monte_Carlo_methods_in_finance).
 
-A [European call option](https://en.wikipedia.org/wiki/Call_option) is a derivative contract that grants the holder the right (but not the obligation) to buy an underlying stock S at a fixed "strike" price K at some given future time T (the expiry). Similarly, a put option grants the right (but not obligation) to sell, rather than buy, at a fixed price.
+A [European call option](https://en.wikipedia.org/wiki/Call_option) is a derivative contract that grants the holder the right (but not the obligation) to buy an underlying stock \(S\) at a fixed "strike" price \(K\) at some given future time \(T\) (the expiry). Similarly, a put option grants the right (but not obligation) to sell, rather than buy, at a fixed price.
 
 In order to calculate the fair value of a derivative contract one can simulate a (large) number of paths the underlying stock may take (according to current market conditions. The model assumes that the evolution of the underlying is given by the stochastic differential equation (SDE):
 
@@ -49,7 +49,7 @@ The `model.py` file sets up the run, providing input data, constructing, and the
 
 ### Constructor
 
-The constructor takes copies of the parameters, and defines a simple timeline [0, T] corresponding to [valuation date, expiry date] and a single timestep, which is all we require for this example. It initialises the base class with the timeline, and specifies that each process use the same random stream (which reduces noise in our risk calculations):
+The constructor takes copies of the parameters, and defines a simple timeline \([0, T]\) corresponding to the valuation and expiry dates, and a single timestep, which is all we require for this example. It initialises the base class with the timeline, and specifies that each process use the same random stream (which reduces noise in our risk calculations):
 
 {{ include_snippet("examples/option/black_scholes.py", "constructor") }}
 

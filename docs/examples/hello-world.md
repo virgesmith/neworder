@@ -151,10 +151,8 @@ and finally the model reports its status and execution time:
 [no 0/1]  SUCCESS exec time=0.001141s
 ```
 
-
 ## Next steps
 
 Try re-running the model with different input parameters, or changing the seeding strategy (to e.g. `neworder.MonteCarlo.deterministic_independent_stream`) for reproducible results.
 
 Then, check out some or all of the other examples...
-

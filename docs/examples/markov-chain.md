@@ -35,4 +35,3 @@ The model takes about 45s to run (depending on platform). Changing `MarkovChain.
 ## Output
 
 ![population evolution](./img/markov-chain.png)
-

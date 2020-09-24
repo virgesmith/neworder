@@ -71,9 +71,9 @@ python -c "import neworder"
 
 ### Conda
 
-```
+```bash
 conda create -q -n neworder-env python=3.8
-conda activate neworder-env      
+conda activate neworder-env
 conda install gxx_linux-64 mpich numpy pandas pybind11 pytest mpi4py
 ```
 
@@ -119,4 +119,3 @@ mpiexec -n <N> python examples/<name>/model.py
 ```
 
 See the Examples section for details on each example.
-

@@ -8,6 +8,7 @@ import neworder
 from data import UnionState, Parity
 import data
 
+# !ctor!
 class RiskPaths(neworder.Model):
   def __init__(self, timeline, n):
 
@@ -20,13 +21,16 @@ class RiskPaths(neworder.Model):
                                          "Parity": Parity.CHILDLESS,
                                          "Unions": 0,
                                         })
+# !ctor!
 
+  # !step!
   def step(self):
 
     # first sample union state transitions, which influence pregnancy
     self.__union()
     # now sample state-dependent pregnancies
     self.__pregnancy()
+  # !step!
 
   def __union(self):
 
@@ -52,9 +56,11 @@ class RiskPaths(neworder.Model):
     self.population.Unions = (~neworder.time.isnever(self.population["T_Union1Start"].values)).astype(int) \
                            + (~neworder.time.isnever(self.population["T_Union2Start"].values)).astype(int)
 
+  # !checkpoint!
   def checkpoint(self):
     neworder.log("mean unions = %f" % np.mean(self.population.Unions))
     neworder.log("pregnancy ratio = %f" % np.mean(self.population.Parity == Parity.PREGNANT))
+  # !checkpoint!
 
   def __pregnancy(self):
     # We're interested in the first pregnancy that occurs for each individual

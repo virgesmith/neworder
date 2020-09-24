@@ -34,7 +34,7 @@ def hybrid_seeder(rank):
 
 or, as a lambda:
 
-```
+```python
 hybrid_seeder = lambda r: (r % 2) + 12345
 ```
 

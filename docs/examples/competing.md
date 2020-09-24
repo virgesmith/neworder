@@ -39,4 +39,3 @@ The figures below show the distribution of up to four births (stacked) plus mort
 and the distribution of the number of children born to the cohort:
 
 ![Births distribution](./img/competing_births_100k.png)
-
