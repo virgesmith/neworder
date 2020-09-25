@@ -166,11 +166,4 @@ py::array_t<R> binary_op(const py::array_t<A0>& arg0, const py::array_t<A1>& arg
   return result;
 }
 
-// template<typename T>
-// py::array_t<T> zeros(const std::initializer_list<py::ssize_t>& shape)
-// {
-//   py::array_t<T> a(shape);
-//   return fill(a, T(0));
-// }
-  
 }
