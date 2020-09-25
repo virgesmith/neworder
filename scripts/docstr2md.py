@@ -2,7 +2,7 @@
 import importlib
 
 module_name = "neworder"
-md = "docs/apidoc.md"
+md = "docs/api.md"
 
 type_mapping = {
   "<class 'pybind11_builtins.pybind11_type'>": "class",
@@ -19,7 +19,7 @@ def format_overloads(lines):
 
 def format_heading(l, a, t):
   typestring = '!!! note "%s"\n\n' % t
-  return "\n%s `%s`\n\n%s" % ("#"*l, ".".join(a), typestring)
+  return "%s `%s`\n\n%s" % ("#"*l, ".".join(a), typestring)
 
 def format_docstr(m, t):
   if not m.__doc__:
@@ -51,9 +51,6 @@ def recurse_attrs(m, parents, l, f):
 module = importlib.import_module(module_name)
 
 with open(md, "w") as f:
+  f.write("# API Reference\n")
   recurse_attrs(module, ["neworder"], 2, f)
 
-# attrs = [a for a in dir(module) if a[:2] != "__"]
-
-# for a in attrs:
-#   print(a, type(getattr(module, a)), getattr(module, a).__doc__)

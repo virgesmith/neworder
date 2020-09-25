@@ -61,6 +61,45 @@ def test_seeders():
   m = no.Model(no.Timeline.null(), seeder)
   assert m.mc().seed() == no.mpi.rank() + 1
 
+def _assert_throws(f, e):
+  try:
+    f()
+  except e:
+    pass
+  else:
+    assert False, "expected exception %s not thrown" % e
+
+def test_hazard():
+  m = no.Model(no.Timeline.null(), no.MonteCarlo.deterministic_identical_stream)
+
+  assert np.all(m.mc().hazard(0.0,10) == 0.0)
+  assert np.all(m.mc().hazard(1.0,10) == 1.0)
+
+  _assert_throws(lambda: m.mc().hazard(-0.1, 10), ValueError)    
+  _assert_throws(lambda: m.mc().hazard( 1.1, 10), ValueError)    
+  _assert_throws(lambda: m.mc().hazard([-0.1, 0.5]), ValueError)    
+  _assert_throws(lambda: m.mc().hazard([0.1, 1.2]), ValueError)    
+
+def test_stopping():
+  m = no.Model(no.Timeline.null(), no.MonteCarlo.deterministic_identical_stream)
+
+  assert np.all(m.mc().stopping(0.0,10) == no.time.far_future())
+
+  _assert_throws(lambda: m.mc().stopping(-0.1, 10), ValueError)    
+  _assert_throws(lambda: m.mc().stopping( 1.1, 10), ValueError)    
+  _assert_throws(lambda: m.mc().stopping([-0.1, 0.5]), ValueError)    
+  _assert_throws(lambda: m.mc().stopping([0.1, 1.2]), ValueError)   
+
+def test_arrivals_validation():
+  m = no.Model(no.Timeline.null(), no.MonteCarlo.deterministic_identical_stream)
+  assert np.all(no.time.isnever(m.mc().first_arrival([0.0,0.0], 1.0, 10)))
+  _assert_throws(lambda: m.mc().first_arrival([-1.0,0.0], 1.0, 10), ValueError)    
+  assert np.all(no.time.isnever(m.mc().next_arrival(np.zeros(10), [0.0,0.0], 1.0)))
+  _assert_throws(lambda: m.mc().next_arrival(np.zeros(10), [-1.0,0.0], 1.0), ValueError)
+
+  _assert_throws(lambda: m.mc().arrivals([-1.0,0.0], 1.0, 10, 0.0), ValueError)
+  _assert_throws(lambda: m.mc().arrivals([1.0,1.0], 1.0, 10, 0.0), ValueError)
+
 def _test_mc_serial(model):
   mc = model.mc()
   assert mc.seed() == 19937

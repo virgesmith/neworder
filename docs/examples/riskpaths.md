@@ -18,11 +18,11 @@ The input data is basically refomatted versions of the original inputs (commente
 
 ## Implementation
 
-The model implementation is in continuous time, unlike the original MODGEN implementation. Firstly age at death is sampled for the population, then the time(s) of the union transitions. This is done in the model constructor:
+The model implementation is in continuous time, unlike the original MODGEN implementation. Firstly, age at death is sampled for the population, then the time(s) of the union transitions. This former is done in the model constructor:
 
 {{ include_snippet("./examples/riskpaths/riskpaths.py", "ctor") }}
 
-The are no branching transitions, so the times of the events (should they occur) can be sampled directly. The possible transitions, all of which have an impact on the fertility rate, are:
+As there are no branching transitions, the times of the events (should they occur) can be sampled directly. The possible transitions, all of which have an impact on the fertility rate, are:
 
 - enter first union, a fixed length "honeymoon" period during which fertility is highest
 - enter second phase of first union
@@ -48,3 +48,5 @@ simply prints a couple of summary statistics:
 [py 0/1]  mean unions = 0.923190
 [py 0/1]  pregnancy ratio = 0.467840
 ```
+
+The histogram above was generated with code that can be found in the examples, see the links above.

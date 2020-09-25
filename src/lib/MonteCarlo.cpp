@@ -9,6 +9,38 @@
 #include <algorithm>
 #include <cmath>
 
+namespace {
+
+void validate_prob(double prob)
+{
+  if (prob < 0.0 || prob > 1.0)
+  {
+    throw py::value_error("probabilities must be in [0,1], got %%"_s % prob);
+  }
+}
+
+void validate_prob(const py::array_t<double>& prob)
+{
+  std::for_each(no::cbegin(prob), no::cend(prob), [](double p) { 
+    if (p < 0.0 || p > 1.0)
+    {
+      throw py::value_error("probabilities must be in [0,1], got %%"_s % p);
+    }
+  });
+}
+
+void validate_lambda(const py::array_t<double>& lambda)
+{
+  std::for_each(no::cbegin(lambda), no::cend(lambda), [](double l) { 
+    if (l < 0.0)
+    {
+      throw py::value_error("hazard rates must be in >=0, got %%"_s % l);
+    }
+  });
+}
+
+}
+
 
 // helper functions for basic seeding strategies
 int64_t no::MonteCarlo::deterministic_independent_stream(int r)
@@ -63,32 +95,39 @@ py::array_t<double> no::MonteCarlo::ustream(py::ssize_t n)
 // simple hazard constant probability 
 py::array_t<double> no::MonteCarlo::hazard(double prob, py::ssize_t n)
 {
+  validate_prob(prob);
   return no::make_array<int>({n}, [&]() { return (u01() < prob) ? 1 : 0; });
 }
 
 // hazard with varying probablities 
 py::array_t<double> no::MonteCarlo::hazard(const py::array_t<double>& prob)
 {
+  validate_prob(prob);
   return no::unary_op<int, double>(prob, [this](double p){ return u01() < p ? 1 : 0; });
 }
 
 // computes stopping times 
 py::array_t<double> no::MonteCarlo::stopping(double prob, py::ssize_t n)
 {
+  validate_prob(prob);
   double rprob = 1.0 / prob;
 
+  // if p=0 will return no::time::far_future() (NOT no::time::never())
+  // the argument being that stopping is an event that must happen, as opposed to an arrival, which might not
   return no::make_array<double>({n}, [&]() { return -::log(u01()) * rprob; });
 }
 
 py::array_t<double> no::MonteCarlo::stopping(const py::array_t<double>& prob)
 {
+  validate_prob(prob);
   return no::unary_op<double, double>(prob, [this](double p) { return -::log(u01()) / p; });
 }
 
 
 // multiple-arrival (0+) process 
-py::array_t<double> no::MonteCarlo::arrivals(const py::array_t<double>& lambda_t, double dt, double gap, py::ssize_t n)
+py::array_t<double> no::MonteCarlo::arrivals(const py::array_t<double>& lambda_t, double dt, py::ssize_t n, double gap)
 {
+  validate_lambda(lambda_t);
   const double* pl = no::cbegin(lambda_t);
   size_t nl = lambda_t.size();
 
@@ -149,11 +188,13 @@ py::array_t<double> no::MonteCarlo::arrivals(const py::array_t<double>& lambda_t
 
 py::array_t<double> no::MonteCarlo::first_arrival(const py::array_t<double>& lambda_t, double dt, py::ssize_t n, double minval)
 {
+  validate_lambda(lambda_t);
   const double* pl = no::cbegin(lambda_t);
   size_t nl = lambda_t.size();
 
   // What is the optimal lambda_u? For now largest value
   double lambda_u = *std::max_element(pl, pl + nl);
+
   double lambda_i;
 
   py::array_t<double> times(static_cast<size_t>(n));
@@ -184,6 +225,7 @@ py::array_t<double> no::MonteCarlo::first_arrival(const py::array_t<double>& lam
 // if the state hasn't been arrived at (no::never())
 py::array_t<double> no::MonteCarlo::next_arrival(const py::array_t<double>& startingpoints, const py::array_t<double>& lambda_t, double dt, bool relative, double minsep)
 {
+  validate_lambda(lambda_t);
   size_t n = startingpoints.size();
 
   const double* pl = no::cbegin(lambda_t);

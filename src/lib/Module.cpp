@@ -112,7 +112,7 @@ PYBIND11_MODULE(neworder, m)
                      "lambda"_a)
     .def("arrivals", &no::MonteCarlo::arrivals, 
                      mc_arrivals_docstr,
-                     "lambda"_a , "dt"_a, "mingap"_a, "n"_a)
+                     "lambda"_a , "dt"_a, "n"_a, "mingap"_a)
     .def("first_arrival", &no::MonteCarlo::first_arrival, 
                           mc_first_arrival_docstr,
                           "lambda"_a, "dt"_a, "n"_a, "minval"_a)

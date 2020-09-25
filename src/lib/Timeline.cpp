@@ -98,13 +98,13 @@ std::string no::Timeline::repr() const
 // returns a floating point number that compares less than any other number
 double no::time::distant_past()
 {
-  return -std::numeric_limits<double>::max();
+  return -std::numeric_limits<double>::infinity();
 }
 
 // returns a floating point number that compares greater than any other number
 double no::time::far_future()
 {
-  return std::numeric_limits<double>::max();
+  return std::numeric_limits<double>::infinity();
 }
 
 // returns a floating point number that compares unequal to (and unordered w.r.t) any other number

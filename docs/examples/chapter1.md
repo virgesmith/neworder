@@ -3,7 +3,7 @@
 This example is based on the example in the introductory chapter of [*Microsimulation and Population Dynamics*](../references.md). This is a simple example - a basic cohort model using continuous-time case-based simulation of mortality (only) for a homogeneous population, using a constant mortality hazard rate. In other words, age at death is sampled from an exponential distribution
 
 \[
-p(y)=\lambda e^{-\lambda y}
+p(t)=\lambda e^{-\lambda t}
 \]
 
 which has a mean, i.e. life expectancy, of \(\mu=1/\lambda\).
