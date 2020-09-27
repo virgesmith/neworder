@@ -52,6 +52,24 @@ pip install neworder
 conda install -c conda-forge neworder
 ```
 
+### Docker
+
+The docker image contains all the examples, and should be run interactively. Some of the examples require permission to connect to the host's graphical display.
+
+``` 
+docker pull virgesmith/neworder
+xhost +
+docker run -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=$DISPLAY -it virgesmith/neworder
+```
+
+NB The above works on ubuntu but may require modification on other OSs.
+
+Then in the container, e.g.
+
+```
+python examples/mortality/model.py
+```
+
 [//]: # (!readme!)
 
 ## Documentation

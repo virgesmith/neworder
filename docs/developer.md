@@ -83,6 +83,15 @@ Then, as above
 python setup.py install
 ```
 
+### Docker
+
+```bash
+docker build -t <image-name> .
+docker run -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=$DISPLAY -it <image-name>
+```
+
+which may require `xhost +` on the host to enable docker to connect to the display manager. See `scripts/run_container.sh`.
+
 ## Test
 
 Tests use the `pytest` framework and can be invoked serially with either
