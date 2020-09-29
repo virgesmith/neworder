@@ -92,6 +92,33 @@ py::array_t<double> no::MonteCarlo::ustream(py::ssize_t n)
   return no::make_array<double>({n}, [this](){ return u01(); });
 }
 
+py::array_t<int64_t> no::MonteCarlo::sample(py::ssize_t n, const py::array_t<double>& cat_weights)
+{
+  py::ssize_t m = cat_weights.size();
+  const double* p = no::cbegin(cat_weights);
+
+  std::vector<double> cumul(m);
+  double running_sum = 0.0;
+  for (size_t i = 0; i < static_cast<size_t>(m); ++i)
+  {
+    if (p[i] < 0.0) 
+      throw py::value_error("category weights must be positive, got %%"_s % p[i]);
+    running_sum += p[i];
+    cumul[i] = running_sum;     
+  }
+
+  if (fabs(cumul[m-1] - 1.0) > std::numeric_limits<double>::epsilon())  
+    throw py::value_error("category weights must sum to unity, got %%"_s % cumul[m-1]);
+
+  return no::make_array<int64_t>({n}, [this, &cumul]() { 
+      double r = u01();
+      int64_t k = 0;
+      while (cumul[k] < r) ++k;
+      return k; 
+    });
+
+}
+
 // simple hazard constant probability 
 py::array_t<double> no::MonteCarlo::hazard(double prob, py::ssize_t n)
 {

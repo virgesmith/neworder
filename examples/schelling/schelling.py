@@ -13,23 +13,13 @@ class Schelling(neworder.Model):
 
     # category 0 is empty cell
     self.ncategories = len(categories)
-    # assign agents proportionally into 1D array for simplicity, then shuffle and reshape
-    index = int(0)
-    length = np.prod(gridsize)
-    self.pop = []
-    self.pop.append(np.zeros(length, dtype=int))
-    for i in range(1, self.ncategories):
-      end = int(index + categories[i] * length)
-      #neworder.log("%d:%d" % (index, end))
-      self.pop[0][index:end] = i
-      index = end
-    #random shuffle
-    np.random.shuffle(self.pop[0])
+    # randomly sample initial population according to category weights
+    self.pop = self.mc().sample(np.prod(gridsize), categories)
     #reshape to 2D
-    self.pop[0].shape = gridsize
+    self.pop.shape = gridsize
     self.cmap = colors.ListedColormap(['white', 'red', 'blue', 'green', 'yellow'][:self.ncategories])
 
-    self.img = plt.imshow(self.pop[0], cmap=self.cmap)
+    self.img = plt.imshow(self.pop, cmap=self.cmap)
     #self.img.set_data(self.pop[0])
     plt.axis('off')
     plt.pause(0.1)
@@ -40,7 +30,7 @@ class Schelling(neworder.Model):
   def step(self):
     self.sat.fill(1)
 
-    pop = self.pop[-1].copy()
+    pop = self.pop.copy()
 
     # counting only occupied cells can result in div by zero so rearrange similarity check to avoid division
     # corners
@@ -110,9 +100,9 @@ class Schelling(neworder.Model):
       pop[empty.loc[i,"x"], empty.loc[i, "y"]] = p
       pop[unsat.loc[i,"x"], unsat.loc[i, "y"]] = 0
 
-    self.pop.append(pop)
+    self.pop = pop
 
-    self.img.set_array(self.pop[-1])
+    self.img.set_array(self.pop)
     plt.pause(0.1)
 
     # finish early if everyone satisfied

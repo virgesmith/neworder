@@ -97,6 +97,7 @@ PYBIND11_MODULE(neworder, m)
     .def("seed", &no::MonteCarlo::seed, mc_seed_docstr)
     .def("reset", &no::MonteCarlo::reset, mc_reset_docstr)  
     .def("ustream", &no::MonteCarlo::ustream, mc_ustream_docstr, "n"_a)
+    .def("sample", &no::MonteCarlo::sample, mc_sample_docstr, "n"_a, "cat_weights"_a)
     // explicitly give function type for overloads 
     .def("hazard", py::overload_cast<double, py::ssize_t>(&no::MonteCarlo::hazard), 
                    mc_hazard_docstr,

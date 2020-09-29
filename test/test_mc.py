@@ -69,6 +69,15 @@ def _assert_throws(f, e):
   else:
     assert False, "expected exception %s not thrown" % e
 
+def test_sample():
+  m = no.Model(no.Timeline.null(), no.MonteCarlo.deterministic_identical_stream)
+
+  _assert_throws(lambda: m.mc().sample(100, [0.9]), ValueError)    
+  _assert_throws(lambda: m.mc().sample(100, [-0.1, 1.1]), ValueError)    
+  assert np.all(m.mc().sample(100, [1.0, 0.0, 0.0, 0.0]) == 0)    
+  assert np.all(m.mc().sample(100, [0.0, 1.0, 0.0, 0.0]) == 1)    
+  assert np.all(m.mc().sample(100, [0.0, 0.0, 0.0, 1.0]) == 3)    
+
 def test_hazard():
   m = no.Model(no.Timeline.null(), no.MonteCarlo.deterministic_identical_stream)
 

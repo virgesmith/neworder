@@ -41,7 +41,7 @@ void no::df::transition(no::Model& model, py::array_t<int64_t> categories, py::a
   // Extract column from DF as np.array
   py::array col_untyped = df.attr(colname.c_str());
 
-  // check col and categories are int64
+  // check col is int64
   if (!col_untyped.dtype().is(py::dtype::of<int64_t>()))
   {
     throw py::type_error("dataframe transitions can only be performed on columns containing int64 values");

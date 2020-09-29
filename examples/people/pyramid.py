@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 # see https://stackoverflow.com/questions/27694221/using-python-libraries-to-plot-two-horizontal-bar-charts-sharing-same-y-axis
 def plot(ages, males, females):
 
-  xmax = max(max(males), max(females))
+  xmax = 6000 #max(max(males), max(females))
 
   fig, axes = plt.subplots(ncols=2, sharey=True)
   plt.gca().set_ylim([min(ages),max(ages)+1])
@@ -21,7 +21,6 @@ def plot(ages, males, females):
   axes[0].invert_xaxis()
   for ax in axes.flat:
     ax.margins(0.03)
-    ax.grid(True)
   fig.tight_layout()
   fig.subplots_adjust(wspace=0.125)
   plt.show()

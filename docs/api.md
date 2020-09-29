@@ -278,6 +278,18 @@ Resets the generator using the original seed.
 Use with care, esp in multi-process models with identical streams
 
 
+### `neworder.MonteCarlo.sample`
+
+!!! note "instance method"
+
+```python
+sample(self: neworder.MonteCarlo, n: int, cat_weights: numpy.ndarray[float64]) -> numpy.ndarray[int64]
+```
+
+
+Returns an array of length n containing randomly sampled categorical values, weighted according to cat_weights
+
+
 ### `neworder.MonteCarlo.seed`
 
 !!! note "instance method"

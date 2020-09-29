@@ -98,6 +98,10 @@ const char* mc_ustream_docstr = R"docstr(
     Returns an array of uniform random [0,1) variates of length n
 )docstr";
 
+const char* mc_sample_docstr = R"docstr(
+    Returns an array of length n containing randomly sampled categorical values, weighted according to cat_weights
+)docstr";
+
 const char* mc_hazard_docstr = R"docstr(
     Returns an array of ones (with hazard rate lambda) or zeros of length n
 )docstr";
