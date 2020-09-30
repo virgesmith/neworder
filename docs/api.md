@@ -302,6 +302,18 @@ seed(self: neworder.MonteCarlo) -> int
 Returns the seed used to initialise the random stream
 
 
+### `neworder.MonteCarlo.state`
+
+!!! note "instance method"
+
+```python
+state(self: neworder.MonteCarlo) -> str
+```
+
+
+Returns the internal state of the generator in string format.
+
+
 ### `neworder.MonteCarlo.stopping`
 
 !!! note "instance method"

@@ -67,9 +67,9 @@ This method actually runs the simulation and stores the result for later use. Th
 
 ### Check
 
-Even though we explicitly requested that each process has identical random streams, this doesn't guarantee the streams will stay identical, as different process could sample more or less than others, and the streams get out of step.
+Even though we explicitly requested that each process has identical random streams, this doesn't guarantee the streams will stay identical, as different process could sample fewer or more variates than others, and the streams get out of step.
 
-This method samples one uniform from each stream and will return `False` if any of them are different, which will halt the model (for that process).
+This method compares the internal states of each stream and will return `False` if any of them are different, which will halt the model _for all processes_.
 
 !!! danger "Deadlocks"
     The implementation needs to be careful here is if some processes stop and others continue, a deadlock can occur when a process tries to communicate with a process that has ended. The check method must therefore ensure that ALL processes either pass or fail.

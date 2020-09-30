@@ -38,8 +38,9 @@ class BlackScholes(neworder.Model):
 
   # !check!
   def check(self):
-    # check the rng streams are still in sync by sampling from each one, comparing, and broadcasting the result
-    # if one process fails the check and exits without notifying the others, deadlocks can result
+    # check the rng streams are still in sync by sampling from each one, 
+    # comparing, and broadcasting the result. If one process fails the 
+    # check and exits without notifying the others, deadlocks can result.
     # send the state representation to process 0
     states = comm.gather(self.mc().state(), 0)
     # process 0 checks the values
