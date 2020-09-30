@@ -94,6 +94,10 @@ const char* mc_reset_docstr = R"docstr(
     Use with care, esp in multi-process models with identical streams
 )docstr";
 
+const char* mc_state_docstr = R"docstr(
+    Returns the internal state of the generator in string format.
+)docstr";
+
 const char* mc_ustream_docstr = R"docstr(
     Returns an array of uniform random [0,1) variates of length n
 )docstr";

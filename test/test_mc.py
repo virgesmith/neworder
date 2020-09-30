@@ -227,21 +227,24 @@ def _test_mc_parallel(model):
 
   a = mc.ustream(5)
   all_a = comm.gather(a, root=0)
-
+  all_states = comm.gather(mc.state(), root=0)
 
   if no.mpi.rank() == 0:
     for r in range(0, no.mpi.size()):
+      assert np.all(all_states[0] == all_states[r])
       assert np.all(a - all_a[r] == 0.0)
 
   mc = no.Model(no.Timeline.null(), no.MonteCarlo.deterministic_independent_stream).mc()
 
   a = mc.ustream(5)
 
-  no.log(a)
   all_a = comm.gather(a, root=0)
+
+  all_states = comm.gather(mc.state(), root=0)
 
   # check all other streams different
   if no.mpi.rank() == 0:
     for r in range(1, no.mpi.size()):
+      assert all_states[r] != all_states[0]
       assert not np.all(a - all_a[r] == 0.0)
 

@@ -37,6 +37,13 @@ public:
   // Uniform random [0,1) fed from the environment's PRNG stream
   py::array_t<double> ustream(py::ssize_t n);
 
+  // returns the internal state in string representation
+  std::string state() const;
+
+  // raw unsigned 64-bit ints (needed *if* its possible to enable numpy to use this generator via a custom BitGenerator)
+  uint64_t random_raw();
+  py::array_t<uint64_t> random_raw(py::ssize_t n);
+
   // randomly sample categories with weights 
   py::array_t<int64_t> sample(py::ssize_t n, const py::array_t<double>& cat_weights);
 

@@ -40,15 +40,13 @@ class BlackScholes(neworder.Model):
   def check(self):
     # check the rng streams are still in sync by sampling from each one, comparing, and broadcasting the result
     # if one process fails the check and exits without notifying the others, deadlocks can result
-    r = self.mc().ustream(1)[0]
-    # send the value to process 0)
-    a = comm.gather(r, 0)
+    # send the state representation to process 0
+    states = comm.gather(self.mc().state(), 0)
     # process 0 checks the values
     if neworder.mpi.rank() == 0:
-      ok = all(e == a[0] for e in a)
-      neworder.log("check() ok: %s" % ok)
+      ok = all(s == states[0] for s in states)
     else:
-      ok = True
+      ok = None
     # broadcast process 0's ok to all processes
     ok = comm.bcast(ok, root=0)
     return ok

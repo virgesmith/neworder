@@ -79,12 +79,30 @@ std::string no::MonteCarlo::repr() const
   return "<neworder.MonteCarlo seed=%%>"_s % seed();
 }
 
+std::string no::MonteCarlo::state() const
+{
+  std::ostringstream s;
+  s << m_prng; 
+  return s.str();
+}
 
 // uniform [0,1)
 double no::MonteCarlo::u01()
 {
   static const double SCALE = 1.0 / (1ull << 32);
   return m_prng() * SCALE;
+}
+
+// raw unsigned 64-bit ints (for enabling numpy to use this generator)
+uint64_t no::MonteCarlo::random_raw()
+{
+  return (static_cast<uint64_t>(m_prng()) << 32) | static_cast<uint64_t>(m_prng()); 
+}
+
+// raw unsigned 64-bit ints (for enabling numpy to use this generator)
+py::array_t<uint64_t> no::MonteCarlo::random_raw(py::ssize_t n)
+{
+  return no::make_array<uint64_t>({n}, [this](){ return random_raw(); });
 }
 
 py::array_t<double> no::MonteCarlo::ustream(py::ssize_t n)

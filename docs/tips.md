@@ -67,10 +67,7 @@ def nondeterministic_identical_stream(_r):
 !!! warning "Synchronisation"
     Identically initialised random streams only stay in sync if the same number of samples are taken from each one .
 
-The "option" example relies on identical streams to reduce noise when computing differences for sensitivity analysis. It implements a `check` step that compares a single sample from each process and fails if any are different (see below).
-
-!!! note "Stream Comparisons"
-    Comparing output of each generator only gives a (very) probable assessment. The only surefire way to determine identical streams is to compare the internal states of each generator. This functionality is not currently implemented.
+The "option" example relies on identical streams to reduce noise when computing differences for sensitivity analysis. It implements a `check` step that compares the internal states of the generators and fails if any are different (see code below).
 
 ## Deadlocks
 
@@ -79,23 +76,7 @@ The "option" example relies on identical streams to reduce noise when computing 
 
 Blocking communications between processes will deadlock if, for instance, the receiving process has ended due to an error. This will cause the entire run to hang (and may impact your HPC bill). The option example, as described above, has a check for random stream synchronisation that looks like this:
 
-```python
-  def check(self):
-    # check the rng streams are still in sync by sampling from each one, comparing, and broadcasting the result
-    # if one process fails the check and exits without notifying the others, deadlocks can result
-    r = self.mc().ustream(1)[0]
-    # send the value to process 0)
-    a = comm.gather(r, 0)
-    # process 0 checks the values
-    if neworder.mpi.rank() == 0:
-      ok = all(e == a[0] for e in a)
-      neworder.log("check() ok: %s" % ok)
-    else:
-      ok = True
-    # broadcast process 0's ok to all processes
-    ok = comm.bcast(ok, root=0)
-    return ok
-```
+{{ include_snippet("examples/option/black_scholes.py", "check") }}
 
 The key here is that there is only one result, shared between all processes. In this case only one process is performing the check and broadcasting the result to the others.
 
