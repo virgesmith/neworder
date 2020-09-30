@@ -14,6 +14,12 @@ The original embedded configuration is still provided (builds on linux platforms
 
 The source code is on [github](https://github.com/virgesmith/neworder). To contribute, please fork the repository and submit a PR.
 
+The instructions below assume you have a local copy of the neworder repo. Alternatively, you can simply install the latest version directly from the repo like so:
+
+```bash
+pip install git+https://github.com/virgesmith/neworder.git
+```
+
 ## Dependencies
 
 ### Pip / virtualenv

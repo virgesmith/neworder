@@ -129,8 +129,9 @@ setup(
   long_description = readme(),
   long_description_content_type="text/markdown",
   ext_modules=ext_modules,
-  setup_requires=['pybind11>=2.5.0', 'pytest-runner'],
-  tests_require=['pytest'],    
+  install_requires=['numpy>=1.19.2', 'pandas>=1.1.2'],
+  setup_requires=['pybind11>=2.5.0'],
+  tests_require=['pytest', 'pytest-runner', 'mpi4py>=3.0.3'],    
   cmdclass={'build_ext': BuildExt},
   classifiers=[
     "Programming Language :: Python :: 3",
