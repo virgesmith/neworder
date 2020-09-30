@@ -1,6 +1,7 @@
 """ Example - pricing a simple option
 
-The main vanishing point of this example is to illustrate how different processes can interact within the model.
+The main vanishing point of this example is to illustrate how different processes 
+can interact within the model.
 
 """
 
@@ -10,7 +11,8 @@ from black_scholes import BlackScholes
 # neworder.verbose() # defaults to False
 # neworder.checked() # defaults to True
 
-# requires 4 identical sims with perturbations to compute market sensitivities (a.k.a. Greeks)
+# requires 4 identical sims with perturbations to compute market sensitivities 
+# (a.k.a. Greeks)
 assert neworder.mpi.size() == 4, "This example requires 4 processes"
 
 # initialisation

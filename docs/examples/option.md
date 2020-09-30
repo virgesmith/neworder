@@ -10,26 +10,26 @@ Monte-Carlo simulation is a [common technique in quantitative finance](https://e
 
 A [European call option](https://en.wikipedia.org/wiki/Call_option) is a derivative contract that grants the holder the right (but not the obligation) to buy an underlying stock \(S\) at a fixed "strike" price \(K\) at some given future time \(T\) (the expiry). Similarly, a put option grants the right (but not obligation) to sell, rather than buy, at a fixed price.
 
-In order to calculate the fair value of a derivative contract one can simulate a (large) number of paths the underlying stock may take (according to current market conditions. The model assumes that the evolution of the underlying is given by the stochastic differential equation (SDE):
+In order to calculate the fair value of a derivative contract one can simulate a (large) number of paths the underlying stock may take, according to current market conditions. The model assumes that the evolution of the underlying is given by the stochastic differential equation (SDE):
 
 \[
 \frac{dS}{S} = (r-q)dt + \sigma dW
 \]
 
-where \(S\) is price, \(r\) is risk-free rate, \(q\) is continuous dividend yield, \(\sigma\) is volatility and \(dW\) a Wiener process (a 1-d Brownian motion), and the value of the option \(V\) is
+where \(S\) is price, \(r\) is risk-free rate, \(q\) is continuous dividend yield, \(\sigma\) is volatility and \(dW\) a Wiener process (a 1-d Brownian motion), and the value of the option \(V\) at \(t=0\) is
 
 \[
-V(0) = e^{-rT}.\text{max}\left( S(T)-K,0 \right)
+V(0) = e^{-rT}.V(T) = e^{-rT}.\text{max}\left( S(T)-K,0 \right)
 \]
 
 We can compute this by simulating paths to get \(S(T)\) and taking the mean. The first term above discounts back to \(t=0\), so we get the *current* fair value.
 
 We can easily frame this derivative pricing problem in terms of a microsimulation model:
 
-- start with an intial \(t=0\) population of \(N\) (identical) underlying prices \(S(0)\). Social scientists could refer to this as a 'cohort'.
-- evolve each price to option expiry time \(S(T)\) using Monte-Carlo simulation
-
-We then compute the mean of the discounted option prices for each of the underlying prices to get the result.
+- Start with an intial \(t=0\) population of \(N\) (identical) underlying prices \(S(0)\). Social scientists could refer to this as a 'cohort'.
+- Evolve each underlying path to option expiry using Monte-Carlo simulation, to get a distribution of \(S(T)\).
+- Compute the value \(V(T)\) of the option for each underlying path.
+- Compute the mean of the option prices and discount it back to \(t=0\) to get the result.
 
 For this simple option we can also compute an analytic fair value under the Black-Scholes model, and use this to determine the accuracy of the Monte-Carlo simulation. We also demonstrate the capabilities neworder has in terms of sensitivity analysis, by using multiple processes to compute finite-difference approximations to the following risk measures:
 
