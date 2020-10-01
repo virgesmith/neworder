@@ -41,9 +41,8 @@ public:
   // returns a hash of the internal state. (The raw string representation's length varies, making MPI comms trickier)
   size_t state() const;
 
-  // raw unsigned 64-bit ints (needed *if* its possible to enable numpy to use this generator via a custom BitGenerator)
-  uint64_t random_raw();
-  py::array_t<uint64_t> random_raw(py::ssize_t n);
+  // raw unsigned 64-bit ints, can be used to (un)deterministically seed another generator (e.g. np.random)
+  uint64_t raw();
 
   // randomly sample categories with weights 
   py::array_t<int64_t> sample(py::ssize_t n, const py::array_t<double>& cat_weights);

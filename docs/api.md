@@ -265,6 +265,18 @@ nondeterministic_stream(r: int) -> int
 Returns a random seed from the platform's random_device. Input argument is ignored
 
 
+### `neworder.MonteCarlo.raw`
+
+!!! note "instance method"
+
+```python
+raw(self: neworder.MonteCarlo) -> int
+```
+
+
+Returns a random 64-bit unsigned integer. Useful for seeding other generators.
+
+
 ### `neworder.MonteCarlo.reset`
 
 !!! note "instance method"
@@ -311,7 +323,7 @@ state(self: neworder.MonteCarlo) -> int
 ```
 
 
-Returns the internal state of the generator in string format.
+Returns a hash of the internal state of the generator. Avoids the extra complexity of tranmitting variable-length strings over MPI.
 
 
 ### `neworder.MonteCarlo.stopping`

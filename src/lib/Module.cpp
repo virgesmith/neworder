@@ -97,9 +97,7 @@ PYBIND11_MODULE(neworder, m)
     .def("seed", &no::MonteCarlo::seed, mc_seed_docstr)
     .def("reset", &no::MonteCarlo::reset, mc_reset_docstr)  
     .def("state", &no::MonteCarlo::state, mc_state_docstr)
-    // TODO enable if can get numpy to use this via Generator/BitGenerator
-    // .def("random_raw", py::overload_cast<>(&no::MonteCarlo::random_raw), mc_raw_docstr)
-    // .def("random_raw", py::overload_cast<py::ssize_t>(&no::MonteCarlo::random_raw), mc_raw_a_docstr, "n"_a)
+    .def("raw", &no::MonteCarlo::raw, mc_raw_docstr)
     .def("ustream", &no::MonteCarlo::ustream, mc_ustream_docstr, "n"_a)
     .def("sample", &no::MonteCarlo::sample, mc_sample_docstr, "n"_a, "cat_weights"_a)
     // explicitly give function type for overloads 

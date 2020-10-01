@@ -98,6 +98,10 @@ const char* mc_state_docstr = R"docstr(
     Returns a hash of the internal state of the generator. Avoids the extra complexity of tranmitting variable-length strings over MPI.
 )docstr";
 
+const char* mc_raw_docstr = R"docstr(
+    Returns a random 64-bit unsigned integer. Useful for seeding other generators.
+)docstr";
+
 const char* mc_ustream_docstr = R"docstr(
     Returns an array of uniform random [0,1) variates of length n
 )docstr";

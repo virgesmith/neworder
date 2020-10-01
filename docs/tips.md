@@ -69,6 +69,24 @@ def nondeterministic_identical_stream(_r):
 
 The "option" example relies on identical streams to reduce noise when computing differences for sensitivity analysis. It implements a `check` step that compares the internal states of the generators and fails if any are different (see code below).
 
+## External Sources of Randomness
+
+Other libraries, such as `numpy`, contain a much broader selection of Monte-Carlo functionality than `neworder` does, and it makes no sense to reimplement such functionality. If you are using a specific seeding strategy within neworder, and are also using an external random generator, it is important to ensure they are also following the same strategy, otherwise reproducibility may be compromised.
+
+In your model constructor, you can seed the numpy generator like so
+
+```python
+ext_seed = self.mc().raw()
+self.nprand = np.random.Generator(np.random.MT19937(ext_seed))
+# get some values
+x = self.nprand.normal(5)
+```
+
+If you've chosen a deterministic seedng strategy, then `ext_seed` will be reproducible, and if you've chosen an independent strategy, then `ext_seed` will be different for each process, thus propagating your chosen seeding strategy to the external generator.
+
+!!! note "Seeding external generators"
+    Wherever possible, explicitly seed any external random generators using `neworder`'s MonteCarlo engine. This will effectively propagate your seeding strategy to the external generator.
+
 ## Deadlocks
 
 !!! danger "Failure is All-Or-Nothing"
