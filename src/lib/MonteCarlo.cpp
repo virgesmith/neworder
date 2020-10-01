@@ -82,8 +82,15 @@ std::string no::MonteCarlo::repr() const
 size_t no::MonteCarlo::state() const
 {
   std::ostringstream s;
-  s << m_prng; 
-  return std::hash<std::string>{}(s.str());
+  try 
+  {
+    s << m_prng;
+    return std::hash<std::string>{}(s.str());
+  }
+  catch(std::exception&) 
+  { 
+    return 0;
+  }
 }
 
 // uniform [0,1)

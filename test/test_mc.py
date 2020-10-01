@@ -114,14 +114,18 @@ def _test_mc_serial(model):
   assert mc.seed() == 19937
 
   mc.reset()
+  s = mc.state()
   a = mc.ustream(5)
+  assert s != mc.state()
   assert abs(a[0] - 0.33778882725164294) < 1e-8
   assert abs(a[1] - 0.04767065867781639) < 1e-8
   assert abs(a[2] - 0.8131122114136815) < 1e-8
   assert abs(a[3] - 0.24954832065850496) < 1e-8
   assert abs(a[4] - 0.3385562978219241) < 1e-8
 
+
   mc.reset()
+  assert s == mc.state()
   h = mc.hazard(0.5, 1000000)
   assert np.sum(h) == 500151
 
