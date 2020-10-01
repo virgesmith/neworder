@@ -81,16 +81,14 @@ std::string no::MonteCarlo::repr() const
 
 size_t no::MonteCarlo::state() const
 {
+// disable as causes segfault in mpi tests on travis OSX build
+#ifdef __APPLE__
+  return 0;
+#else
   std::ostringstream s;
-  try 
-  {
-    s << m_prng;
-    return std::hash<std::string>{}(s.str());
-  }
-  catch(std::exception&) 
-  { 
-    return 0;
-  }
+  s << m_prng;
+  return std::hash<std::string>{}(s.str());
+#endif
 }
 
 // uniform [0,1)
