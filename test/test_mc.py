@@ -1,5 +1,7 @@
 import numpy as np
 import neworder as no
+import platform
+
 
 def test_mc():
 
@@ -249,6 +251,8 @@ def _test_mc_parallel(model):
   # check all other streams different
   if no.mpi.rank() == 0:
     for r in range(1, no.mpi.size()):
-      assert all_states[r] != all_states[0]
+      if platform.system() != "Darwin":
+        # mc.state() just returns 0 on OSX due to an apparent bug in MT19937 that intermittently segfaults 
+        assert all_states[r] != all_states[0]
       assert not np.all(a - all_a[r] == 0.0)
 
