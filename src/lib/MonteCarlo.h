@@ -6,6 +6,7 @@
 
 #include <vector>
 #include <random>
+#include <functional>
 #include <cstddef>
 #include <cstdint>
 
@@ -37,8 +38,8 @@ public:
   // Uniform random [0,1) fed from the environment's PRNG stream
   py::array_t<double> ustream(py::ssize_t n);
 
-  // returns the internal state in string representation
-  std::string state() const;
+  // returns a hash of the internal state. (The raw string representation's length varies, making MPI comms trickier)
+  size_t state() const;
 
   // raw unsigned 64-bit ints (needed *if* its possible to enable numpy to use this generator via a custom BitGenerator)
   uint64_t random_raw();

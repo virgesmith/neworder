@@ -96,6 +96,7 @@ To run the model,
 ```bash
 mpiexec -n 4 python examples/option/model.py
 ```
+
 which will produce something like
 
 ```text

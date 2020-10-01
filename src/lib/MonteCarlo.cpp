@@ -79,11 +79,11 @@ std::string no::MonteCarlo::repr() const
   return "<neworder.MonteCarlo seed=%%>"_s % seed();
 }
 
-std::string no::MonteCarlo::state() const
+size_t no::MonteCarlo::state() const
 {
   std::ostringstream s;
   s << m_prng; 
-  return s.str();
+  return std::hash<std::string>{}(s.str());
 }
 
 // uniform [0,1)

@@ -307,7 +307,7 @@ Returns the seed used to initialise the random stream
 !!! note "instance method"
 
 ```python
-state(self: neworder.MonteCarlo) -> str
+state(self: neworder.MonteCarlo) -> int
 ```
 
 

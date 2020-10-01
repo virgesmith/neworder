@@ -95,7 +95,7 @@ const char* mc_reset_docstr = R"docstr(
 )docstr";
 
 const char* mc_state_docstr = R"docstr(
-    Returns the internal state of the generator in string format.
+    Returns a hash of the internal state of the generator. Avoids the extra complexity of tranmitting variable-length strings over MPI.
 )docstr";
 
 const char* mc_ustream_docstr = R"docstr(
