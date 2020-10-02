@@ -20,7 +20,6 @@ class Schelling(neworder.Model):
     self.cmap = colors.ListedColormap(['white', 'red', 'blue', 'green', 'yellow'][:self.ncategories])
 
     self.img = plt.imshow(self.pop, cmap=self.cmap)
-    #self.img.set_data(self.pop[0])
     plt.axis('off')
     plt.pause(0.1)
 
@@ -78,21 +77,22 @@ class Schelling(neworder.Model):
     empty = pd.DataFrame(pop).unstack() \
             .to_frame().reset_index() \
             .rename({"level_0": "y", "level_1": "x", 0: "occ"}, axis=1)
-    # sample randomly empty cells only
-    empty = empty[empty['occ'] == 0].sample(frac=1).reset_index(drop=True)
-    #print(empty.head())
+    # !sample!
+    # sample randomly empty cells only (seeding with neworder's mc engine to ensure reproduciblity)
+    empty = empty[empty['occ'] == 0].sample(frac=1, random_state=self.mc().raw() % 2**32).reset_index(drop=True)
+    # !sample!
 
     # enumerate unsatisfied
     unsat = pd.DataFrame(self.sat).unstack() \
               .to_frame().reset_index() \
               .rename({"level_0": "y", "level_1": "x", 0: "sat"}, axis=1)
-    # sample randomly unstaisfied only
+    # sample randomly unsatisfied only
     unsat = unsat[unsat['sat'] == False]
     if len(unsat):
-      unsat = unsat.sample(frac=1).reset_index(drop=True)
+      # sample randomly empty cells only (seeding with neworder's mc engine to ensure reproduciblity)
+      unsat = unsat.sample(frac=1, random_state=self.mc().raw() % 2**32).reset_index(drop=True)
 
-    #print(unsat.head())
-    neworder.log("%d unsatisfied, %d empty" % (len(unsat), len(empty)))
+    neworder.log("step %d %.2f%% unsatisfied" % (self.timeline().index(), 100.0 * len(unsat) / pop.size))
 
     # move unsatisfied to empty
     for i in range(min(len(unsat), len(empty))):
@@ -103,27 +103,13 @@ class Schelling(neworder.Model):
     self.pop = pop
 
     self.img.set_array(self.pop)
-    plt.pause(0.1)
+    plt.pause(0.01) # allow the image to update
 
+    # !halt!
     # finish early if everyone satisfied
     if len(unsat) == 0:
       self.halt()
+    # !halt!
 
   def checkpoint(self):
     pass
-    # self.animate()
-
-  # def __updatefig(self, frameno):
-  #   neworder.log("frame=%d" % frameno)
-  #   self.im.set_array(self.pop[frameno])
-  #   return self.im,
-
-  # def animate(self):
-  #   fig = plt.figure()
-  #   plt.axis('off')
-
-  #   self.im = plt.imshow(self.pop[0], cmap=self.cmap, animated=True)
-
-  #   anim = animation.FuncAnimation(fig, self.__updatefig, frames=neworder.timeline.index(), interval=100, repeat=True, repeat_delay=3000)
-  #   anim.save("./test.gif", dpi=80, writer='imagemagick')
-  #   #plt.show()
