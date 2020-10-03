@@ -8,7 +8,7 @@ An implementation of the Schelling's segregation model [[7]](../references.md), 
 
 ## Inputs
 
-In the above example, the similarity threshold is 50% and the cells composition is: 30% empty, 30% red, 30% blue and 10% green, on a 80 x 100 grid. Whilst the initial population is randomly constructed using the model's Monte-Carlo engine, the process of moving agents uses
+In the above example, the similarity threshold is 50% and the cells composition is: 30% empty, 30% red, 30% blue and 10% green, on a 80 x 100 grid. Whilst the initial population is randomly constructed using the model's Monte-Carlo engine, the process of moving agents uses the pandas `sample` method, which uses its own random generator.
 
 ## Implementation
 

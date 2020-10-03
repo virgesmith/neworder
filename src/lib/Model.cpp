@@ -73,16 +73,6 @@ bool no::Model::run(py::object& model_subclass)
     no::log("t=%%(%%) %%.step()"_s % t % timeindex % subclass_name);
     model_subclass.attr("step")();
 
-    // check python hasn't signalled early termination
-    if (no::getenv().m_halt)
-    {
-      no::log("t=%%(%%) received halt signal"_s % t % timeindex);
-      no::getenv().m_halt = false;
-      // reset the flag
-      break;
-    }
-
-
     // call the check method and stop if necessary
     if (no::getenv().m_checked)
     {
@@ -94,6 +84,16 @@ bool no::Model::run(py::object& model_subclass)
       }
       no::log("t=%%(%%) %%.check() [ok]"_s % t % timeindex % subclass_name );
     }
+
+    // check python hasn't signalled early termination
+    if (no::getenv().m_halt)
+    {
+      no::log("t=%%(%%) received halt signal"_s % t % timeindex);
+      no::getenv().m_halt = false;
+      // reset the flag
+      break;
+    }
+
     // call the checkpoint method as required 
     if (base.timeline().at_checkpoint())
     {

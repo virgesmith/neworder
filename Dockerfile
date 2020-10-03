@@ -5,7 +5,10 @@ WORKDIR /app
 
 COPY . /app
 
-RUN apt-get update -y && apt-get install -y --no-install-recommends -y mpich libmpich-dev
+RUN apt-get update -y \
+ && apt-get install -y --no-install-recommends -y mpich libmpich-dev \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
 
 # install python deps
 RUN python -m pip install -r examples-requirements.txt

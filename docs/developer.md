@@ -134,3 +134,20 @@ mpiexec -n <N> python examples/<name>/model.py
 ```
 
 See the Examples section for details on each example.
+
+## Release Checklist
+
+Fix any CI issues (builds, tests, major code standards) before commencing.
+
+1. Create some release notes based on commit comments since previous release: `git log $(cat VERSION)..HEAD --oneline`
+2. Bump `VERSION`
+3. Clean, rebuild, test, regenerate examples and code docs: `scripts/code_doc.sh`
+4. Commit changes
+5. Tag: `git tag -a $(cat VERSION) -m"release v$(cat VERSION)"`
+6. Push, including tag: `git push origin --tags`
+7. Check tagged CI builds and docker image are ok
+8. Create release on github, using release notes from above
+9. Check zenodo for new DOI
+10. Package and upload to PyPI: `scripts/package.sh`
+11. Check conda feedstock and merge PR if necessary
+12. Install pypi/conda-forge/docker releases in a fresh environment and ensure all is well
