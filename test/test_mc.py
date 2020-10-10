@@ -2,6 +2,7 @@ import numpy as np
 import neworder as no
 import platform
 
+from utils import assert_throws
 
 def test_mc():
 
@@ -18,7 +19,7 @@ def test_mc():
 
 def test_seeders():
 
-  # serial tests 
+  # serial tests
   # determinisitc seeders always return the same value
   assert no.MonteCarlo.deterministic_identical_stream(no.mpi.rank()) == no.MonteCarlo.deterministic_identical_stream(no.mpi.rank())
   assert no.MonteCarlo.deterministic_independent_stream(no.mpi.rank()) == no.MonteCarlo.deterministic_independent_stream(no.mpi.rank())
@@ -28,7 +29,7 @@ def test_seeders():
   try:
     import mpi4py.MPI as mpi
     comm = mpi.COMM_WORLD
-  except Exception: 
+  except Exception:
     return
 
   # parallel tests
@@ -63,22 +64,15 @@ def test_seeders():
   m = no.Model(no.Timeline.null(), seeder)
   assert m.mc().seed() == no.mpi.rank() + 1
 
-def _assert_throws(f, e):
-  try:
-    f()
-  except e:
-    pass
-  else:
-    assert False, "expected exception %s not thrown" % e
 
 def test_sample():
   m = no.Model(no.Timeline.null(), no.MonteCarlo.deterministic_identical_stream)
 
-  _assert_throws(lambda: m.mc().sample(100, [0.9]), ValueError)    
-  _assert_throws(lambda: m.mc().sample(100, [-0.1, 1.1]), ValueError)    
-  assert np.all(m.mc().sample(100, [1.0, 0.0, 0.0, 0.0]) == 0)    
-  assert np.all(m.mc().sample(100, [0.0, 1.0, 0.0, 0.0]) == 1)    
-  assert np.all(m.mc().sample(100, [0.0, 0.0, 0.0, 1.0]) == 3)    
+  assert_throws(ValueError, m.mc().sample, 100, [0.9])
+  assert_throws(ValueError, m.mc().sample, 100, [-0.1, 1.1])
+  assert np.all(m.mc().sample(100, [1.0, 0.0, 0.0, 0.0]) == 0)
+  assert np.all(m.mc().sample(100, [0.0, 1.0, 0.0, 0.0]) == 1)
+  assert np.all(m.mc().sample(100, [0.0, 0.0, 0.0, 1.0]) == 3)
 
 def test_hazard():
   m = no.Model(no.Timeline.null(), no.MonteCarlo.deterministic_identical_stream)
@@ -86,30 +80,30 @@ def test_hazard():
   assert np.all(m.mc().hazard(0.0,10) == 0.0)
   assert np.all(m.mc().hazard(1.0,10) == 1.0)
 
-  _assert_throws(lambda: m.mc().hazard(-0.1, 10), ValueError)    
-  _assert_throws(lambda: m.mc().hazard( 1.1, 10), ValueError)    
-  _assert_throws(lambda: m.mc().hazard([-0.1, 0.5]), ValueError)    
-  _assert_throws(lambda: m.mc().hazard([0.1, 1.2]), ValueError)    
+  assert_throws(ValueError, m.mc().hazard, -0.1, 10)
+  assert_throws(ValueError, m.mc().hazard, 1.1, 10)
+  assert_throws(ValueError, m.mc().hazard, [-0.1, 0.5])
+  assert_throws(ValueError, m.mc().hazard, [0.1, 1.2])
 
 def test_stopping():
   m = no.Model(no.Timeline.null(), no.MonteCarlo.deterministic_identical_stream)
 
   assert np.all(m.mc().stopping(0.0,10) == no.time.far_future())
 
-  _assert_throws(lambda: m.mc().stopping(-0.1, 10), ValueError)    
-  _assert_throws(lambda: m.mc().stopping( 1.1, 10), ValueError)    
-  _assert_throws(lambda: m.mc().stopping([-0.1, 0.5]), ValueError)    
-  _assert_throws(lambda: m.mc().stopping([0.1, 1.2]), ValueError)   
+  assert_throws(ValueError, m.mc().stopping, -0.1, 10)
+  assert_throws(ValueError, m.mc().stopping,  1.1, 10)
+  assert_throws(ValueError, m.mc().stopping, [-0.1, 0.5])
+  assert_throws(ValueError, m.mc().stopping, [0.1, 1.2])
 
 def test_arrivals_validation():
   m = no.Model(no.Timeline.null(), no.MonteCarlo.deterministic_identical_stream)
   assert np.all(no.time.isnever(m.mc().first_arrival([0.0,0.0], 1.0, 10)))
-  _assert_throws(lambda: m.mc().first_arrival([-1.0,0.0], 1.0, 10), ValueError)    
+  assert_throws(ValueError, m.mc().first_arrival, np.array([-1.0,0.0]), 1.0, 10)
   assert np.all(no.time.isnever(m.mc().next_arrival(np.zeros(10), [0.0,0.0], 1.0)))
-  _assert_throws(lambda: m.mc().next_arrival(np.zeros(10), [-1.0,0.0], 1.0), ValueError)
+  assert_throws(ValueError, m.mc().next_arrival, np.zeros(10), [-1.0,0.0], 1.0)
 
-  _assert_throws(lambda: m.mc().arrivals([-1.0,0.0], 1.0, 10, 0.0), ValueError)
-  _assert_throws(lambda: m.mc().arrivals([1.0,1.0], 1.0, 10, 0.0), ValueError)
+  assert_throws(ValueError, m.mc().arrivals, [-1.0,0.0], 1.0, 10, 0.0)
+  assert_throws(ValueError, m.mc().arrivals, [1.0,1.0], 1.0, 10, 0.0)
 
 def _test_mc_serial(model):
   mc = model.mc()
@@ -119,7 +113,7 @@ def _test_mc_serial(model):
   s = mc.state()
   a = mc.ustream(5)
   if platform.system() != "Darwin":
-    # mc.state() just returns 0 on OSX due to an apparent bug in MT19937 that intermittently segfaults 
+    # mc.state() just returns 0 on OSX due to an apparent bug in MT19937 that intermittently segfaults
     assert s != mc.state()
   assert abs(a[0] - 0.33778882725164294) < 1e-8
   assert abs(a[1] - 0.04767065867781639) < 1e-8
@@ -254,7 +248,7 @@ def _test_mc_parallel(model):
   if no.mpi.rank() == 0:
     for r in range(1, no.mpi.size()):
       if platform.system() != "Darwin":
-        # mc.state() just returns 0 on OSX due to an apparent bug in MT19937 that intermittently segfaults 
+        # mc.state() just returns 0 on OSX due to an apparent bug in MT19937 that intermittently segfaults
         assert all_states[r] != all_states[0]
       assert not np.all(a - all_a[r] == 0.0)
 

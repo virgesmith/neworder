@@ -4,6 +4,8 @@ import pandas as pd
 import neworder as no
 from math import sqrt
 
+from utils import assert_throws
+
 # def sample(u, t, c):
 #   i = int(np.interp(u, t, range(len(t))))
 #   return c[i]
@@ -15,19 +17,14 @@ def test_errors():
   # base model for MC engine
   model = no.Model(no.Timeline.null(), no.MonteCarlo.deterministic_identical_stream)
 
-  cats = np.array(range(4)) 
+  cats = np.array(range(4))
   # identity matrix means no transitions
   trans = np.identity(len(cats))
 
   # category data MUST be 64bit integer. This will alomst certainly be the default on linux/OSX but not on windows
   df["DC2101EW_C_ETHPUK11"]= df["DC2101EW_C_ETHPUK11"].astype(np.int32)
 
-  try:
-    no.df.transition(model, cats, trans, df, "DC2101EW_C_ETHPUK11")
-  except Exception:
-    assert True
-  else:
-    assert False
+  assert_throws(TypeError, no.df.transition, model, cats, trans, df, "DC2101EW_C_ETHPUK11")
 
 def test_basic():
 
@@ -67,7 +64,7 @@ def test_basic():
     assert df.category.value_counts()[i] > N/2 - sqrt(N) and df.category.value_counts()[i] < N/2 + sqrt(N)
 
   # spread evenly
-  t = np.ones((3,3)) / 3  
+  t = np.ones((3,3)) / 3
   no.df.transition(model, c, t, df, "category")
   for i in c:
     assert df.category.value_counts()[i] > N/3 - sqrt(N) and df.category.value_counts()[i] < N/3 + sqrt(N)
@@ -88,7 +85,7 @@ def test():
   # base model for MC engine
   model = no.Model(no.Timeline.null(), no.MonteCarlo.deterministic_identical_stream)
 
-  cats = np.array(range(4)) 
+  cats = np.array(range(4))
   # identity matrix means no transitions
   trans = np.identity(len(cats))
 

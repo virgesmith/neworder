@@ -10,8 +10,11 @@
 
 
 // C++14 implements the ""s literal -> std::string but there are so many issues with it (namespace, gcc warnings)
-// just stick with the home-made version 
+// just stick with the home-made version
 
+using namespace std::string_literals;
+
+// TODO deprecate
 std::string operator ""_s(const char* p, size_t s);
 
 template<typename T>
@@ -39,7 +42,7 @@ std::string to_string_impl(const std::vector<T>& v)
 {
   if (v.empty())
     return "[]";
-  std::string result = "[" + to_string_impl(v[0]);  
+  std::string result = "[" + to_string_impl(v[0]);
 
   for (size_t i = 1; i < v.size(); ++i)
     result += ", " + to_string_impl(v[i]);
@@ -50,13 +53,13 @@ std::string to_string_impl(const std::vector<T>& v)
 
 
 // need an rvalue ref as might/will be a temporary
-template<typename T> 
+template<typename T>
 std::string operator%(std::string&& str, T value)
 {
   size_t s = str.find("%%");
   if (s != std::string::npos)
   {
-    str.replace(s, 2, to_string_impl(value)); 
+    str.replace(s, 2, to_string_impl(value));
   }
   return std::move(str);
 }
