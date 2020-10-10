@@ -32,14 +32,14 @@ def cxxflags(platform):
 
   if platform == "unix":
     return [
-      "-pthread", 
-      "-Wsign-compare", 
-      "-fstack-protector-strong", 
-      "-Wformat", 
-      "-Werror=format-security", 
-      "-Wdate-time", 
-      "-fPIC", 
-      "-std=c++17", 
+      "-pthread",
+      "-Wsign-compare",
+      "-fstack-protector-strong",
+      "-Wformat",
+      "-Werror=format-security",
+      "-Wdate-time",
+      "-fPIC",
+      "-std=c++17",
       "-fvisibility=hidden"
     ]
   elif platform == "msvc":
@@ -51,7 +51,7 @@ def ldflags(_platform):
   return []
 
 def defines(platform):
-  return [ 
+  return [
     ("NEWORDER_VERSION", version())
   ]
 
@@ -116,7 +116,7 @@ class BuildExt(build_ext):
       ext.define_macros = defines(ct) #[('NEWORDER_VERSION', self.distribution.get_version())]
       ext.extra_compile_args = cxxflags(ct)
       ext.extra_link_args = ldflags(ct)
-    
+
     build_ext.build_extensions(self)
 
 setup(
@@ -131,12 +131,12 @@ setup(
   ext_modules=ext_modules,
   install_requires=['numpy>=1.19.1', 'pandas>=1.0.5'],
   setup_requires=['pybind11>=2.5.0', 'pytest-runner'],
-  tests_require=['pytest', 'mpi4py>=3.0.3'],    
+  tests_require=['pytest', 'mpi4py>=3.0.3'],
   cmdclass={'build_ext': BuildExt},
   classifiers=[
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
-  ],    
+  ],
   zip_safe=False,
 )
