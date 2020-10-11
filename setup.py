@@ -70,18 +70,11 @@ class get_pybind_include(object):
 ext_modules = [
   Extension(
     'neworder',
-    # Sort input source files to ensure bit-for-bit reproducible builds
-    # (https://github.com/pybind/python_example/pull/53)
-    sources=list_files(['src/lib'], ["cpp"]),
-    #define_macros=defines(),
+    sources=list_files(['src'], ["cpp"]),
     include_dirs=[
-      "./src/include",
-      "./src/lib",
-      # Path to pybind11 headers
       get_pybind_include(),
     ],
-    #extra_compile_args=cxxflags(),
-    depends=["VERSION"] + list_files(["src/include", "src/lib"], ["h"]),
+    depends=["VERSION"] + list_files(["src"], ["h"]),
     language='c++'
   ),
 ]
