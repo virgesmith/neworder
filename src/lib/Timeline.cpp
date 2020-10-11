@@ -7,8 +7,8 @@
 #include <algorithm>
 
 // Default "null" timeline is just one step of arbitrary size
-no::Timeline::Timeline() : m_start(0.0), m_end(0.0), m_index(0), m_checkpoints{1} 
-{ 
+no::Timeline::Timeline() : m_start(0.0), m_end(0.0), m_index(0), m_checkpoints{1}
+{
 }
 
 no::Timeline::Timeline(double start, double end, const std::vector<size_t>& checkpoints)
@@ -26,12 +26,12 @@ no::Timeline::Timeline(double start, double end, const std::vector<size_t>& chec
   {
     if (m_checkpoints[i] <= m_checkpoints[i-1])
     {
-      throw py::value_error("invalid timeline: checkpoint %% (%%) is not strictly greater than previous (%%)"_s 
+      throw py::value_error("invalid timeline: checkpoint %% (%%) is not strictly greater than previous (%%)"s
         % i % m_checkpoints[i] % m_checkpoints[i-1]);
     }
   }
 
-  // set to start 
+  // set to start
   m_index = 0;
 }
 
@@ -46,24 +46,24 @@ double no::Timeline::end() const
 }
 
 
-double no::Timeline::time() const 
-{ 
-  return m_start + m_index * dt(); 
+double no::Timeline::time() const
+{
+  return m_start + m_index * dt();
 }
 
-size_t no::Timeline::index() const 
-{ 
+size_t no::Timeline::index() const
+{
   return m_index;
 }
 
-double no::Timeline::dt() const 
-{ 
+double no::Timeline::dt() const
+{
   return (m_end - m_start) / m_checkpoints.back();
 }
 
-size_t no::Timeline::nsteps() const 
-{ 
-  return m_checkpoints.back(); 
+size_t no::Timeline::nsteps() const
+{
+  return m_checkpoints.back();
 }
 
 void no::Timeline::next()
@@ -91,7 +91,7 @@ bool no::Timeline::at_end() const
 
 std::string no::Timeline::repr() const
 {
-  return "<neworder.Timeline start=%% end=%% checkpoints=%% index=%%>"_s 
+  return "<neworder.Timeline start=%% end=%% checkpoints=%% index=%%>"s
           % start() % end() % checkpoints() % index();
 }
 
@@ -114,7 +114,7 @@ double no::time::never()
   return std::numeric_limits<double>::quiet_NaN();
 }
 
-// use this rather than direct comparison to never, as NaN != NaN (as above) 
+// use this rather than direct comparison to never, as NaN != NaN (as above)
 bool no::time::isnever(double t)
 {
   return std::isnan(t);

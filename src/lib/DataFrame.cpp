@@ -54,9 +54,9 @@ void no::df::transition(no::Model& model, py::array_t<int64_t> categories, py::a
   if (matrix.ndim() != 2)
     throw py::type_error("cumulative transition matrix dimension is %%"s % matrix.ndim());
   if (matrix.shape(0) != matrix.shape(1))
-    throw py::type_error("cumulative transition matrix shape is not square: %% by %%"_s % matrix.shape(0) % matrix.shape(1));
+    throw py::type_error("cumulative transition matrix shape is not square: %% by %%"s % matrix.shape(0) % matrix.shape(1));
   if (m != matrix.shape(0))
-    throw py::value_error("cumulative transition matrix size (%%) is not same as length of categories (%%)"_s % matrix.shape(0) % m);
+    throw py::value_error("cumulative transition matrix size (%%) is not same as length of categories (%%)"s % matrix.shape(0) % m);
 
   // IMPORTANT NOTES:
   // - whilst numpy is row-major, pandas stores column-major, i.e. the columns are contiguous memory
@@ -70,17 +70,17 @@ void no::df::transition(no::Model& model, py::array_t<int64_t> categories, py::a
     // point to beginning of row
     double* p = no::begin(matrix) + (i * m);
     if (p[0] < 0.0 || p[0] > 1.0)
-      throw py::value_error("invalid transition probability %% at (%%, 0)"_s % p[0] % i);
+      throw py::value_error("invalid transition probability %% at (%%, 0)"s % p[0] % i);
     cumprobs[i][0] = p[0];
     for (int j = 1; j < m; ++j)
     {
       if (p[j] < 0.0 || p[j] > 1.0)
-        throw py::value_error("invalid transition probability %% at (%%, %%)"_s % p[0] % i % j);
+        throw py::value_error("invalid transition probability %% at (%%, %%)"s % p[0] % i % j);
       cumprobs[i][j] = cumprobs[i][j-1] + p[j];
     }
     // check probabilities sum to unity within tolerance
     if (fabs(cumprobs[i][m-1] - 1.0) > std::numeric_limits<double>::epsilon())
-      throw py::value_error("probabilities don't sum to unity (%%) in transition matrix row %%"_s % cumprobs[i][m-1] % i);
+      throw py::value_error("probabilities don't sum to unity (%%) in transition matrix row %%"s % cumprobs[i][m-1] % i);
   }
 
   // reverse catgory lookup
@@ -108,10 +108,10 @@ void no::df::transition(no::Model& model, py::array_t<int64_t> categories, py::a
       continue;
     int64_t j = it->second;
     py::ssize_t k = interp(cumprobs[j], r[i]/*no::at(r, Index_t<1>{i})*/);
-    //no::log("interp %%:%% -> %%"_s % j % r[i] % k);
+    //no::log("interp %%:%% -> %%"s % j % r[i] % k);
     no::at<int64_t>(col, Index_t<1>{i}) = pcat[k]; //no::at<int64_t>(categories, Index_t<1>{k});
   }
-  //no::log("transition %% elapsed: %%"_s % n % t.elapsed_s());
+  //no::log("transition %% elapsed: %%"s % n % t.elapsed_s());
 }
 
 
@@ -120,7 +120,7 @@ void dump(const T* p, py::ssize_t n)
 {
   for (py::ssize_t i = 0; i < n; ++i, ++p)
   {
-    no::log("%%"_s % *p);
+    no::log("%%"s % *p);
     //no::at<std::string>(arr, Index_t<1>{i}) += 1;
   }
 }
@@ -164,7 +164,7 @@ void no::df::testfunc(no::Model& model, py::object& df, const std::string& colna
   // }
   else
   {
-    throw py::type_error("unsupported dtype '%%' in column '%%'"_s % /*arr.dtype().cast<std::string>() %*/ colname);
+    throw py::type_error("unsupported dtype '%%' in column '%%'"s % /*arr.dtype().cast<std::string>() %*/ colname);
   }
 }
 

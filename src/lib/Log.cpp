@@ -3,16 +3,6 @@
 #include "Environment.h"
 
 
-// User-defined string literal and overloaded % operator allow for easy vaguely pythonic construction of log messages, e.g.
-// no::log("the value of %% plus %% is %%"_s % 2 % "2" % 4.0);
-
-// C++14 implements the ""s -> std::string, use this for C++11
-// TODO deprecate
-std::string operator ""_s(const char* p, size_t s)
-{
-  return std::string(p, p + s);
-}
-
 template<>
 std::string to_string_impl(const char* v)
 {

@@ -15,7 +15,7 @@ void validate_prob(double prob)
 {
   if (prob < 0.0 || prob > 1.0)
   {
-    throw py::value_error("probabilities must be in [0,1], got %%"_s % prob);
+    throw py::value_error("probabilities must be in [0,1], got %%"s % prob);
   }
 }
 
@@ -29,7 +29,7 @@ void validate_lambda(const py::array_t<double>& lambda)
   std::for_each(no::cbegin(lambda), no::cend(lambda), [](double l) {
     if (l < 0.0)
     {
-      throw py::value_error("hazard rates must be in >=0, got %%"_s % l);
+      throw py::value_error("hazard rates must be in >=0, got %%"s % l);
     }
   });
 }
@@ -71,7 +71,7 @@ void no::MonteCarlo::reset()
 
 std::string no::MonteCarlo::repr() const
 {
-  return "<neworder.MonteCarlo seed=%%>"_s % seed();
+  return "<neworder.MonteCarlo seed=%%>"s % seed();
 }
 
 size_t no::MonteCarlo::state() const
@@ -114,13 +114,13 @@ py::array_t<int64_t> no::MonteCarlo::sample(py::ssize_t n, const py::array_t<dou
   for (size_t i = 0; i < static_cast<size_t>(m); ++i)
   {
     if (p[i] < 0.0)
-      throw py::value_error("category weights must be positive, got %%"_s % p[i]);
+      throw py::value_error("category weights must be positive, got %%"s % p[i]);
     running_sum += p[i];
     cumul[i] = running_sum;
   }
 
   if (fabs(cumul[m-1] - 1.0) > std::numeric_limits<double>::epsilon())
-    throw py::value_error("category weights must sum to unity, got %%"_s % cumul[m-1]);
+    throw py::value_error("category weights must sum to unity, got %%"s % cumul[m-1]);
 
   return no::make_array<int64_t>({n}, [this, &cumul]() {
       double r = u01();
@@ -206,7 +206,7 @@ py::array_t<double> no::MonteCarlo::arrivals(const py::array_t<double>& lambda_t
       pt += gap;
     } while (pt < tmax);
     imax = std::max(times[i].size(), imax);
-    //no::log("%%: %%"_s % i % times[i]);
+    //no::log("%%: %%"s % i % times[i]);
   }
 
   py::array_t<double> nptimes({n, static_cast<py::ssize_t>(imax - 1)});

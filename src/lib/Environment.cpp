@@ -18,7 +18,7 @@ no::Environment& no::Environment::init(int rank, int size, bool verbose, bool ch
   env.m_checked = checked;
 
   // this hangs on throw when this code is in the (global singleton) constructor
-  try 
+  try
   {
     py::module mpi = py::module::import("mpi4py.MPI");
     py::object comm = mpi.attr("COMM_WORLD");
@@ -29,7 +29,7 @@ no::Environment& no::Environment::init(int rank, int size, bool verbose, bool ch
   {
     env.m_rank = 0;
     env.m_size = 1;
-    // override verbose 
+    // override verbose
     env.get_error(); // flush the error
     no::log("WARNING: mpi4py module not found, assuming serial mode", true);
   }
@@ -70,12 +70,12 @@ void no::Environment::checked(bool b)
 
 std::string no::Environment::context(no::Environment::Context ctx) const
 {
-  // construct strings once 
-  static const std::string idstrings[2] = {"[no %%/%%] "_s % m_rank % m_size, "[py %%/%%] "_s % m_rank % m_size};
+  // construct strings once
+  static const std::string idstrings[2] = {"[no %%/%%] "s % m_rank % m_size, "[py %%/%%] "s % m_rank % m_size};
   return idstrings[(int)ctx];
 }
 
-int64_t no::Environment::unique_index() 
+int64_t no::Environment::unique_index()
 {
   int64_t current = m_uniqueIndex;
   m_uniqueIndex += m_size;
@@ -85,9 +85,9 @@ int64_t no::Environment::unique_index()
 no::Environment::Environment() : m_rank(-1), m_size(-1), m_verbose(false), m_checked(false), m_halt(false)
 {
   // Note: m_unique_id is only set when MPI env is resolved
-} 
+}
 
-no::Environment::~Environment() 
+no::Environment::~Environment()
 {
 }
 
@@ -117,7 +117,7 @@ std::string no::Environment::get_error() noexcept
       py::object formatted_list(format_exception(hexc,hval,htb));
       py::object formatted(py::str("")/*.join(formatted_list)*/);
       return formatted.cast<std::string>();
-    } 
+    }
   }
   return "unable to determine python error";
 }
