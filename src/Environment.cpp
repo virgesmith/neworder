@@ -25,12 +25,15 @@ no::Environment& no::Environment::init(int rank, int size, bool verbose, bool ch
     env.m_rank = comm.attr("Get_rank")().cast<int>();
     env.m_size = comm.attr("Get_size")().cast<int>();
   }
-  catch(const py::error_already_set&)
+  catch(const py::error_already_set& pyerror)
   {
+    if (!pyerror.matches(PyExc_ModuleNotFoundError))
+    {
+      throw;
+    }
     env.m_rank = 0;
     env.m_size = 1;
     // override verbose
-    env.get_error(); // flush the error
     no::log("WARNING: mpi4py module not found, assuming serial mode", true);
   }
 
@@ -89,35 +92,4 @@ no::Environment::Environment() : m_rank(-1), m_size(-1), m_verbose(false), m_che
 
 no::Environment::~Environment()
 {
-}
-
-// check for errors in the python env: if it returns, there is no error
-// copied from: https://wiki.python.org/moin/boost.python/EmbeddingPython
-std::string no::Environment::get_error() noexcept
-{
-  // see PyErr_Fetch: https://docs.python.org/3/c-api/exceptions.html
-  std::string message;
-  if (PyErr_Occurred())
-  {
-    PyObject *exc, *val, *tb;
-    PyErr_Fetch(&exc, &val, &tb);
-    PyErr_NormalizeException(&exc, &val, &tb);
-
-    py::handle hexc(exc), hval(/*py::allow_null(*/val/*)*/), htb(/*py::allow_null(*/tb/*)*/);
-
-    PyErr_Clear();
-    if(!hval)
-    {
-      return py::str(hexc);
-    }
-    else
-    {
-      py::module traceback("traceback");
-      py::object format_exception(traceback.attr("format_exception"));
-      py::object formatted_list(format_exception(hexc,hval,htb));
-      py::object formatted(py::str("")/*.join(formatted_list)*/);
-      return formatted.cast<std::string>();
-    }
-  }
-  return "unable to determine python error";
 }
