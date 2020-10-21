@@ -38,24 +38,24 @@ void validate_lambda(const py::array_t<double>& lambda)
 
 
 // helper functions for basic seeding strategies
-int64_t no::MonteCarlo::deterministic_independent_stream(int r)
+int32_t no::MonteCarlo::deterministic_independent_stream(int r)
 {
   return 19937 + r;
 }
 
-int64_t no::MonteCarlo::deterministic_identical_stream(int)
+int32_t no::MonteCarlo::deterministic_identical_stream(int)
 {
   return 19937;
 }
 
-int64_t no::MonteCarlo::nondeterministic_stream(int)
+int32_t no::MonteCarlo::nondeterministic_stream(int)
 {
   std::random_device rand;
-  return (static_cast<int64_t>(rand()) << 32) + rand();
+  return rand();
 }
 
 //
-no::MonteCarlo::MonteCarlo(int64_t seed)
+no::MonteCarlo::MonteCarlo(int32_t seed)
   : m_seed(seed), m_prng(m_seed) { }
 
 

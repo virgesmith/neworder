@@ -68,7 +68,7 @@ bool no::Model::run(py::object& model_subclass)
   {
     base.timeline().next();
     double t = base.timeline().time();
-    int timeindex = base.timeline().index();
+    size_t timeindex = base.timeline().index();
 
     no::log("t=%%(%%) %%.step()"s % t % timeindex % subclass_name);
     model_subclass.attr("step")();

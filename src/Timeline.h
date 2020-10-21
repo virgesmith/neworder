@@ -8,7 +8,7 @@
 
 namespace no {
 
-class Timeline final
+class NEWORDER_EXPORT Timeline final
 {
 public:
 
@@ -44,16 +44,16 @@ public:
   std::string repr() const;
 
 private:
-  double m_start; 
+  double m_start;
   double m_end;
 
   size_t m_index; // index of current time
-  
+
   std::vector<size_t> m_checkpoints;
 };
 
 namespace time {
-  
+
   // returns a floating point number that compares unequal (and unordered) to any other number
   // thus the following all evaluate to true: never() != never(), !(x < never()), !(x >= never()) (so be careful!)
   double never();

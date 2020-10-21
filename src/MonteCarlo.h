@@ -19,14 +19,14 @@ class NEWORDER_EXPORT MonteCarlo
 public:
 
   // some basic seeding strategies
-  static int64_t deterministic_independent_stream(int r);
+  static int32_t deterministic_independent_stream(int r);
 
-  static int64_t deterministic_identical_stream(int);
+  static int32_t deterministic_identical_stream(int);
 
-  static int64_t nondeterministic_stream(int);
+  static int32_t nondeterministic_stream(int);
 
   // constructs given a seed
-  MonteCarlo(int64_t seed);
+  MonteCarlo(int32_t seed);
 
   int64_t seed() const;
 
@@ -44,19 +44,19 @@ public:
   // raw unsigned 64-bit ints, can be used to (un)deterministically seed another generator (e.g. np.random)
   uint64_t raw();
 
-  // randomly sample categories with weights 
+  // randomly sample categories with weights
   py::array_t<int64_t> sample(py::ssize_t n, const py::array_t<double>& cat_weights);
 
-  // single-prob hazard 
+  // single-prob hazard
   py::array_t<double> hazard(double prob, py::ssize_t n);
 
-  // vector hazard 
+  // vector hazard
   py::array_t<double> hazard(const py::array_t<double>& prob);
 
-  // compute stopping times 
+  // compute stopping times
   py::array_t<double> stopping(double prob, py::ssize_t n);
 
-  // vector stopping 
+  // vector stopping
   py::array_t<double> stopping(const py::array_t<double>& prob);
 
   // multiple-arrival (0+) process (requires that final hazard rate is zero)

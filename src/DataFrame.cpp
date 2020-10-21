@@ -84,10 +84,10 @@ void no::df::transition(no::Model& model, py::array_t<int64_t> categories, py::a
   }
 
   // reverse catgory lookup
-  std::map<int64_t, int> lookup;
+  std::map<int64_t, int64_t> lookup;
   for (py::ssize_t i = 0; i < m; ++i)
   {
-    lookup[no::at<int64_t>(categories, Index_t<1>{i})] = (int64_t)i;
+    lookup[no::at<int64_t>(categories, Index_t<1>{i})] = i;
   }
 
   py::ssize_t n = col.size();
