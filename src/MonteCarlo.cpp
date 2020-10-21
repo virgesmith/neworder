@@ -59,7 +59,7 @@ no::MonteCarlo::MonteCarlo(int32_t seed)
   : m_seed(seed), m_prng(m_seed) { }
 
 
-int64_t no::MonteCarlo::seed() const
+int32_t no::MonteCarlo::seed() const
 {
   return m_seed;
 }

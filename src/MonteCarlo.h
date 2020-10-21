@@ -28,7 +28,7 @@ public:
   // constructs given a seed
   MonteCarlo(int32_t seed);
 
-  int64_t seed() const;
+  int32_t seed() const;
 
   void reset();
 
@@ -74,7 +74,7 @@ private:
   // Use this over std::uniform_real_distribution as can make C++ and rust implementations produce identical streams
   double u01();
 
-  int64_t m_seed;
+  int32_t m_seed;
   std::mt19937 m_prng;
 };
 

@@ -10,7 +10,7 @@
 #include <pybind11/pybind11.h>
 
 no::Model::Model(Timeline& timeline, const py::function& seeder)
-  : m_timeline(timeline), m_monteCarlo(seeder(no::getenv().rank()).cast<int64_t>())
+  : m_timeline(timeline), m_monteCarlo(seeder(no::getenv().rank()).cast<int32_t>())
 {
   no::log("neworder %% model init: timeline=%% mc=%%"s % module_version() % m_timeline.repr() % m_monteCarlo.repr());
 }
