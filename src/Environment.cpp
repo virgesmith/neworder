@@ -34,7 +34,7 @@ no::Environment& no::Environment::init(int rank, int size, bool verbose, bool ch
     env.m_rank = 0;
     env.m_size = 1;
     // override verbose
-    no::log("WARNING: mpi4py module not found, assuming serial mode", true);
+    no::warn("mpi4py module not found, assuming serial mode");
   }
 
   env.m_uniqueIndex = static_cast<int64_t>(env.m_rank);

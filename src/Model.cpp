@@ -79,7 +79,7 @@ bool no::Model::run(py::object& model_subclass)
       ok = model_subclass.attr("check")().cast<bool>();
       if (!ok)
       {
-        no::log("t=%%(%%) %%.check() FAILED, halting model run"s % t % timeindex % subclass_name, true );
+        no::warn("t=%%(%%) %%.check() FAILED, halting model run"s % t % timeindex % subclass_name);
         break;
       }
       no::log("t=%%(%%) %%.check() [ok]"s % t % timeindex % subclass_name );

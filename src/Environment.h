@@ -56,8 +56,8 @@ private:
 
   friend class Model;
 
-  friend void log(const std::string& msg, bool);
-  friend NEWORDER_EXPORT void log(const py::handle& msg, bool);
+  friend void log(const std::string& msg);
+  friend NEWORDER_EXPORT void log(const py::handle& msg);
 
   // MPI rank/size
   int m_rank;
