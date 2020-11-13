@@ -12,18 +12,6 @@
 
 #include <map>
 
-size_t interp(const std::vector<double>& cumprob, double x)
-{
-  // TODO would bisection search here be better (even for small arrays)?
-  size_t lbound = 0;
-  for (; lbound < cumprob.size() - 1; ++lbound)
-  {
-    if (cumprob[lbound] > x)
-      break;
-  }
-  return lbound;
-}
-
 
 py::array_t<int64_t> no::df::unique_index(size_t n)
 {
@@ -64,23 +52,24 @@ void no::df::transition(no::Model& model, py::array_t<int64_t> categories, py::a
   // - the code below assumes the transition matrix has a row major memory layout (i.e. row sums to unity not cols)
 
   // construct checked cumulative probabilities for each state to randomly interpolate
-  std::vector<std::vector<double>> cumprobs(m, std::vector<double>(m));
+  std::vector<std::vector<double>> cumprobs(m);
   for (int i = 0; i < m; ++i)
   {
-    // point to beginning of row
-    double* p = no::begin(matrix) + (i * m);
-    if (p[0] < 0.0 || p[0] > 1.0)
-      throw py::value_error("invalid transition probability %% at (%%, 0)"s % p[0] % i);
-    cumprobs[i][0] = p[0];
-    for (int j = 1; j < m; ++j)
-    {
-      if (p[j] < 0.0 || p[j] > 1.0)
-        throw py::value_error("invalid transition probability %% at (%%, %%)"s % p[0] % i % j);
-      cumprobs[i][j] = cumprobs[i][j-1] + p[j];
-    }
-    // check probabilities sum to unity within tolerance
-    if (fabs(cumprobs[i][m-1] - 1.0) > std::numeric_limits<double>::epsilon())
-      throw py::value_error("probabilities don't sum to unity (%%) in transition matrix row %%"s % cumprobs[i][m-1] % i);
+    cumprobs[i] = no::cumulative(no::cbegin(matrix) + (i * m), m);
+    // // point to beginning of row
+    // double* p = no::begin(matrix) + (i * m);
+    // if (p[0] < 0.0 || p[0] > 1.0)
+    //   throw py::value_error("invalid transition probability %% at (%%, 0)"s % p[0] % i);
+    // cumprobs[i][0] = p[0];
+    // for (int j = 1; j < m; ++j)
+    // {
+    //   if (p[j] < 0.0 || p[j] > 1.0)
+    //     throw py::value_error("invalid transition probability %% at (%%, %%)"s % p[0] % i % j);
+    //   cumprobs[i][j] = cumprobs[i][j-1] + p[j];
+    // }
+    // // check probabilities sum to unity within tolerance
+    // if (fabs(cumprobs[i][m-1] - 1.0) > std::numeric_limits<double>::epsilon())
+    //   throw py::value_error("probabilities don't sum to unity (%%) in transition matrix row %%"s % cumprobs[i][m-1] % i);
   }
 
   // reverse catgory lookup
@@ -107,7 +96,7 @@ void no::df::transition(no::Model& model, py::array_t<int64_t> categories, py::a
     if (it == lookup.end())
       continue;
     int64_t j = it->second;
-    py::ssize_t k = interp(cumprobs[j], r[i]/*no::at(r, Index_t<1>{i})*/);
+    py::ssize_t k = no::interp(cumprobs[j], r[i]/*no::at(r, Index_t<1>{i})*/);
     //no::log("interp %%:%% -> %%"s % j % r[i] % k);
     no::at<int64_t>(col, Index_t<1>{i}) = pcat[k]; //no::at<int64_t>(categories, Index_t<1>{k});
   }

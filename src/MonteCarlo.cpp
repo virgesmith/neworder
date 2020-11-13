@@ -109,18 +109,18 @@ py::array_t<int64_t> no::MonteCarlo::sample(py::ssize_t n, const py::array_t<dou
   py::ssize_t m = cat_weights.size();
   const double* p = no::cbegin(cat_weights);
 
-  std::vector<double> cumul(m);
-  double running_sum = 0.0;
-  for (size_t i = 0; i < static_cast<size_t>(m); ++i)
-  {
-    if (p[i] < 0.0)
-      throw py::value_error("category weights must be positive, got %%"s % p[i]);
-    running_sum += p[i];
-    cumul[i] = running_sum;
-  }
+  std::vector<double> cumul = no::cumulative(p, m);
+  // double running_sum = 0.0;
+  // for (size_t i = 0; i < static_cast<size_t>(m); ++i)
+  // {
+  //   if (p[i] < 0.0)
+  //     throw py::value_error("category weights must be positive, got %%"s % p[i]);
+  //   running_sum += p[i];
+  //   cumul[i] = running_sum;
+  // }
 
-  if (fabs(cumul[m-1] - 1.0) > std::numeric_limits<double>::epsilon())
-    throw py::value_error("category weights must sum to unity, got %%"s % cumul[m-1]);
+  // if (fabs(cumul[m-1] - 1.0) > std::numeric_limits<double>::epsilon())
+  //   throw py::value_error("category weights must sum to unity, got %%"s % cumul[m-1]);
 
   return no::make_array<int64_t>({n}, [this, &cumul]() {
       double r = u01();
@@ -305,5 +305,44 @@ py::array_t<double> no::MonteCarlo::next_arrival(const py::array_t<double>& star
     pt[i] += relative ? offset : 0.0;
   }
   return times;
+}
+
+//
+std::vector<double> no::cumulative(const double* p, size_t n)
+{
+  static const double tolerance = std::sqrt(std::numeric_limits<double>::epsilon());
+
+  std::vector<double> cumprobs(n);
+  if (p[0] < 0.0 || p[0] > 1.0)
+    throw py::value_error("invalid probability: %% at index 0"s % p[0]);
+
+  cumprobs[0] = p[0];
+  for (size_t i = 1; i < n; ++i)
+  {
+    if (p[i] < 0.0 || p[i] > 1.0)
+      throw py::value_error("invalid probability %% at index %%"s % p[i] % i);
+    cumprobs[i] = cumprobs[i-1] + p[i];
+  }
+
+  // check probabilities sum to unity within tolerance
+  if (fabs(cumprobs[n-1] - 1.0) > tolerance)
+    throw py::value_error("cumulative probabilities don't sum to unity: %%"s % cumprobs);
+  // then force the final value to 1 (in case its slightly out, which could cause a problem)
+  cumprobs[n-1] = 1.0;
+
+  return cumprobs;
+}
+
+
+size_t no::interp(const std::vector<double>& cumprob, double x)
+{
+  // TODO would bisection search here be better (even for small arrays)?
+  size_t lbound = 0;
+  for (; lbound < cumprob.size() - 1; ++lbound)
+  {
+    if (cumprob[lbound] > x)
+      break;
+  }
+  return lbound;
 }
 

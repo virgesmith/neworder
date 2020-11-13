@@ -79,4 +79,13 @@ private:
 };
 
 
+// helper functions
+
+// construct cumulative from probabilities
+std::vector<double> cumulative(const double* p, size_t n);
+
+// get index of largest value of cumprob smaller than x
+size_t interp(const std::vector<double>& cumprob, double x);
+
+
 }
