@@ -5,7 +5,7 @@
 
 // "vectorised" functions operating on, and/or returning numpy arrays, using the generic helper functions in ArrayHelpers.h
 
-namespace no { 
+namespace no {
 
 namespace time {
   NEWORDER_EXPORT py::array_t<bool> isnever_a(const py::array_t<double>& x);
@@ -16,4 +16,4 @@ NEWORDER_EXPORT py::array_t<double> logistic(const py::array_t<double>& x, doubl
 // logit function
 NEWORDER_EXPORT py::array_t<double> logit(const py::array_t<double>& x);
 
-} 
+}

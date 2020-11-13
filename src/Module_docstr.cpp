@@ -1,4 +1,8 @@
 
+const char* module_docstr = R"docstr(
+A dynamic microsimulation framework";
+)docstr";
+
 // top-level functions
 
 const char* version_docstr = R"docstr(

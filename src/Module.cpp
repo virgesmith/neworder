@@ -41,7 +41,7 @@ PYBIND11_MODULE(neworder, m)
   // options.disable_function_signatures();
 #include "Module_docstr.cpp"
 
-  m.doc() = "A dynamic microsimulation framework";
+  m.doc() = module_docstr;
 
   // utility/diagnostics
   m.def("version", no::module_version, version_docstr)

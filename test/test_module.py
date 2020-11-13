@@ -1,8 +1,11 @@
 import pytest
 import numpy as np
-import neworder as no
 
+# if this doesnt work, use --disable-warnings flag
+# import warnings
+# warnings.filterwarnings(action='ignore', category=RuntimeWarning, module=r'.*')
 #no.verbose()
+import neworder as no
 
 
 def test_basics():
@@ -35,6 +38,7 @@ def test_dummy_model():
 
   assert no.run(DummyModel())
 
+@pytest.mark.filterwarnings("ignore:t=0")
 def test_check_flag():
   class FailingModel(no.Model):
     def __init__(self):
