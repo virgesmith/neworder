@@ -2,6 +2,8 @@ import pytest
 import numpy as np
 import neworder as no
 
+from utils import assert_throws
+
 #no.verbose()
 
 class _TestModel(no.Model):
@@ -25,7 +27,7 @@ class _TestModel2(no.Model):
 
     self.i = 0
     self.t = start
-    self.checkpoints = checkpoints 
+    self.checkpoints = checkpoints
     self.end = end
 
   # if you implement step you MUST call super.step() to increment the timeline
@@ -69,10 +71,18 @@ def test_null_timeline():
 
   m = _TestModel2(0, 0, [1])
   no.run(m)
-  assert m.timeline().at_checkpoint() 
+  assert m.timeline().at_checkpoint()
   assert m.timeline().at_end()
   assert m.timeline().index() == 1
   assert m.timeline().time() == 0.0
+
+def test_timeline_validation():
+
+  assert_throws(ValueError, no.Timeline, 2020, 2020, [])
+  assert_throws(ValueError, no.Timeline, 2020, 2019, [1])
+  assert_throws(ValueError, no.Timeline, 2020, 2022, [2,1])
+  assert_throws(ValueError, no.Timeline, 2020, 2022, [1,1])
+
 
 def test_timeline():
   # 40 years annual steps with 10y checkpoints
@@ -86,7 +96,7 @@ def test_timeline():
   assert m.timeline().time() == 2051
 
 def test_model():
-  model = _TestModel() 
+  model = _TestModel()
   no.run(model)
   assert model.step_count == 10
   assert model.checkpoint_count == 2

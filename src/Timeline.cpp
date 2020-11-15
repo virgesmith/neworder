@@ -15,10 +15,17 @@ no::Timeline::Timeline(double start, double end, const std::vector<size_t>& chec
   : m_start(start), m_end(end), m_checkpoints(checkpoints)
 {
   size_t n = m_checkpoints.size();
+
   // validate
+  // negative timesteps are disallowed as MC functions will misbehave with dt<0
+  if (end < start) // end==start IS valid (for a null timeline)
+  {
+    throw py::value_error("end time (%%) must not be before start time (%%)"s % m_end % m_start);
+  }
+
   if (n < 1)
   {
-    py::value_error("checkpoints must contain at least one value (the last step)");
+    throw py::value_error("checkpoints must contain at least one value (the last step)");
   }
 
   // validate checkpoints monotonic and on timeline
