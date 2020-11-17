@@ -27,10 +27,10 @@ public:
   Timeline(Timeline&&) = default;
   Timeline& operator=(Timeline&&) = default;
 
-  // for logging only
-  virtual std::string time() const { return "n/a"; }
-  virtual std::string start() const { return "n/a"; }
-  virtual std::string end() const { return "n/a"; }
+  // represent times numerically
+  virtual py::object time() const = 0;
+  virtual py::object start() const = 0;
+  virtual py::object end() const = 0;
 
   virtual size_t index() const = 0;
   virtual size_t nsteps() const = 0;
@@ -51,9 +51,10 @@ class NEWORDER_EXPORT NoTimeline : public Timeline
 public:
   NoTimeline() : m_stepped(false) { }
 
-  std::string time() const { return "n/a"; }
-  std::string start() const { return "n/a"; }
-  std::string end() const { return "n/a"; }
+  // the actual types may differ in derived classes
+  py::object time() const;
+  py::object start() const;
+  py::object end() const;
 
   size_t index() const { return static_cast<size_t>(m_stepped); }
   size_t nsteps() const { return 1; }
@@ -86,9 +87,9 @@ public:
   LinearTimeline(LinearTimeline&&) = default;
   LinearTimeline& operator=(LinearTimeline&&) = default;
 
-  std::string time() const;
-  std::string start() const;
-  std::string end() const;
+  py::object time() const;
+  py::object start() const;
+  py::object end() const;
 
   size_t index() const;
   size_t nsteps() const;
@@ -108,10 +109,13 @@ private:
   double m_start;
   double m_end;
 
-  size_t m_index; // index of current time
+  size_t m_index;
 
   std::vector<size_t> m_checkpoints;
 };
+
+
+// TODO Decimal?Timeline
 
 
 class NEWORDER_EXPORT CalendarTimeline : public Timeline
@@ -123,9 +127,9 @@ public:
   // TODO specify checkpoints (as multiple of steps)
   CalendarTimeline(time_point start, time_point end);
 
-  std::string time() const;
-  std::string start() const;
-  std::string end() const;
+  py::object time() const;
+  py::object start() const;
+  py::object end() const;
 
   size_t index() const;
   size_t nsteps() const;
@@ -136,9 +140,6 @@ public:
 
   bool at_checkpoint() const { return false; }
   bool at_end() const;
-
-  // weekday of current time point. Sun=0, Mon=1 etc
-  int dow() const;
 
   std::string repr() const;
 

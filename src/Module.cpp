@@ -99,7 +99,6 @@ PYBIND11_MODULE(neworder, m)
     //.def("next", &no::Timeline::next) not exposed
     //.def("at_checkpoint", &no::CalendarTimeline::at_checkpoint, timeline_at_checkpoint_docstr)
     .def("at_end", &no::CalendarTimeline::at_end, timeline_at_end_docstr)
-    .def("dow", &no::CalendarTimeline::dow)
     .def("__repr__", &no::CalendarTimeline::repr, timeline_repr_docstr);
 
   // Microsimulation (or ABM) model class

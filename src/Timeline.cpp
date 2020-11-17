@@ -4,21 +4,14 @@
 
 #include "NewOrder.h"
 
+#include <pybind11/chrono.h>
+
 #include <algorithm>
 
-// TODO move to a specialisation of to_string
-namespace {
 
-std::string to_string(const no::CalendarTimeline::time_point& time)
-{
-  std::time_t t = std::chrono::system_clock::to_time_t(time);
-  std::string buf(64, 0);
-  std::strftime(buf.data(), buf.size(), "%F %T", std::localtime(&t));
-  return std::string(buf);
-}
-
-}
-
+py::object no::NoTimeline::time() const { return py::float_(time::never()); }
+py::object no::NoTimeline::start() const { return py::float_(time::never()); }
+py::object no::NoTimeline::end() const { return py::float_(time::never()); }
 
 no::LinearTimeline::LinearTimeline(double start, double end, const std::vector<size_t>& checkpoints)
   : m_start(start), m_end(end), m_checkpoints(checkpoints)
@@ -49,22 +42,6 @@ no::LinearTimeline::LinearTimeline(double start, double end, const std::vector<s
 
   // set to start
   m_index = 0;
-}
-
-std::string no::LinearTimeline::start() const
-{
-  return "%%"s % m_start;
-}
-
-std::string no::LinearTimeline::end() const
-{
-  return "%%"s % m_end;
-}
-
-
-std::string no::LinearTimeline::time() const
-{
-  return "%%"s % (m_start + m_index * dt());
 }
 
 size_t no::LinearTimeline::index() const
@@ -105,10 +82,14 @@ bool no::LinearTimeline::at_end() const
   return m_index == m_checkpoints.back();
 }
 
+py::object no::LinearTimeline::time() const { return py::float_(m_start + dt() * m_index); }
+py::object no::LinearTimeline::start() const { return py::float_(m_start); }
+py::object no::LinearTimeline::end() const { return py::float_(m_end); }
+
 std::string no::LinearTimeline::repr() const
 {
   return "<neworder.LinearTimeline start=%% end=%% checkpoints=%% index=%%>"s
-          % start() % end() % checkpoints() % index();
+          % m_start % m_end % m_checkpoints % m_index;
 }
 
 
@@ -170,16 +151,6 @@ no::CalendarTimeline::CalendarTimeline(time_point start, time_point end) : m_ind
   m_times.push_back(end);
 }
 
-std::string no::CalendarTimeline::start() const
-{
-  return to_string(m_times.front());
-}
-
-std::string no::CalendarTimeline::end() const
-{
-  return to_string(m_times.back());
-}
-
 size_t no::CalendarTimeline::index() const
 {
   return m_index;
@@ -188,11 +159,6 @@ size_t no::CalendarTimeline::index() const
 bool no::CalendarTimeline::at_end() const
 {
   return m_index >= m_times.size();
-}
-
-std::string no::CalendarTimeline::time() const
-{
-  return to_string(m_times[m_index]);
 }
 
 void no::CalendarTimeline::next()
@@ -213,14 +179,30 @@ size_t no::CalendarTimeline::nsteps() const
   return m_times.size();
 }
 
+// namespace {
 
-// Sun=0, Mon=1 etc
-int no::CalendarTimeline::dow() const
-{
-  std::time_t t = std::chrono::system_clock::to_time_t(m_times[m_index]);
-  tm* local_tm = std::localtime(&t);
-  return local_tm->tm_wday;
-}
+// py::object to_handle(const no::CalendarTimeline::time_point& time)
+// {
+//   py::object o = py::cast(time);
+//   std::time_t t = std::chrono::system_clock::to_time_t(time);
+//   std::string buf(64, 0);
+//   std::strftime(buf.data(), buf.size(), "%F %T", std::localtime(&t));
+//   return py::str(buf);
+// }
+
+// }
+
+py::object no::CalendarTimeline::time() const { return py::cast(m_times[m_index]); }
+py::object no::CalendarTimeline::start() const { return py::cast(m_times.front()); }
+py::object no::CalendarTimeline::end() const { return py::cast(m_times.back()); }
+
+// // Sun=0, Mon=1 etc
+// int no::CalendarTimeline::dow() const
+// {
+//   std::time_t t = std::chrono::system_clock::to_time_t(m_times[m_index]);
+//   tm* local_tm = std::localtime(&t);
+//   return local_tm->tm_wday;
+// }
 
 std::string no::CalendarTimeline::repr() const
 {

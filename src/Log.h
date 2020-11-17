@@ -6,6 +6,7 @@
 #include <string>
 #include <type_traits>
 #include <sstream>
+//#include <chrono>
 #include <iomanip>
 
 using namespace std::string_literals;
@@ -29,6 +30,9 @@ template<>
 std::string to_string_impl(const char* v);
 
 std::string to_string_impl(const std::string& v);
+
+// std::string to_string_impl(const std::chrono::system_clock::time_point&);
+std::string to_string_impl(const py::object& o);
 
 template<typename T>
 std::string to_string_impl(const std::vector<T>& v)

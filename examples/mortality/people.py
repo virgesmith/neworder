@@ -71,7 +71,7 @@ class PeopleContinuous(neworder.Model):
   """ Persons sampled each represented as a row in a data frame """
   def __init__(self, mortality_hazard_file, n, dt):
     # Direct sampling doesnt require a timeline
-    super().__init__(neworder.Timeline.null(), neworder.MonteCarlo.deterministic_identical_stream)
+    super().__init__(neworder.NoTimeline(), neworder.MonteCarlo.deterministic_identical_stream)
     # initialise cohort
     self.mortality_hazard = pd.read_csv(mortality_hazard_file)
 
@@ -79,7 +79,7 @@ class PeopleContinuous(neworder.Model):
     self.max_rate_age = max(self.mortality_hazard.DC1117EW_C_AGE) - 1
 
     #neworder.log(self.mortality_hazard.head())
-    self.population = pd.DataFrame(index=neworder.df.unique_index(n), 
+    self.population = pd.DataFrame(index=neworder.df.unique_index(n),
                                    data={"age_at_death": neworder.time.far_future()})
 
     # the time interval of the mortality data values
@@ -93,8 +93,8 @@ class PeopleContinuous(neworder.Model):
 
   # !cont_check!
   def check(self):
-    # ensure all times of death are finite 
-    return self.population.age_at_death.isnull().sum() == 0  
+    # ensure all times of death are finite
+    return self.population.age_at_death.isnull().sum() == 0
   # !cont_check!
 
   # !cont_checkpoint!

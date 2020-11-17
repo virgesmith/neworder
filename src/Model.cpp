@@ -67,7 +67,7 @@ bool no::Model::run(py::object& model_subclass)
   while (!base.timeline().at_end())
   {
     base.timeline().next();
-    std::string t = base.timeline().time();
+    py::object t = base.timeline().time();
     size_t timeindex = base.timeline().index();
 
     no::log("t=%%(%%) %%.step()"s % t % timeindex % subclass_name);

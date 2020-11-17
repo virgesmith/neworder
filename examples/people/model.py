@@ -14,6 +14,7 @@ initial_population = "examples/people/E08000021_MSOA11_2011.csv"
 # age, gender and ethnicity-specific rates
 fertility_rate_data = "examples/people/ethpop_fertility.csv"
 mortality_rate_data = "examples/people/ethpop_mortality.csv"
+# TODO the numbers aren't being interpreted correctly
 in_migration_rate_data = "examples/people/ethpop_inmig.csv"
 out_migration_rate_data = "examples/people/ethpop_outmig.csv"
 

@@ -66,7 +66,7 @@ def test_null_timeline():
   assert t0.dt() == 0.0
   assert not t0.at_end()
   assert t0.index() == 0
-  assert t0.time() == "n/a"
+  assert no.time.isnever(t0.time())
 
   m = _TestModel2(0, 0, [1])
   no.run(m)

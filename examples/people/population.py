@@ -26,22 +26,35 @@ class Population(neworder.Model):
     self.in_migration = pd.read_csv(in_migration_file, index_col=[0,1,2])
     self.out_migration = pd.read_csv(out_migration_file, index_col=[0,1,2])
 
-    # actual age is randomised within the bound of the category (NB category values are age +1)
-    self.population["Age"] = self.population.DC1117EW_C_AGE - self.mc().ustream(len(self.population))
+    # TODO
+    self.in_migration.Rate = 0.01
+    self.out_migration.Rate = 0.01
+    self.in_migration.loc[self.in_migration.index.isin([19], level="DC1117EW_C_AGE"), "Rate"] = 0.5
+    self.out_migration.loc[self.out_migration.index.isin([22], level="DC1117EW_C_AGE"), "Rate"] = 0.3
 
-    self.output_dir = "./examples/people/output"
-    if not os.path.exists(self.output_dir):
-      os.makedirs(self.output_dir)
+    # make gender and age categorical
+    self.population.DC1117EW_C_AGE = self.population.DC1117EW_C_AGE.astype("category")
+    self.population.DC1117EW_C_SEX = self.population.DC1117EW_C_SEX.astype("category")
+
+    # actual age is randomised within the bound of the category (NB category values are age +1)
+    self.population["Age"] = self.population.DC1117EW_C_AGE.astype(int) - self.mc().ustream(len(self.population))
+
+    # self.output_dir = "./examples/people/output"
+    # if not os.path.exists(self.output_dir):
+    #   os.makedirs(self.output_dir)
+    self.fig = None
+    self.plot_pyramid()
 
   def step(self):
+    # TODO why spike in births at t=0?
     self.births()
     self.deaths()
     self.migrations()
     self.age()
+    self.plot_pyramid()
 
   def checkpoint(self):
-    self.write_table()
-    #self.plot_pyramid()
+    #self.write_table()
     pass
 
   def age(self):
@@ -64,10 +77,10 @@ class Population(neworder.Model):
     # The babies are a clone of the new mothers, with with changed PID, reset age and randomised gender (keeping location and ethnicity)
     newborns = females[h == 1].copy()
     newborns.set_index(neworder.df.unique_index(len(newborns)), inplace=True, drop=True)
-    newborns.Age = self.mc().ustream(len(newborns)) # born within the last 12 months
-    newborns.DC1117EW_C_AGE = 1 # this is 0-1 in census category
+    newborns.Age = self.mc().ustream(len(newborns)) - 1.0 # born within the *next* 12 months (ageing step has yet to happen)
+    newborns.DC1117EW_C_AGE = 0 # this is 0-1 in census category
     # NOTE: do not convert to pd.Series here to stay as this has its own index which conflicts with the main table
-    newborns.DC1117EW_C_SEX = self.mc().hazard(0.5, len(newborns)) + 1
+    newborns.DC1117EW_C_SEX = 1 + self.mc().hazard(0.5, len(newborns)).astype(int)
 
     self.population = self.population.append(newborns)
 
@@ -80,6 +93,11 @@ class Population(neworder.Model):
 
     # Then randomly determine if a birth occurred
     h = self.mc().hazard(rates.values * self.timeline().dt())
+
+    # a = 85
+    # #neworder.log(self.population[h==1].groupby(["Area", "DC1117EW_C_SEX", "NewEthpop_ETH"]))
+    # neworder.log(len(self.population[self.population.DC1117EW_C_AGE > a]))
+    # neworder.log(len(self.population[(h==1) & (self.population.DC1117EW_C_AGE > a)]))
 
     # Finally remove deceased from table
     self.population = self.population[h!=1]
@@ -131,7 +149,7 @@ class Population(neworder.Model):
   def check(self):
     """ State of the nation """
     # check no duplicated unique indices
-    if len(self.population[self.population.index.duplicated(keep=False)].head()):
+    if len(self.population[self.population.index.duplicated(keep=False)]):
       neworder.log("Duplicate indices found")
       return False
     # Valid ETH, SEX, AGE
@@ -158,8 +176,15 @@ class Population(neworder.Model):
     return self.population.to_csv(filename)
 
   def plot_pyramid(self):
+    a = range(86)
     s = self.population.groupby(by=["DC1117EW_C_SEX", "DC1117EW_C_AGE"])["DC1117EW_C_SEX"].count()
-    a = range(85) #s.DC1117EW_C_AGE.unique() - 1
-    m = s[s.index.isin([1], level="DC1117EW_C_SEX")]
-    f = s[s.index.isin([2], level="DC1117EW_C_SEX")]
-    pyramid.plot(a, m, f)
+    m = s[s.index.isin([1], level="DC1117EW_C_SEX")].values
+    f = s[s.index.isin([2], level="DC1117EW_C_SEX")].values
+
+
+
+    if self.fig is None:
+      self.fig, self.axes, self.mbar, self.fbar = pyramid.plot(a, m, f)
+    else:
+      self.mbar, self.fbar = pyramid.update(str(self.timeline().time()), self.fig, self.axes, self.mbar, self.fbar, a, m, f)
+

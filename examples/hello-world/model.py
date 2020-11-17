@@ -23,7 +23,7 @@ class HelloWorld(neworder.Model):
   """
 #!class!
 
-#!constructor!
+  # !constructor!
   def __init__(self, n, p):
     """
     We create a null timeline, corresponding to a single instantaneous
@@ -33,7 +33,7 @@ class HelloWorld(neworder.Model):
     NB it is *essential* to initialise the base class.
     Failure to do so will result in UNDEFINED BEHAVIOUR
     """
-    super().__init__(neworder.Timeline.null(),
+    super().__init__(neworder.NoTimeline(),
                      neworder.MonteCarlo.nondeterministic_stream)
 
     # create a silent population of size n
@@ -43,7 +43,7 @@ class HelloWorld(neworder.Model):
 
     # set the transition probability
     self.p_talk = p
-#!constructor!
+  # !constructor!
 
   # def modify(self, rank):
   #   """
