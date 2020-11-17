@@ -9,7 +9,7 @@ from utils import assert_throws
 class _TestModel(no.Model):
   def __init__(self):
     # 10 steps of 10 with checkpoint at 50 and 100
-    super().__init__(no.Timeline(0,100,[5,10]), no.MonteCarlo.deterministic_identical_stream)
+    super().__init__(no.LinearTimeline(0,100,[5,10]), no.MonteCarlo.deterministic_identical_stream)
 
     self.step_count = 0
     self.checkpoint_count = 0
@@ -19,24 +19,23 @@ class _TestModel(no.Model):
 
   def checkpoint(self):
     self.checkpoint_count += 1
-    assert self.timeline().time() == 50 * self.checkpoint_count
+    assert float(self.timeline().time()) == 50 * self.checkpoint_count
 
 class _TestModel2(no.Model):
   def __init__(self, start, end, checkpoints):
-    super().__init__(no.Timeline(start, end, checkpoints), no.MonteCarlo.deterministic_identical_stream)
+    super().__init__(no.LinearTimeline(start, end, checkpoints), no.MonteCarlo.deterministic_identical_stream)
 
     self.i = 0
     self.t = start
     self.checkpoints = checkpoints
     self.end = end
 
-  # if you implement step you MUST call super.step() to increment the timeline
   def step(self):
     self.i += 1
     self.t += self.timeline().dt()
 
   def check(self):
-    return self.timeline().index() == self.i and self.timeline().time() == self.t
+    return self.timeline().index() == self.i and float(self.timeline().time()) == self.t
 
   def checkpoint(self):
     assert self.timeline().at_checkpoint() and self.timeline().index() in self.checkpoints
@@ -62,38 +61,38 @@ def test_time():
   assert no.time.isnever(no.time.never())
 
 def test_null_timeline():
-  t0 = no.Timeline.null()
+  t0 = no.NoTimeline()
   assert t0.nsteps() == 1
   assert t0.dt() == 0.0
   assert not t0.at_end()
   assert t0.index() == 0
-  assert t0.time() == 0.0
+  assert t0.time() == "n/a"
 
   m = _TestModel2(0, 0, [1])
   no.run(m)
   assert m.timeline().at_checkpoint()
   assert m.timeline().at_end()
   assert m.timeline().index() == 1
-  assert m.timeline().time() == 0.0
+  assert float(m.timeline().time()) == 0.0
 
 def test_timeline_validation():
 
-  assert_throws(ValueError, no.Timeline, 2020, 2020, [])
-  assert_throws(ValueError, no.Timeline, 2020, 2019, [1])
-  assert_throws(ValueError, no.Timeline, 2020, 2022, [2,1])
-  assert_throws(ValueError, no.Timeline, 2020, 2022, [1,1])
+  assert_throws(ValueError, no.LinearTimeline, 2020, 2020, [])
+  assert_throws(ValueError, no.LinearTimeline, 2020, 2019, [1])
+  assert_throws(ValueError, no.LinearTimeline, 2020, 2022, [2,1])
+  assert_throws(ValueError, no.LinearTimeline, 2020, 2022, [1,1])
 
 
 def test_timeline():
   # 40 years annual steps with 10y checkpoints
   m = _TestModel2(2011, 2051, [10,20,30,40])
-  assert m.timeline().time() == 2011
+  assert float(m.timeline().time()) == 2011
   assert m.timeline().dt() == 1.0
   assert m.timeline().index() == 0
 
   no.run(m)
   assert m.timeline().index() == 40
-  assert m.timeline().time() == 2051
+  assert float(m.timeline().time()) == 2051
 
 def test_model():
   model = _TestModel()

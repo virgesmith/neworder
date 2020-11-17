@@ -9,10 +9,10 @@
 
 #include <pybind11/pybind11.h>
 
-no::Model::Model(Timeline& timeline, const py::function& seeder)
-  : m_timeline(timeline), m_monteCarlo(seeder(no::getenv().rank()).cast<int32_t>())
+no::Model::Model(std::unique_ptr<Timeline> timeline, const py::function& seeder)
+  : m_timeline(std::move(timeline)), m_monteCarlo(seeder(no::getenv().rank()).cast<int32_t>())
 {
-  no::log("neworder %% model init: timeline=%% mc=%%"s % module_version() % m_timeline.repr() % m_monteCarlo.repr());
+  no::log("neworder %% model init: timeline=%% mc=%%"s % module_version() % m_timeline->repr() % m_monteCarlo.repr());
 }
 
 
@@ -67,7 +67,7 @@ bool no::Model::run(py::object& model_subclass)
   while (!base.timeline().at_end())
   {
     base.timeline().next();
-    double t = base.timeline().time();
+    std::string t = base.timeline().time();
     size_t timeindex = base.timeline().index();
 
     no::log("t=%%(%%) %%.step()"s % t % timeindex % subclass_name);

@@ -6,7 +6,7 @@ from utils import assert_throws
 
 def test_mc():
 
-  model = no.Model(no.Timeline.null(), no.MonteCarlo.deterministic_identical_stream)
+  model = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
 
   x = model.mc().ustream(1)
   model.mc().reset()
@@ -61,12 +61,12 @@ def test_seeders():
 
   # test custom seeder
   seeder = lambda r: r + 1
-  m = no.Model(no.Timeline.null(), seeder)
+  m = no.Model(no.NoTimeline(), seeder)
   assert m.mc().seed() == no.mpi.rank() + 1
 
 
 def test_sample():
-  m = no.Model(no.Timeline.null(), no.MonteCarlo.deterministic_identical_stream)
+  m = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
 
   assert_throws(ValueError, m.mc().sample, 100, [0.9])
   assert_throws(ValueError, m.mc().sample, 100, [-0.1, 1.1])
@@ -75,7 +75,7 @@ def test_sample():
   assert np.all(m.mc().sample(100, [0.0, 0.0, 0.0, 1.0]) == 3)
 
 def test_hazard():
-  m = no.Model(no.Timeline.null(), no.MonteCarlo.deterministic_identical_stream)
+  m = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
 
   assert np.all(m.mc().hazard(0.0,10) == 0.0)
   assert np.all(m.mc().hazard(1.0,10) == 1.0)
@@ -86,7 +86,7 @@ def test_hazard():
   assert_throws(ValueError, m.mc().hazard, [0.1, 1.2])
 
 def test_stopping():
-  m = no.Model(no.Timeline.null(), no.MonteCarlo.deterministic_identical_stream)
+  m = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
 
   assert np.all(m.mc().stopping(0.0,10) == no.time.far_future())
 
@@ -96,7 +96,7 @@ def test_stopping():
   assert_throws(ValueError, m.mc().stopping, [0.1, 1.2])
 
 def test_arrivals_validation():
-  m = no.Model(no.Timeline.null(), no.MonteCarlo.deterministic_identical_stream)
+  m = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
   assert np.all(no.time.isnever(m.mc().first_arrival([0.0,0.0], 1.0, 10)))
   assert_throws(ValueError, m.mc().first_arrival, np.array([-1.0,0.0]), 1.0, 10)
   assert np.all(no.time.isnever(m.mc().next_arrival(np.zeros(10), [0.0,0.0], 1.0)))
@@ -236,7 +236,7 @@ def _test_mc_parallel(model):
       assert np.all(all_states[0] == all_states[r])
       assert np.all(a - all_a[r] == 0.0)
 
-  mc = no.Model(no.Timeline.null(), no.MonteCarlo.deterministic_independent_stream).mc()
+  mc = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_independent_stream).mc()
 
   a = mc.ustream(5)
 

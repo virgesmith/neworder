@@ -59,21 +59,32 @@ PYBIND11_MODULE(neworder, m)
     .def("isnever", no::time::isnever, time_isnever_docstr, "t"_a) // scalar
     .def("isnever", no::time::isnever_a, time_isnever_a_docstr, "t"_a); // array
 
-  py::class_<no::Timeline>(m, "Timeline", "Timestepping functionality")
+  py::class_<no::NoTimeline>(m, "NoTimeline", "empty (1 arbitrary step) timeline")
+    .def(py::init<>(), timeline_init_docstr)
+    .def("start", &no::NoTimeline::start, timeline_start_docstr)
+    .def("end", &no::NoTimeline::end, timeline_end_docstr)
+    .def("index", &no::NoTimeline::index, timeline_index_docstr)
+    .def("time", &no::NoTimeline::time, timeline_time_docstr)
+    .def("dt", &no::NoTimeline::dt, timeline_dt_docstr)
+    .def("nsteps", &no::NoTimeline::nsteps, timeline_nsteps_docstr)
+    // TODO remove next once tested
+    .def("next", &no::NoTimeline::next) //not exposed
+    .def("at_checkpoint", &no::NoTimeline::at_checkpoint, timeline_at_checkpoint_docstr)
+    .def("at_end", &no::NoTimeline::at_end, timeline_at_end_docstr);
+
+  py::class_<no::LinearTimeline>(m, "LinearTimeline", "Timestepping functionality")
     .def(py::init<double, double, const std::vector<size_t>&>(), timeline_init_docstr, "start"_a, "end"_a, "checkpoints"_a)
-    //.def(py::init<>())
-    .def_static("null", []() { return no::Timeline(); }, timeline_null_docstr) // calls default ctor (rust workaround, pyo3 doesnt permit multiple ctors)
     // Only const accessors exposed to python
-    .def("start", &no::Timeline::start, timeline_start_docstr)
-    .def("end", &no::Timeline::end, timeline_end_docstr)
-    .def("index", &no::Timeline::index, timeline_index_docstr)
-    .def("time", &no::Timeline::time, timeline_time_docstr)
-    .def("dt", &no::Timeline::dt, timeline_dt_docstr)
-    .def("nsteps", &no::Timeline::nsteps, timeline_nsteps_docstr)
-    //.def("next", &no::Timeline::next) not exposed
-    .def("at_checkpoint", &no::Timeline::at_checkpoint, timeline_at_checkpoint_docstr)
-    .def("at_end", &no::Timeline::at_end, timeline_at_end_docstr)
-    .def("__repr__", &no::Timeline::repr, timeline_repr_docstr);
+    .def("start", &no::LinearTimeline::start, timeline_start_docstr)
+    .def("end", &no::LinearTimeline::end, timeline_end_docstr)
+    .def("index", &no::LinearTimeline::index, timeline_index_docstr)
+    .def("time", &no::LinearTimeline::time, timeline_time_docstr)
+    .def("dt", &no::LinearTimeline::dt, timeline_dt_docstr)
+    .def("nsteps", &no::LinearTimeline::nsteps, timeline_nsteps_docstr)
+    .def("next", &no::LinearTimeline::next) //not exposed
+    .def("at_checkpoint", &no::LinearTimeline::at_checkpoint, timeline_at_checkpoint_docstr)
+    .def("at_end", &no::LinearTimeline::at_end, timeline_at_end_docstr)
+    .def("__repr__", &no::LinearTimeline::repr, timeline_repr_docstr);
 
   py::class_<no::CalendarTimeline>(m, "CalendarTimeline", "Timestepping functionality")
     .def(py::init<std::chrono::system_clock::time_point, std::chrono::system_clock::time_point>(), "start"_a, "end"_a)
@@ -93,9 +104,9 @@ PYBIND11_MODULE(neworder, m)
 
   // Microsimulation (or ABM) model class
   py::class_<no::Model>(m, "Model", "The base model class from which all neworder models should be subclassed")
-    .def(py::init<no::Timeline&, const py::function&>(),
-         model_init_docstr,
-         "timeline"_a, "seeder"_a)
+    .def(py::init([](no::NoTimeline& t, const py::function& s) { return no::Model(std::make_unique<no::NoTimeline>(t), s); }), model_init_docstr,"timeline"_a, "seeder"_a)
+    .def(py::init([](no::LinearTimeline& t, const py::function& s) { return no::Model(std::make_unique<no::LinearTimeline>(t), s); }), model_init_docstr,"timeline"_a, "seeder"_a)
+    .def(py::init([](no::CalendarTimeline& t, const py::function& s) { return no::Model(std::make_unique<no::CalendarTimeline>(t), s); }), model_init_docstr,"timeline"_a, "seeder"_a)
     .def("timeline", &no::Model::timeline, py::return_value_policy::reference, model_timeline_docstr)
     .def("mc", &no::Model::mc, py::return_value_policy::reference, model_mc_docstr)
     .def("modify", &no::Model::modify, model_modify_docstr, "r"_a)

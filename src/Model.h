@@ -12,19 +12,19 @@ class Environment;
 class NEWORDER_EXPORT Model
 {
 public:
-  Model(Timeline& timeline, const py::function& seeder);
+  Model(std::unique_ptr<Timeline> timeline, const py::function& seeder);
 
   virtual ~Model() = default;
 
   Model(const Model&) = delete;
   Model& operator=(const Model&) = delete;
-  Model(Model&&) = delete;
-  Model& operator=(Model&&) = delete;
+  Model(Model&&) = default;
+  Model& operator=(Model&&) = default;
 
   static bool run(py::object& subclass);
 
   // getters
-  Timeline& timeline() { return m_timeline; }
+  Timeline& timeline() { return *m_timeline; }
   MonteCarlo& mc() { return m_monteCarlo; }
 
   // functions to override
@@ -37,7 +37,7 @@ public:
   void halt();
 
 private:
-  Timeline m_timeline;
+  std::unique_ptr<Timeline> m_timeline;
   MonteCarlo m_monteCarlo;
 
 };

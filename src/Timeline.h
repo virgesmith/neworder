@@ -13,43 +13,12 @@
 
 namespace no {
 
-// // Abstract base class for timelines
-// template<typename T>
-// class Timeline
-// {
-// public:
-//   virtual ~Timeline() = default;
-
-//   T time() const;
-//   size_t index() const;
-
-//   T start() const;
-//   T end() const;
-//   size_t nsteps() const;
-
-//   double dt() const;
-//   const std::vector<size_t>& checkpoints() const;
-
-//   void next();
-
-//   bool at_checkpoint() const;
-
-//   bool at_end() const;
-
-//   // used by python __repr__
-//   std::string repr() const;
-
-
-// }
-
-class NEWORDER_EXPORT Timeline final //: public Timeline<double>
+// Abstract base class for timelines - implements the basic stepping functionality
+class Timeline
 {
 public:
 
-  // Default "null" timeline is just one step of zero size
-  Timeline();
-
-  Timeline(double start, double end, const std::vector<size_t>& checkpoints);
+  Timeline() { }
 
   virtual ~Timeline() = default;
 
@@ -58,14 +27,73 @@ public:
   Timeline(Timeline&&) = default;
   Timeline& operator=(Timeline&&) = default;
 
-  double time() const;
+  // for logging only
+  virtual std::string time() const { return "n/a"; }
+  virtual std::string start() const { return "n/a"; }
+  virtual std::string end() const { return "n/a"; }
+
+  virtual size_t index() const = 0;
+  virtual size_t nsteps() const = 0;
+  virtual double dt() const = 0;
+
+  virtual void next() = 0;
+
+  virtual bool at_checkpoint() const = 0;
+  virtual bool at_end() const = 0;
+
+  // used by python __repr__
+  virtual std::string repr() const = 0;
+
+};
+
+class NEWORDER_EXPORT NoTimeline : public Timeline
+{
+public:
+  NoTimeline() : m_stepped(false) { }
+
+  std::string time() const { return "n/a"; }
+  std::string start() const { return "n/a"; }
+  std::string end() const { return "n/a"; }
+
+  size_t index() const { return static_cast<size_t>(m_stepped); }
+  size_t nsteps() const { return 1; }
+  double dt() const { return 0.0; }
+
+  virtual void next() { m_stepped = true; }
+  //const std::vector<size_t>& checkpoints() const { return {1}; }
+
+  bool at_checkpoint() const { return m_stepped; }
+  bool at_end() const { return m_stepped; }
+
+  // used by python __repr__
+  std::string repr() const { return "<NoTimeline>"; }
+
+private:
+  bool m_stepped;
+
+};
+
+class NEWORDER_EXPORT LinearTimeline final : public Timeline
+{
+public:
+
+  LinearTimeline(double start, double end, const std::vector<size_t>& checkpoints);
+
+  virtual ~LinearTimeline() = default;
+
+  LinearTimeline(const LinearTimeline&) = default;
+  LinearTimeline& operator=(const LinearTimeline&) = default;
+  LinearTimeline(LinearTimeline&&) = default;
+  LinearTimeline& operator=(LinearTimeline&&) = default;
+
+  std::string time() const;
+  std::string start() const;
+  std::string end() const;
+
   size_t index() const;
-
-  double start() const;
-  double end() const;
   size_t nsteps() const;
-
   double dt() const;
+
   const std::vector<size_t>& checkpoints() const;
 
   void next();
@@ -86,7 +114,7 @@ private:
 };
 
 
-class NEWORDER_EXPORT CalendarTimeline
+class NEWORDER_EXPORT CalendarTimeline : public Timeline
 {
 public:
   using time_point = std::chrono::system_clock::time_point;
@@ -95,19 +123,18 @@ public:
   // TODO specify checkpoints (as multiple of steps)
   CalendarTimeline(time_point start, time_point end);
 
-  time_point time() const;
+  std::string time() const;
+  std::string start() const;
+  std::string end() const;
+
   size_t index() const;
-
-  time_point start() const;
-  time_point end() const;
   size_t nsteps() const;
-
   double dt() const;
   //const std::vector<size_t>& checkpoints() const;
 
   void next();
 
-  //bool at_checkpoint() const;
+  bool at_checkpoint() const { return false; }
   bool at_end() const;
 
   // weekday of current time point. Sun=0, Mon=1 etc

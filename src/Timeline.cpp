@@ -6,12 +6,21 @@
 
 #include <algorithm>
 
-// Default "null" timeline is just one step of arbitrary size
-no::Timeline::Timeline() : m_start(0.0), m_end(0.0), m_index(0), m_checkpoints{1}
+// TODO move to a specialisation of to_string
+namespace {
+
+std::string to_string(const no::CalendarTimeline::time_point& time)
 {
+  std::time_t t = std::chrono::system_clock::to_time_t(time);
+  std::string buf(64, 0);
+  std::strftime(buf.data(), buf.size(), "%F %T", std::localtime(&t));
+  return std::string(buf);
 }
 
-no::Timeline::Timeline(double start, double end, const std::vector<size_t>& checkpoints)
+}
+
+
+no::LinearTimeline::LinearTimeline(double start, double end, const std::vector<size_t>& checkpoints)
   : m_start(start), m_end(end), m_checkpoints(checkpoints)
 {
   size_t n = m_checkpoints.size();
@@ -42,38 +51,38 @@ no::Timeline::Timeline(double start, double end, const std::vector<size_t>& chec
   m_index = 0;
 }
 
-double no::Timeline::start() const
+std::string no::LinearTimeline::start() const
 {
-  return m_start;
+  return "%%"s % m_start;
 }
 
-double no::Timeline::end() const
+std::string no::LinearTimeline::end() const
 {
-  return m_end;
+  return "%%"s % m_end;
 }
 
 
-double no::Timeline::time() const
+std::string no::LinearTimeline::time() const
 {
-  return m_start + m_index * dt();
+  return "%%"s % (m_start + m_index * dt());
 }
 
-size_t no::Timeline::index() const
+size_t no::LinearTimeline::index() const
 {
   return m_index;
 }
 
-double no::Timeline::dt() const
+double no::LinearTimeline::dt() const
 {
   return (m_end - m_start) / m_checkpoints.back();
 }
 
-size_t no::Timeline::nsteps() const
+size_t no::LinearTimeline::nsteps() const
 {
   return m_checkpoints.back();
 }
 
-void no::Timeline::next()
+void no::LinearTimeline::next()
 {
   if (m_index < m_checkpoints.back())
   {
@@ -81,24 +90,24 @@ void no::Timeline::next()
   }
 }
 
-bool no::Timeline::at_checkpoint() const
+bool no::LinearTimeline::at_checkpoint() const
 {
   return std::find(m_checkpoints.begin(), m_checkpoints.end(), m_index) != m_checkpoints.end();
 }
 
-const std::vector<size_t>& no::Timeline::checkpoints() const
+const std::vector<size_t>& no::LinearTimeline::checkpoints() const
 {
   return m_checkpoints;
 }
 
-bool no::Timeline::at_end() const
+bool no::LinearTimeline::at_end() const
 {
   return m_index == m_checkpoints.back();
 }
 
-std::string no::Timeline::repr() const
+std::string no::LinearTimeline::repr() const
 {
-  return "<neworder.Timeline start=%% end=%% checkpoints=%% index=%%>"s
+  return "<neworder.LinearTimeline start=%% end=%% checkpoints=%% index=%%>"s
           % start() % end() % checkpoints() % index();
 }
 
@@ -161,31 +170,29 @@ no::CalendarTimeline::CalendarTimeline(time_point start, time_point end) : m_ind
   m_times.push_back(end);
 }
 
-no::CalendarTimeline::time_point no::CalendarTimeline::start() const
+std::string no::CalendarTimeline::start() const
 {
-  return m_times.front();
+  return to_string(m_times.front());
 }
 
-no::CalendarTimeline::time_point no::CalendarTimeline::end() const
+std::string no::CalendarTimeline::end() const
 {
-  return m_times.back();
+  return to_string(m_times.back());
 }
-
 
 size_t no::CalendarTimeline::index() const
 {
   return m_index;
 }
 
-
 bool no::CalendarTimeline::at_end() const
 {
   return m_index >= m_times.size();
 }
 
-no::CalendarTimeline::time_point no::CalendarTimeline::time() const
+std::string no::CalendarTimeline::time() const
 {
-  return m_times[m_index];
+  return to_string(m_times[m_index]);
 }
 
 void no::CalendarTimeline::next()
@@ -195,8 +202,9 @@ void no::CalendarTimeline::next()
 
 double no::CalendarTimeline::dt() const
 {
+  static const double years_per_sec = 1.0 / (365.2475 * 86400);
   if (m_index < m_times.size() - 1)
-    return std::chrono::duration_cast<std::chrono::seconds>(m_times[m_index+1] - m_times[m_index]).count();
+    return std::chrono::duration_cast<std::chrono::seconds>(m_times[m_index+1] - m_times[m_index]).count() * years_per_sec;
   return 0.0;
 }
 
@@ -216,10 +224,8 @@ int no::CalendarTimeline::dow() const
 
 std::string no::CalendarTimeline::repr() const
 {
-  std::time_t t = std::chrono::system_clock::to_time_t(m_times[m_index]);
-  std::string buf(64, 0);
-  std::strftime(buf.data(), buf.size(), "%F %T %Z", std::localtime(&t));
-  return std::string(buf);
+  return "<neworder.CalendarTimeline start=%% end=%% current=%% index=%%>"s
+          % start() % end() % time() % index();
 }
 
 

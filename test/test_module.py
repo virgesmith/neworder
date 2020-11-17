@@ -1,9 +1,8 @@
 import pytest
 import numpy as np
 
-# if this doesnt work, use --disable-warnings flag
-# import warnings
-# warnings.filterwarnings(action='ignore', category=RuntimeWarning, module=r'.*')
+import warnings
+warnings.filterwarnings(action='ignore', category=RuntimeWarning, message=r't=')
 #no.verbose()
 import neworder as no
 
@@ -30,7 +29,7 @@ def test_submodules():
 def test_dummy_model():
   class DummyModel(no.Model):
     def __init__(self):
-      super().__init__(no.Timeline.null(), no.MonteCarlo.deterministic_identical_stream)
+      super().__init__(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
     def step(self):
       pass
     def checkpoint(self):
@@ -38,11 +37,11 @@ def test_dummy_model():
 
   assert no.run(DummyModel())
 
-@pytest.mark.filterwarnings("ignore:t=0")
+@pytest.mark.filterwarnings("ignore:t=")
 def test_check_flag():
   class FailingModel(no.Model):
     def __init__(self):
-      super().__init__(no.Timeline.null(), no.MonteCarlo.deterministic_identical_stream)
+      super().__init__(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
     def step(self):
       pass
     def check(self):
