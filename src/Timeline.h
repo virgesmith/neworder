@@ -2,13 +2,47 @@
 
 #include "NewOrder.h"
 
+#include "Log.h"
+
+#include <pybind11/chrono.h>
+
 #include <vector>
+#include <chrono>
 #include <cstddef>
 
 
 namespace no {
 
-class NEWORDER_EXPORT Timeline final
+// // Abstract base class for timelines
+// template<typename T>
+// class Timeline
+// {
+// public:
+//   virtual ~Timeline() = default;
+
+//   T time() const;
+//   size_t index() const;
+
+//   T start() const;
+//   T end() const;
+//   size_t nsteps() const;
+
+//   double dt() const;
+//   const std::vector<size_t>& checkpoints() const;
+
+//   void next();
+
+//   bool at_checkpoint() const;
+
+//   bool at_end() const;
+
+//   // used by python __repr__
+//   std::string repr() const;
+
+
+// }
+
+class NEWORDER_EXPORT Timeline final //: public Timeline<double>
 {
 public:
 
@@ -17,7 +51,7 @@ public:
 
   Timeline(double start, double end, const std::vector<size_t>& checkpoints);
 
-  ~Timeline() = default;
+  virtual ~Timeline() = default;
 
   Timeline(const Timeline&) = default;
   Timeline& operator=(const Timeline&) = default;
@@ -37,7 +71,6 @@ public:
   void next();
 
   bool at_checkpoint() const;
-
   bool at_end() const;
 
   // used by python __repr__
@@ -50,6 +83,41 @@ private:
   size_t m_index; // index of current time
 
   std::vector<size_t> m_checkpoints;
+};
+
+
+class NEWORDER_EXPORT CalendarTimeline
+{
+public:
+  using time_point = std::chrono::system_clock::time_point;
+
+  // TODO specify time increment in days, months or years
+  // TODO specify checkpoints (as multiple of steps)
+  CalendarTimeline(time_point start, time_point end);
+
+  time_point time() const;
+  size_t index() const;
+
+  time_point start() const;
+  time_point end() const;
+  size_t nsteps() const;
+
+  double dt() const;
+  //const std::vector<size_t>& checkpoints() const;
+
+  void next();
+
+  //bool at_checkpoint() const;
+  bool at_end() const;
+
+  // weekday of current time point. Sun=0, Mon=1 etc
+  int dow() const;
+
+  std::string repr() const;
+
+private:
+  size_t m_index;
+  std::vector<time_point> m_times;
 };
 
 namespace time {

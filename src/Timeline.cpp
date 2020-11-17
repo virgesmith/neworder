@@ -102,6 +102,127 @@ std::string no::Timeline::repr() const
           % start() % end() % checkpoints() % index();
 }
 
+
+namespace {
+
+// for incrementing time in months preserving day of month
+// e.g. passing 2020,1 will return 29 (leap)
+int daysInFollowingMonth(int year, int month)
+{
+  month +=1;
+  if (month == 12)
+  {
+    year += 1;
+    month -= 12;
+  }
+  static const int days[]{31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+  int d = days[month];
+  if (month == 1 && ((year % 100 != 0) ^ (year % 400 == 0)) && (year % 4 == 0)) // February of a leap year
+    ++d;
+  return d;
+}
+
+}
+
+
+no::CalendarTimeline::CalendarTimeline(time_point start, time_point end) : m_index(0)
+{
+  //size_t i = 0;
+  m_times.push_back(start);
+  time_point time = start;
+
+  for(;;)
+  {
+    std::time_t t = std::chrono::system_clock::to_time_t(time);
+    tm* local_tm = std::localtime(&t);
+    // track whether we cross a DST change
+    int dst_prev = local_tm->tm_isdst;
+    local_tm->tm_mday += daysInFollowingMonth(local_tm->tm_year, local_tm->tm_mon);
+    std::mktime(local_tm);
+    //no::log("h: %% dst: %% prev: %%"s % local_tm->tm_hour % local_tm->tm_isdst % dst_prev);
+
+    // adjust so that hour of day is preserved across DST changes
+    if (local_tm->tm_isdst == 0 && dst_prev == 1)
+    {
+      local_tm->tm_hour += 1;
+    }
+    else if (local_tm->tm_isdst == 1 && dst_prev == 0)
+    {
+      local_tm->tm_hour -= 1;
+    }
+
+    t = std::mktime(local_tm);
+
+    time = std::chrono::system_clock::from_time_t(t);
+    if (time >= end)
+      break;
+    m_times.push_back(time);
+  }
+  m_times.push_back(end);
+}
+
+no::CalendarTimeline::time_point no::CalendarTimeline::start() const
+{
+  return m_times.front();
+}
+
+no::CalendarTimeline::time_point no::CalendarTimeline::end() const
+{
+  return m_times.back();
+}
+
+
+size_t no::CalendarTimeline::index() const
+{
+  return m_index;
+}
+
+
+bool no::CalendarTimeline::at_end() const
+{
+  return m_index >= m_times.size();
+}
+
+no::CalendarTimeline::time_point no::CalendarTimeline::time() const
+{
+  return m_times[m_index];
+}
+
+void no::CalendarTimeline::next()
+{
+  ++m_index;
+}
+
+double no::CalendarTimeline::dt() const
+{
+  if (m_index < m_times.size() - 1)
+    return std::chrono::duration_cast<std::chrono::seconds>(m_times[m_index+1] - m_times[m_index]).count();
+  return 0.0;
+}
+
+size_t no::CalendarTimeline::nsteps() const
+{
+  return m_times.size();
+}
+
+
+// Sun=0, Mon=1 etc
+int no::CalendarTimeline::dow() const
+{
+  std::time_t t = std::chrono::system_clock::to_time_t(m_times[m_index]);
+  tm* local_tm = std::localtime(&t);
+  return local_tm->tm_wday;
+}
+
+std::string no::CalendarTimeline::repr() const
+{
+  std::time_t t = std::chrono::system_clock::to_time_t(m_times[m_index]);
+  std::string buf(64, 0);
+  std::strftime(buf.data(), buf.size(), "%F %T %Z", std::localtime(&t));
+  return std::string(buf);
+}
+
+
 // returns a floating point number that compares less than any other number
 double no::time::distant_past()
 {

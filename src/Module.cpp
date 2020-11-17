@@ -75,6 +75,22 @@ PYBIND11_MODULE(neworder, m)
     .def("at_end", &no::Timeline::at_end, timeline_at_end_docstr)
     .def("__repr__", &no::Timeline::repr, timeline_repr_docstr);
 
+  py::class_<no::CalendarTimeline>(m, "CalendarTimeline", "Timestepping functionality")
+    .def(py::init<std::chrono::system_clock::time_point, std::chrono::system_clock::time_point>(), "start"_a, "end"_a)
+    // TODO remove next once tested
+    .def("next", &no::CalendarTimeline::next, timeline_start_docstr)
+    .def("start", &no::CalendarTimeline::start, timeline_start_docstr)
+    .def("end", &no::CalendarTimeline::end, timeline_end_docstr)
+    .def("index", &no::CalendarTimeline::index, timeline_index_docstr)
+    .def("time", &no::CalendarTimeline::time, timeline_time_docstr)
+    .def("dt", &no::CalendarTimeline::dt, timeline_dt_docstr)
+    .def("nsteps", &no::CalendarTimeline::nsteps, timeline_nsteps_docstr)
+    //.def("next", &no::Timeline::next) not exposed
+    //.def("at_checkpoint", &no::CalendarTimeline::at_checkpoint, timeline_at_checkpoint_docstr)
+    .def("at_end", &no::CalendarTimeline::at_end, timeline_at_end_docstr)
+    .def("dow", &no::CalendarTimeline::dow)
+    .def("__repr__", &no::CalendarTimeline::repr, timeline_repr_docstr);
+
   // Microsimulation (or ABM) model class
   py::class_<no::Model>(m, "Model", "The base model class from which all neworder models should be subclassed")
     .def(py::init<no::Timeline&, const py::function&>(),
