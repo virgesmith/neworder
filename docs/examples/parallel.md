@@ -19,7 +19,7 @@ Firstly, we import the necessary modules and check we are running in parallel mo
 {{ include_snippet("examples/parallel/model.py", "setup") }}
 
 !!! note "MPI"
-    Whilst `neworder` doesn't provide MPI communication functionality, it caches the MPI rank and size (which are assumed to be constant), and the functions `neworder.mpi.rank()` and `neworder.mpi.size()` can be used to inspect these values.
+    Whilst *neworder* doesn't provide MPI communication functionality, it caches the MPI rank and size (which are assumed to be constant), and the functions `neworder.mpi.rank()` and `neworder.mpi.size()` can be used to inspect these values.
 
 As always, the neworder framework expects an instance of a model class, subclassed from `neworder.Model`, which in turn requires a `neworder.Timeline` object:
 

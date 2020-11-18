@@ -8,7 +8,7 @@ p(t)=\lambda e^{-\lambda t}
 
 which has a mean, i.e. life expectancy, of \(\mu=1/\lambda\).
 
-The `neworder` implementation is as direct a port of the MODGEN model, as far as possible.
+The *neworder* implementation is as direct a port of the MODGEN model, as far as possible.
 
 {{ include_snippet("./docs/examples/src.md", show_filename=False) }}
 

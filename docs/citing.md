@@ -1,4 +1,4 @@
-# Citing `neworder`
+# Citing *neworder*
 
 BibTex:
 

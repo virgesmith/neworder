@@ -112,6 +112,15 @@ int daysInFollowingMonth(int year, int month)
   return d;
 }
 
+// std::string to_string_impl(const std::chrono::system_clock::time_point& time)
+// {
+//   std::time_t t = std::chrono::system_clock::to_time_t(time);
+//   std::string buf(64, 0);
+//   std::strftime(buf.data(), buf.size(), "%F %T", std::localtime(&t));
+//   return std::string(buf);
+// }
+
+
 }
 
 

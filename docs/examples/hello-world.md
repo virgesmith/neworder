@@ -8,7 +8,7 @@ This simple example illustrates the basic model structure, how it all fits toget
 
 The framework runs a model via the `neworder.run` function, which takes an instance of a `Model` class. All models contain, at a minimum:
 
-- an instance of `neworder.Timeline`
+- an instance of a timeline
 - an instance of a `neworder.MonteCarlo` engine
 - user-defined methods to evolve the state (`step`) and report/postprocess results (`checkpoint`).
 
@@ -97,7 +97,7 @@ this output is explained line-by-line below.
 
 ## Understanding the workflow and the output
 
-When using `Timeline.null()` the start time, end time and timestep are all zero, and there is a single step, and a single checkpoint at step 1.
+When using `NoTimeline()` the start time, end time and timestep are all zero, and there is a single step, and a single checkpoint at step 1.
 
 First we get some information about the environment, and confirmation of the initialisation parameters:
 

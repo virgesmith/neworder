@@ -31,7 +31,6 @@ std::string to_string_impl(const char* v);
 
 std::string to_string_impl(const std::string& v);
 
-// std::string to_string_impl(const std::chrono::system_clock::time_point&);
 std::string to_string_impl(const py::object& o);
 
 template<typename T>

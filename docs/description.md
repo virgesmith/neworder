@@ -4,13 +4,13 @@
 
 The aim of the framework is to be as unrestrictive and flexible as possible, whilst still providing a skeleton on which to implement a model and a suite of useful tools. Being data agnostic means that this framework can be run standalone or integrated with other frameworks, e.g. the `mesa` ABM package, and into workflows with specific demands on input and output data formats.
 
-It is designed to support both serial and parallel execution modes, with the latter being used to tackle large populations or to perform sensitivity or convergence analysis. `neworder` runs as happily on a desktop PC as it does on a HPC cluster.
+It is designed to support both serial and parallel execution modes, with the latter being used to tackle large populations or to perform sensitivity or convergence analysis. *neworder* runs as happily on a desktop PC as it does on a HPC cluster.
 
 To help users familiarise themselves with the framework, a number of detailed examples covering a variety of use cases are provided. What follows here is a detailed overview of the package functionality.
 
 ## Provision
 
-At at it heart, `neworder` simply provides a mechanism to iterate over a timeline, perform operations at all points on the timeline, plus extra operations at pre-specified points on the timeline, with the help of a library of statistical and data manipulation functions.
+At at it heart, *neworder* simply provides a mechanism to iterate over a timeline, perform operations at all points on the timeline, plus extra operations at pre-specified points on the timeline, with the help of a library of statistical and data manipulation functions.
 
 This is provided by:
 
@@ -21,7 +21,7 @@ This is provided by:
 - data manipulation functions optimised for pandas DataFrames
 - support for a parallel execution using MPI (via the `mpi4py` package).
 
-`neworder` explicitly does not provide any tools for things like visualisation, and users can thus use whatever packages they are most comfortable with. The examples, however, do provide various visualisations using `matplotlib`.
+*neworder* explicitly does not provide any tools for things like visualisation, and users can thus use whatever packages they are most comfortable with. The examples, however, do provide various visualisations using `matplotlib`.
 
 ## Requirements
 
@@ -43,7 +43,7 @@ the following can also be optionally implemented in the model:
 - a `check` method, which is run at every timestep, to e.g. perform checks simulation remains plausible.
 
 !!! note "Additional class methods"
-    There are no restrictions on implementing additional methods in the model class, although bear in mind they won't be available to the `neworder` runtime unless called by one of the functions listed above.
+    There are no restrictions on implementing additional methods in the model class, although bear in mind they won't be available to the *neworder* runtime unless called by one of the functions listed above.
 
 Pretty much everything else is entirely up to the model developer. While the module is completely agnostic about the format of data, the library functions accept and return numpy arrays, and it is recommended to use pandas dataframes where appropriate in order to be able to use the fast data manipulation functionality provided.
 
@@ -53,11 +53,11 @@ New users should take a look at the examples, which cover a range of application
 
 ## Data and Performance
 
-`neworder` is written in C++ with the python bindings provided by the `pybind11` package. As python and C++ have very different memory models, it's generally not advisable to directly share data, i.e. to safely have a python object and a C++ object both referencing (and potentially modifying) the same memory location. Thus `neworder` class member variables are accessible only via member functions and are returned by value (i.e. copied). However, there is a crucial exception to this: the numpy ndarray type. This is fundamental to the operation of the framework, as it enables the C++ module to directly access (and modify) both numpy arrays and pandas data frames, facilitiating very fast implementation of algorithms operating directly on pandas DataFrames.<sup>*</sup>
+*neworder* is written in C++ with the python bindings provided by the `pybind11` package. As python and C++ have very different memory models, it's generally not advisable to directly share data, i.e. to safely have a python object and a C++ object both referencing (and potentially modifying) the same memory location. Thus *neworder* class member variables are accessible only via member functions and are returned by value (i.e. copied). However, there is a crucial exception to this: the numpy ndarray type. This is fundamental to the operation of the framework, as it enables the C++ module to directly access (and modify) both numpy arrays and pandas data frames, facilitiating very fast implementation of algorithms operating directly on pandas DataFrames.<sup>*</sup>
 
 !!! note "Explicit Loops"
-    To get the best performance, avoid using explicit loops in python code where "vectorised" `neworder` functions can be used instead.
+    To get the best performance, avoid using explicit loops in python code where "vectorised" *neworder* functions can be used instead.
 
-You should also bear in mind that while python is a *dynamically typed* language, C++ is *statically typed*. If an argument to a `neworder` method is not the correct type, it will fail immediately (as opposed to python, which will fail only if an invalid operation for the given type is attempted).
+You should also bear in mind that while python is a *dynamically typed* language, C++ is *statically typed*. If an argument to a *neworder* method is not the correct type, it will fail immediately (as opposed to python, which will fail only if an invalid operation for the given type is attempted).
 
 &ast; the `neworder.df.transition` function is *over 2 or 3 orders of magnitude faster* than an equivalent python implementation depending on the length of the dataset, and still an order of magnitude faster that an optimised python implementation.

@@ -1,14 +1,14 @@
 # Developer
 
-`neworder` was originally written as an embbeded python environment, a binary excutable written in C++ that provided python bindings and parallel execution functionality internally (using MPI).
+*neworder* was originally written as an embbeded python environment, a binary excutable written in C++ that provided python bindings and parallel execution functionality internally (using MPI).
 
-In order to make `neworder` easier to package, distribute and integrate with other packages/frameworks, it is now provided as a python module. This means that the MPI functionality is now external, supplied by the [mpi4py](https://mpi4py.readthedocs.io/en/stable/) package.
+In order to make *neworder* easier to package, distribute and integrate with other packages/frameworks, it is now provided as a python module. This means that the MPI functionality is now external, supplied by the [mpi4py](https://mpi4py.readthedocs.io/en/stable/) package.
 
 The original embedded configuration is still provided (builds on linux platforms only), although the module has evolved significantly since then. See the "embedded" branch if you're interested.
 
 ## Requirements
 
-`neworder` works on 64 bit linux, OSX and Windows platforms, and requires python 3.6 or higher. For parallel execution, it requires an MPI environment (e.g. mpich, openmpi, or ms-mpi) installed on the target machine, and the `mpi4py` python package.
+*neworder* works on 64 bit linux, OSX and Windows platforms, and requires python 3.6 or higher. For parallel execution, it requires an MPI environment (e.g. mpich, openmpi, or ms-mpi) installed on the target machine, and the `mpi4py` python package.
 
 ## Repo
 
@@ -116,7 +116,7 @@ mpiexec -n 2 pytest
 mpiexec -n 2 python setup.py test
 ```
 
-!!! warning "Parallel testing" 
+!!! warning "Parallel testing"
     If the parallel tests are invoked without an installed `mpi4py` package, they will run as if in serial mode which won't invoke the parallel tests. If in doubt check the test log for warnings.
 
 ## Running the Examples

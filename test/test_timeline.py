@@ -83,7 +83,7 @@ def test_timeline_validation():
   assert_throws(ValueError, no.LinearTimeline, 2020, 2022, [1,1])
 
 
-def test_timeline():
+def test_linear_timeline():
   # 40 years annual steps with 10y checkpoints
   m = _TestModel2(2011, 2051, [10,20,30,40])
   assert float(m.timeline().time()) == 2011
