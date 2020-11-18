@@ -104,7 +104,7 @@ PYBIND11_MODULE(neworder, m)
     .def("__repr__", &no::NumericTimeline::repr, timeline_repr_docstr);
 
   py::class_<no::CalendarTimeline>(m, "CalendarTimeline", "Timestepping functionality")
-    .def(py::init<std::chrono::system_clock::time_point, std::chrono::system_clock::time_point>(), "start"_a, "end"_a)
+    .def(py::init<std::chrono::system_clock::time_point, std::chrono::system_clock::time_point, size_t, char, size_t>(), "start"_a, "end"_a, "step"_a, "unit"_a, "n_checkpoints"_a)
     // TODO remove next once tested
     .def("next", &no::CalendarTimeline::next, timeline_start_docstr)
     .def("start", &no::CalendarTimeline::start, timeline_start_docstr)

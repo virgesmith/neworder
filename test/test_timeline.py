@@ -139,12 +139,14 @@ def test_consistency():
   s = date(2019,10,31)
   e = date(2020,10,31)
 
-  ct = no.CalendarTimeline(s, e)
+  ct = no.CalendarTimeline(s, e, 1, "m", 1)
   assert ct.start().date() == s
   assert ct.nsteps() == 12
   while not ct.at_end():
+    assert not ct.at_checkpoint()
     ct.next()
   assert ct.index() == 12
+  assert ct.at_checkpoint()
   # need to convert datetime to date to compare
   assert ct.time().date() == e
   ct.next()

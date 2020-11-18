@@ -221,25 +221,35 @@ int daysInFollowingMonth(int year, int month)
   return d;
 }
 
-// std::string to_string_impl(const std::chrono::system_clock::time_point& time)
-// {
-//   std::time_t t = std::chrono::system_clock::to_time_t(time);
-//   std::string buf(64, 0);
-//   std::strftime(buf.data(), buf.size(), "%F %T", std::localtime(&t));
-//   return std::string(buf);
-// }
+no::CalendarTimeline::time_point addDays(no::CalendarTimeline::time_point time, size_t n)
+{
+  std::time_t t = std::chrono::system_clock::to_time_t(time);
+  tm* local_tm = std::localtime(&t);
+  // track whether we cross a DST change
+  int dst_prev = local_tm->tm_isdst;
+  local_tm->tm_mday += n;
+  std::mktime(local_tm);
+  //no::log("h: %% dst: %% prev: %%"s % local_tm->tm_hour % local_tm->tm_isdst % dst_prev);
 
+  // adjust so that hour of day is preserved across DST changes
+  if (local_tm->tm_isdst == 0 && dst_prev == 1)
+  {
+    local_tm->tm_hour += 1;
+  }
+  else if (local_tm->tm_isdst == 1 && dst_prev == 0)
+  {
+    local_tm->tm_hour -= 1;
+  }
 
+  t = std::mktime(local_tm);
+
+  return std::chrono::system_clock::from_time_t(t);
 }
 
 
-no::CalendarTimeline::CalendarTimeline(time_point start, time_point end) : m_index(0)
+no::CalendarTimeline::time_point addMonths(no::CalendarTimeline::time_point time, size_t n)
 {
-  //size_t i = 0;
-  m_times.push_back(start);
-  time_point time = start;
-
-  for(;;)
+  for (size_t i = 0; i < n; ++i)
   {
     std::time_t t = std::chrono::system_clock::to_time_t(time);
     tm* local_tm = std::localtime(&t);
@@ -262,13 +272,66 @@ no::CalendarTimeline::CalendarTimeline(time_point start, time_point end) : m_ind
     t = std::mktime(local_tm);
 
     time = std::chrono::system_clock::from_time_t(t);
+  }
+  return time;
+}
+
+// std::string to_string_impl(const std::chrono::system_clock::time_point& time)
+// {
+//   std::time_t t = std::chrono::system_clock::to_time_t(time);
+//   std::string buf(64, 0);
+//   std::strftime(buf.data(), buf.size(), "%F %T", std::localtime(&t));
+//   return std::string(buf);
+// }
+
+
+}
+
+
+no::CalendarTimeline::CalendarTimeline(time_point start, time_point end, size_t step, char unit, size_t n_checkpoints) : m_index(0)
+{
+  m_times.push_back(start);
+  time_point time = start;
+
+  unit = tolower(unit);
+  if (unit != 'd' && unit != 'm' && unit != 'y')
+  {
+    throw py::value_error("invalid time unit, must be one of D,d,M,m,Y,y");
+  }
+
+  for(;;)
+  {
+    if (unit == 'd')
+    {
+      time = addDays(time, step);
+    }
+    else if (unit == 'm')
+    {
+      time = addMonths(time, step);
+    }
+    else if (unit == 'y')
+    {
+      time = addMonths(time, step * 12); // ensures we deal with leap years correctly
+    }
     if (time >= end)
       break;
     m_times.push_back(time);
   }
   m_times.push_back(end);
-  // TODO remove temp final checkpoint
-  m_checkpoints.push_back(m_times.size()-1);
+
+  // now spread the checkpoints over the timeline
+  if (n_checkpoints >= m_times.size())
+  {
+    throw py::value_error("too many checkpoints requested (%%), timeline only has %% steps"s % n_checkpoints % (m_times.size()-1));
+  }
+
+  m_checkpoints.reserve(n_checkpoints);
+  double steps_per_checkpoint = static_cast<double>(m_times.size()-1) / n_checkpoints;
+  for (size_t i = 0; i < n_checkpoints; ++i)
+  {
+    m_checkpoints.push_back((i + 1) * steps_per_checkpoint);
+  }
+  no::log("%%"s % m_checkpoints);
 }
 
 size_t no::CalendarTimeline::index() const
@@ -288,6 +351,12 @@ void no::CalendarTimeline::next()
     ++m_index;
   }
 }
+
+bool no::CalendarTimeline::at_checkpoint() const
+{
+  return std::find(m_checkpoints.begin(), m_checkpoints.end(), m_index) != m_checkpoints.end();
+}
+
 
 double no::CalendarTimeline::dt() const
 {

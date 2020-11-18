@@ -157,9 +157,8 @@ class NEWORDER_EXPORT CalendarTimeline final : public Timeline
 public:
   using time_point = std::chrono::system_clock::time_point;
 
-  // TODO specify time increment in days, months or years
   // TODO specify checkpoints (as multiple of steps)
-  CalendarTimeline(time_point start, time_point end);
+  CalendarTimeline(time_point start, time_point end, size_t step, char unit, size_t n_checkpoints);
 
   virtual ~CalendarTimeline() = default;
 
@@ -179,8 +178,7 @@ public:
 
   void next();
 
-  // TODO checkpoints
-  bool at_checkpoint() const { return m_index == m_times.size() - 1; }
+  bool at_checkpoint() const;
   bool at_end() const;
 
   std::string repr() const;
