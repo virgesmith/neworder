@@ -6,6 +6,12 @@
 
 
 template<>
+std::string to_string_impl(char c)
+{
+  return std::string(1, c);
+}
+
+template<>
 std::string to_string_impl(const char* v)
 {
   return std::string(v);

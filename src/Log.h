@@ -17,6 +17,7 @@ std::string to_string_impl(T v)
   return std::to_string(v);
 }
 
+
 // print pointer
 template<typename T>
 std::string to_string_impl(T* p)
@@ -25,6 +26,9 @@ std::string to_string_impl(T* p)
   std::sprintf(buf, "0x%016zx", reinterpret_cast<size_t>(p));
   return std::string(buf);
 }
+
+template<>
+std::string to_string_impl(char c);
 
 template<>
 std::string to_string_impl(const char* v);

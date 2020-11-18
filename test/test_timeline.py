@@ -84,6 +84,11 @@ def test_timeline_validation():
   assert_throws(ValueError, no.LinearTimeline, 2020, 2022, [2,1])
   assert_throws(ValueError, no.LinearTimeline, 2020, 2022, [1,1])
 
+  assert_throws(ValueError, no.NumericTimeline, [2021, 2020], [1])
+
+  assert_throws(ValueError, no.CalendarTimeline, date(2021, 1, 1), date(2020, 1, 1), 1, "m", 1)
+  assert_throws(ValueError, no.CalendarTimeline, date(2019, 1, 1), date(2020, 1, 1), 1, "w", 1)
+
 
 def test_linear_timeline():
   # 40 years annual steps with 10y checkpoints

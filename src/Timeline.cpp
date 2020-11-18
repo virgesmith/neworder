@@ -276,27 +276,23 @@ no::CalendarTimeline::time_point addMonths(no::CalendarTimeline::time_point time
   return time;
 }
 
-// std::string to_string_impl(const std::chrono::system_clock::time_point& time)
-// {
-//   std::time_t t = std::chrono::system_clock::to_time_t(time);
-//   std::string buf(64, 0);
-//   std::strftime(buf.data(), buf.size(), "%F %T", std::localtime(&t));
-//   return std::string(buf);
-// }
-
-
 }
 
 
 no::CalendarTimeline::CalendarTimeline(time_point start, time_point end, size_t step, char unit, size_t n_checkpoints) : m_index(0)
 {
+  if (start >= end)
+  {
+    throw py::value_error("start time (%%) must be after end time (%%)"s % py::cast(start) % py::cast(end));
+  }
+
   m_times.push_back(start);
   time_point time = start;
 
   unit = tolower(unit);
   if (unit != 'd' && unit != 'm' && unit != 'y')
   {
-    throw py::value_error("invalid time unit, must be one of D,d,M,m,Y,y");
+    throw py::value_error("invalid time unit '%%', must be one of D,d,M,m,Y,y"s % unit);
   }
 
   for(;;)
