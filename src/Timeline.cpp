@@ -247,7 +247,7 @@ no::CalendarTimeline::time_point addDays(no::CalendarTimeline::time_point time, 
 }
 
 
-no::CalendarTimeline::time_point addMonths(no::CalendarTimeline::time_point time, size_t n)
+no::CalendarTimeline::time_point addMonths(no::CalendarTimeline::time_point time, size_t n, int refDay)
 {
   for (size_t i = 0; i < n; ++i)
   {
@@ -255,8 +255,13 @@ no::CalendarTimeline::time_point addMonths(no::CalendarTimeline::time_point time
     tm* local_tm = std::localtime(&t);
     // track whether we cross a DST change
     int dst_prev = local_tm->tm_isdst;
-    // TODO this is broken, add days in CURRENT month unless days in following month is less than current DoM
-    local_tm->tm_mday += daysInFollowingMonth(local_tm->tm_year, local_tm->tm_mon);
+    // ensure we dont go over end of next month
+    int difm = daysInFollowingMonth(local_tm->tm_year, local_tm->tm_mon);
+    if (local_tm->tm_mday > difm)
+      local_tm->tm_mday = difm;
+    else
+      local_tm->tm_mday = refDay;
+    local_tm->tm_mon += 1;
     std::mktime(local_tm);
     //no::log("h: %% dst: %% prev: %%"s % local_tm->tm_hour % local_tm->tm_isdst % dst_prev);
 
@@ -287,14 +292,18 @@ no::CalendarTimeline::CalendarTimeline(time_point start, time_point end, size_t 
     throw py::value_error("start time (%%) must be after end time (%%)"s % py::cast(start) % py::cast(end));
   }
 
-  m_times.push_back(start);
-  time_point time = start;
-
   unit = tolower(unit);
   if (unit != 'd' && unit != 'm' && unit != 'y')
   {
     throw py::value_error("invalid time unit '%%', must be one of D,d,M,m,Y,y"s % unit);
   }
+
+  std::time_t t = std::chrono::system_clock::to_time_t(start);
+  tm* local_tm = std::localtime(&t);
+  int refDay = local_tm->tm_mday;
+
+  m_times.push_back(start);
+  time_point time = start;
 
   for(;;)
   {
@@ -304,11 +313,11 @@ no::CalendarTimeline::CalendarTimeline(time_point start, time_point end, size_t 
     }
     else if (unit == 'm')
     {
-      time = addMonths(time, step);
+      time = addMonths(time, step, refDay);
     }
     else if (unit == 'y')
     {
-      time = addMonths(time, step * 12); // ensures we deal with leap years correctly
+      time = addMonths(time, step * 12, refDay); // ensures we deal with leap years correctly
     }
     if (time >= end)
       break;
