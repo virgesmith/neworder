@@ -52,6 +52,8 @@ PYBIND11_MODULE(neworder, m)
 
   // time-related module
 
+  // TODO docstrings...
+
   m.def_submodule("time", "Temporal values and comparison")
     .def("distant_past", no::time::distant_past, time_distant_past_docstr)
     .def("far_future", no::time::far_future, time_far_future_docstr)
@@ -70,7 +72,8 @@ PYBIND11_MODULE(neworder, m)
     // TODO remove next once tested
     .def("next", &no::NoTimeline::next) //not exposed
     .def("at_checkpoint", &no::NoTimeline::at_checkpoint, timeline_at_checkpoint_docstr)
-    .def("at_end", &no::NoTimeline::at_end, timeline_at_end_docstr);
+    .def("at_end", &no::NoTimeline::at_end, timeline_at_end_docstr)
+    .def("__repr__", &no::NoTimeline::repr, timeline_repr_docstr);
 
   py::class_<no::LinearTimeline>(m, "LinearTimeline", "Timestepping functionality")
     .def(py::init<double, double, const std::vector<size_t>&>(), timeline_init_docstr, "start"_a, "end"_a, "checkpoints"_a)
@@ -86,6 +89,20 @@ PYBIND11_MODULE(neworder, m)
     .def("at_end", &no::LinearTimeline::at_end, timeline_at_end_docstr)
     .def("__repr__", &no::LinearTimeline::repr, timeline_repr_docstr);
 
+  py::class_<no::NumericTimeline>(m, "NumericTimeline", "Timestepping functionality")
+    .def(py::init<const std::vector<double>&, const std::vector<size_t>&>(), timeline_init_docstr, "times"_a, "checkpoints"_a)
+    // Only const accessors exposed to python
+    .def("start", &no::NumericTimeline::start, timeline_start_docstr)
+    .def("end", &no::NumericTimeline::end, timeline_end_docstr)
+    .def("index", &no::NumericTimeline::index, timeline_index_docstr)
+    .def("time", &no::NumericTimeline::time, timeline_time_docstr)
+    .def("dt", &no::NumericTimeline::dt, timeline_dt_docstr)
+    .def("nsteps", &no::NumericTimeline::nsteps, timeline_nsteps_docstr)
+    .def("next", &no::NumericTimeline::next) //not exposed
+    .def("at_checkpoint", &no::NumericTimeline::at_checkpoint, timeline_at_checkpoint_docstr)
+    .def("at_end", &no::NumericTimeline::at_end, timeline_at_end_docstr)
+    .def("__repr__", &no::NumericTimeline::repr, timeline_repr_docstr);
+
   py::class_<no::CalendarTimeline>(m, "CalendarTimeline", "Timestepping functionality")
     .def(py::init<std::chrono::system_clock::time_point, std::chrono::system_clock::time_point>(), "start"_a, "end"_a)
     // TODO remove next once tested
@@ -96,8 +113,8 @@ PYBIND11_MODULE(neworder, m)
     .def("time", &no::CalendarTimeline::time, timeline_time_docstr)
     .def("dt", &no::CalendarTimeline::dt, timeline_dt_docstr)
     .def("nsteps", &no::CalendarTimeline::nsteps, timeline_nsteps_docstr)
-    //.def("next", &no::Timeline::next) not exposed
-    //.def("at_checkpoint", &no::CalendarTimeline::at_checkpoint, timeline_at_checkpoint_docstr)
+    .def("next", &no::CalendarTimeline::next) // TODO dont expose?
+    .def("at_checkpoint", &no::CalendarTimeline::at_checkpoint, timeline_at_checkpoint_docstr)
     .def("at_end", &no::CalendarTimeline::at_end, timeline_at_end_docstr)
     .def("__repr__", &no::CalendarTimeline::repr, timeline_repr_docstr);
 
@@ -105,6 +122,7 @@ PYBIND11_MODULE(neworder, m)
   py::class_<no::Model>(m, "Model", "The base model class from which all neworder models should be subclassed")
     .def(py::init([](no::NoTimeline& t, const py::function& s) { return no::Model(std::make_unique<no::NoTimeline>(t), s); }), model_init_docstr,"timeline"_a, "seeder"_a)
     .def(py::init([](no::LinearTimeline& t, const py::function& s) { return no::Model(std::make_unique<no::LinearTimeline>(t), s); }), model_init_docstr,"timeline"_a, "seeder"_a)
+    .def(py::init([](no::NumericTimeline& t, const py::function& s) { return no::Model(std::make_unique<no::NumericTimeline>(t), s); }), model_init_docstr,"timeline"_a, "seeder"_a)
     .def(py::init([](no::CalendarTimeline& t, const py::function& s) { return no::Model(std::make_unique<no::CalendarTimeline>(t), s); }), model_init_docstr,"timeline"_a, "seeder"_a)
     .def("timeline", &no::Model::timeline, py::return_value_policy::reference, model_timeline_docstr)
     .def("mc", &no::Model::mc, py::return_value_policy::reference, model_mc_docstr)

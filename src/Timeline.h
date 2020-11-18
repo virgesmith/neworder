@@ -22,12 +22,7 @@ public:
 
   virtual ~Timeline() = default;
 
-  Timeline(const Timeline&) = default;
-  Timeline& operator=(const Timeline&) = default;
-  Timeline(Timeline&&) = default;
-  Timeline& operator=(Timeline&&) = default;
-
-  // represent times numerically
+  // times may have different types, depending on implementation
   virtual py::object time() const = 0;
   virtual py::object start() const = 0;
   virtual py::object end() const = 0;
@@ -46,34 +41,42 @@ public:
 
 };
 
-class NEWORDER_EXPORT NoTimeline : public Timeline
+// An empty (one arbitrary step) timeline. The model's step and checkpoint method will each be called once only
+class NEWORDER_EXPORT NoTimeline final : public Timeline
 {
 public:
   NoTimeline() : m_stepped(false) { }
+
+  virtual ~NoTimeline() = default;
+  NoTimeline(const NoTimeline&) = default;
+  NoTimeline& operator=(const NoTimeline&) = default;
+  NoTimeline(NoTimeline&&) = default;
+  NoTimeline& operator=(NoTimeline&&) = default;
 
   // the actual types may differ in derived classes
   py::object time() const;
   py::object start() const;
   py::object end() const;
 
-  size_t index() const { return static_cast<size_t>(m_stepped); }
-  size_t nsteps() const { return 1; }
-  double dt() const { return 0.0; }
+  size_t index() const;
+  size_t nsteps() const;
+  double dt() const;
 
-  virtual void next() { m_stepped = true; }
-  //const std::vector<size_t>& checkpoints() const { return {1}; }
+  virtual void next();
+  //const std::vector<size_t>& checkpoints() const { static std::vector<size_t> checkpoints{1}; return checkpoints; }
 
-  bool at_checkpoint() const { return m_stepped; }
-  bool at_end() const { return m_stepped; }
+  bool at_checkpoint() const;
+  bool at_end() const;
 
   // used by python __repr__
-  std::string repr() const { return "<NoTimeline>"; }
+  std::string repr() const;
 
 private:
+  // flag whether we've done the arbitrary step
   bool m_stepped;
-
 };
 
+// An equally-spaced timeline between 2 numeric time points
 class NEWORDER_EXPORT LinearTimeline final : public Timeline
 {
 public:
@@ -106,26 +109,25 @@ public:
   std::string repr() const;
 
 private:
+  size_t m_index;
   double m_start;
   double m_end;
-
-  size_t m_index;
-
   std::vector<size_t> m_checkpoints;
 };
 
 
-// TODO Decimal?Timeline
-
-
-class NEWORDER_EXPORT CalendarTimeline : public Timeline
+// A generic numeric timeline, the model developer supplies the entire timeline and the checkpoints
+class NEWORDER_EXPORT NumericTimeline final : public Timeline
 {
 public:
-  using time_point = std::chrono::system_clock::time_point;
+  NumericTimeline(const std::vector<double>& times, const std::vector<size_t>& checkpoints);
 
-  // TODO specify time increment in days, months or years
-  // TODO specify checkpoints (as multiple of steps)
-  CalendarTimeline(time_point start, time_point end);
+  virtual ~NumericTimeline() = default;
+
+  NumericTimeline(const NumericTimeline&) = default;
+  NumericTimeline& operator=(const NumericTimeline&) = default;
+  NumericTimeline(NumericTimeline&&) = default;
+  NumericTimeline& operator=(NumericTimeline&&) = default;
 
   py::object time() const;
   py::object start() const;
@@ -138,7 +140,47 @@ public:
 
   void next();
 
-  bool at_checkpoint() const { return false; }
+  bool at_checkpoint() const;
+  bool at_end() const;
+
+  std::string repr() const;
+
+private:
+  size_t m_index;
+  std::vector<double> m_times;
+  std::vector<size_t> m_checkpoints;
+};
+
+// A timeline based on calendar dates and intervals (no intraday resolution, ignores DST adjustments)
+class NEWORDER_EXPORT CalendarTimeline final : public Timeline
+{
+public:
+  using time_point = std::chrono::system_clock::time_point;
+
+  // TODO specify time increment in days, months or years
+  // TODO specify checkpoints (as multiple of steps)
+  CalendarTimeline(time_point start, time_point end);
+
+  virtual ~CalendarTimeline() = default;
+
+  CalendarTimeline(const CalendarTimeline&) = default;
+  CalendarTimeline& operator=(const CalendarTimeline&) = default;
+  CalendarTimeline(CalendarTimeline&&) = default;
+  CalendarTimeline& operator=(CalendarTimeline&&) = default;
+
+  py::object time() const;
+  py::object start() const;
+  py::object end() const;
+
+  size_t index() const;
+  size_t nsteps() const;
+  double dt() const;
+  //const std::vector<size_t>& checkpoints() const;
+
+  void next();
+
+  // TODO checkpoints
+  bool at_checkpoint() const { return m_index == m_times.size() - 1; }
   bool at_end() const;
 
   std::string repr() const;
@@ -146,11 +188,12 @@ public:
 private:
   size_t m_index;
   std::vector<time_point> m_times;
+  std::vector<size_t> m_checkpoints;
 };
 
 namespace time {
 
-  // returns a floating point number that compares unequal (and unordered) to any other number
+  // returns a floating point number that compares unequal to (and unordered w.r.t) any other number
   // thus the following all evaluate to true: never() != never(), !(x < never()), !(x >= never()) (so be careful!)
   double never();
 

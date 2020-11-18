@@ -77,12 +77,13 @@ bool no::Model::run(py::object& model_subclass)
     if (no::getenv().m_checked)
     {
       ok = model_subclass.attr("check")().cast<bool>();
+      no::log("t=%%(%%) %%.check(): %%"s % t % timeindex % subclass_name % (ok? "ok": "FAILED"));
       if (!ok)
       {
-        no::warn("t=%%(%%) %%.check() FAILED, halting model run"s % t % timeindex % subclass_name);
+        // emit warning as well on failure (since the above message only appears when verbose mode is on)
+        no::warn("check() FAILED in %%, halting model run at t=%%(%%)"s % subclass_name % t % timeindex);
         break;
       }
-      no::log("t=%%(%%) %%.check() [ok]"s % t % timeindex % subclass_name );
     }
 
     // call the checkpoint method as required

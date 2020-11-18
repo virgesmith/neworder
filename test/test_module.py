@@ -37,7 +37,7 @@ def test_dummy_model():
 
   assert no.run(DummyModel())
 
-@pytest.mark.filterwarnings("ignore:t=")
+@pytest.mark.filterwarnings("ignore:check()")
 def test_check_flag():
   class FailingModel(no.Model):
     def __init__(self):

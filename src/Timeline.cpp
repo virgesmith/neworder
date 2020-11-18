@@ -13,16 +13,29 @@ py::object no::NoTimeline::time() const { return py::float_(time::never()); }
 py::object no::NoTimeline::start() const { return py::float_(time::never()); }
 py::object no::NoTimeline::end() const { return py::float_(time::never()); }
 
+size_t no::NoTimeline::index() const { return static_cast<size_t>(m_stepped); }
+size_t no::NoTimeline::nsteps() const { return 1; }
+double no::NoTimeline::dt() const { return 0.0; }
+
+void no::NoTimeline::next() { m_stepped = true; }
+
+bool no::NoTimeline::at_checkpoint() const { return m_stepped; }
+bool no::NoTimeline::at_end() const { return m_stepped; }
+
+// used by python __repr__
+std::string no::NoTimeline::repr() const { return "<NoTimeline stepped=%%>"s % (m_stepped ? "True": "False"); }
+
+
 no::LinearTimeline::LinearTimeline(double start, double end, const std::vector<size_t>& checkpoints)
-  : m_start(start), m_end(end), m_checkpoints(checkpoints)
+  : m_index(0), m_start(start), m_end(end), m_checkpoints(checkpoints)
 {
   size_t n = m_checkpoints.size();
 
   // validate
   // negative timesteps are disallowed as MC functions will misbehave with dt<0
-  if (end < start) // end==start IS valid (for a null timeline)
+  if (end <= start)
   {
-    throw py::value_error("end time (%%) must not be before start time (%%)"s % m_end % m_start);
+    throw py::value_error("end time (%%) must be after the start time (%%)"s % m_end % m_start);
   }
 
   if (n < 1)
@@ -88,9 +101,105 @@ py::object no::LinearTimeline::end() const { return py::float_(m_end); }
 
 std::string no::LinearTimeline::repr() const
 {
-  return "<neworder.LinearTimeline start=%% end=%% checkpoints=%% index=%%>"s
-          % m_start % m_end % m_checkpoints % m_index;
+  return "<neworder.LinearTimeline start=%% end=%% checkpoints=%% time=%% index=%%>"s
+          % m_start % m_end % m_checkpoints % time() % m_index;
 }
+
+
+no::NumericTimeline::NumericTimeline(const std::vector<double>& times, const std::vector<size_t>& checkpoints)
+  : m_index(0), m_times(times), m_checkpoints(checkpoints)
+{
+  if (m_times.size() < 2)
+  {
+    throw py::value_error("timeline must have 2 or more points");
+  }
+  if (m_checkpoints.empty())
+  {
+    throw py::value_error("checkpoints must have 1 or more values");
+  }
+  // check ascending
+  for (size_t i = 1; i < m_times.size(); ++i)
+  {
+    if (m_times[i] <= m_times[i-1])
+    {
+      throw py::value_error("invalid timeline: time %% (%%) is not strictly greater than previous (%%)"s
+        % i % m_times[i] % m_times[i-1]);
+    }
+  }
+  // validate checkpoints monotonic and on timeline
+  for (size_t i = 1; i < m_checkpoints.size(); ++i)
+  {
+    if (m_checkpoints[i] <= m_checkpoints[i-1])
+    {
+      throw py::value_error("invalid timeline: checkpoint %% (%%) is not strictly greater than previous (%%)"s
+        % i % m_checkpoints[i] % m_checkpoints[i-1]);
+    }
+  }
+  // ensure final time is a checkpoint
+  if (m_checkpoints.back() != m_times.size() - 1)
+  {
+    throw py::value_error("final checkpoint (%%) does not correspond to the final timestep (index %%)"s % m_checkpoints.back() % (m_times.size() - 1));
+  }
+}
+
+py::object no::NumericTimeline::time() const
+{
+  return py::float_(m_times[m_index]);
+}
+
+py::object no::NumericTimeline::start() const
+{
+  return py::float_(m_times.front());
+}
+
+py::object no::NumericTimeline::end() const
+{
+  return py::float_(m_times.back());
+}
+
+size_t no::NumericTimeline::index() const
+{
+  return m_index;
+}
+
+size_t no::NumericTimeline::nsteps() const
+{
+  return m_checkpoints.back();
+}
+
+double no::NumericTimeline::dt() const
+{
+  if (m_index == m_times.size() - 1)
+    return 0.0;
+  return m_times[m_index+1] - m_times[m_index];
+}
+
+//const std::vector<size_t>& no::NumericTimeline::checkpoints() const;
+
+void no::NumericTimeline::next()
+{
+  if (m_index < m_checkpoints.back())
+  {
+    ++m_index;
+  }
+}
+
+bool no::NumericTimeline::at_checkpoint() const
+{
+  return std::find(m_checkpoints.begin(), m_checkpoints.end(), m_index) != m_checkpoints.end();
+}
+
+bool no::NumericTimeline::at_end() const
+{
+  return m_index == m_checkpoints.back();
+}
+
+std::string no::NumericTimeline::repr() const
+{
+  return "<neworder.NumericTimeline times=%% checkpoints=%% time=%% index=%%>"s
+          % m_times % m_checkpoints % m_times[m_index] % m_index;
+}
+
 
 
 namespace {
@@ -158,6 +267,8 @@ no::CalendarTimeline::CalendarTimeline(time_point start, time_point end) : m_ind
     m_times.push_back(time);
   }
   m_times.push_back(end);
+  // TODO remove temp final checkpoint
+  m_checkpoints.push_back(m_times.size()-1);
 }
 
 size_t no::CalendarTimeline::index() const
@@ -167,12 +278,15 @@ size_t no::CalendarTimeline::index() const
 
 bool no::CalendarTimeline::at_end() const
 {
-  return m_index >= m_times.size();
+  return m_index == m_checkpoints.back();
 }
 
 void no::CalendarTimeline::next()
 {
-  ++m_index;
+  if (m_index < m_checkpoints.back())
+  {
+    ++m_index;
+  }
 }
 
 double no::CalendarTimeline::dt() const
@@ -185,18 +299,19 @@ double no::CalendarTimeline::dt() const
 
 size_t no::CalendarTimeline::nsteps() const
 {
-  return m_times.size();
+  return m_checkpoints.back();
 }
 
 // namespace {
 
-// py::object to_handle(const no::CalendarTimeline::time_point& time)
+// py::object to_object(const no::CalendarTimeline::time_point& time)
 // {
-//   py::object o = py::cast(time);
-//   std::time_t t = std::chrono::system_clock::to_time_t(time);
-//   std::string buf(64, 0);
-//   std::strftime(buf.data(), buf.size(), "%F %T", std::localtime(&t));
-//   return py::str(buf);
+// //   py::object o = py::cast(time);
+// //   std::time_t t = std::chrono::system_clock::to_time_t(time);
+// //   std::string buf(64, 0);
+// //   std::strftime(buf.data(), buf.size(), "%F %T", std::localtime(&t));
+// //   return py::str(buf);
+//   return py::cast{time);
 // }
 
 // }
@@ -215,8 +330,8 @@ py::object no::CalendarTimeline::end() const { return py::cast(m_times.back()); 
 
 std::string no::CalendarTimeline::repr() const
 {
-  return "<neworder.CalendarTimeline start=%% end=%% current=%% index=%%>"s
-          % start() % end() % time() % index();
+  return "<neworder.CalendarTimeline start=%% end=%% checkpoints=%% time=%% index=%%>"s
+          % start() % end() % m_checkpoints % time() % m_index;
 }
 
 
