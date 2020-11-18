@@ -27,7 +27,7 @@ from visualisation import plot
 population_size = 100000
 
 # single step (continuous model)
-timeline = neworder.Timeline(0, max_age, [1])
+timeline = neworder.LinearTimeline(0, max_age, [1])
 
 riskpaths = RiskPaths(timeline, population_size)
 

@@ -255,6 +255,7 @@ no::CalendarTimeline::time_point addMonths(no::CalendarTimeline::time_point time
     tm* local_tm = std::localtime(&t);
     // track whether we cross a DST change
     int dst_prev = local_tm->tm_isdst;
+    // TODO this is broken, add days in CURRENT month unless days in following month is less than current DoM
     local_tm->tm_mday += daysInFollowingMonth(local_tm->tm_year, local_tm->tm_mon);
     std::mktime(local_tm);
     //no::log("h: %% dst: %% prev: %%"s % local_tm->tm_hour % local_tm->tm_isdst % dst_prev);

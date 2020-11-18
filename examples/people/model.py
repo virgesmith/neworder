@@ -3,11 +3,12 @@
 model.py: Population Microsimulation - births, deaths and migration by age, gender and ethnicity
 """
 import time
+from datetime import date
 
 import neworder
 from population import Population
 
-#neworder.verbose()
+neworder.verbose()
 
 # input data
 initial_population = "examples/people/E08000021_MSOA11_2011.csv"
@@ -19,7 +20,7 @@ in_migration_rate_data = "examples/people/ethpop_inmig.csv"
 out_migration_rate_data = "examples/people/ethpop_outmig.csv"
 
 # define the evolution timeline
-timeline = neworder.Timeline(2011, 2051, [10,20,30,40])
+timeline = neworder.CalendarTimeline(date(2011, 1, 1), date(2051, 1, 1), 1, "y", 4)
 
 # create the model
 population = Population(timeline, initial_population, fertility_rate_data, mortality_rate_data, in_migration_rate_data, out_migration_rate_data)

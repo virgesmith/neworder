@@ -10,6 +10,8 @@ It subclasses neworder.Model adds implements a toy model which
 import pandas as pd
 import neworder
 
+neworder.verbose()
+
 class HelloWorld(neworder.Model):
   """
   This model extends the builtin neworder.Model class by providing

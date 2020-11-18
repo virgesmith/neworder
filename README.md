@@ -22,10 +22,10 @@
 - **low barriers to entry**: users need only write standard python code, little or no new coding skills required.
 - **flexibility**: models are specified in python code, so can be arbitrarily complex
 - **data agnosticism**: the framework does not impose any constraints on data sources, or outputs.
-- **reusability**: leverage python modules like numpy, pandas and matplotlib.
+- **reusability**: leverage python modules like *numpy*, *pandas* and *matplotlib*.
 - **reproducibility**: built-in, customisable random generator seeding strategies
 - **speed**: the module is written in optimised C++ and provides fast Monte-Carlo, statistical and data manipulation functions.
-- **compatibility**: operate directly on numpy arrays and pandas DataFrames
+- **compatibility**: operate directly on *numpy* arrays and *pandas* DataFrames
 - **scalability**: can be run on a desktop or a HPC cluster, supporting parallel execution using MPI.
 
 ## System Requirements

@@ -4,7 +4,7 @@ This example illustrates how data can be exchanged and synchronised between proc
 
 The basic idea is that we have a population with a single arbitrary state property which can take one of `N` values, where `N` is the number of processes, and each process initially holds the part of the population in the corresponding state. As time evolves, indvidual's states change at random, and the processes exchange individuals to keep their own population homegeneous.
 
-Each population is stored in a pandas `DataFrame`. At the start these is an equal population in each process (and thus in each state).
+Each population is stored in a *pandas* `DataFrame`. At the start these is an equal population in each process (and thus in each state).
 
 The states transition randomly with a fixed probability \(p\) at each timestep, and those that change are redistributed amongst the processes.
 
@@ -21,7 +21,7 @@ Firstly, we import the necessary modules and check we are running in parallel mo
 !!! note "MPI"
     Whilst *neworder* doesn't provide MPI communication functionality, it caches the MPI rank and size (which are assumed to be constant), and the functions `neworder.mpi.rank()` and `neworder.mpi.size()` can be used to inspect these values.
 
-As always, the neworder framework expects an instance of a model class, subclassed from `neworder.Model`, which in turn requires a `neworder.Timeline` object:
+As always, the neworder framework expects an instance of a model class, subclassed from `neworder.Model`, which in turn requires a timeline, in this case a `neworder.LinearTimeline` object:
 
 {{ include_snippet("examples/parallel/model.py", "run") }}
 
