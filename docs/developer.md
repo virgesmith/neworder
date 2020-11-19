@@ -137,7 +137,7 @@ See the Examples section for details on each example.
 
 ## Release Checklist
 
-Fix any CI issues (builds, tests, major code standards) before commencing.
+Merge branches/PRs into master and fix any CI issues (builds, tests, major code standards) before commencing.
 
 1. Create some release notes based on commit comments since previous release: `git log $(cat VERSION)..HEAD --oneline`
 2. Bump `VERSION`

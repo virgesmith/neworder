@@ -28,15 +28,42 @@ const char* run_docstr = R"docstr(
 )docstr";
 
 // Timeline
-const char* timeline_init_docstr = R"docstr(
+
+
+const char* lineartimeline_docstr = R"docstr(
+    An equally-spaced non-calendar timeline .
+)docstr";
+
+const char* lineartimeline_init_docstr = R"docstr(
     Constructs a timeline from start to end, with the checkpoints given by a non-empty list of ascending integers.
     The total number of steps and the step size is determined by the final checkpoint value
 )docstr";
 
-// const char* timeline_null_docstr = R"docstr(
-//     Returns a "null" timeline, where the start and end times are zero and there is a single step and checkpoint
-//     Useful for continuous-time models with no explicit (discrete) timeline
-// )docstr";
+const char* numerictimeline_docstr = R"docstr(
+    An custom non-claendar timeline
+)docstr";
+
+const char* numerictimeline_init_docstr = R"docstr(
+    Constructs a timeline from an array of time points and a subset of indices that are checkpoints.
+    The checkpoint array must contain at least the index of the final point on the timeline.
+)docstr";
+
+const char* notimeline_docstr = R"docstr(
+    An arbitrary one step timeline, for continuous-time models with no explicit (discrete) timeline
+)docstr";
+
+const char* notimeline_init_docstr = R"docstr(
+    Constructs an arbitrary one step timeline, where the start and end times are undefined and there is a single step and a single checkpoint
+)docstr";
+
+const char* calendartimeline_docstr = R"docstr(
+    A calendar-based timeline
+)docstr";
+
+const char* calendartimeline_init_docstr = R"docstr(
+    Constructs a calendar-based timeline, given start and end dates, an increment specified as a multiple of days, months or years, and the number
+    of checkpoints required. Checkpoints are spread evenly over the timeline and always include the final time point
+)docstr";
 
 const char* timeline_start_docstr = R"docstr(
     Returns the time of the start of the timeline
@@ -60,6 +87,10 @@ const char* timeline_dt_docstr = R"docstr(
 
 const char* timeline_nsteps_docstr = R"docstr(
     Returns the number of steps in the timeline
+)docstr";
+
+const char* timeline_next_docstr = R"docstr(
+    Increments the timeline, unless the end has already been reached
 )docstr";
 
 const char* timeline_at_checkpoint_docstr = R"docstr(
@@ -224,6 +255,10 @@ const char* mpi_size_docstr = R"docstr(
 )docstr";
 
 // Time
+
+const char* time_docstr = R"docstr(
+    Temporal values and comparison
+)docstr";
 
 const char* time_distant_past_docstr = R"docstr(
     Returns a value that compares less than any other value but itself and "never"

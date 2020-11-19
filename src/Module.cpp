@@ -54,58 +54,55 @@ PYBIND11_MODULE(neworder, m)
 
   // TODO docstrings...
 
-  m.def_submodule("time", "Temporal values and comparison")
+  m.def_submodule("time", time_docstr)
     .def("distant_past", no::time::distant_past, time_distant_past_docstr)
     .def("far_future", no::time::far_future, time_far_future_docstr)
     .def("never", no::time::never, time_never_docstr)
     .def("isnever", no::time::isnever, time_isnever_docstr, "t"_a) // scalar
     .def("isnever", no::time::isnever_a, time_isnever_a_docstr, "t"_a); // array
 
-  py::class_<no::NoTimeline>(m, "NoTimeline", "empty (1 arbitrary step) timeline")
-    .def(py::init<>(), timeline_init_docstr)
+  py::class_<no::NoTimeline>(m, "NoTimeline", notimeline_docstr)
+    .def(py::init<>(), notimeline_init_docstr)
     .def("start", &no::NoTimeline::start, timeline_start_docstr)
     .def("end", &no::NoTimeline::end, timeline_end_docstr)
     .def("index", &no::NoTimeline::index, timeline_index_docstr)
     .def("time", &no::NoTimeline::time, timeline_time_docstr)
     .def("dt", &no::NoTimeline::dt, timeline_dt_docstr)
     .def("nsteps", &no::NoTimeline::nsteps, timeline_nsteps_docstr)
-    // TODO remove next once tested
-    .def("next", &no::NoTimeline::next) //not exposed
+    .def("next", &no::NoTimeline::next, timeline_next_docstr)
     .def("at_checkpoint", &no::NoTimeline::at_checkpoint, timeline_at_checkpoint_docstr)
     .def("at_end", &no::NoTimeline::at_end, timeline_at_end_docstr)
     .def("__repr__", &no::NoTimeline::repr, timeline_repr_docstr);
 
-  py::class_<no::LinearTimeline>(m, "LinearTimeline", "Timestepping functionality")
-    .def(py::init<double, double, const std::vector<size_t>&>(), timeline_init_docstr, "start"_a, "end"_a, "checkpoints"_a)
-    // Only const accessors exposed to python
+  py::class_<no::LinearTimeline>(m, "LinearTimeline", lineartimeline_docstr)
+    .def(py::init<double, double, const std::vector<size_t>&>(), lineartimeline_init_docstr, "start"_a, "end"_a, "checkpoints"_a)
     .def("start", &no::LinearTimeline::start, timeline_start_docstr)
     .def("end", &no::LinearTimeline::end, timeline_end_docstr)
     .def("index", &no::LinearTimeline::index, timeline_index_docstr)
     .def("time", &no::LinearTimeline::time, timeline_time_docstr)
     .def("dt", &no::LinearTimeline::dt, timeline_dt_docstr)
     .def("nsteps", &no::LinearTimeline::nsteps, timeline_nsteps_docstr)
-    .def("next", &no::LinearTimeline::next) //not exposed
+    .def("next", &no::LinearTimeline::next, timeline_next_docstr)
     .def("at_checkpoint", &no::LinearTimeline::at_checkpoint, timeline_at_checkpoint_docstr)
     .def("at_end", &no::LinearTimeline::at_end, timeline_at_end_docstr)
     .def("__repr__", &no::LinearTimeline::repr, timeline_repr_docstr);
 
-  py::class_<no::NumericTimeline>(m, "NumericTimeline", "Timestepping functionality")
-    .def(py::init<const std::vector<double>&, const std::vector<size_t>&>(), timeline_init_docstr, "times"_a, "checkpoints"_a)
-    // Only const accessors exposed to python
+  py::class_<no::NumericTimeline>(m, "NumericTimeline", numerictimeline_docstr)
+    .def(py::init<const std::vector<double>&, const std::vector<size_t>&>(), numerictimeline_init_docstr, "times"_a, "checkpoints"_a)
     .def("start", &no::NumericTimeline::start, timeline_start_docstr)
     .def("end", &no::NumericTimeline::end, timeline_end_docstr)
     .def("index", &no::NumericTimeline::index, timeline_index_docstr)
     .def("time", &no::NumericTimeline::time, timeline_time_docstr)
     .def("dt", &no::NumericTimeline::dt, timeline_dt_docstr)
     .def("nsteps", &no::NumericTimeline::nsteps, timeline_nsteps_docstr)
-    .def("next", &no::NumericTimeline::next) //not exposed
+    .def("next", &no::NumericTimeline::next, timeline_next_docstr)
     .def("at_checkpoint", &no::NumericTimeline::at_checkpoint, timeline_at_checkpoint_docstr)
     .def("at_end", &no::NumericTimeline::at_end, timeline_at_end_docstr)
     .def("__repr__", &no::NumericTimeline::repr, timeline_repr_docstr);
 
-  py::class_<no::CalendarTimeline>(m, "CalendarTimeline", "Timestepping functionality")
-    .def(py::init<std::chrono::system_clock::time_point, std::chrono::system_clock::time_point, size_t, char, size_t>(), "start"_a, "end"_a, "step"_a, "unit"_a, "n_checkpoints"_a)
-    // TODO remove next once tested
+  py::class_<no::CalendarTimeline>(m, "CalendarTimeline", calendartimeline_docstr)
+    .def(py::init<std::chrono::system_clock::time_point, std::chrono::system_clock::time_point, size_t, char, size_t>(),
+      calendartimeline_init_docstr, "start"_a, "end"_a, "step"_a, "unit"_a, "n_checkpoints"_a)
     .def("next", &no::CalendarTimeline::next, timeline_start_docstr)
     .def("start", &no::CalendarTimeline::start, timeline_start_docstr)
     .def("end", &no::CalendarTimeline::end, timeline_end_docstr)
@@ -113,7 +110,7 @@ PYBIND11_MODULE(neworder, m)
     .def("time", &no::CalendarTimeline::time, timeline_time_docstr)
     .def("dt", &no::CalendarTimeline::dt, timeline_dt_docstr)
     .def("nsteps", &no::CalendarTimeline::nsteps, timeline_nsteps_docstr)
-    .def("next", &no::CalendarTimeline::next) // TODO dont expose?
+    .def("next", &no::CalendarTimeline::next, timeline_next_docstr)
     .def("at_checkpoint", &no::CalendarTimeline::at_checkpoint, timeline_at_checkpoint_docstr)
     .def("at_end", &no::CalendarTimeline::at_end, timeline_at_end_docstr)
     .def("__repr__", &no::CalendarTimeline::repr, timeline_repr_docstr);

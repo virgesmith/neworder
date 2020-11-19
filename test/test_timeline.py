@@ -101,6 +101,18 @@ def test_linear_timeline():
   assert m.timeline().index() == 40
   assert m.timeline().time() == 2051
 
+def test_calendar_timeline():
+  # monthly timesteps checking we don't overshoot in shorter months
+  dim = [31,29,31,30,31,30]
+
+  for d in range(1,32):
+    t = no.CalendarTimeline(date(2020, 1, d), date(2020, 7, d), 1, "m", 1)
+
+    while not t.at_end():
+      assert t.time().day == min(dim[t.index()], d)
+      t.next()
+
+
 def test_model():
   model = _TestModel()
   no.run(model)

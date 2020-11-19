@@ -187,8 +187,6 @@ private:
   size_t m_index;
   std::vector<time_point> m_times;
   std::vector<size_t> m_checkpoints;
-  // reference day of month for monthly timestepping
-  int m_refDay;
 };
 
 namespace time {
