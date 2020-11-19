@@ -28,14 +28,41 @@ const char* run_docstr = R"docstr(
 )docstr";
 
 // Timeline
-const char* timeline_init_docstr = R"docstr(
+
+
+const char* lineartimeline_docstr = R"docstr(
+    An equally-spaced non-calendar timeline .
+)docstr";
+
+const char* lineartimeline_init_docstr = R"docstr(
     Constructs a timeline from start to end, with the checkpoints given by a non-empty list of ascending integers.
     The total number of steps and the step size is determined by the final checkpoint value
 )docstr";
 
-const char* timeline_null_docstr = R"docstr(
-    Returns a "null" timeline, where the start and end times are zero and there is a single step and checkpoint
-    Useful for continuous-time models with no explicit (discrete) timeline
+const char* numerictimeline_docstr = R"docstr(
+    An custom non-claendar timeline
+)docstr";
+
+const char* numerictimeline_init_docstr = R"docstr(
+    Constructs a timeline from an array of time points and a subset of indices that are checkpoints.
+    The checkpoint array must contain at least the index of the final point on the timeline.
+)docstr";
+
+const char* notimeline_docstr = R"docstr(
+    An arbitrary one step timeline, for continuous-time models with no explicit (discrete) timeline
+)docstr";
+
+const char* notimeline_init_docstr = R"docstr(
+    Constructs an arbitrary one step timeline, where the start and end times are undefined and there is a single step and a single checkpoint
+)docstr";
+
+const char* calendartimeline_docstr = R"docstr(
+    A calendar-based timeline
+)docstr";
+
+const char* calendartimeline_init_docstr = R"docstr(
+    Constructs a calendar-based timeline, given start and end dates, an increment specified as a multiple of days, months or years, and the number
+    of checkpoints required. Checkpoints are spread evenly over the timeline and always include the final time point
 )docstr";
 
 const char* timeline_start_docstr = R"docstr(
@@ -60,6 +87,10 @@ const char* timeline_dt_docstr = R"docstr(
 
 const char* timeline_nsteps_docstr = R"docstr(
     Returns the number of steps in the timeline
+)docstr";
+
+const char* timeline_next_docstr = R"docstr(
+    Increments the timeline, unless the end has already been reached
 )docstr";
 
 const char* timeline_at_checkpoint_docstr = R"docstr(
@@ -134,7 +165,7 @@ const char* mc_arrivals_docstr = R"docstr(
     Returns an array of n arrays of multiple arrival times from a nonhomogeneous Poisson process (with hazard rate lambda[i], time interval dt),
     with a minimum separation between events of mingap. Sampling uses the Lewis-Shedler "thinning" algorithm
     The final value of lambda must be zero, and thus arrivals don't always occur, indicated by a value of neworder.time.never()
-    The inner dimension of the returned 2d array is governed by the the maximum number of arrivals sampled, and will thus vary 
+    The inner dimension of the returned 2d array is governed by the the maximum number of arrivals sampled, and will thus vary
 )docstr";
 
 const char* mc_first_arrival_docstr = R"docstr(
@@ -186,34 +217,34 @@ const char* model_mc_docstr = R"docstr(
 )docstr";
 const char* model_modify_docstr = R"docstr(
     User-overridable method used to modify state in a per-process basis for multiprocess model runs.
-    Default behaviour is to do nothing. 
-    This function should not be called directly, it is used by the Model.run() function 
+    Default behaviour is to do nothing.
+    This function should not be called directly, it is used by the Model.run() function
 )docstr";
 const char* model_step_docstr = R"docstr(
     User-implemented method used to advance state of a model.
-    Default behaviour raises NotImplementedError. 
-    This function should not be called directly, it is used by the Model.run() function 
+    Default behaviour raises NotImplementedError.
+    This function should not be called directly, it is used by the Model.run() function
 )docstr";
 const char* model_check_docstr = R"docstr(
     User-overridable method used to check internal state at each timestep.
-    Default behaviour is to simply return True. 
+    Default behaviour is to simply return True.
     Returning False will halt the model run.
-    This function should not be called directly, it is used by the Model.run() function 
+    This function should not be called directly, it is used by the Model.run() function
 
     Returns:
         True if checks are ok, False otherwise.
 )docstr";
 const char* model_checkpoint_docstr = R"docstr(
     User-overridable for custom processing at certain points in the model run (at a minimum the final timestep).
-    Default behaviour raises NotImplementedError. 
-    This function should not be called directly, it is used by the Model.run() function 
+    Default behaviour raises NotImplementedError.
+    This function should not be called directly, it is used by the Model.run() function
 )docstr";
 const char* model_halt_docstr = R"docstr(
     Signal to the model to stop execution gracefully at the end of the current timestep, e.g. if some convergence criterion has been met.
-    For trapping exceptional/error conditions, prefer to raise and exception, or return False from the Model.check() function 
+    For trapping exceptional/error conditions, prefer to raise and exception, or return False from the Model.check() function
 )docstr";
 
-// MPI 
+// MPI
 
 const char* mpi_rank_docstr = R"docstr(
     Returns the MPI rank of the process
@@ -224,6 +255,10 @@ const char* mpi_size_docstr = R"docstr(
 )docstr";
 
 // Time
+
+const char* time_docstr = R"docstr(
+    Temporal values and comparison
+)docstr";
 
 const char* time_distant_past_docstr = R"docstr(
     Returns a value that compares less than any other value but itself and "never"
@@ -238,19 +273,19 @@ const char* time_never_docstr = R"docstr(
 )docstr";
 
 const char* time_isnever_docstr = R"docstr(
-    Returns whether the value of t corresponds to "never". As "never" is implemented as a floating-point NaN, 
-    direct comparison will always fail, since NaN != NaN. 
+    Returns whether the value of t corresponds to "never". As "never" is implemented as a floating-point NaN,
+    direct comparison will always fail, since NaN != NaN.
 )docstr";
 
 const char* time_isnever_a_docstr = R"docstr(
-    Returns an array of booleans corresponding to whether the element of an array correspond to "never". As "never" is 
-    implemented as a floating-point NaN, direct comparison will always fails, since NaN != NaN. 
+    Returns an array of booleans corresponding to whether the element of an array correspond to "never". As "never" is
+    implemented as a floating-point NaN, direct comparison will always fails, since NaN != NaN.
 )docstr";
 
 // Statistical functions
 
 const char* stats_logistic_docstr = R"docstr(
-    Computes the logistic function on the supplied values. 
+    Computes the logistic function on the supplied values.
     Args:
         x: The input values.
         k: The growth rate
@@ -260,7 +295,7 @@ const char* stats_logistic_docstr = R"docstr(
 )docstr";
 
 const char* stats_logistic_docstr_2 = R"docstr(
-    Computes the logistic function with x0=0 on the supplied values. 
+    Computes the logistic function with x0=0 on the supplied values.
     Args:
         x: The input values.
         k: The growth rate
@@ -269,7 +304,7 @@ const char* stats_logistic_docstr_2 = R"docstr(
 )docstr";
 
 const char* stats_logistic_docstr_1 = R"docstr(
-    Computes the logistic function with k=1 and x0=0 on the supplied values. 
+    Computes the logistic function with k=1 and x0=0 on the supplied values.
     Args:
         x: The input values.
     Returns:
@@ -277,7 +312,7 @@ const char* stats_logistic_docstr_1 = R"docstr(
 )docstr";
 
 const char* stats_logit_docstr = R"docstr(
-    Computes the logit function on the supplied values. 
+    Computes the logit function on the supplied values.
     Args:
         x: The input probability values in (0,1).
     Returns:
@@ -292,7 +327,7 @@ const char* df_unique_index_docstr = R"docstr(
 
 
 const char* df_transition_docstr = R"docstr(
-    Randomly changes categorical data in a dataframe, according to supplied transition probabilities. 
+    Randomly changes categorical data in a dataframe, according to supplied transition probabilities.
     Args:
         model: The model (for access to the MonteCarlo engine).
         categories: The set of possible categories

@@ -35,7 +35,7 @@ transition_matrix = np.array([
   [lambda_20 * dt,                        0.0,                  1.0 - lambda_20 * dt]
 ])
 
-timeline = no.Timeline(0, tmax, [int(tmax/dt)])
+timeline = no.LinearTimeline(0, tmax, [int(tmax/dt)])
 
 model = MarkovChain(timeline, npeople, states, transition_matrix)
 

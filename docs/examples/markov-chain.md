@@ -1,6 +1,6 @@
 # Markov Chain
 
-This example illustrates how to model a process that consists of probabilistic transitions between discrete states, and showcases how `neworder` can drastically increase performance on certain operations on dataframes.
+This example illustrates how to model a process that consists of probabilistic transitions between discrete states, and showcases how *neworder* can drastically increase performance on certain operations on dataframes.
 
 Firstly we have 3 arbitrary states: 0, 1 and 2. The initial population starts in state 0, and the following transitions are permitted, as described by this transition matrix:
 
@@ -20,9 +20,9 @@ We use a time horizon of 100 (arbitrary units) with 100 steps and a population o
 
 ## Performance
 
-The model also implements a python-only equivalent of the `no.df.transition()` function, which has been optimised to use the pandas `apply()` rather than an explicit loop over the datafame.
+The model also implements a python-only equivalent of the `no.df.transition()` function, which has been optimised to use the *pandas* `apply()` rather than an explicit loop over the datafame.
 
-The model takes about 45s to run (depending on platform). Changing `MarkovChain.step()` function to use `neworder`'s C++ implementation results in a run time of 4.9s, close to a factor of 10 speedup. Note though that the C++ implementation can only operate on integer state data. If the state is expressed as another type, e.g. a string, consider changing the format, or just use the python implementation.
+The model takes about 45s to run (depending on platform). Changing `MarkovChain.step()` function to use *neworder*'s C++ implementation results in a run time of 4.9s, close to a factor of 10 speedup. Note though that the C++ implementation can only operate on integer state data. If the state is expressed as another type, e.g. a string, consider changing the format, or just use the python implementation.
 
 ## Input
 

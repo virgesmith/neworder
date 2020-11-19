@@ -29,7 +29,7 @@ def get_data():
 
 def interp(cumprob, x):
   lbound = 0
-  while lbound < len(cumprob) - 1: 
+  while lbound < len(cumprob) - 1:
     if cumprob[lbound] > x:
       break
     lbound += 1
@@ -94,7 +94,7 @@ def cpp_impl(m, df):
   # no.log(2 not in df.n.value_counts())#[2] == 1000)
   # no.log(df.n.value_counts())
 
-  # t = np.ones((3,3)) / 3  
+  # t = np.ones((3,3)) / 3
   # no.df.transition(m, c, t, df, "n")
   # no.log(df.n.value_counts())
   # for i in c:
@@ -109,7 +109,7 @@ def cpp_impl(m, df):
   # no.log(df.n.value_counts())
 
 if __name__ == "__main__":
-  m = no.Model(no.Timeline.null(), no.MonteCarlo.deterministic_identical_stream)
+  m = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
 
   rows, tc, colcpp = cpp_impl(m, get_data())
   no.log("C++ %d: %f" % (rows, tc))

@@ -8,7 +8,7 @@ An implementation of the Schelling's segregation model [[7]](../references.md), 
 
 ## Inputs
 
-In the above example, the similarity threshold is 50% and the cells composition is: 30% empty, 30% red, 30% blue and 10% green, on a 80 x 100 grid. Whilst the initial population is randomly constructed using the model's Monte-Carlo engine, the process of moving agents uses the pandas `sample` method, which uses its own random generator.
+In the above example, the similarity threshold is 50% and the cells composition is: 30% empty, 30% red, 30% blue and 10% green, on a 80 x 100 grid. Whilst the initial population is randomly constructed using the model's Monte-Carlo engine, the process of moving agents uses the *pandas* `sample` method, which uses its own random generator.
 
 ## Implementation
 
@@ -18,7 +18,7 @@ Since the key output for this model is graphical, the visualisation code sits wi
 
 {{ include_snippet("examples/schelling/schelling.py", "halt") }}
 
-Also in the `step()` method, we use the pandas `sample()` function, which uses it's own random number generator. In order to ensure that the results are consistent with our chosen seeding strategy (i.e deterministic and thus reproducible), the function is explicitly seeded using the model's Monte-Carlo engine:
+Also in the `step()` method, we use the *pandas* `sample()` function, which uses it's own random number generator. In order to ensure that the results are consistent with our chosen seeding strategy (i.e deterministic and thus reproducible), the function is explicitly seeded using the model's Monte-Carlo engine:
 
 {{ include_snippet("examples/schelling/schelling.py", "sample") }}
 

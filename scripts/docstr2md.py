@@ -14,7 +14,7 @@ type_mapping = {
 def format_overloads(lines):
   for i, l in enumerate(lines):
     if l[:2] == "1." or l[:2] == "2." or l[:2] == "3.":
-      lines[i] = "```python\n" + l[2:] + "\n```" 
+      lines[i] = "```python\n" + l[2:] + "\n```"
   return lines
 
 def format_heading(l, a, t):

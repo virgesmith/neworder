@@ -2,6 +2,14 @@
 #include "Log.h"
 #include "Environment.h"
 
+//#include <chrono>
+
+
+template<>
+std::string to_string_impl(char c)
+{
+  return std::string(1, c);
+}
 
 template<>
 std::string to_string_impl(const char* v)
@@ -12,6 +20,11 @@ std::string to_string_impl(const char* v)
 std::string to_string_impl(const std::string& v)
 {
   return v;
+}
+
+std::string to_string_impl(const py::object& o)
+{
+  return py::str(o);
 }
 
 void no::log(const std::string& msg)

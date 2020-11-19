@@ -13,7 +13,7 @@ similarity = 0.5
 
 # unit timeline up to max_steps
 max_steps = 1000
-timeline = neworder.Timeline(0, max_steps, [max_steps])
+timeline = neworder.LinearTimeline(0, max_steps, [max_steps])
 
 schelling = Schelling(timeline, gridsize, categories, similarity)
 

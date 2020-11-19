@@ -8,7 +8,7 @@ This simple example illustrates the basic model structure, how it all fits toget
 
 The framework runs a model via the `neworder.run` function, which takes an instance of a `Model` class. All models contain, at a minimum:
 
-- an instance of `neworder.Timeline`
+- an instance of a timeline, in this case the `NoTimeline` arbitrary single-step timeline
 - an instance of a `neworder.MonteCarlo` engine
 - user-defined methods to evolve the state (`step`) and report/postprocess results (`checkpoint`).
 
@@ -73,18 +73,20 @@ which should result in something like
 To get a better idea of what's going on, uncomment the line containing `neworder.verbose()` and rerun the model. You'll get something like
 
 ```text
-[no 0/1]  neworder 0.0.6 model init: timeline=<neworder.Timeline start=0.000000 end=0.000000 checkpoints=[1] index=0> mc=<neworder.MonteCarlo seed=-6269278596024524741>
-[no 0/1]  starting model run. start time=0.000000
-[no 0/1]  t=0.000000(0) HelloWorld.modify(0)
+[no 0/1]  neworder 0.0.8 model init: timeline=<NoTimeline stepped=False> mc=<neworder.MonteCarlo seed=874991939>
+[no 0/1]  starting model run. start time=nan
+[no 0/1]  t=nan(0) HelloWorld.modify(0)
 [no 0/1]  defaulted to no-op Model::modify()
-[no 0/1]  t=0.000000(1) HelloWorld.step()
+[no 0/1]  t=nan(1) HelloWorld.step()
 [no 0/1]  defaulted to no-op Model::check()
-[no 0/1]  t=0.000000(1) HelloWorld.check() [ok]
-[no 0/1]  t=0.000000(1) HelloWorld.checkpoint()
-[py 0/1]  Hello from 3
+[no 0/1]  t=nan(1) HelloWorld.check(): ok
+[no 0/1]  t=nan(1) HelloWorld.checkpoint()
+[py 0/1]  Hello from 0
+[py 0/1]  Hello from 1
 [py 0/1]  Hello from 4
-[py 0/1]  Hello from 6
-[no 0/1]  SUCCESS exec time=0.001141s
+[py 0/1]  Hello from 7
+[py 0/1]  Hello from 8
+[no 0/1]  SUCCESS exec time=0.000996s
 ```
 
 this output is explained line-by-line below.
@@ -97,43 +99,42 @@ this output is explained line-by-line below.
 
 ## Understanding the workflow and the output
 
-When using `Timeline.null()` the start time, end time and timestep are all zero, and there is a single step, and a single checkpoint at step 1.
+When using `NoTimeline()` the start time, end time and timestep are all zero, and there is a single step, and a single checkpoint at step 1.
 
-First we get some information about the environment, and confirmation of the initialisation parameters:
+First we get some information about the package and the model initialisation parameters:
 
 ```text
-[no 0/1]  neworder 0.0.6/module python 3.8.2 (default, Jul 16 2020, 14:00:26)  [GCC 9.3.0]
-[no 0/1]  model init: timeline=<neworder.Timeline start=0.000000 end=0.000000 checkpoints=[1] index=0> mc=<neworder.MonteCarlo seed=-8336252954299816065>
-[no 0/1]  starting model run. start time=0.000000
+[no 0/1]  neworder 0.0.8 model init: timeline=<NoTimeline stepped=False> mc=<neworder.MonteCarlo seed=874991939>
+[no 0/1]  starting model run. start time=nan
 ```
 
 the next output concerns the modify method which is explained in the [Option](./option.md) example.
 
 ```text
-[no 0/1] t=0.000000(0) HelloWorld.modify(0)
-[no 0/1] defaulted to no-op Model::modify()
+[no 0/1]  t=nan(0) HelloWorld.modify(0)
+[no 0/1]  defaulted to no-op Model::modify()
 ```
-
-Now the `step` method is called, which applys a random transition:
+Note that the time value is NaN (not-a-number) (since absolute time is not important in this implementation), but the index is zero. Now the `step` method is called, which applies a random transition:
 
 ```text
-[no 0/1] t=0.000000(1) HelloWorld.step()
+[no 0/1]  t=nan(1) HelloWorld.step()
 ```
 
 followed by the `check` method, which is optional and we haven't implemented:
 
 ```text
 [no 0/1]  defaulted to no-op Model::check()
-[no 0/1]  t=0.000000(1) HelloWorld.check() [ok]
+[no 0/1]  t=nan(1) HelloWorld.check() [ok]
 ```
+and the time index has updated to 1.
 
 !!! note "Checks"
     Custom data sanity checks can be run after each timestep by overriding the `check` method. The default implementation does nothing. A typical pattern would be to implement checks for debugging a model during development, then disable them entirely to improve performance using `neworder.checked(False)`. See the other examples.
 
-We've now reached the end of our single step timeline and have reached the one checkpoint, so the method is called:
+We've now reached the end of our single step "timeline" and have reached the one checkpoint, so the method is called:
 
 ```text
-[no 0/1] t=0.000000(1) HelloWorld.checkpoint()
+[no 0/1]  t=nan(1) HelloWorld.checkpoint()
 ```
 
 which prints the results:

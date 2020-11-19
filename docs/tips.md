@@ -18,9 +18,9 @@ class MyModel(neworder.Model):
 ## Custom Seeding Strategies
 
 !!! note "Note"
-    `neworder` random streams use the Mersenne Twister pseudorandom generator, as implemented in the C++ standard library.
+    *neworder* random streams use the Mersenne Twister pseudorandom generator, as implemented in the C++ standard library.
 
-`neworder` provides three seeding strategy functions which initialise the model's random stream so that they are either non-reproducible, or reproducible and either identical or independent across parallel runs. Typically, a user would select identical streams (and perturbed inputs) for sensitivity analysis, and independent streams (with indentical inputs) for convergence analysis.
+*neworder* provides three seeding strategy functions which initialise the model's random stream so that they are either non-reproducible, or reproducible and either identical or independent across parallel runs. Typically, a user would select identical streams (and perturbed inputs) for sensitivity analysis, and independent streams (with indentical inputs) for convergence analysis.
 
 If necessary, you can supply your own seeding strategy, for instance if you required some processes to have independent streams, and some identical streams.
 
@@ -71,9 +71,9 @@ The "option" example relies on identical streams to reduce noise when computing 
 
 ## External Sources of Randomness
 
-Other libraries, such as `numpy`, contain a much broader selection of Monte-Carlo functionality than `neworder` does, and it makes no sense to reimplement such functionality. If you are using a specific seeding strategy within neworder, and are also using an external random generator, it is important to ensure they are also following the same strategy, otherwise reproducibility may be compromised.
+Other libraries, such as *numpy*, contain a much broader selection of Monte-Carlo functionality than *neworder* does, and it makes no sense to reimplement such functionality. If you are using a specific seeding strategy within neworder, and are also using an external random generator, it is important to ensure they are also following the same strategy, otherwise reproducibility may be compromised.
 
-In your model constructor, you can seed the numpy generator like so
+In your model constructor, you can seed the *numpy* generator like so
 
 ```python
 ext_seed = self.mc().raw()
@@ -85,7 +85,7 @@ x = self.nprand.normal(5)
 If you've chosen a deterministic seedng strategy, then `ext_seed` will be reproducible, and if you've chosen an independent strategy, then `ext_seed` will be different for each process, thus propagating your chosen seeding strategy to the external generator.
 
 !!! note "Seeding external generators"
-    Wherever possible, explicitly seed any external random generators using `neworder`'s MonteCarlo engine. This will effectively propagate your seeding strategy to the external generator.
+    Wherever possible, explicitly seed any external random generators using *neworder*'s MonteCarlo engine. This will effectively propagate your seeding strategy to the external generator.
 
 ## Deadlocks
 
@@ -103,7 +103,7 @@ The key here is that there is only one result, shared between all processes. In 
 
 ## Time Comparison
 
-`neworder` uses 64-bit floating-point numbers to represent time, and the values -inf, +inf and nan respectively to represent the concepts of the distant past, the far future and never. This allows users to define, or compare against, values that are:
+*neworder* uses 64-bit floating-point numbers to represent time, and the values -inf, +inf and nan respectively to represent the concepts of the distant past, the far future and never. This allows users to define, or compare against, values that are:
 
 - before any other time value,
 - after any other time value, or
@@ -124,9 +124,9 @@ neworder.log(neworder.time.isnever(n)) # True
 ## Data Types
 
 !!! warning "Static typing"
-    Unlike python, C++ is a *statically typed* language and so `neworder` is strict about types.
+    Unlike python, C++ is a *statically typed* language and so *neworder* is strict about types.
 
-If an argument to a `neworder` method or function is not the correct type, it will fail immediately (as opposed to python, which will fail only if an invalid operation for the given type is attempted). This applies to contained types (numpy's `dtype`) too. In the example below, the function is expecting an integer, and will complain if you pass it a floating-point argument:
+If an argument to a *neworder* method or function is not the correct type, it will fail immediately (as opposed to python, which will fail only if an invalid operation for the given type is attempted (a.k.a. "duck typing")). This applies to contained types (numpy's `dtype`) too. In the example below, the function is expecting an integer, and will complain if you pass it a floating-point argument:
 
 ```python
 >>> import neworder

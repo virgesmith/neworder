@@ -1,4 +1,273 @@
 # API Reference
+## `neworder.CalendarTimeline`
+
+!!! note "class"
+
+
+A calendar-based timeline
+
+### `neworder.CalendarTimeline.__init__`
+
+!!! note "instance method"
+
+```python
+__init__(self: neworder.CalendarTimeline, start: datetime.datetime, end: datetime.datetime, step: int, unit: str, n_checkpoints: int) -> None
+```
+
+
+Constructs a calendar-based timeline, given start and end dates, an increment specified as a multiple of days, months or years, and the number
+of checkpoints required. Checkpoints are spread evenly over the timeline and always include the final time point
+
+
+### `neworder.CalendarTimeline.at_checkpoint`
+
+!!! note "instance method"
+
+```python
+at_checkpoint(self: neworder.CalendarTimeline) -> bool
+```
+
+
+Returns True if the current step is a checkpoint
+
+
+### `neworder.CalendarTimeline.at_end`
+
+!!! note "instance method"
+
+```python
+at_end(self: neworder.CalendarTimeline) -> bool
+```
+
+
+Returns True if the current step is the end of the timeline
+
+
+### `neworder.CalendarTimeline.dt`
+
+!!! note "instance method"
+
+```python
+dt(self: neworder.CalendarTimeline) -> float
+```
+
+
+Returns the step size size of the timeline
+
+
+### `neworder.CalendarTimeline.end`
+
+!!! note "instance method"
+
+```python
+end(self: neworder.CalendarTimeline) -> object
+```
+
+
+Returns the time of the end of the timeline
+
+
+### `neworder.CalendarTimeline.index`
+
+!!! note "instance method"
+
+```python
+index(self: neworder.CalendarTimeline) -> int
+```
+
+
+Returns the index of the current step in the timeline
+
+
+### `neworder.CalendarTimeline.next`
+
+!!! note "instance method"
+
+```python
+next(*args, **kwargs)
+```
+Overloaded function.
+
+```python
+ next(self: neworder.CalendarTimeline) -> None
+```
+
+
+Returns the time of the start of the timeline
+
+
+```python
+ next(self: neworder.CalendarTimeline) -> None
+```
+
+
+Increments the timeline, unless the end has already been reached
+
+
+### `neworder.CalendarTimeline.nsteps`
+
+!!! note "instance method"
+
+```python
+nsteps(self: neworder.CalendarTimeline) -> int
+```
+
+
+Returns the number of steps in the timeline
+
+
+### `neworder.CalendarTimeline.start`
+
+!!! note "instance method"
+
+```python
+start(self: neworder.CalendarTimeline) -> object
+```
+
+
+Returns the time of the start of the timeline
+
+
+### `neworder.CalendarTimeline.time`
+
+!!! note "instance method"
+
+```python
+time(self: neworder.CalendarTimeline) -> object
+```
+
+
+Returns the time of the current step in the timeline
+
+
+## `neworder.LinearTimeline`
+
+!!! note "class"
+
+
+An equally-spaced non-calendar timeline .
+
+### `neworder.LinearTimeline.__init__`
+
+!!! note "instance method"
+
+```python
+__init__(self: neworder.LinearTimeline, start: float, end: float, checkpoints: List[int]) -> None
+```
+
+
+Constructs a timeline from start to end, with the checkpoints given by a non-empty list of ascending integers.
+The total number of steps and the step size is determined by the final checkpoint value
+
+
+### `neworder.LinearTimeline.at_checkpoint`
+
+!!! note "instance method"
+
+```python
+at_checkpoint(self: neworder.LinearTimeline) -> bool
+```
+
+
+Returns True if the current step is a checkpoint
+
+
+### `neworder.LinearTimeline.at_end`
+
+!!! note "instance method"
+
+```python
+at_end(self: neworder.LinearTimeline) -> bool
+```
+
+
+Returns True if the current step is the end of the timeline
+
+
+### `neworder.LinearTimeline.dt`
+
+!!! note "instance method"
+
+```python
+dt(self: neworder.LinearTimeline) -> float
+```
+
+
+Returns the step size size of the timeline
+
+
+### `neworder.LinearTimeline.end`
+
+!!! note "instance method"
+
+```python
+end(self: neworder.LinearTimeline) -> object
+```
+
+
+Returns the time of the end of the timeline
+
+
+### `neworder.LinearTimeline.index`
+
+!!! note "instance method"
+
+```python
+index(self: neworder.LinearTimeline) -> int
+```
+
+
+Returns the index of the current step in the timeline
+
+
+### `neworder.LinearTimeline.next`
+
+!!! note "instance method"
+
+```python
+next(self: neworder.LinearTimeline) -> None
+```
+
+
+Increments the timeline, unless the end has already been reached
+
+
+### `neworder.LinearTimeline.nsteps`
+
+!!! note "instance method"
+
+```python
+nsteps(self: neworder.LinearTimeline) -> int
+```
+
+
+Returns the number of steps in the timeline
+
+
+### `neworder.LinearTimeline.start`
+
+!!! note "instance method"
+
+```python
+start(self: neworder.LinearTimeline) -> object
+```
+
+
+Returns the time of the start of the timeline
+
+
+### `neworder.LinearTimeline.time`
+
+!!! note "instance method"
+
+```python
+time(self: neworder.LinearTimeline) -> object
+```
+
+
+Returns the time of the current step in the timeline
+
+
 ## `neworder.Model`
 
 !!! note "class"
@@ -9,8 +278,35 @@ The base model class from which all neworder models should be subclassed
 !!! note "instance method"
 
 ```python
-__init__(self: neworder.Model, timeline: neworder.Timeline, seeder: function) -> None
+__init__(*args, **kwargs)
 ```
+Overloaded function.
+
+```python
+ __init__(self: neworder.Model, timeline: neworder.NoTimeline, seeder: function) -> None
+```
+
+
+Constructs a model object from a timeline and a seeder function
+
+
+```python
+ __init__(self: neworder.Model, timeline: neworder.LinearTimeline, seeder: function) -> None
+```
+
+
+Constructs a model object from a timeline and a seeder function
+
+
+```python
+ __init__(self: neworder.Model, timeline: neworder.NumericTimeline, seeder: function) -> None
+```
+
+
+Constructs a model object from a timeline and a seeder function
+
+
+4. __init__(self: neworder.Model, timeline: neworder.CalendarTimeline, seeder: function) -> None
 
 
 Constructs a model object from a timeline and a seeder function
@@ -26,9 +322,9 @@ check(self: neworder.Model) -> bool
 
 
 User-overridable method used to check internal state at each timestep.
-Default behaviour is to simply return True. 
+Default behaviour is to simply return True.
 Returning False will halt the model run.
-This function should not be called directly, it is used by the Model.run() function 
+This function should not be called directly, it is used by the Model.run() function
 
 Returns:
 True if checks are ok, False otherwise.
@@ -44,8 +340,8 @@ checkpoint(self: neworder.Model) -> None
 
 
 User-overridable for custom processing at certain points in the model run (at a minimum the final timestep).
-Default behaviour raises NotImplementedError. 
-This function should not be called directly, it is used by the Model.run() function 
+Default behaviour raises NotImplementedError.
+This function should not be called directly, it is used by the Model.run() function
 
 
 ### `neworder.Model.halt`
@@ -58,7 +354,7 @@ halt(self: neworder.Model) -> None
 
 
 Signal to the model to stop execution gracefully at the end of the current timestep, e.g. if some convergence criterion has been met.
-For trapping exceptional/error conditions, prefer to raise and exception, or return False from the Model.check() function 
+For trapping exceptional/error conditions, prefer to raise and exception, or return False from the Model.check() function
 
 
 ### `neworder.Model.mc`
@@ -83,8 +379,8 @@ modify(self: neworder.Model, r: int) -> None
 
 
 User-overridable method used to modify state in a per-process basis for multiprocess model runs.
-Default behaviour is to do nothing. 
-This function should not be called directly, it is used by the Model.run() function 
+Default behaviour is to do nothing.
+This function should not be called directly, it is used by the Model.run() function
 
 
 ### `neworder.Model.step`
@@ -97,8 +393,8 @@ step(self: neworder.Model) -> None
 
 
 User-implemented method used to advance state of a model.
-Default behaviour raises NotImplementedError. 
-This function should not be called directly, it is used by the Model.run() function 
+Default behaviour raises NotImplementedError.
+This function should not be called directly, it is used by the Model.run() function
 
 
 ### `neworder.Model.timeline`
@@ -106,7 +402,7 @@ This function should not be called directly, it is used by the Model.run() funct
 !!! note "instance method"
 
 ```python
-timeline(self: neworder.Model) -> neworder.Timeline
+timeline(self: neworder.Model) -> no::Timeline
 ```
 
 
@@ -123,14 +419,14 @@ The model's Monte-Carlo engine
 !!! note "instance method"
 
 ```python
-arrivals(self: neworder.MonteCarlo, lambda: numpy.ndarray[float64], dt: float, n: int, mingap: float) -> numpy.ndarray[float64]
+arrivals(self: neworder.MonteCarlo, lambda: numpy.ndarray[numpy.float64], dt: float, n: int, mingap: float) -> numpy.ndarray[numpy.float64]
 ```
 
 
 Returns an array of n arrays of multiple arrival times from a nonhomogeneous Poisson process (with hazard rate lambda[i], time interval dt),
 with a minimum separation between events of mingap. Sampling uses the Lewis-Shedler "thinning" algorithm
 The final value of lambda must be zero, and thus arrivals don't always occur, indicated by a value of neworder.time.never()
-The inner dimension of the returned 2d array is governed by the the maximum number of arrivals sampled, and will thus vary 
+The inner dimension of the returned 2d array is governed by the the maximum number of arrivals sampled, and will thus vary
 
 
 ### `neworder.MonteCarlo.deterministic_identical_stream`
@@ -168,7 +464,7 @@ first_arrival(*args, **kwargs)
 Overloaded function.
 
 ```python
- first_arrival(self: neworder.MonteCarlo, lambda: numpy.ndarray[float64], dt: float, n: int, minval: float) -> numpy.ndarray[float64]
+ first_arrival(self: neworder.MonteCarlo, lambda: numpy.ndarray[numpy.float64], dt: float, n: int, minval: float) -> numpy.ndarray[numpy.float64]
 ```
 
 
@@ -178,7 +474,7 @@ If the final value of lambda is zero, no arrival is indicated by a value of newo
 
 
 ```python
- first_arrival(self: neworder.MonteCarlo, lambda: numpy.ndarray[float64], dt: float, n: int) -> numpy.ndarray[float64]
+ first_arrival(self: neworder.MonteCarlo, lambda: numpy.ndarray[numpy.float64], dt: float, n: int) -> numpy.ndarray[numpy.float64]
 ```
 
 
@@ -197,7 +493,7 @@ hazard(*args, **kwargs)
 Overloaded function.
 
 ```python
- hazard(self: neworder.MonteCarlo, p: float, n: int) -> numpy.ndarray[float64]
+ hazard(self: neworder.MonteCarlo, p: float, n: int) -> numpy.ndarray[numpy.float64]
 ```
 
 
@@ -205,7 +501,7 @@ Returns an array of ones (with hazard rate lambda) or zeros of length n
 
 
 ```python
- hazard(self: neworder.MonteCarlo, p: numpy.ndarray[float64]) -> numpy.ndarray[float64]
+ hazard(self: neworder.MonteCarlo, p: numpy.ndarray[numpy.float64]) -> numpy.ndarray[numpy.float64]
 ```
 
 
@@ -222,7 +518,7 @@ next_arrival(*args, **kwargs)
 Overloaded function.
 
 ```python
- next_arrival(self: neworder.MonteCarlo, startingpoints: numpy.ndarray[float64], lambda: numpy.ndarray[float64], dt: float, relative: bool, minsep: float) -> numpy.ndarray[float64]
+ next_arrival(self: neworder.MonteCarlo, startingpoints: numpy.ndarray[numpy.float64], lambda: numpy.ndarray[numpy.float64], dt: float, relative: bool, minsep: float) -> numpy.ndarray[numpy.float64]
 ```
 
 
@@ -233,7 +529,7 @@ If the final value of lambda is zero, no arrival is indicated by a value of newo
 
 
 ```python
- next_arrival(self: neworder.MonteCarlo, startingpoints: numpy.ndarray[float64], lambda: numpy.ndarray[float64], dt: float, relative: bool) -> numpy.ndarray[float64]
+ next_arrival(self: neworder.MonteCarlo, startingpoints: numpy.ndarray[numpy.float64], lambda: numpy.ndarray[numpy.float64], dt: float, relative: bool) -> numpy.ndarray[numpy.float64]
 ```
 
 
@@ -244,7 +540,7 @@ If the final value of lambda is zero, no arrival is indicated by a value of newo
 
 
 ```python
- next_arrival(self: neworder.MonteCarlo, startingpoints: numpy.ndarray[float64], lambda: numpy.ndarray[float64], dt: float) -> numpy.ndarray[float64]
+ next_arrival(self: neworder.MonteCarlo, startingpoints: numpy.ndarray[numpy.float64], lambda: numpy.ndarray[numpy.float64], dt: float) -> numpy.ndarray[numpy.float64]
 ```
 
 
@@ -295,7 +591,7 @@ Use with care, esp in multi-process models with identical streams
 !!! note "instance method"
 
 ```python
-sample(self: neworder.MonteCarlo, n: int, cat_weights: numpy.ndarray[float64]) -> numpy.ndarray[int64]
+sample(self: neworder.MonteCarlo, n: int, cat_weights: numpy.ndarray[numpy.float64]) -> numpy.ndarray[numpy.int64]
 ```
 
 
@@ -336,7 +632,7 @@ stopping(*args, **kwargs)
 Overloaded function.
 
 ```python
- stopping(self: neworder.MonteCarlo, lambda: float, n: int) -> numpy.ndarray[float64]
+ stopping(self: neworder.MonteCarlo, lambda: float, n: int) -> numpy.ndarray[numpy.float64]
 ```
 
 
@@ -344,7 +640,7 @@ Returns an array of stopping times (with hazard rate lambda) of length n
 
 
 ```python
- stopping(self: neworder.MonteCarlo, lambda: numpy.ndarray[float64]) -> numpy.ndarray[float64]
+ stopping(self: neworder.MonteCarlo, lambda: numpy.ndarray[numpy.float64]) -> numpy.ndarray[numpy.float64]
 ```
 
 
@@ -356,134 +652,262 @@ Returns an array of stopping times (with hazard rate lambda[i]) for each element
 !!! note "instance method"
 
 ```python
-ustream(self: neworder.MonteCarlo, n: int) -> numpy.ndarray[float64]
+ustream(self: neworder.MonteCarlo, n: int) -> numpy.ndarray[numpy.float64]
 ```
 
 
 Returns an array of uniform random [0,1) variates of length n
 
 
-## `neworder.Timeline`
+## `neworder.NoTimeline`
 
 !!! note "class"
 
-Timestepping functionality
-### `neworder.Timeline.__init__`
+
+An arbitrary one step timeline, for continuous-time models with no explicit (discrete) timeline
+
+### `neworder.NoTimeline.__init__`
 
 !!! note "instance method"
 
 ```python
-__init__(self: neworder.Timeline, start: float, end: float, checkpoints: List[int]) -> None
+__init__(self: neworder.NoTimeline) -> None
 ```
 
 
-Constructs a timeline from start to end, with the checkpoints given by a non-empty list of ascending integers.
-The total number of steps and the step size is determined by the final checkpoint value
+Constructs an arbitrary one step timeline, where the start and end times are undefined and there is a single step and a single checkpoint
 
 
-### `neworder.Timeline.at_checkpoint`
+### `neworder.NoTimeline.at_checkpoint`
 
 !!! note "instance method"
 
 ```python
-at_checkpoint(self: neworder.Timeline) -> bool
+at_checkpoint(self: neworder.NoTimeline) -> bool
 ```
 
 
 Returns True if the current step is a checkpoint
 
 
-### `neworder.Timeline.at_end`
+### `neworder.NoTimeline.at_end`
 
 !!! note "instance method"
 
 ```python
-at_end(self: neworder.Timeline) -> bool
+at_end(self: neworder.NoTimeline) -> bool
 ```
 
 
 Returns True if the current step is the end of the timeline
 
 
-### `neworder.Timeline.dt`
+### `neworder.NoTimeline.dt`
 
 !!! note "instance method"
 
 ```python
-dt(self: neworder.Timeline) -> float
+dt(self: neworder.NoTimeline) -> float
 ```
 
 
 Returns the step size size of the timeline
 
 
-### `neworder.Timeline.end`
+### `neworder.NoTimeline.end`
 
 !!! note "instance method"
 
 ```python
-end(self: neworder.Timeline) -> float
+end(self: neworder.NoTimeline) -> object
 ```
 
 
 Returns the time of the end of the timeline
 
 
-### `neworder.Timeline.index`
+### `neworder.NoTimeline.index`
 
 !!! note "instance method"
 
 ```python
-index(self: neworder.Timeline) -> int
+index(self: neworder.NoTimeline) -> int
 ```
 
 
 Returns the index of the current step in the timeline
 
 
-### `neworder.Timeline.nsteps`
+### `neworder.NoTimeline.next`
 
 !!! note "instance method"
 
 ```python
-nsteps(self: neworder.Timeline) -> int
+next(self: neworder.NoTimeline) -> None
+```
+
+
+Increments the timeline, unless the end has already been reached
+
+
+### `neworder.NoTimeline.nsteps`
+
+!!! note "instance method"
+
+```python
+nsteps(self: neworder.NoTimeline) -> int
 ```
 
 
 Returns the number of steps in the timeline
 
 
-### `neworder.Timeline.null`
-
-!!! note "function"
-
-```python
-null() -> neworder.Timeline
-```
-
-
-Returns a "null" timeline, where the start and end times are zero and there is a single step and checkpoint
-Useful for continuous-time models with no explicit (discrete) timeline
-
-
-### `neworder.Timeline.start`
+### `neworder.NoTimeline.start`
 
 !!! note "instance method"
 
 ```python
-start(self: neworder.Timeline) -> float
+start(self: neworder.NoTimeline) -> object
 ```
 
 
 Returns the time of the start of the timeline
 
 
-### `neworder.Timeline.time`
+### `neworder.NoTimeline.time`
 
 !!! note "instance method"
 
 ```python
-time(self: neworder.Timeline) -> float
+time(self: neworder.NoTimeline) -> object
+```
+
+
+Returns the time of the current step in the timeline
+
+
+## `neworder.NumericTimeline`
+
+!!! note "class"
+
+
+An custom non-claendar timeline
+
+### `neworder.NumericTimeline.__init__`
+
+!!! note "instance method"
+
+```python
+__init__(self: neworder.NumericTimeline, times: List[float], checkpoints: List[int]) -> None
+```
+
+
+Constructs a timeline from an array of time points and a subset of indices that are checkpoints.
+The checkpoint array must contain at least the index of the final point on the timeline.
+
+
+### `neworder.NumericTimeline.at_checkpoint`
+
+!!! note "instance method"
+
+```python
+at_checkpoint(self: neworder.NumericTimeline) -> bool
+```
+
+
+Returns True if the current step is a checkpoint
+
+
+### `neworder.NumericTimeline.at_end`
+
+!!! note "instance method"
+
+```python
+at_end(self: neworder.NumericTimeline) -> bool
+```
+
+
+Returns True if the current step is the end of the timeline
+
+
+### `neworder.NumericTimeline.dt`
+
+!!! note "instance method"
+
+```python
+dt(self: neworder.NumericTimeline) -> float
+```
+
+
+Returns the step size size of the timeline
+
+
+### `neworder.NumericTimeline.end`
+
+!!! note "instance method"
+
+```python
+end(self: neworder.NumericTimeline) -> object
+```
+
+
+Returns the time of the end of the timeline
+
+
+### `neworder.NumericTimeline.index`
+
+!!! note "instance method"
+
+```python
+index(self: neworder.NumericTimeline) -> int
+```
+
+
+Returns the index of the current step in the timeline
+
+
+### `neworder.NumericTimeline.next`
+
+!!! note "instance method"
+
+```python
+next(self: neworder.NumericTimeline) -> None
+```
+
+
+Increments the timeline, unless the end has already been reached
+
+
+### `neworder.NumericTimeline.nsteps`
+
+!!! note "instance method"
+
+```python
+nsteps(self: neworder.NumericTimeline) -> int
+```
+
+
+Returns the number of steps in the timeline
+
+
+### `neworder.NumericTimeline.start`
+
+!!! note "instance method"
+
+```python
+start(self: neworder.NumericTimeline) -> object
+```
+
+
+Returns the time of the start of the timeline
+
+
+### `neworder.NumericTimeline.time`
+
+!!! note "instance method"
+
+```python
+time(self: neworder.NumericTimeline) -> object
 ```
 
 
@@ -502,12 +926,12 @@ checked(checked: bool = True) -> None
 Sets the checked flag, which determines whether the model runs checks during execution
 
 
-## `neworder.df`
+## `neworder.neworder.df`
 
 !!! note "module"
 
 Direct manipulations of dataframes
-### `neworder.df.testfunc`
+### `neworder.neworder.df.testfunc`
 
 !!! note "function"
 
@@ -519,16 +943,16 @@ testfunc(model: neworder.Model, df: object, colname: str) -> None
 Test function for direct dataframe manipulation. Results may vary. Do not use.
 
 
-### `neworder.df.transition`
+### `neworder.neworder.df.transition`
 
 !!! note "function"
 
 ```python
-transition(model: neworder.Model, categories: numpy.ndarray[int64], transition_matrix: numpy.ndarray[float64], df: object, colname: str) -> None
+transition(model: neworder.Model, categories: numpy.ndarray[numpy.int64], transition_matrix: numpy.ndarray[numpy.float64], df: object, colname: str) -> None
 ```
 
 
-Randomly changes categorical data in a dataframe, according to supplied transition probabilities. 
+Randomly changes categorical data in a dataframe, according to supplied transition probabilities.
 Args:
 model: The model (for access to the MonteCarlo engine).
 categories: The set of possible categories
@@ -537,12 +961,12 @@ df: The dataframe, which is modified in-place
 colname: The name of the column in the dataframe
 
 
-### `neworder.df.unique_index`
+### `neworder.neworder.df.unique_index`
 
 !!! note "function"
 
 ```python
-unique_index(n: int) -> numpy.ndarray[int64]
+unique_index(n: int) -> numpy.ndarray[numpy.int64]
 ```
 
 
@@ -561,12 +985,12 @@ log(obj: object) -> None
 The logging function. Prints obj to the console, annotated with process information
 
 
-## `neworder.mpi`
+## `neworder.neworder.mpi`
 
 !!! note "module"
 
 Basic MPI environment discovery
-### `neworder.mpi.rank`
+### `neworder.neworder.mpi.rank`
 
 !!! note "function"
 
@@ -578,7 +1002,7 @@ rank() -> int
 Returns the MPI rank of the process
 
 
-### `neworder.mpi.size`
+### `neworder.neworder.mpi.size`
 
 !!! note "function"
 
@@ -604,12 +1028,12 @@ Returns:
 True if model succeeded, False otherwise
 
 
-## `neworder.stats`
+## `neworder.neworder.stats`
 
 !!! note "module"
 
 statistical functions
-### `neworder.stats.logistic`
+### `neworder.neworder.stats.logistic`
 
 !!! note "function"
 
@@ -619,11 +1043,11 @@ logistic(*args, **kwargs)
 Overloaded function.
 
 ```python
- logistic(x: numpy.ndarray[float64], x0: float, k: float) -> numpy.ndarray[float64]
+ logistic(x: numpy.ndarray[numpy.float64], x0: float, k: float) -> numpy.ndarray[numpy.float64]
 ```
 
 
-Computes the logistic function on the supplied values. 
+Computes the logistic function on the supplied values.
 Args:
 x: The input values.
 k: The growth rate
@@ -633,11 +1057,11 @@ The function values
 
 
 ```python
- logistic(x: numpy.ndarray[float64], k: float) -> numpy.ndarray[float64]
+ logistic(x: numpy.ndarray[numpy.float64], k: float) -> numpy.ndarray[numpy.float64]
 ```
 
 
-Computes the logistic function with x0=0 on the supplied values. 
+Computes the logistic function with x0=0 on the supplied values.
 Args:
 x: The input values.
 k: The growth rate
@@ -646,39 +1070,41 @@ The function values
 
 
 ```python
- logistic(x: numpy.ndarray[float64]) -> numpy.ndarray[float64]
+ logistic(x: numpy.ndarray[numpy.float64]) -> numpy.ndarray[numpy.float64]
 ```
 
 
-Computes the logistic function with k=1 and x0=0 on the supplied values. 
+Computes the logistic function with k=1 and x0=0 on the supplied values.
 Args:
 x: The input values.
 Returns:
 The function values
 
 
-### `neworder.stats.logit`
+### `neworder.neworder.stats.logit`
 
 !!! note "function"
 
 ```python
-logit(x: numpy.ndarray[float64]) -> numpy.ndarray[float64]
+logit(x: numpy.ndarray[numpy.float64]) -> numpy.ndarray[numpy.float64]
 ```
 
 
-Computes the logit function on the supplied values. 
+Computes the logit function on the supplied values.
 Args:
 x: The input probability values in (0,1).
 Returns:
 The function values (log-odds)
 
 
-## `neworder.time`
+## `neworder.neworder.time`
 
 !!! note "module"
 
+
 Temporal values and comparison
-### `neworder.time.distant_past`
+
+### `neworder.neworder.time.distant_past`
 
 !!! note "function"
 
@@ -690,7 +1116,7 @@ distant_past() -> float
 Returns a value that compares less than any other value but itself and "never"
 
 
-### `neworder.time.far_future`
+### `neworder.neworder.time.far_future`
 
 !!! note "function"
 
@@ -702,7 +1128,7 @@ far_future() -> float
 Returns a value that compares greater than any other value but itself and "never"
 
 
-### `neworder.time.isnever`
+### `neworder.neworder.time.isnever`
 
 !!! note "function"
 
@@ -716,20 +1142,20 @@ Overloaded function.
 ```
 
 
-Returns whether the value of t corresponds to "never". As "never" is implemented as a floating-point NaN, 
-direct comparison will always fail, since NaN != NaN. 
+Returns whether the value of t corresponds to "never". As "never" is implemented as a floating-point NaN,
+direct comparison will always fail, since NaN != NaN.
 
 
 ```python
- isnever(t: numpy.ndarray[float64]) -> numpy.ndarray[bool]
+ isnever(t: numpy.ndarray[numpy.float64]) -> numpy.ndarray[bool]
 ```
 
 
-Returns an array of booleans corresponding to whether the element of an array correspond to "never". As "never" is 
-implemented as a floating-point NaN, direct comparison will always fails, since NaN != NaN. 
+Returns an array of booleans corresponding to whether the element of an array correspond to "never". As "never" is
+implemented as a floating-point NaN, direct comparison will always fails, since NaN != NaN.
 
 
-### `neworder.time.never`
+### `neworder.neworder.time.never`
 
 !!! note "function"
 

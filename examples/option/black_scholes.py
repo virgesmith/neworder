@@ -13,7 +13,7 @@ class BlackScholes(neworder.Model):
   def __init__(self, option, market, nsims):
 
     # Using exact MC calc of GBM requires only 1 timestep
-    timeline = neworder.Timeline(0.0, option["expiry"], [1])
+    timeline = neworder.LinearTimeline(0.0, option["expiry"], [1])
     super().__init__(timeline, neworder.MonteCarlo.deterministic_identical_stream)
 
     self.option = option
@@ -38,8 +38,8 @@ class BlackScholes(neworder.Model):
 
   # !check!
   def check(self):
-    # check the rng streams are still in sync by sampling from each one, 
-    # comparing, and broadcasting the result. If one process fails the 
+    # check the rng streams are still in sync by sampling from each one,
+    # comparing, and broadcasting the result. If one process fails the
     # check and exits without notifying the others, deadlocks can result.
     # send the state representation to process 0
     states = comm.gather(self.mc().state(), 0)

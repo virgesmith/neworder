@@ -9,10 +9,10 @@
 
 #include <pybind11/pybind11.h>
 
-no::Model::Model(Timeline& timeline, const py::function& seeder)
-  : m_timeline(timeline), m_monteCarlo(seeder(no::getenv().rank()).cast<int32_t>())
+no::Model::Model(std::unique_ptr<Timeline> timeline, const py::function& seeder)
+  : m_timeline(std::move(timeline)), m_monteCarlo(seeder(no::getenv().rank()).cast<int32_t>())
 {
-  no::log("neworder %% model init: timeline=%% mc=%%"s % module_version() % m_timeline.repr() % m_monteCarlo.repr());
+  no::log("neworder %% model init: timeline=%% mc=%%"s % module_version() % m_timeline->repr() % m_monteCarlo.repr());
 }
 
 
@@ -66,23 +66,26 @@ bool no::Model::run(py::object& model_subclass)
   bool ok = true;
   while (!base.timeline().at_end())
   {
-    base.timeline().next();
-    double t = base.timeline().time();
+    py::object t = base.timeline().time();
     size_t timeindex = base.timeline().index();
 
+    // call the step method, then incement the timeline
     no::log("t=%%(%%) %%.step()"s % t % timeindex % subclass_name);
     model_subclass.attr("step")();
+
+    base.timeline().next();
 
     // call the check method and stop if necessary
     if (no::getenv().m_checked)
     {
       ok = model_subclass.attr("check")().cast<bool>();
+      no::log("t=%%(%%) %%.check(): %%"s % t % timeindex % subclass_name % (ok? "ok": "FAILED"));
       if (!ok)
       {
-        no::warn("t=%%(%%) %%.check() FAILED, halting model run"s % t % timeindex % subclass_name);
+        // emit warning as well on failure (since the above message only appears when verbose mode is on)
+        no::warn("check() FAILED in %%, halting model run at t=%%(%%)"s % subclass_name % t % timeindex);
         break;
       }
-      no::log("t=%%(%%) %%.check() [ok]"s % t % timeindex % subclass_name );
     }
 
     // call the checkpoint method as required
@@ -101,6 +104,7 @@ bool no::Model::run(py::object& model_subclass)
       break;
     }
   }
+
   no::log("%% exec time=%%s"s % (ok ? "SUCCESS": "ERRORED") % timer.elapsed_s());
   return ok;
 }

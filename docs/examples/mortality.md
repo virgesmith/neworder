@@ -2,7 +2,7 @@
 
 We implement the example *The Life Table* from the second chapter of the book *Microsimulation and Population Dynamics* [[3]](#references). It models mortality in a homogeneous population with an age-specific mortality rate.
 
-This example implments the model in two different ways: firstly a discrete case-based microsimulation, and again using a continuous sampling methodology, showcasing how the latter can be much more efficient. Rather than having a class to represent an individual, as would be standard in a MODGEN implementation, individuals are stored in a pandas `Dataframe` which provides fast iteration over the population.
+This example implements the model in two different ways: firstly a discrete case-based microsimulation, and again using a continuous sampling methodology, showcasing how the latter can be much more efficient. Rather than having a class to represent an individual, as would be standard in a MODGEN implementation, individuals are stored in a *pandas* `Dataframe` which provides fast iteration over the population.
 
 ![Mortality histogram](./img/mortality_hist_100k_noloop.gif)
 
@@ -22,7 +22,7 @@ As per the MODGEN implementation, we step through a case-based timeline and samp
 
 - each year, sample time of death for alive individuals
 - if year is not at the end of the mortality table
-    - if death occurs within the year, 
+    - if death occurs within the year,
         - record age at death and mark individual as dead
     - otherwise
         - increment age by 1 year and resample
@@ -80,7 +80,7 @@ with output like this
 [py 0/1] Continuous model life expectancy = 77.388072, exec time = 0.161716
 ```
 
-which illustrates how much more efficient the continuous implementation is (about ten times faster). 
+which illustrates how much more efficient the continuous implementation is (about ten times faster).
 
 The visualisations (see examples source code for details) show an animated histogram of the deaths (above), and a comparison of the age to death distributions from the two implementations:
 

@@ -6,6 +6,7 @@
 #include <string>
 #include <type_traits>
 #include <sstream>
+//#include <chrono>
 #include <iomanip>
 
 using namespace std::string_literals;
@@ -15,6 +16,7 @@ std::string to_string_impl(T v)
 {
   return std::to_string(v);
 }
+
 
 // print pointer
 template<typename T>
@@ -26,9 +28,14 @@ std::string to_string_impl(T* p)
 }
 
 template<>
+std::string to_string_impl(char c);
+
+template<>
 std::string to_string_impl(const char* v);
 
 std::string to_string_impl(const std::string& v);
+
+std::string to_string_impl(const py::object& o);
 
 template<typename T>
 std::string to_string_impl(const std::vector<T>& v)
