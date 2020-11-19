@@ -66,12 +66,14 @@ bool no::Model::run(py::object& model_subclass)
   bool ok = true;
   while (!base.timeline().at_end())
   {
-    base.timeline().next();
     py::object t = base.timeline().time();
     size_t timeindex = base.timeline().index();
 
+    // call the step method, then incement the timeline
     no::log("t=%%(%%) %%.step()"s % t % timeindex % subclass_name);
     model_subclass.attr("step")();
+
+    base.timeline().next();
 
     // call the check method and stop if necessary
     if (no::getenv().m_checked)
@@ -102,6 +104,7 @@ bool no::Model::run(py::object& model_subclass)
       break;
     }
   }
+
   no::log("%% exec time=%%s"s % (ok ? "SUCCESS": "ERRORED") % timer.elapsed_s());
   return ok;
 }

@@ -41,7 +41,8 @@ class PeopleDiscrete(neworder.Model):
 
   # !disc_checkpoint!
   def checkpoint(self):
-    # ensure all people have died
+    # kill off any survivors
+    self.die()
     assert np.sum(self.population.alive) == 0
     # the calc life expectancy
     self.life_expectancy = np.mean(self.population.age_at_death)
@@ -53,7 +54,7 @@ class PeopleDiscrete(neworder.Model):
     # first filter out the already dead
     alive = self.population.loc[self.population.alive].index
     # sample time of death
-    r = self.mc().stopping(self.mortality_hazard.Rate.values[min(self.timeline().index()-1, self.max_rate_age)], len(alive))
+    r = self.mc().stopping(self.mortality_hazard.Rate.values[min(self.timeline().index(), self.max_rate_age)], len(alive))
     # select if death happens before next timestep...
     dt = self.timeline().dt()
     # at final timestep everybody dies (at some later time) so dt is infinite

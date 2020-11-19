@@ -11,7 +11,7 @@ from plot import plot
 # checks disabled to emphasise performance differences
 neworder.checked(False)
 
-# the max value in the timeline  
+# the max value in the timeline
 max_age = 100.0
 # The mortality rate data
 mortality_hazard_file = "examples/mortality/ethpop_mortality_wbi.csv"

@@ -10,7 +10,8 @@ It subclasses neworder.Model adds implements a toy model which
 import pandas as pd
 import neworder
 
-neworder.verbose()
+# uncomment for verbose output
+#neworder.verbose()
 
 class HelloWorld(neworder.Model):
   """

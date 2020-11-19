@@ -8,7 +8,7 @@ from datetime import date
 import neworder
 from population import Population
 
-neworder.verbose()
+#neworder.verbose()
 
 # input data
 initial_population = "examples/people/E08000021_MSOA11_2011.csv"

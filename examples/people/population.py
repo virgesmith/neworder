@@ -51,16 +51,14 @@ class Population(neworder.Model):
     self.deaths()
     self.migrations()
     self.age()
-    self.plot_pyramid()
 
   def checkpoint(self):
-    #self.write_table()
     pass
 
   def age(self):
-    # Increment age by timestep and update census age categorty (used for ASFR/ASMR lookup)
+    # Increment age by timestep and update census age category (used for ASFR/ASMR lookup)
     # NB census age category max value is 86 (=85 or over)
-    self.population.Age = self.population.Age + self.timeline().dt()
+    self.population.Age = self.population.Age + 1 # NB self.timeline().dt() wont be exactly 1 as based on an average length year of 365.2475 days
     # reconstruct census age group
     self.population.DC1117EW_C_AGE = np.clip(np.ceil(self.population.Age), 1, 86).astype(int)
 
@@ -165,9 +163,13 @@ class Population(neworder.Model):
       neworder.log("invalid fractional age value")
       return False
 
-    neworder.log("check OK: time={:.3f} size={} mean_age={:.2f}, pct_female={:.2f} net_migration={} ({}-{})" \
-      .format(self.timeline().time(), self.size(), self.mean_age(), 100.0 * self.gender_split(),
+    neworder.log("check OK: time={} size={} mean_age={:.2f}, pct_female={:.2f} net_migration={} ({}-{})" \
+      .format(self.timeline().time().date(), self.size(), self.mean_age(), 100.0 * self.gender_split(),
       self.in_out[0] - self.in_out[1], self.in_out[0], self.in_out[1]))
+
+    # if all is ok, plot the data
+    self.plot_pyramid()
+
     return True # Faith
 
   def write_table(self):
@@ -181,10 +183,9 @@ class Population(neworder.Model):
     m = s[s.index.isin([1], level="DC1117EW_C_SEX")].values
     f = s[s.index.isin([2], level="DC1117EW_C_SEX")].values
 
-
-
     if self.fig is None:
       self.fig, self.axes, self.mbar, self.fbar = pyramid.plot(a, m, f)
     else:
-      self.mbar, self.fbar = pyramid.update(str(self.timeline().time()), self.fig, self.axes, self.mbar, self.fbar, a, m, f)
+      # NB self.timeline().time() is now the time at the *end* of the timestep since this is called from check() (as opposed to step())
+      self.mbar, self.fbar = pyramid.update(str(self.timeline().time().year), self.fig, self.axes, self.mbar, self.fbar, a, m, f)
 
