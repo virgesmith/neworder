@@ -42,26 +42,24 @@ population.py:
 
 ## Execution
 
-The model requires code in the shared directory, so this needs to be added to `PYTHONPATH`:
+From the command line
 
 ```bash
-PYTHONPATH=examples/shared python examples/people/model.py
+python examples/people/model.py
 ```
 
 ## Output
 
 ```text
 ...
-[py 0/1]  check OK: time=2044.000 size=399199 mean_age=39.73, pct_female=48.41 net_migration=12181.0 (45857.0-33676.0)
-[py 0/1]  check OK: time=2045.000 size=412334 mean_age=39.82, pct_female=48.43 net_migration=12824.0 (48139.0-35315.0)
-[py 0/1]  check OK: time=2046.000 size=426426 mean_age=39.93, pct_female=48.49 net_migration=13954.0 (50436.0-36482.0)
-[py 0/1]  check OK: time=2047.000 size=442034 mean_age=40.06, pct_female=48.65 net_migration=15587.0 (53304.0-37717.0)
-[py 0/1]  check OK: time=2048.000 size=458712 mean_age=40.18, pct_female=48.81 net_migration=16712.0 (56205.0-39493.0)
-[py 0/1]  check OK: time=2049.000 size=477050 mean_age=40.37, pct_female=48.96 net_migration=18540.0 (58914.0-40374.0)
-[py 0/1]  check OK: time=2050.000 size=496943 mean_age=40.59, pct_female=49.10 net_migration=20368.0 (62157.0-41789.0)
-[py 0/1]  check OK: time=2051.000 size=518993 mean_age=40.86, pct_female=49.30 net_migration=22545.0 (65413.0-42868.0)
-[py 0/1]  writing ./examples/people/output/dm_E08000021_2051.000.csv
-[py 0/1]  run time = 21.05s
+[py 0/1]  check OK: time=2045-01-01 size=297562 mean_age=43.82, pct_female=50.31 net_migration=-16.0 (4465.0-4481.0)
+[py 0/1]  check OK: time=2046-01-01 size=297078 mean_age=43.93, pct_female=50.33 net_migration=-108.0 (4370.0-4478.0)
+[py 0/1]  check OK: time=2047-01-01 size=296672 mean_age=44.06, pct_female=50.34 net_migration=5.0 (4354.0-4349.0)
+[py 0/1]  check OK: time=2048-01-01 size=296357 mean_age=44.18, pct_female=50.36 net_migration=114.0 (4453.0-4339.0)
+[py 0/1]  check OK: time=2049-01-01 size=295746 mean_age=44.29, pct_female=50.38 net_migration=35.0 (4349.0-4314.0)
+[py 0/1]  check OK: time=2050-01-01 size=295269 mean_age=44.39, pct_female=50.38 net_migration=-16.0 (4294.0-4310.0)
+[py 0/1]  check OK: time=2051-01-01 size=294468 mean_age=44.50, pct_female=50.39 net_migration=-96.0 (4235.0-4331.0)
+[py 0/1]  run time = 20.23s
 ```
 
-This 40 year simulation of an initial population of about 280,000 growing to over half a million (no exogenous constraints) executed in about 20s on a single core of a medium-spec machine.
+This 40 year simulation of an initial population of about 280,000 executed in about 20s on a single core of a medium-spec machine.
