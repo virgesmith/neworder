@@ -62,17 +62,17 @@ class BlackScholes(neworder.Model):
   # !checkpoint!
 
   def simulate(self):
-    # get the time from the environment
-    dt = self.timeline().time()
+    # get the single timestep from the timeline
+    dt = self.timeline().dt()
     normals = nstream(self.mc().ustream(self.nsims))
 
-    # compute underlying prices at dt
+    # compute underlying prices at t=dt
     S = self.market["spot"]
     r = self.market["rate"]
     q = self.market["divy"]
     sigma = self.market["vol"]
     underlyings = S * np.exp((r - q - 0.5 * sigma * sigma) * dt + normals * sigma * sqrt(dt))
-    # compute option prices at dt
+    # compute option prices at t=dt
     if self.option["callput"] == "CALL":
       fv = (underlyings - self.option["strike"]).clip(min=0.0).mean()
     else:
