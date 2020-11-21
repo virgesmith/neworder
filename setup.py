@@ -33,7 +33,6 @@ def cxxflags(platform):
   if platform == "unix":
     return [
       "-Wall",
-      "-Werror",
       "-pedantic",
       "-pthread",
       "-Wsign-compare",
@@ -109,7 +108,7 @@ class BuildExt(build_ext):
 
     for ext in self.extensions:
       print(self.distribution.get_version())
-      ext.define_macros = defines(ct) #[('NEWORDER_VERSION', self.distribution.get_version())]
+      ext.define_macros = defines(ct)
       ext.extra_compile_args = cxxflags(ct)
       ext.extra_link_args = ldflags(ct)
 

@@ -8,13 +8,6 @@ src/**/*.so
 
 .vscode*/
 build/
-node_modules/
-
-# binaries
-neworder
-neworder_mpi
-testharness
-testharness_mpi
 
 # data
 dm*.csv
@@ -38,5 +31,3 @@ dist/*
 
 *_old*
 
-# eval
-docs/_build/
