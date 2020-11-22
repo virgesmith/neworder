@@ -18,7 +18,7 @@ def badge(t):
     "function": "red",
     "module": "blue"
   }
-  h = "type"
+  h = ""
   return "![%s](https://img.shields.io/badge/%s-%s-%s)" % (t, h, t, colour[t])
 
 
@@ -29,8 +29,7 @@ def format_overloads(lines):
   return lines
 
 def format_heading(l, a, t):
-  typestring = '%s\n\n' % badge(t)
-  return "%s `%s` &nbsp; %s\n\n" % ("#"*l, ".".join(a), typestring)
+  return "%s %s `%s`\n\n" % ("#"*l, badge(t), ".".join(a))
 
 def format_docstr(m, t):
   if not m.__doc__:
@@ -53,7 +52,7 @@ def recurse_attrs(m, parents, l, f):
     t = type_mapping.get(str(type(sm)), None)
     #t = str(type(sm))
     if t is None: continue
-    f.write(format_heading(l, parents + [sm.__name__], t))
+    f.write(format_heading(l, [sm.__name__], t))
     f.write(format_docstr(sm, t))
     if "class" in t or "module" in t:
       recurse_attrs(sm, parents + [sm.__name__], l+1, f)

@@ -111,7 +111,7 @@ PYBIND11_MODULE(neworder, m)
     .def("__repr__", &no::CalendarTimeline::repr, timeline_repr_docstr);
 
   // Microsimulation (or ABM) model class
-  py::class_<no::Model>(m, "Model", "The base model class from which all neworder models should be subclassed")
+  py::class_<no::Model>(m, "Model", model_docstr)
     .def(py::init([](no::NoTimeline& t, const py::function& s) { return no::Model(std::make_unique<no::NoTimeline>(t), s); }), model_init_notimeline_docstr,"timeline"_a, "seeder"_a)
     .def(py::init([](no::LinearTimeline& t, const py::function& s) { return no::Model(std::make_unique<no::LinearTimeline>(t), s); }), model_init_lineartimeline_docstr,"timeline"_a, "seeder"_a)
     .def(py::init([](no::NumericTimeline& t, const py::function& s) { return no::Model(std::make_unique<no::NumericTimeline>(t), s); }), model_init_numerictimeline_docstr,"timeline"_a, "seeder"_a)
@@ -126,7 +126,7 @@ PYBIND11_MODULE(neworder, m)
     // NB the all-important run function is not exposed to python, it can only be executed via the `neworder.run` function
 
   // MC
-  py::class_<no::MonteCarlo>(m, "MonteCarlo", "The model's Monte-Carlo engine")
+  py::class_<no::MonteCarlo>(m, "MonteCarlo", mc_docstr)
     // constructor is NOT exposed to python, can only be created withing a model
     .def_static("deterministic_identical_stream", &no::MonteCarlo::deterministic_identical_stream, mc_deterministic_identical_stream_docstr, "r"_a)
     .def_static("deterministic_independent_stream", &no::MonteCarlo::deterministic_independent_stream, mc_deterministic_independent_stream_docstr, "r"_a)
@@ -181,7 +181,7 @@ PYBIND11_MODULE(neworder, m)
     // })
 
   // statistical utils
-  m.def_submodule("stats", "statistical functions")
+  m.def_submodule("stats", stats_docstr)
     .def("logistic", no::logistic,
                      stats_logistic_docstr,
                      "x"_a, "x0"_a, "k"_a)
@@ -196,14 +196,14 @@ PYBIND11_MODULE(neworder, m)
                      "x"_a);
 
   // dataframe manipulation
-  m.def_submodule("df", "Direct manipulations of dataframes")
+  m.def_submodule("df", df_docstr)
     .def("unique_index", no::df::unique_index, df_unique_index_docstr, "n"_a)
     .def("transition", no::df::transition, df_transition_docstr, "model"_a, "categories"_a, "transition_matrix"_a, "df"_a, "colname"_a)
     .def("testfunc", no::df::testfunc, df_testfunc_docstr, "model"_a, "df"_a, "colname"_a);
     //.def("linked_change", no::df::linked_change, py::return_value_policy::take_ownership);
 
   // MPI submodule
-  m.def_submodule("mpi", "Basic MPI environment discovery")
+  m.def_submodule("mpi", mpi_docstr)
     .def("rank", no::Environment::rank, mpi_rank_docstr)
     .def("size", no::Environment::size, mpi_size_docstr);
 

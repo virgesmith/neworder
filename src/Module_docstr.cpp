@@ -103,6 +103,10 @@ const char* timeline_repr_docstr = R"docstr(
 
 // MonteCarlo
 
+const char* mc_docstr = R"docstr(
+    The model's Monte-Carlo engine with configurable options for parallel execution
+)docstr";
+
 const char* mc_deterministic_identical_stream_docstr = R"docstr(
     Returns a deterministic seed (19937). Input argument is ignored
 )docstr";
@@ -202,6 +206,10 @@ const char* mc_repr_docstr = R"docstr(
 
 // The Model class
 
+const char* model_docstr = R"docstr(
+    The base model class from which all neworder models should be subclassed
+)docstr";
+
 const char* model_init_notimeline_docstr = R"docstr(
     Constructs a model object with an empty timeline and a seeder function, for continuous-time models
 )docstr";
@@ -255,6 +263,10 @@ const char* model_halt_docstr = R"docstr(
 
 // MPI
 
+const char* mpi_docstr = R"docstr(
+    Submodule for basic MPI environment discovery
+)docstr";
+
 const char* mpi_rank_docstr = R"docstr(
     Returns the MPI rank of the process
 )docstr";
@@ -293,6 +305,10 @@ const char* time_isnever_a_docstr = R"docstr(
 
 // Statistical functions
 
+const char* stats_docstr = R"docstr(
+    Submodule for statistical functions
+)docstr";
+
 const char* stats_logistic_docstr = R"docstr(
     Computes the logistic function on the supplied values.
     Args:
@@ -329,6 +345,11 @@ const char* stats_logit_docstr = R"docstr(
 )docstr";
 
 // Dataframe manipulation
+
+const char* df_docstr = R"docstr(
+    Submodule for operations involving direct manipulation of pandas dataframes
+)docstr";
+
 
 const char* df_unique_index_docstr = R"docstr(
     Generates an array of n unique values, even across multiple processes, that can be used to unambiguously index multiple dataframes.
