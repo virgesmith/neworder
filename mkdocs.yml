@@ -16,8 +16,8 @@ theme:
 
 markdown_extensions:
   - toc:
-      permalink: "¶"  
-  - admonition      
+      permalink: "¶"
+  - admonition
   - codehilite
   - pymdownx.arithmatex:
       generic: true
@@ -26,11 +26,11 @@ extra_javascript:
   - js/config.js
   - https://polyfill.io/v3/polyfill.min.js?features=es6
   - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
-      
+
 plugins:
   - search
   - macros:
-      module_name: docs.macros
+      module_name: docs/macros
       # include_dir: examples
 #  - mkpdfs
 
@@ -52,7 +52,7 @@ nav:
     - API Reference: api.md
     - Tips and Tricks: tips.md
   - References: references.md
-  - About: 
+  - About:
     - Citing: citing.md
     - Contributing: developer.md
     - Support: support.md

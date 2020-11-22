@@ -146,8 +146,8 @@ Merge branches/PRs into master and fix any CI issues (builds, tests, major code 
 5. Tag: `git tag -a $(cat VERSION) -m"release v$(cat VERSION)"`
 6. Push, including tag: `git push --atomic origin master $(cat VERSION)`
 7. Check tagged CI builds and docker image are ok
-8. Check zenodo for new DOI
-9. Package and upload to PyPI: `scripts/package.sh`
-10. Update conda feedstock, see instructions [here](https://github.com/conda-forge/neworder-feedstock)
-11. Install pypi/conda-forge/docker releases in a fresh environment and ensure all is well. If not, fix and go back to 2.
-12. Create release on github, using the tag and the release notes from above
+8. Package and upload to PyPI: `scripts/package.sh`
+9. Update and check conda feedstock (if this doesn't happen automatically, see instructions [here](https://github.com/conda-forge/neworder-feedstock))
+10. Install pypi/conda-forge/docker releases in a fresh environment and ensure all is well. If not, fix and go back to 2.
+11. Create release on github, using the tag and the release notes from above
+12. Check zenodo for new DOI and ensure documentation references it.
