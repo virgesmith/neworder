@@ -89,10 +89,6 @@ const char* timeline_nsteps_docstr = R"docstr(
     Returns the number of steps in the timeline
 )docstr";
 
-const char* timeline_next_docstr = R"docstr(
-    Increments the timeline, unless the end has already been reached
-)docstr";
-
 const char* timeline_at_checkpoint_docstr = R"docstr(
     Returns True if the current step is a checkpoint
 )docstr";
@@ -206,9 +202,22 @@ const char* mc_repr_docstr = R"docstr(
 
 // The Model class
 
-const char* model_init_docstr = R"docstr(
-    Constructs a model object from a timeline and a seeder function
+const char* model_init_notimeline_docstr = R"docstr(
+    Constructs a model object with an empty timeline and a seeder function, for continuous-time models
 )docstr";
+
+const char* model_init_lineartimeline_docstr = R"docstr(
+    Constructs a model object from a linear timeline and a seeder function, providing equally spaced timesteps
+)docstr";
+
+const char* model_init_numerictimeline_docstr = R"docstr(
+    Constructs a model object from a numeric timeline and a seeder function, allowing user defined timesteps
+)docstr";
+
+const char* model_init_calendartimelime_docstr = R"docstr(
+    Constructs a model object from a calendar timeline and a seeder function, with date-based timesteps
+)docstr";
+
 const char* model_timeline_docstr = R"docstr(
     Returns the model's timeline object
 )docstr";

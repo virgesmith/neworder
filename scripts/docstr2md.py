@@ -11,15 +11,26 @@ type_mapping = {
   "<class 'module'>": "module"
 }
 
+def badge(t):
+  colour = {
+    "class": "darkgreen",
+    "instance method": "orange",
+    "function": "red",
+    "module": "blue"
+  }
+  h = "type"
+  return "![%s](https://img.shields.io/badge/%s-%s-%s)" % (t, h, t, colour[t])
+
+
 def format_overloads(lines):
   for i, l in enumerate(lines):
-    if l[:2] == "1." or l[:2] == "2." or l[:2] == "3.":
+    if l[:2] == "1." or l[:2] == "2." or l[:2] == "3." or l[:2] == "4.":
       lines[i] = "```python\n" + l[2:] + "\n```"
   return lines
 
 def format_heading(l, a, t):
-  typestring = '!!! note "%s"\n\n' % t
-  return "%s `%s`\n\n%s" % ("#"*l, ".".join(a), typestring)
+  typestring = '%s\n\n' % badge(t)
+  return "%s `%s` &nbsp; %s\n\n" % ("#"*l, ".".join(a), typestring)
 
 def format_docstr(m, t):
   if not m.__doc__:

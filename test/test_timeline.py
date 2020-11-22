@@ -105,12 +105,21 @@ def test_calendar_timeline():
   # monthly timesteps checking we don't overshoot in shorter months
   dim = [31,29,31,30,31,30]
 
+  class CalendarModel(no.Model):
+    def __init__(self, calendartimeline):
+      super().__init__(calendartimeline, no.MonteCarlo.deterministic_identical_stream)
+
+    def step(self):
+      assert t.time().day == min(dim[t.index()], d)
+
+    def checkpoint(self):
+      pass
+
   for d in range(1,32):
     t = no.CalendarTimeline(date(2020, 1, d), date(2020, 7, d), 1, "m", 1)
 
-    while not t.at_end():
-      assert t.time().day == min(dim[t.index()], d)
-      t.next()
+    m = CalendarModel(t)
+    no.run(m)
 
 
 def test_model():
@@ -122,58 +131,44 @@ def test_model():
 # check the timestepping is consistent across the different timeline implementations
 def test_consistency():
 
-  ot = no.NoTimeline()
-  assert ot.nsteps() == 1
-  while not ot.at_end():
-    #print(ot.index(), ot.time(), ot.dt())
-    ot.next()
-  assert ot.index() == 1
-  #no.log(ot.__repr__())
-  ot.next()
-  assert ot.index() == 1
+  # need to wrap timeline in a model to do the stepping, which isnt directly accessible from python
+  class ConsistencyTest(no.Model):
+    def __init__(self, timeline):
+      super().__init__(timeline, no.MonteCarlo.deterministic_identical_stream)
 
-  lt = no.LinearTimeline(2020, 2021, [12])
+    def step(self):
+      pass
 
-  assert lt.nsteps() == 12
-  while not lt.at_end():
-    lt.next()
-  assert lt.index() == 12
-  assert lt.time() == 2021
-  lt.next()
-  assert lt.index() == 12
-  assert lt.time() == 2021
+    def checkpoint(self):
+      pass
 
-  nt = no.NumericTimeline([2020 + i/12 for i in range(13)], [12])
-  assert nt.nsteps() == 12
-  while not nt.at_end():
-    nt.next()
-  assert nt.index() == 12
-  assert nt.time() == 2021
-  nt.next()
-  assert nt.index() == 12
-  assert nt.time() == 2021
+  m = ConsistencyTest(no.NoTimeline())
+  assert m.timeline().nsteps() == 1
+  no.run(m)
+  assert m.timeline().index() == 1
+
+  m = ConsistencyTest(no.LinearTimeline(2020, 2021, [12]))
+
+  assert m.timeline().nsteps() == 12
+  no.run(m)
+  assert m.timeline().index() == 12
+  assert m.timeline().time() == 2021
+
+  m = ConsistencyTest(no.NumericTimeline([2020 + i/12 for i in range(13)], [12]))
+  assert m.timeline().nsteps() == 12
+  no.run(m)
+  assert m.timeline().index() == 12
+  assert m.timeline().time() == 2021
 
   s = date(2019,10,31)
   e = date(2020,10,31)
 
-  ct = no.CalendarTimeline(s, e, 1, "m", 1)
-  assert ct.start().date() == s
-  assert ct.nsteps() == 12
-  while not ct.at_end():
-    assert not ct.at_checkpoint()
-    ct.next()
-  assert ct.index() == 12
-  assert ct.at_checkpoint()
-  # need to convert datetime to date to compare
-  assert ct.time().date() == e
-  ct.next()
-  assert ct.index() == 12
-  assert ct.time().date() == e
+  m = ConsistencyTest(no.CalendarTimeline(s, e, 1, "m", 1))
+  assert m.timeline().time().date() == s
+  assert m.timeline().nsteps() == 12
+  no.run(m)
+  assert m.timeline().time().date() == e
+  assert m.timeline().index() == 12
 
-
-# om = no.Model(ot, no.MonteCarlo.deterministic_identical_stream)
-# nm = no.Model(nt, no.MonteCarlo.deterministic_identical_stream)
-# lm = no.Model(lt, no.MonteCarlo.deterministic_identical_stream)
-# cm = no.Model(ct, no.MonteCarlo.deterministic_identical_stream)
 
 

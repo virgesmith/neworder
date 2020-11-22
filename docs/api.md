@@ -1,14 +1,14 @@
 # API Reference
-## `neworder.CalendarTimeline`
+## `neworder.CalendarTimeline` &nbsp; ![class](https://img.shields.io/badge/type-class-darkgreen)
 
-!!! note "class"
+
 
 
 A calendar-based timeline
 
-### `neworder.CalendarTimeline.__init__`
+### `neworder.CalendarTimeline.__init__` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 __init__(self: neworder.CalendarTimeline, start: datetime.datetime, end: datetime.datetime, step: int, unit: str, n_checkpoints: int) -> None
@@ -19,9 +19,9 @@ Constructs a calendar-based timeline, given start and end dates, an increment sp
 of checkpoints required. Checkpoints are spread evenly over the timeline and always include the final time point
 
 
-### `neworder.CalendarTimeline.at_checkpoint`
+### `neworder.CalendarTimeline.at_checkpoint` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 at_checkpoint(self: neworder.CalendarTimeline) -> bool
@@ -31,9 +31,9 @@ at_checkpoint(self: neworder.CalendarTimeline) -> bool
 Returns True if the current step is a checkpoint
 
 
-### `neworder.CalendarTimeline.at_end`
+### `neworder.CalendarTimeline.at_end` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 at_end(self: neworder.CalendarTimeline) -> bool
@@ -43,9 +43,9 @@ at_end(self: neworder.CalendarTimeline) -> bool
 Returns True if the current step is the end of the timeline
 
 
-### `neworder.CalendarTimeline.dt`
+### `neworder.CalendarTimeline.dt` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 dt(self: neworder.CalendarTimeline) -> float
@@ -55,9 +55,9 @@ dt(self: neworder.CalendarTimeline) -> float
 Returns the step size size of the timeline
 
 
-### `neworder.CalendarTimeline.end`
+### `neworder.CalendarTimeline.end` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 end(self: neworder.CalendarTimeline) -> object
@@ -67,9 +67,9 @@ end(self: neworder.CalendarTimeline) -> object
 Returns the time of the end of the timeline
 
 
-### `neworder.CalendarTimeline.index`
+### `neworder.CalendarTimeline.index` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 index(self: neworder.CalendarTimeline) -> int
@@ -79,34 +79,9 @@ index(self: neworder.CalendarTimeline) -> int
 Returns the index of the current step in the timeline
 
 
-### `neworder.CalendarTimeline.next`
-
-!!! note "instance method"
-
-```python
-next(*args, **kwargs)
-```
-Overloaded function.
-
-```python
- next(self: neworder.CalendarTimeline) -> None
-```
+### `neworder.CalendarTimeline.nsteps` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
 
-Returns the time of the start of the timeline
-
-
-```python
- next(self: neworder.CalendarTimeline) -> None
-```
-
-
-Increments the timeline, unless the end has already been reached
-
-
-### `neworder.CalendarTimeline.nsteps`
-
-!!! note "instance method"
 
 ```python
 nsteps(self: neworder.CalendarTimeline) -> int
@@ -116,9 +91,9 @@ nsteps(self: neworder.CalendarTimeline) -> int
 Returns the number of steps in the timeline
 
 
-### `neworder.CalendarTimeline.start`
+### `neworder.CalendarTimeline.start` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 start(self: neworder.CalendarTimeline) -> object
@@ -128,9 +103,9 @@ start(self: neworder.CalendarTimeline) -> object
 Returns the time of the start of the timeline
 
 
-### `neworder.CalendarTimeline.time`
+### `neworder.CalendarTimeline.time` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 time(self: neworder.CalendarTimeline) -> object
@@ -140,16 +115,16 @@ time(self: neworder.CalendarTimeline) -> object
 Returns the time of the current step in the timeline
 
 
-## `neworder.LinearTimeline`
+## `neworder.LinearTimeline` &nbsp; ![class](https://img.shields.io/badge/type-class-darkgreen)
 
-!!! note "class"
+
 
 
 An equally-spaced non-calendar timeline .
 
-### `neworder.LinearTimeline.__init__`
+### `neworder.LinearTimeline.__init__` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 __init__(self: neworder.LinearTimeline, start: float, end: float, checkpoints: List[int]) -> None
@@ -160,9 +135,9 @@ Constructs a timeline from start to end, with the checkpoints given by a non-emp
 The total number of steps and the step size is determined by the final checkpoint value
 
 
-### `neworder.LinearTimeline.at_checkpoint`
+### `neworder.LinearTimeline.at_checkpoint` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 at_checkpoint(self: neworder.LinearTimeline) -> bool
@@ -172,9 +147,9 @@ at_checkpoint(self: neworder.LinearTimeline) -> bool
 Returns True if the current step is a checkpoint
 
 
-### `neworder.LinearTimeline.at_end`
+### `neworder.LinearTimeline.at_end` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 at_end(self: neworder.LinearTimeline) -> bool
@@ -184,9 +159,9 @@ at_end(self: neworder.LinearTimeline) -> bool
 Returns True if the current step is the end of the timeline
 
 
-### `neworder.LinearTimeline.dt`
+### `neworder.LinearTimeline.dt` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 dt(self: neworder.LinearTimeline) -> float
@@ -196,9 +171,9 @@ dt(self: neworder.LinearTimeline) -> float
 Returns the step size size of the timeline
 
 
-### `neworder.LinearTimeline.end`
+### `neworder.LinearTimeline.end` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 end(self: neworder.LinearTimeline) -> object
@@ -208,9 +183,9 @@ end(self: neworder.LinearTimeline) -> object
 Returns the time of the end of the timeline
 
 
-### `neworder.LinearTimeline.index`
+### `neworder.LinearTimeline.index` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 index(self: neworder.LinearTimeline) -> int
@@ -220,21 +195,9 @@ index(self: neworder.LinearTimeline) -> int
 Returns the index of the current step in the timeline
 
 
-### `neworder.LinearTimeline.next`
-
-!!! note "instance method"
-
-```python
-next(self: neworder.LinearTimeline) -> None
-```
+### `neworder.LinearTimeline.nsteps` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
 
-Increments the timeline, unless the end has already been reached
-
-
-### `neworder.LinearTimeline.nsteps`
-
-!!! note "instance method"
 
 ```python
 nsteps(self: neworder.LinearTimeline) -> int
@@ -244,9 +207,9 @@ nsteps(self: neworder.LinearTimeline) -> int
 Returns the number of steps in the timeline
 
 
-### `neworder.LinearTimeline.start`
+### `neworder.LinearTimeline.start` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 start(self: neworder.LinearTimeline) -> object
@@ -256,9 +219,9 @@ start(self: neworder.LinearTimeline) -> object
 Returns the time of the start of the timeline
 
 
-### `neworder.LinearTimeline.time`
+### `neworder.LinearTimeline.time` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 time(self: neworder.LinearTimeline) -> object
@@ -268,14 +231,14 @@ time(self: neworder.LinearTimeline) -> object
 Returns the time of the current step in the timeline
 
 
-## `neworder.Model`
+## `neworder.Model` &nbsp; ![class](https://img.shields.io/badge/type-class-darkgreen)
 
-!!! note "class"
+
 
 The base model class from which all neworder models should be subclassed
-### `neworder.Model.__init__`
+### `neworder.Model.__init__` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 __init__(*args, **kwargs)
@@ -287,7 +250,7 @@ Overloaded function.
 ```
 
 
-Constructs a model object from a timeline and a seeder function
+Constructs a model object with an empty timeline and a seeder function, for continuous-time models
 
 
 ```python
@@ -295,7 +258,7 @@ Constructs a model object from a timeline and a seeder function
 ```
 
 
-Constructs a model object from a timeline and a seeder function
+Constructs a model object from a linear timeline and a seeder function, providing equally spaced timesteps
 
 
 ```python
@@ -303,18 +266,20 @@ Constructs a model object from a timeline and a seeder function
 ```
 
 
-Constructs a model object from a timeline and a seeder function
+Constructs a model object from a numeric timeline and a seeder function, allowing user defined timesteps
 
 
-4. __init__(self: neworder.Model, timeline: neworder.CalendarTimeline, seeder: function) -> None
+```python
+ __init__(self: neworder.Model, timeline: neworder.CalendarTimeline, seeder: function) -> None
+```
 
 
-Constructs a model object from a timeline and a seeder function
+Constructs a model object from a calendar timeline and a seeder function, with date-based timesteps
 
 
-### `neworder.Model.check`
+### `neworder.Model.check` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 check(self: neworder.Model) -> bool
@@ -330,9 +295,9 @@ Returns:
 True if checks are ok, False otherwise.
 
 
-### `neworder.Model.checkpoint`
+### `neworder.Model.checkpoint` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 checkpoint(self: neworder.Model) -> None
@@ -344,9 +309,9 @@ Default behaviour raises NotImplementedError.
 This function should not be called directly, it is used by the Model.run() function
 
 
-### `neworder.Model.halt`
+### `neworder.Model.halt` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 halt(self: neworder.Model) -> None
@@ -357,9 +322,9 @@ Signal to the model to stop execution gracefully at the end of the current times
 For trapping exceptional/error conditions, prefer to raise and exception, or return False from the Model.check() function
 
 
-### `neworder.Model.mc`
+### `neworder.Model.mc` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 mc(self: neworder.Model) -> no::MonteCarlo
@@ -369,9 +334,9 @@ mc(self: neworder.Model) -> no::MonteCarlo
 Returns the models Monte-Carlo engine
 
 
-### `neworder.Model.modify`
+### `neworder.Model.modify` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 modify(self: neworder.Model, r: int) -> None
@@ -383,9 +348,9 @@ Default behaviour is to do nothing.
 This function should not be called directly, it is used by the Model.run() function
 
 
-### `neworder.Model.step`
+### `neworder.Model.step` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 step(self: neworder.Model) -> None
@@ -397,9 +362,9 @@ Default behaviour raises NotImplementedError.
 This function should not be called directly, it is used by the Model.run() function
 
 
-### `neworder.Model.timeline`
+### `neworder.Model.timeline` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 timeline(self: neworder.Model) -> no::Timeline
@@ -409,14 +374,14 @@ timeline(self: neworder.Model) -> no::Timeline
 Returns the model's timeline object
 
 
-## `neworder.MonteCarlo`
+## `neworder.MonteCarlo` &nbsp; ![class](https://img.shields.io/badge/type-class-darkgreen)
 
-!!! note "class"
+
 
 The model's Monte-Carlo engine
-### `neworder.MonteCarlo.arrivals`
+### `neworder.MonteCarlo.arrivals` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 arrivals(self: neworder.MonteCarlo, lambda: numpy.ndarray[numpy.float64], dt: float, n: int, mingap: float) -> numpy.ndarray[numpy.float64]
@@ -429,9 +394,9 @@ The final value of lambda must be zero, and thus arrivals don't always occur, in
 The inner dimension of the returned 2d array is governed by the the maximum number of arrivals sampled, and will thus vary
 
 
-### `neworder.MonteCarlo.deterministic_identical_stream`
+### `neworder.MonteCarlo.deterministic_identical_stream` &nbsp; ![function](https://img.shields.io/badge/type-function-red)
 
-!!! note "function"
+
 
 ```python
 deterministic_identical_stream(r: int) -> int
@@ -441,9 +406,9 @@ deterministic_identical_stream(r: int) -> int
 Returns a deterministic seed (19937). Input argument is ignored
 
 
-### `neworder.MonteCarlo.deterministic_independent_stream`
+### `neworder.MonteCarlo.deterministic_independent_stream` &nbsp; ![function](https://img.shields.io/badge/type-function-red)
 
-!!! note "function"
+
 
 ```python
 deterministic_independent_stream(r: int) -> int
@@ -454,9 +419,9 @@ Returns a deterministic seed that is a function of the input (19937+r).
 The model uses the MPI rank as the input argument, allowing for differently seeded streams in each process
 
 
-### `neworder.MonteCarlo.first_arrival`
+### `neworder.MonteCarlo.first_arrival` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 first_arrival(*args, **kwargs)
@@ -483,9 +448,9 @@ with no minimum start time. Sampling uses the Lewis-Shedler "thinning" algorithm
 If the final value of lambda is zero, no arrival is indicated by a value of neworder.time.never()
 
 
-### `neworder.MonteCarlo.hazard`
+### `neworder.MonteCarlo.hazard` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 hazard(*args, **kwargs)
@@ -508,9 +473,9 @@ Returns an array of ones (with hazard rate lambda) or zeros of length n
 Returns an array of ones (with hazard rate lambda[i]) or zeros for each element in p
 
 
-### `neworder.MonteCarlo.next_arrival`
+### `neworder.MonteCarlo.next_arrival` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 next_arrival(*args, **kwargs)
@@ -549,9 +514,9 @@ with start times given by startingpoints. Sampling uses the Lewis-Shedler "thinn
 If the final value of lambda is zero, no arrival is indicated by a value of neworder.time.never()
 
 
-### `neworder.MonteCarlo.nondeterministic_stream`
+### `neworder.MonteCarlo.nondeterministic_stream` &nbsp; ![function](https://img.shields.io/badge/type-function-red)
 
-!!! note "function"
+
 
 ```python
 nondeterministic_stream(r: int) -> int
@@ -561,9 +526,9 @@ nondeterministic_stream(r: int) -> int
 Returns a random seed from the platform's random_device. Input argument is ignored
 
 
-### `neworder.MonteCarlo.raw`
+### `neworder.MonteCarlo.raw` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 raw(self: neworder.MonteCarlo) -> int
@@ -573,9 +538,9 @@ raw(self: neworder.MonteCarlo) -> int
 Returns a random 64-bit unsigned integer. Useful for seeding other generators.
 
 
-### `neworder.MonteCarlo.reset`
+### `neworder.MonteCarlo.reset` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 reset(self: neworder.MonteCarlo) -> None
@@ -586,9 +551,9 @@ Resets the generator using the original seed.
 Use with care, esp in multi-process models with identical streams
 
 
-### `neworder.MonteCarlo.sample`
+### `neworder.MonteCarlo.sample` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 sample(self: neworder.MonteCarlo, n: int, cat_weights: numpy.ndarray[numpy.float64]) -> numpy.ndarray[numpy.int64]
@@ -598,9 +563,9 @@ sample(self: neworder.MonteCarlo, n: int, cat_weights: numpy.ndarray[numpy.float
 Returns an array of length n containing randomly sampled categorical values, weighted according to cat_weights
 
 
-### `neworder.MonteCarlo.seed`
+### `neworder.MonteCarlo.seed` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 seed(self: neworder.MonteCarlo) -> int
@@ -610,9 +575,9 @@ seed(self: neworder.MonteCarlo) -> int
 Returns the seed used to initialise the random stream
 
 
-### `neworder.MonteCarlo.state`
+### `neworder.MonteCarlo.state` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 state(self: neworder.MonteCarlo) -> int
@@ -622,9 +587,9 @@ state(self: neworder.MonteCarlo) -> int
 Returns a hash of the internal state of the generator. Avoids the extra complexity of tranmitting variable-length strings over MPI.
 
 
-### `neworder.MonteCarlo.stopping`
+### `neworder.MonteCarlo.stopping` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 stopping(*args, **kwargs)
@@ -647,9 +612,9 @@ Returns an array of stopping times (with hazard rate lambda) of length n
 Returns an array of stopping times (with hazard rate lambda[i]) for each element in lambda
 
 
-### `neworder.MonteCarlo.ustream`
+### `neworder.MonteCarlo.ustream` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 ustream(self: neworder.MonteCarlo, n: int) -> numpy.ndarray[numpy.float64]
@@ -659,16 +624,16 @@ ustream(self: neworder.MonteCarlo, n: int) -> numpy.ndarray[numpy.float64]
 Returns an array of uniform random [0,1) variates of length n
 
 
-## `neworder.NoTimeline`
+## `neworder.NoTimeline` &nbsp; ![class](https://img.shields.io/badge/type-class-darkgreen)
 
-!!! note "class"
+
 
 
 An arbitrary one step timeline, for continuous-time models with no explicit (discrete) timeline
 
-### `neworder.NoTimeline.__init__`
+### `neworder.NoTimeline.__init__` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 __init__(self: neworder.NoTimeline) -> None
@@ -678,9 +643,9 @@ __init__(self: neworder.NoTimeline) -> None
 Constructs an arbitrary one step timeline, where the start and end times are undefined and there is a single step and a single checkpoint
 
 
-### `neworder.NoTimeline.at_checkpoint`
+### `neworder.NoTimeline.at_checkpoint` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 at_checkpoint(self: neworder.NoTimeline) -> bool
@@ -690,9 +655,9 @@ at_checkpoint(self: neworder.NoTimeline) -> bool
 Returns True if the current step is a checkpoint
 
 
-### `neworder.NoTimeline.at_end`
+### `neworder.NoTimeline.at_end` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 at_end(self: neworder.NoTimeline) -> bool
@@ -702,9 +667,9 @@ at_end(self: neworder.NoTimeline) -> bool
 Returns True if the current step is the end of the timeline
 
 
-### `neworder.NoTimeline.dt`
+### `neworder.NoTimeline.dt` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 dt(self: neworder.NoTimeline) -> float
@@ -714,9 +679,9 @@ dt(self: neworder.NoTimeline) -> float
 Returns the step size size of the timeline
 
 
-### `neworder.NoTimeline.end`
+### `neworder.NoTimeline.end` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 end(self: neworder.NoTimeline) -> object
@@ -726,9 +691,9 @@ end(self: neworder.NoTimeline) -> object
 Returns the time of the end of the timeline
 
 
-### `neworder.NoTimeline.index`
+### `neworder.NoTimeline.index` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 index(self: neworder.NoTimeline) -> int
@@ -738,21 +703,9 @@ index(self: neworder.NoTimeline) -> int
 Returns the index of the current step in the timeline
 
 
-### `neworder.NoTimeline.next`
-
-!!! note "instance method"
-
-```python
-next(self: neworder.NoTimeline) -> None
-```
+### `neworder.NoTimeline.nsteps` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
 
-Increments the timeline, unless the end has already been reached
-
-
-### `neworder.NoTimeline.nsteps`
-
-!!! note "instance method"
 
 ```python
 nsteps(self: neworder.NoTimeline) -> int
@@ -762,9 +715,9 @@ nsteps(self: neworder.NoTimeline) -> int
 Returns the number of steps in the timeline
 
 
-### `neworder.NoTimeline.start`
+### `neworder.NoTimeline.start` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 start(self: neworder.NoTimeline) -> object
@@ -774,9 +727,9 @@ start(self: neworder.NoTimeline) -> object
 Returns the time of the start of the timeline
 
 
-### `neworder.NoTimeline.time`
+### `neworder.NoTimeline.time` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 time(self: neworder.NoTimeline) -> object
@@ -786,16 +739,16 @@ time(self: neworder.NoTimeline) -> object
 Returns the time of the current step in the timeline
 
 
-## `neworder.NumericTimeline`
+## `neworder.NumericTimeline` &nbsp; ![class](https://img.shields.io/badge/type-class-darkgreen)
 
-!!! note "class"
+
 
 
 An custom non-claendar timeline
 
-### `neworder.NumericTimeline.__init__`
+### `neworder.NumericTimeline.__init__` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 __init__(self: neworder.NumericTimeline, times: List[float], checkpoints: List[int]) -> None
@@ -806,9 +759,9 @@ Constructs a timeline from an array of time points and a subset of indices that 
 The checkpoint array must contain at least the index of the final point on the timeline.
 
 
-### `neworder.NumericTimeline.at_checkpoint`
+### `neworder.NumericTimeline.at_checkpoint` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 at_checkpoint(self: neworder.NumericTimeline) -> bool
@@ -818,9 +771,9 @@ at_checkpoint(self: neworder.NumericTimeline) -> bool
 Returns True if the current step is a checkpoint
 
 
-### `neworder.NumericTimeline.at_end`
+### `neworder.NumericTimeline.at_end` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 at_end(self: neworder.NumericTimeline) -> bool
@@ -830,9 +783,9 @@ at_end(self: neworder.NumericTimeline) -> bool
 Returns True if the current step is the end of the timeline
 
 
-### `neworder.NumericTimeline.dt`
+### `neworder.NumericTimeline.dt` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 dt(self: neworder.NumericTimeline) -> float
@@ -842,9 +795,9 @@ dt(self: neworder.NumericTimeline) -> float
 Returns the step size size of the timeline
 
 
-### `neworder.NumericTimeline.end`
+### `neworder.NumericTimeline.end` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 end(self: neworder.NumericTimeline) -> object
@@ -854,9 +807,9 @@ end(self: neworder.NumericTimeline) -> object
 Returns the time of the end of the timeline
 
 
-### `neworder.NumericTimeline.index`
+### `neworder.NumericTimeline.index` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 index(self: neworder.NumericTimeline) -> int
@@ -866,21 +819,9 @@ index(self: neworder.NumericTimeline) -> int
 Returns the index of the current step in the timeline
 
 
-### `neworder.NumericTimeline.next`
-
-!!! note "instance method"
-
-```python
-next(self: neworder.NumericTimeline) -> None
-```
+### `neworder.NumericTimeline.nsteps` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
 
-Increments the timeline, unless the end has already been reached
-
-
-### `neworder.NumericTimeline.nsteps`
-
-!!! note "instance method"
 
 ```python
 nsteps(self: neworder.NumericTimeline) -> int
@@ -890,9 +831,9 @@ nsteps(self: neworder.NumericTimeline) -> int
 Returns the number of steps in the timeline
 
 
-### `neworder.NumericTimeline.start`
+### `neworder.NumericTimeline.start` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 start(self: neworder.NumericTimeline) -> object
@@ -902,9 +843,9 @@ start(self: neworder.NumericTimeline) -> object
 Returns the time of the start of the timeline
 
 
-### `neworder.NumericTimeline.time`
+### `neworder.NumericTimeline.time` &nbsp; ![instance method](https://img.shields.io/badge/type-instance method-orange)
 
-!!! note "instance method"
+
 
 ```python
 time(self: neworder.NumericTimeline) -> object
@@ -914,9 +855,9 @@ time(self: neworder.NumericTimeline) -> object
 Returns the time of the current step in the timeline
 
 
-## `neworder.checked`
+## `neworder.checked` &nbsp; ![function](https://img.shields.io/badge/type-function-red)
 
-!!! note "function"
+
 
 ```python
 checked(checked: bool = True) -> None
@@ -926,14 +867,14 @@ checked(checked: bool = True) -> None
 Sets the checked flag, which determines whether the model runs checks during execution
 
 
-## `neworder.neworder.df`
+## `neworder.neworder.df` &nbsp; ![module](https://img.shields.io/badge/type-module-blue)
 
-!!! note "module"
+
 
 Direct manipulations of dataframes
-### `neworder.neworder.df.testfunc`
+### `neworder.neworder.df.testfunc` &nbsp; ![function](https://img.shields.io/badge/type-function-red)
 
-!!! note "function"
+
 
 ```python
 testfunc(model: neworder.Model, df: object, colname: str) -> None
@@ -943,9 +884,9 @@ testfunc(model: neworder.Model, df: object, colname: str) -> None
 Test function for direct dataframe manipulation. Results may vary. Do not use.
 
 
-### `neworder.neworder.df.transition`
+### `neworder.neworder.df.transition` &nbsp; ![function](https://img.shields.io/badge/type-function-red)
 
-!!! note "function"
+
 
 ```python
 transition(model: neworder.Model, categories: numpy.ndarray[numpy.int64], transition_matrix: numpy.ndarray[numpy.float64], df: object, colname: str) -> None
@@ -961,9 +902,9 @@ df: The dataframe, which is modified in-place
 colname: The name of the column in the dataframe
 
 
-### `neworder.neworder.df.unique_index`
+### `neworder.neworder.df.unique_index` &nbsp; ![function](https://img.shields.io/badge/type-function-red)
 
-!!! note "function"
+
 
 ```python
 unique_index(n: int) -> numpy.ndarray[numpy.int64]
@@ -973,9 +914,9 @@ unique_index(n: int) -> numpy.ndarray[numpy.int64]
 Generates an array of n unique values, even across multiple processes, that can be used to unambiguously index multiple dataframes.
 
 
-## `neworder.log`
+## `neworder.log` &nbsp; ![function](https://img.shields.io/badge/type-function-red)
 
-!!! note "function"
+
 
 ```python
 log(obj: object) -> None
@@ -985,14 +926,14 @@ log(obj: object) -> None
 The logging function. Prints obj to the console, annotated with process information
 
 
-## `neworder.neworder.mpi`
+## `neworder.neworder.mpi` &nbsp; ![module](https://img.shields.io/badge/type-module-blue)
 
-!!! note "module"
+
 
 Basic MPI environment discovery
-### `neworder.neworder.mpi.rank`
+### `neworder.neworder.mpi.rank` &nbsp; ![function](https://img.shields.io/badge/type-function-red)
 
-!!! note "function"
+
 
 ```python
 rank() -> int
@@ -1002,9 +943,9 @@ rank() -> int
 Returns the MPI rank of the process
 
 
-### `neworder.neworder.mpi.size`
+### `neworder.neworder.mpi.size` &nbsp; ![function](https://img.shields.io/badge/type-function-red)
 
-!!! note "function"
+
 
 ```python
 size() -> int
@@ -1014,9 +955,9 @@ size() -> int
 Returns the MPI size (no. of processes) of the run
 
 
-## `neworder.run`
+## `neworder.run` &nbsp; ![function](https://img.shields.io/badge/type-function-red)
 
-!!! note "function"
+
 
 ```python
 run(model: object) -> bool
@@ -1028,14 +969,14 @@ Returns:
 True if model succeeded, False otherwise
 
 
-## `neworder.neworder.stats`
+## `neworder.neworder.stats` &nbsp; ![module](https://img.shields.io/badge/type-module-blue)
 
-!!! note "module"
+
 
 statistical functions
-### `neworder.neworder.stats.logistic`
+### `neworder.neworder.stats.logistic` &nbsp; ![function](https://img.shields.io/badge/type-function-red)
 
-!!! note "function"
+
 
 ```python
 logistic(*args, **kwargs)
@@ -1081,9 +1022,9 @@ Returns:
 The function values
 
 
-### `neworder.neworder.stats.logit`
+### `neworder.neworder.stats.logit` &nbsp; ![function](https://img.shields.io/badge/type-function-red)
 
-!!! note "function"
+
 
 ```python
 logit(x: numpy.ndarray[numpy.float64]) -> numpy.ndarray[numpy.float64]
@@ -1097,16 +1038,16 @@ Returns:
 The function values (log-odds)
 
 
-## `neworder.neworder.time`
+## `neworder.neworder.time` &nbsp; ![module](https://img.shields.io/badge/type-module-blue)
 
-!!! note "module"
+
 
 
 Temporal values and comparison
 
-### `neworder.neworder.time.distant_past`
+### `neworder.neworder.time.distant_past` &nbsp; ![function](https://img.shields.io/badge/type-function-red)
 
-!!! note "function"
+
 
 ```python
 distant_past() -> float
@@ -1116,9 +1057,9 @@ distant_past() -> float
 Returns a value that compares less than any other value but itself and "never"
 
 
-### `neworder.neworder.time.far_future`
+### `neworder.neworder.time.far_future` &nbsp; ![function](https://img.shields.io/badge/type-function-red)
 
-!!! note "function"
+
 
 ```python
 far_future() -> float
@@ -1128,9 +1069,9 @@ far_future() -> float
 Returns a value that compares greater than any other value but itself and "never"
 
 
-### `neworder.neworder.time.isnever`
+### `neworder.neworder.time.isnever` &nbsp; ![function](https://img.shields.io/badge/type-function-red)
 
-!!! note "function"
+
 
 ```python
 isnever(*args, **kwargs)
@@ -1155,9 +1096,9 @@ Returns an array of booleans corresponding to whether the element of an array co
 implemented as a floating-point NaN, direct comparison will always fails, since NaN != NaN.
 
 
-### `neworder.neworder.time.never`
+### `neworder.neworder.time.never` &nbsp; ![function](https://img.shields.io/badge/type-function-red)
 
-!!! note "function"
+
 
 ```python
 never() -> float
@@ -1167,9 +1108,9 @@ never() -> float
 Returns a value that compares unequal to any value, including but itself.
 
 
-## `neworder.verbose`
+## `neworder.verbose` &nbsp; ![function](https://img.shields.io/badge/type-function-red)
 
-!!! note "function"
+
 
 ```python
 verbose(verbose: bool = True) -> None
@@ -1179,9 +1120,9 @@ verbose(verbose: bool = True) -> None
 Sets the verbose flag, which toggles detailed runtime logs
 
 
-## `neworder.version`
+## `neworder.version` &nbsp; ![function](https://img.shields.io/badge/type-function-red)
 
-!!! note "function"
+
 
 ```python
 version() -> str
