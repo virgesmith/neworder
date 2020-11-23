@@ -89,6 +89,9 @@ def test_timeline_validation():
   assert_throws(ValueError, no.CalendarTimeline, date(2021, 1, 1), date(2020, 1, 1), 1, "m", 1)
   assert_throws(ValueError, no.CalendarTimeline, date(2019, 1, 1), date(2020, 1, 1), 1, "w", 1)
 
+  assert_throws(ValueError, no.CalendarTimeline, date(2019, 1, 1), date(2020, 1, 1), 1, "m", 0)
+  assert_throws(ValueError, no.CalendarTimeline, date(2019, 1, 1), date(2020, 1, 1), 1, "m", 13)
+
 
 def test_linear_timeline():
   # 40 years annual steps with 10y checkpoints
@@ -120,7 +123,6 @@ def test_calendar_timeline():
 
     m = CalendarModel(t)
     no.run(m)
-
 
 def test_model():
   model = _TestModel()

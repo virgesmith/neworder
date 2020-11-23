@@ -326,6 +326,11 @@ no::CalendarTimeline::CalendarTimeline(time_point start, time_point end, size_t 
   m_times.push_back(end);
 
   // now spread the checkpoints over the timeline
+  if (n_checkpoints < 1)
+  {
+    throw py::value_error("must be at least one checkpoint");
+  }
+
   if (n_checkpoints >= m_times.size())
   {
     throw py::value_error("too many checkpoints requested (%%), timeline only has %% steps"s % n_checkpoints % (m_times.size()-1));
@@ -337,7 +342,6 @@ no::CalendarTimeline::CalendarTimeline(time_point start, time_point end, size_t 
   {
     m_checkpoints.push_back((i + 1) * steps_per_checkpoint);
   }
-  no::log("%%"s % m_checkpoints);
 }
 
 size_t no::CalendarTimeline::index() const
