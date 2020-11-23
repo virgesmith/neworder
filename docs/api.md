@@ -1,4 +1,6 @@
-# API Reference
+# ![module](https://img.shields.io/badge/-module-blue) `neworder`
+---
+
 ## ![class](https://img.shields.io/badge/-class-darkgreen) `CalendarTimeline`
 
 
@@ -95,6 +97,8 @@ time(self: neworder.CalendarTimeline) -> object
 Returns the time of the current step in the timeline
 
 
+---
+
 ## ![class](https://img.shields.io/badge/-class-darkgreen) `LinearTimeline`
 
 
@@ -190,6 +194,8 @@ time(self: neworder.LinearTimeline) -> object
 
 Returns the time of the current step in the timeline
 
+
+---
 
 ## ![class](https://img.shields.io/badge/-class-darkgreen) `Model`
 
@@ -317,6 +323,8 @@ timeline(self: neworder.Model) -> no::Timeline
 
 Returns the model's timeline object
 
+
+---
 
 ## ![class](https://img.shields.io/badge/-class-darkgreen) `MonteCarlo`
 
@@ -540,6 +548,8 @@ ustream(self: neworder.MonteCarlo, n: int) -> numpy.ndarray[numpy.float64]
 Returns an array of uniform random [0,1) variates of length n
 
 
+---
+
 ## ![class](https://img.shields.io/badge/-class-darkgreen) `NoTimeline`
 
 
@@ -634,6 +644,8 @@ time(self: neworder.NoTimeline) -> object
 
 Returns the time of the current step in the timeline
 
+
+---
 
 ## ![class](https://img.shields.io/badge/-class-darkgreen) `NumericTimeline`
 
@@ -731,6 +743,8 @@ time(self: neworder.NumericTimeline) -> object
 Returns the time of the current step in the timeline
 
 
+---
+
 ## ![function](https://img.shields.io/badge/-function-red) `checked`
 
 ```python
@@ -740,6 +754,8 @@ checked(checked: bool = True) -> None
 
 Sets the checked flag, which determines whether the model runs checks during execution
 
+
+---
 
 ## ![module](https://img.shields.io/badge/-module-blue) `neworder.df`
 
@@ -782,6 +798,8 @@ unique_index(n: int) -> numpy.ndarray[numpy.int64]
 Generates an array of n unique values, even across multiple processes, that can be used to unambiguously index multiple dataframes.
 
 
+---
+
 ## ![function](https://img.shields.io/badge/-function-red) `log`
 
 ```python
@@ -791,6 +809,8 @@ log(obj: object) -> None
 
 The logging function. Prints obj to the console, annotated with process information
 
+
+---
 
 ## ![module](https://img.shields.io/badge/-module-blue) `neworder.mpi`
 
@@ -817,6 +837,8 @@ size() -> int
 Returns the MPI size (no. of processes) of the run
 
 
+---
+
 ## ![function](https://img.shields.io/badge/-function-red) `run`
 
 ```python
@@ -828,6 +850,8 @@ Runs the model
 Returns:
 True if model succeeded, False otherwise
 
+
+---
 
 ## ![module](https://img.shields.io/badge/-module-blue) `neworder.stats`
 
@@ -894,6 +918,8 @@ Returns:
 The function values (log-odds)
 
 
+---
+
 ## ![module](https://img.shields.io/badge/-module-blue) `neworder.time`
 
 
@@ -954,6 +980,8 @@ never() -> float
 Returns a value that compares unequal to any value, including but itself.
 
 
+---
+
 ## ![function](https://img.shields.io/badge/-function-red) `verbose`
 
 ```python
@@ -963,6 +991,8 @@ verbose(verbose: bool = True) -> None
 
 Sets the verbose flag, which toggles detailed runtime logs
 
+
+---
 
 ## ![function](https://img.shields.io/badge/-function-red) `version`
 

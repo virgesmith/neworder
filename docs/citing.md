@@ -1,6 +1,6 @@
 # Citing *neworder*
 
-BibTex:
+If you use `neworder` in any published work, please cite it. You can use the following Bibtex reference:
 
 ```bibtex
 @software{neworder,

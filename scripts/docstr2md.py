@@ -52,6 +52,10 @@ def recurse_attrs(m, parents, l, f):
     t = type_mapping.get(str(type(sm)), None)
     #t = str(type(sm))
     if t is None: continue
+    if t != "instance method" and t != "function" or (t == "function" and l == 2):
+      f.write("---\n\n")
+    # if t == "module":
+    #   l = 1
     f.write(format_heading(l, [sm.__name__], t))
     f.write(format_docstr(sm, t))
     if "class" in t or "module" in t:
@@ -61,6 +65,6 @@ def recurse_attrs(m, parents, l, f):
 module = importlib.import_module(module_name)
 
 with open(md, "w") as f:
-  f.write("# API Reference\n")
+  f.write("# ![module](https://img.shields.io/badge/-module-blue) `neworder`\n")
   recurse_attrs(module, ["neworder"], 2, f)
 
