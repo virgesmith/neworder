@@ -28,7 +28,7 @@ public:
   Environment& operator=(const Environment&&) = delete;
 
   // initialises the environment
-  static Environment& init(int rank, int size, bool verbose = true, bool checked = true);
+  static Environment& init(bool verbose = true, bool checked = true);
 
   // MPI rank (0 if serial)
   static int rank();

@@ -207,10 +207,10 @@ PYBIND11_MODULE(neworder, m)
     .def("rank", no::Environment::rank, mpi_rank_docstr)
     .def("size", no::Environment::size, mpi_size_docstr);
 
-  no::Environment::init(-1, -1, false, true);
-
   // Map custom C++ exceptions to python ones
   py::register_exception_translator(no::exception_translator);
+
+  no::Environment::init(/*verbose=*/false, /*checked=*/true);
 }
 
 

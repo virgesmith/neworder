@@ -6,7 +6,7 @@
 #include <string>
 
 // This function must be used to init the environment
-no::Environment& no::Environment::init(int rank, int size, bool verbose, bool checked)
+no::Environment& no::Environment::init(bool verbose, bool checked)
 {
   // get static instance
   Environment& env = no::getenv();
@@ -27,13 +27,10 @@ no::Environment& no::Environment::init(int rank, int size, bool verbose, bool ch
   }
   catch(const py::error_already_set& pyerror)
   {
-    if (!pyerror.matches(PyExc_ModuleNotFoundError))
-    {
-      throw;
-    }
-    env.m_rank = 0;
-    env.m_size = 1;
-    // override verbose
+    // if something other than module not found has occurred, fail
+    if (!pyerror.matches(PyExc_ModuleNotFoundError)) throw;
+    //env.m_rank = 0; already set
+    //env.m_size = 1;
     no::warn("mpi4py module not found, assuming serial mode");
   }
 
@@ -85,9 +82,11 @@ int64_t no::Environment::unique_index()
   return current;
 }
 
-no::Environment::Environment() : m_rank(-1), m_size(-1), m_verbose(false), m_checked(false), m_halt(false)
+no::Environment::Environment() : m_rank(0), m_size(1), m_verbose(false), m_checked(false), m_uniqueIndex(0), m_halt(false)
 {
-  // Note: m_unique_id is only set when MPI env is resolved
+  // Note: in some environments (e.g. in a flask server) the global singleton pattern doesnt work properly, which needs further investigation
+  // See https://github.com/virgesmith/neworder/issues/50
+  // For now, as a workaround, just initialise with valid non-MPI values. MPI will not be available in these environments
 }
 
 no::Environment::~Environment()
