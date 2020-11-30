@@ -5,7 +5,6 @@
 #include "MonteCarlo.h"
 #include "Timer.h"
 #include "Log.h"
-#include "Environment.h"
 #include "ArrayHelpers.h"
 
 #include "NewOrder.h"
@@ -15,8 +14,7 @@
 
 py::array_t<int64_t> no::df::unique_index(size_t n)
 {
-  no::Environment& env = no::getenv();
-  return no::make_array<int64_t>({static_cast<py::ssize_t>(n)}, [&]() { return env.unique_index(); });
+  return no::make_array<int64_t>({static_cast<py::ssize_t>(n)}, [&]() { int64_t i = no::env::uniqueIndex; no::env::uniqueIndex += no::env::size; return i; });
 }
 
 

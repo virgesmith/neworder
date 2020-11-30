@@ -4,13 +4,12 @@
 #include "Module.h"
 #include "Timer.h"
 #include "Log.h"
-#include "Environment.h"
 #include "Error.h"
 
 #include <pybind11/pybind11.h>
 
 no::Model::Model(std::unique_ptr<Timeline> timeline, const py::function& seeder)
-  : m_timeline(std::move(timeline)), m_monteCarlo(seeder(no::getenv().rank()).cast<int32_t>())
+  : m_timeline(std::move(timeline)), m_monteCarlo(seeder(no::env::rank).cast<int32_t>())
 {
   no::log("neworder %% model init: timeline=%% mc=%%"s % module_version() % m_timeline->repr() % m_monteCarlo.repr());
 }
@@ -30,7 +29,7 @@ void no::Model::step()
 void no::Model::halt()
 {
   no::log("sending halt signal to Model::run()");
-  no::getenv().m_halt = true;
+  no::env::halt = true;
 }
 
 bool no::Model::check()
@@ -52,7 +51,12 @@ bool no::Model::run(py::object& model_subclass)
   no::Model& base = model_subclass.cast<no::Model&>();
   Timer timer;
 
-  int rank = no::getenv().rank();
+  int rank = no::env::rank;
+
+  if (rank < 0)
+  {
+    throw std::runtime_error("environment is not correctly initialised, model will not be run");
+  }
 
   const std::string& subclass_name = py::str(model_subclass).cast<std::string>();
 
@@ -76,7 +80,7 @@ bool no::Model::run(py::object& model_subclass)
     base.timeline().next();
 
     // call the check method and stop if necessary
-    if (no::getenv().m_checked)
+    if (no::env::checked)
     {
       ok = model_subclass.attr("check")().cast<bool>();
       no::log("t=%%(%%) %%.check(): %%"s % t % timeindex % subclass_name % (ok? "ok": "FAILED"));
@@ -96,11 +100,11 @@ bool no::Model::run(py::object& model_subclass)
     }
 
     // check python hasn't signalled early termination
-    if (no::getenv().m_halt)
+    if (no::env::halt)
     {
       no::log("t=%%(%%) received halt signal"s % t % timeindex);
-      no::getenv().m_halt = false;
-      // reset the flag
+      // reset the flag so that subsequent model runs don't halt immediately
+      no::env::halt = false;
       break;
     }
   }

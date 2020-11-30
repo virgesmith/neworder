@@ -1,8 +1,6 @@
 
 #include "Log.h"
-#include "Environment.h"
-
-//#include <chrono>
+#include "Module.h"
 
 
 template<>
@@ -29,14 +27,14 @@ std::string to_string_impl(const py::object& o)
 
 void no::log(const std::string& msg)
 {
-  if (no::getenv().m_verbose)
-    py::print(no::getenv().context(), msg);
+  if (no::env::verbose)
+    py::print(no::env::logPrefix[no::env::Context::CPP], msg);
 }
 
 void no::log(const py::handle& msg)
 {
-  if (no::getenv().m_verbose)
-    py::print(no::getenv().context(), msg);
+  if (no::env::verbose)
+    py::print(no::env::logPrefix[no::env::Context::CPP], msg);
 }
 
 void no::warn(const std::string& msg)
