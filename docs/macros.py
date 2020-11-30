@@ -21,11 +21,6 @@ def define_env(env):
   #   return "```some python code here: %s```\n" % s
 
   @env.macro
-  def insert_version():
-    with open("./VERSION") as f:
-      return f.readline().rstrip()
-
-  @env.macro
   def insert_doi():
     response = requests.get('https://zenodo.org/api/records', params={'q': '4031821'})
 
@@ -36,6 +31,23 @@ def define_env(env):
          len(result["hits"]["hits"]) > 0 and \
          "doi" in result["hits"]["hits"][0]:
         return result["hits"]["hits"][0]["doi"]
+      else:
+        return "[json error retrieving doi]"
+    return "[http error %d retrieving doi]" % response.status_code
+
+  @env.macro
+  def insert_version():
+    """ This is the *released* version not the dev one """
+    response = requests.get('https://zenodo.org/api/records', params={'q': '4031821'})
+
+    if response.status_code == 200:
+      result = response.json()
+      if "hits" in result and \
+         "hits" in result["hits"] and \
+         len(result["hits"]["hits"]) > 0 and \
+         "metadata" in result["hits"]["hits"][0] and \
+         "version" in result["hits"]["hits"][0]["metadata"]:
+        return result["hits"]["hits"][0]["metadata"]["version"]
       else:
         return "[json error retrieving doi]"
     return "[http error %d retrieving doi]" % response.status_code
