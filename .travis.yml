@@ -26,10 +26,10 @@ jobs:
         mpiexec -n 2 $(which pytest) -sv
 
     - language: python
-      python: 3.9
+      python: 3.6
       before_install:
       - sudo apt-get update
-      - sudo apt-get -y install build-essential mpich libmpich-dev python3.9-dev
+      - sudo apt-get -y install build-essential mpich libmpich-dev
       script:
       - python -m pip install mpi4py
       - python setup.py install
@@ -72,10 +72,10 @@ jobs:
         - python3 setup.py test
         - mpiexec -n 2 python3 setup.py test
 
-  #allow_failures:
+  allow_failures:
     # - os: osx
     # - name: conda_py3
-    # - python: 3.8
+    - python: 3.6
 
 warnings_are_errors: false
 

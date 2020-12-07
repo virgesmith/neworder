@@ -5,21 +5,24 @@ image:
 
 environment:
   matrix:
-   - PYTHON: "C:\\Python37-x64"
-     PYTHON_ARCH: 64
-     MSVC_VERSION: "Visual Studio 19 Win64"
+    - PYTHON: "C:\\Python36-x64"
+      PYTHON_ARCH: 64
+      MSVC_VERSION: "Visual Studio 19 Win64"
 
-   - PYTHON: "C:\\Python38-x64"
-     PYTHON_ARCH: 64
-     MSVC_VERSION: "Visual Studio 19 Win64"
+    - PYTHON: "C:\\Python37-x64"
+      PYTHON_ARCH: 64
+      MSVC_VERSION: "Visual Studio 19 Win64"
 
-   - PYTHON: "C:\\Python39-x64"
-     PYTHON_ARCH: 64
-     MSVC_VERSION: "Visual Studio 19 Win64"
+    - PYTHON: "C:\\Python38-x64"
+      PYTHON_ARCH: 64
+      MSVC_VERSION: "Visual Studio 19 Win64"
 
-# fail fast
-# matrix:
-#   fast_finish: true
+
+matrix:
+  allow_failures:
+    - PYTHON: "C:\\Python36-x64"
+  # fail fast
+  # fast_finish: true
 
 init:
   - ps: |
