@@ -42,6 +42,15 @@ class _TestModel2(no.Model):
   def checkpoint(self):
     assert self.timeline().at_checkpoint() and self.timeline().index() in self.checkpoints
 
+class _TestResume(no.Model):
+  def __init__(self, t0, n):
+    super().__init__(no.LinearTimeline(t0, t0 + n, [n]), no.MonteCarlo.deterministic_identical_stream)
+
+  def step(self):
+    self.halt()
+
+  def checkpoint(self):
+    pass
 
 def test_time():
   t = -1e10
@@ -172,5 +181,16 @@ def test_consistency():
   assert m.timeline().time().date() == e
   assert m.timeline().index() == 12
 
+def test_resume():
+  t0 = 0.1
+  n = 10
+  m = _TestResume(t0, n) # unit timesteps
 
+  t = t0
+  while not m.timeline().at_end():
+    no.run(m)
+    t += 1
+    assert m.timeline().time() == t
+
+  assert m.timeline().time() == t0 + n
 

@@ -22,13 +22,14 @@ const char* checked_docstr = R"docstr(
 )docstr";
 
 const char* run_docstr = R"docstr(
-    Runs the model
+    Runs the model. If the model has previously run it will resume from the point at which it was given the "halt" instruction. This is useful
+    for external processing of model data, and/or feedback from external sources. If the model has already reached the end of the timeline, this
+    function will have no effect. To re-run the model from the start, you must construct a new model object.
     Returns:
         True if model succeeded, False otherwise
 )docstr";
 
 // Timeline
-
 
 const char* lineartimeline_docstr = R"docstr(
     An equally-spaced non-calendar timeline .
@@ -257,8 +258,9 @@ const char* model_checkpoint_docstr = R"docstr(
     This function should not be called directly, it is used by the Model.run() function
 )docstr";
 const char* model_halt_docstr = R"docstr(
-    Signal to the model to stop execution gracefully at the end of the current timestep, e.g. if some convergence criterion has been met.
-    For trapping exceptional/error conditions, prefer to raise and exception, or return False from the Model.check() function
+    Signal to the model to stop execution gracefully at the end of the current timestep, e.g. if some convergence criterion has been met,
+    or input is required from an upstream model. The model can be subsequently resumed by calling the run() function.
+    For trapping exceptional/error conditions, prefer to raise an exception, or return False from the Model.check() function
 )docstr";
 
 // MPI

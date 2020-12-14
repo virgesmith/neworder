@@ -73,19 +73,15 @@ PYBIND11_MODULE(neworder, m)
 
   m.doc() = module_docstr;
 
-  // utility/diagnostics
+  // model control plus utility/diagnostics
+
   m.def("version", no::module_version, version_docstr)
    .def("log", log_obj, log_docstr, "obj"_a)
    .def("run", no::Model::run, run_docstr, "model"_a)
    .def("verbose", [](bool v = true) { no::env::verbose = v; }, verbose_docstr, "verbose"_a = true)
    .def("checked", [](bool c = true) { no::env::checked = c; }, checked_docstr, "checked"_a = true);
 
-   //.def("verbose", no::Environment::verbose, verbose_docstr, "verbose"_a = true)
-   //.def("checked", no::Environment::checked, checked_docstr, "checked"_a = true);
-
   // time-related module
-
-  // TODO docstrings...
 
   m.def_submodule("time", time_docstr)
     .def("distant_past", no::time::distant_past, time_distant_past_docstr)
