@@ -89,10 +89,6 @@ class DiseaseModel(neworder.Model):
     #self.transitions = np.transpose(self.transitions)
     #neworder.log(self.transitions)
 
-  def checkpoint(self):
-    self.finalise()
-    Graphics().plot(self)
-
   def _update_t(self, previous_states, new_state, new_state_label):
     index = self.pop[(previous_states != new_state) & (self.pop.State == new_state)].index
     self.pop.loc[index, new_state_label] = self.timeline().time()
@@ -163,6 +159,7 @@ class DiseaseModel(neworder.Model):
     # use the string representations of thobserved_casese int enums
     self.summary.rename(columns={s: State(s).name for s in self.summary.columns.values}, inplace=True)
 
+    Graphics().plot(self)
 
 
 # initialise the model

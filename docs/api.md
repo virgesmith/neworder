@@ -235,16 +235,15 @@ Returns:
 True if checks are ok, False otherwise.
 
 
-### ![instance method](https://img.shields.io/badge/-instance method-orange) `checkpoint`
+### ![instance method](https://img.shields.io/badge/-instance method-orange) `finalise`
 
 ```python
-checkpoint(self: neworder.Model) -> None
+finalise(self: neworder.Model) -> None
 ```
 
 
-User-overridable for custom processing at certain points in the model run (at a minimum the final timestep).
-Default behaviour raises NotImplementedError.
-This function should not be called directly, it is used by the Model.run() function
+User-overridable function for custom processing after the final step in the model run.
+Default behaviour does nothing. This function does not need to be called directly, it is called by the Model.run() function
 
 
 ### ![instance method](https://img.shields.io/badge/-instance method-orange) `halt`
@@ -541,7 +540,7 @@ __init__(self: neworder.NoTimeline) -> None
 ```
 
 
-Constructs an arbitrary one step timeline, where the start and end times are undefined and there is a single step and a single checkpoint
+Constructs an arbitrary one step timeline, where the start and end times are undefined and there is a single step of size zero. Useful for continuous-time models
 
 
 ### ![instance method](https://img.shields.io/badge/-instance method-orange) `at_end`

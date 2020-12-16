@@ -133,8 +133,6 @@ double no::NumericTimeline::dt() const
   return m_times[m_index+1] - m_times[m_index];
 }
 
-//const std::vector<size_t>& no::NumericTimeline::checkpoints() const;
-
 void no::NumericTimeline::next()
 {
   if (m_index < m_times.size() - 1)

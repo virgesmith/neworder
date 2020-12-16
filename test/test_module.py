@@ -32,7 +32,7 @@ def test_dummy_model():
       super().__init__(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
     def step(self):
       pass
-    def checkpoint(self):
+    def finalise(self):
       pass
 
   assert no.run(DummyModel())
@@ -46,8 +46,6 @@ def test_check_flag():
       pass
     def check(self):
       return False
-    def checkpoint(self):
-      pass
 
   # fails
   assert not no.run(FailingModel())

@@ -48,7 +48,7 @@ class MarkovChain(no.Model):
     no.df.transition(self, self.states, self.transition_matrix, self.pop, "state")
     self.summary = self.summary.append(self.pop.state.value_counts().transpose())#, ignore_index=True)
 
-  def checkpoint(self):
+  def finalise(self):
     self.summary["t"] = np.linspace(self.timeline().start(), self.timeline().end(), self.timeline().nsteps() + 1)
     #self.summary.set_index(np.linspace(self.timeline().start(), self.timeline().end(), self.timeline().nsteps() + 1), drop=True, inplace=True)
     self.summary.reset_index(drop=True, inplace=True)

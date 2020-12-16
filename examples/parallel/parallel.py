@@ -65,11 +65,11 @@ class Parallel(neworder.Model):
     return True
   # !check!
 
-  # !checkpoint!
-  def checkpoint(self):
+  # !finalise!
+  def finalise(self):
     # process 0 assembles all the data and prints a summary
     pops = comm.gather(self.pop, root=0)
     if neworder.mpi.rank() == 0:
       pops = pd.concat(pops)
       neworder.log("State counts (total %d):\n%s" % (len(pops), pops["state"].value_counts().to_string()))
-  # !checkpoint!
+  # !finalise!

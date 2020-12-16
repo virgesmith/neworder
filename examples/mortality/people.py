@@ -39,14 +39,14 @@ class PeopleDiscrete(neworder.Model):
     neworder.log("pct alive = %f" % (100.0 * np.mean(self.population.alive)))
     return True
 
-  # !disc_checkpoint!
-  def checkpoint(self):
+  # !disc_finalise!
+  def finalise(self):
     # kill off any survivors
     self.die()
     assert np.sum(self.population.alive) == 0
     # the calc life expectancy
     self.life_expectancy = np.mean(self.population.age_at_death)
-  # !disc_checkpoint!
+  # !disc_finalise!
 
   def die(self):
     # using indexes to subset data as cannot store a reference to a subset of the dataframe (it just copies)
@@ -98,7 +98,7 @@ class PeopleContinuous(neworder.Model):
     return self.population.age_at_death.isnull().sum() == 0
   # !cont_check!
 
-  # !cont_checkpoint!
-  def checkpoint(self):
+  # !cont_finalise!
+  def finalise(self):
     self.life_expectancy = np.mean(self.population.age_at_death)
-  # !cont_checkpoint!
+  # !cont_finalise!

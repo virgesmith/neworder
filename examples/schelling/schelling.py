@@ -111,5 +111,5 @@ class Schelling(neworder.Model):
       self.halt()
     # !halt!
 
-  def checkpoint(self):
+  def finalise(self):
     pass

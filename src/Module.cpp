@@ -146,7 +146,7 @@ PYBIND11_MODULE(neworder, m)
     .def("modify", &no::Model::modify, model_modify_docstr, "r"_a)
     .def("step", &no::Model::step, model_step_docstr)
     .def("check", &no::Model::check, model_check_docstr)
-    .def("checkpoint", &no::Model::checkpoint, model_checkpoint_docstr)
+    .def("finalise", &no::Model::finalise, model_finalise_docstr)
     .def("halt", &no::Model::halt, model_halt_docstr);
     // NB the all-important run function is not exposed to python, it can only be executed via the `neworder.run` function
 

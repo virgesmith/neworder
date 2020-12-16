@@ -40,7 +40,7 @@ public:
 
 };
 
-// An empty (one arbitrary step) timeline. The model's step and checkpoint method will each be called once only
+// An empty (one arbitrary step) timeline. The model's step method will each be called once only
 class NEWORDER_EXPORT NoTimeline final : public Timeline
 {
 public:
@@ -110,7 +110,7 @@ private:
 };
 
 
-// A generic numeric timeline, the model developer supplies the entire timeline and the checkpoints
+// A generic numeric timeline, the model developer supplies the entire timeline
 class NEWORDER_EXPORT NumericTimeline final : public Timeline
 {
 public:
@@ -148,7 +148,6 @@ class NEWORDER_EXPORT CalendarTimeline final : public Timeline
 public:
   using time_point = std::chrono::system_clock::time_point;
 
-  // TODO specify checkpoints (as multiple of steps)
   CalendarTimeline(time_point start, time_point end, size_t step, char unit);
 
   virtual ~CalendarTimeline() = default;

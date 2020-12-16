@@ -39,9 +39,10 @@ bool no::Model::check()
   return true;
 }
 
-void no::Model::checkpoint()
+void no::Model::finalise()
 {
-  throw no::NotImplementedError("Model.checkpoint() method must be overridden");
+  // verbose only
+  no::log("defaulted to no-op Model::finalise()");
 }
 
 
@@ -66,7 +67,7 @@ bool no::Model::run(py::object& model_subclass)
   no::log("t=%%(%%) %%.modify(%%)"s % base.timeline().time() % base.timeline().index() % subclass_name % rank);
   model_subclass.attr("modify")(rank);
 
-  // Loop with checkpoints
+  // Loop over timeline
   bool ok = true;
   while (!base.timeline().at_end())
   {
@@ -97,19 +98,16 @@ bool no::Model::run(py::object& model_subclass)
     {
       no::log("t=%%(%%) received halt signal"s % t % timeindex);
       // reset the flag so that subsequent model runs don't halt immediately
+      no::env::halt = false;
       break;
     }
   }
-  // call the checkpoint method as required (if not explicitly halted)
-  if (!no::env::halt)
+  // call the finalise method (if not explicitly halted mid-timeline)
+  if (base.timeline().at_end())
   {
-    no::log("t=%%(%%) %%.checkpoint()"s % base.timeline().time() % base.timeline().index() % subclass_name );
-    model_subclass.attr("checkpoint")();
+    no::log("t=%%(%%) %%.finalise()"s % base.timeline().time() % base.timeline().index() % subclass_name );
+    model_subclass.attr("finalise")();
     no::log("%% exec time=%%s"s % (ok ? "SUCCESS": "ERRORED") % timer.elapsed_s());
-  }
-  else
-  {
-    no::env::halt = false;
   }
   return ok;
 }

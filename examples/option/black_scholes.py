@@ -53,13 +53,13 @@ class BlackScholes(neworder.Model):
     return ok
   # !check!
 
-  # !checkpoint!
-  def checkpoint(self):
+  # !finalise!
+  def finalise(self):
     # check and report accuracy
     self.compare()
     # compute and report some market risk
     self.greeks()
-  # !checkpoint!
+  # !finalise!
 
   def simulate(self):
     # get the single timestep from the timeline

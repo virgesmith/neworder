@@ -20,7 +20,7 @@ class _TestModel(no.Model):
   def step(self):
     self.step_count += 1
 
-  def checkpoint(self):
+  def finalise(self):
     assert self.timeline().time() == self.t_end and self.timeline().index() == self.timeline().index()
 
 class _TestModel2(no.Model):
@@ -39,7 +39,7 @@ class _TestModel2(no.Model):
   def check(self):
     return self.timeline().index() == self.i and self.timeline().time() == self.t
 
-  def checkpoint(self):
+  def finalise(self):
     assert self.timeline().at_end() and self.timeline().index() == self.steps
 
 class _TestResume(no.Model):
@@ -48,9 +48,6 @@ class _TestResume(no.Model):
 
   def step(self):
     self.halt()
-
-  def checkpoint(self):
-    pass
 
 def test_time():
   t = -1e10
@@ -101,7 +98,7 @@ def test_timeline_validation():
 
 
 def test_linear_timeline():
-  # 40 years annual steps with 10y checkpoints
+  # 40 years annual steps
   m = _TestModel2(2011, 2051, 40)
   assert m.timeline().time() == 2011
   assert m.timeline().dt() == 1.0
@@ -121,9 +118,6 @@ def test_calendar_timeline():
 
     def step(self):
       assert t.time().day == min(dim[t.index()], d)
-
-    def checkpoint(self):
-      pass
 
   for d in range(1,32):
     t = no.CalendarTimeline(date(2020, 1, d), date(2020, 7, d), 1, "m")
@@ -145,9 +139,6 @@ def test_consistency():
       super().__init__(timeline, no.MonteCarlo.deterministic_identical_stream)
 
     def step(self):
-      pass
-
-    def checkpoint(self):
       pass
 
   m = ConsistencyTest(no.NoTimeline())
@@ -191,27 +182,37 @@ def test_resume():
 
   assert m.timeline().time() == t0 + n
 
-# check that halt/checkpoint interaction works as expected
-def test_halt_checkpoint():
+# check that halt/finalise interaction works as expected
+def test_halt_finalise():
 
   class HCModel(no.Model):
     def __init__(self, timeline, halt=False):
       super().__init__(timeline, no.MonteCarlo.deterministic_identical_stream)
       self.do_halt = halt
-      self.checkpoint_called = False
+      self.finalise_called = False
 
     def step(self):
       if self.do_halt:
         self.halt()
 
-    def checkpoint(self):
-      self.checkpoint_called = True
-      assert not self.do_halt
+    def finalise(self):
+      self.finalise_called = True
 
   m = HCModel(no.LinearTimeline(0,3,3))
   no.run(m)
-  assert m.checkpoint_called
+  assert m.finalise_called
 
   m = HCModel(no.LinearTimeline(0,3,3), True)
   no.run(m)
-  assert not m.checkpoint_called
+  assert not m.finalise_called
+  assert not m.timeline().at_end()
+  assert m.timeline().index() == 1
+  no.run(m)
+  assert not m.finalise_called
+  assert not m.timeline().at_end()
+  assert m.timeline().index() == 2
+  no.run(m)
+  assert m.finalise_called
+  assert m.timeline().at_end()
+  assert m.timeline().index() == 3
+

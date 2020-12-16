@@ -10,7 +10,7 @@ The framework runs a model via the `neworder.run` function, which takes an insta
 
 - an instance of a timeline, in this case the `NoTimeline` arbitrary single-step timeline
 - an instance of a `neworder.MonteCarlo` engine
-- user-defined methods to evolve the state (`step`) and report/postprocess results (`checkpoint`).
+- user-defined methods to evolve the state (`step`) and report/postprocess results (`finalise`).
 
 In this example the model doesn't have an explicit discrete timeline, so for models of this type a method is provided to construct an empty timeline (which is a single step of length zero).
 
@@ -43,9 +43,9 @@ The `step` method randomly samples new values for the "talkative" attribute, usi
 
 {{ include_snippet("./examples/hello-world/model.py", "step") }}
 
-and finally the `checkpoint` method prints greetings from the talkative individuals using the `neworder.log` function, which is preferred to plain `print` statements as the output is annotated with useful context for debugging.
+and at the end of the timeline the `finalise` method prints greetings from the talkative individuals using the `neworder.log` function, which is preferred to plain `print` statements as the output is annotated with useful context for debugging.
 
-{{ include_snippet("./examples/hello-world/model.py", "checkpoint") }}
+{{ include_snippet("./examples/hello-world/model.py", "finalise") }}
 
 ## Execution
 
@@ -80,7 +80,7 @@ To get a better idea of what's going on, uncomment the line containing `neworder
 [no 0/1]  t=nan(1) HelloWorld.step()
 [no 0/1]  defaulted to no-op Model::check()
 [no 0/1]  t=nan(1) HelloWorld.check(): ok
-[no 0/1]  t=nan(1) HelloWorld.checkpoint()
+[no 0/1]  t=nan(1) HelloWorld.finalise()
 [py 0/1]  Hello from 0
 [py 0/1]  Hello from 1
 [py 0/1]  Hello from 4
@@ -99,7 +99,7 @@ this output is explained line-by-line below.
 
 ## Understanding the workflow and the output
 
-When using `NoTimeline()` the start time, end time and timestep are all zero, and there is a single step, and a single checkpoint at step 1.
+When using `NoTimeline()` the start time, end time are undefined and the timestep is zero - i.e. a single arbitrary step in which all computation is done.
 
 First we get some information about the package and the model initialisation parameters:
 
@@ -131,10 +131,10 @@ and the time index has updated to 1.
 !!! note "Checks"
     Custom data sanity checks can be run after each timestep by overriding the `check` method. The default implementation does nothing. A typical pattern would be to implement checks for debugging a model during development, then disable them entirely to improve performance using `neworder.checked(False)`. See the other examples.
 
-We've now reached the end of our single step "timeline" and have reached the one checkpoint, so the method is called:
+We've now reached the end of our single step "timeline" so the `finalise` method is called:
 
 ```text
-[no 0/1]  t=nan(1) HelloWorld.checkpoint()
+[no 0/1]  t=nan(1) HelloWorld.finalise()
 ```
 
 which prints the results:

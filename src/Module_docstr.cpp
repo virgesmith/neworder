@@ -52,7 +52,7 @@ const char* notimeline_docstr = R"docstr(
 )docstr";
 
 const char* notimeline_init_docstr = R"docstr(
-    Constructs an arbitrary one step timeline, where the start and end times are undefined and there is a single step and a single checkpoint
+    Constructs an arbitrary one step timeline, where the start and end times are undefined and there is a single step of size zero. Useful for continuous-time models
 )docstr";
 
 const char* calendartimeline_docstr = R"docstr(
@@ -245,10 +245,9 @@ const char* model_check_docstr = R"docstr(
     Returns:
         True if checks are ok, False otherwise.
 )docstr";
-const char* model_checkpoint_docstr = R"docstr(
-    User-overridable for custom processing at certain points in the model run (at a minimum the final timestep).
-    Default behaviour raises NotImplementedError.
-    This function should not be called directly, it is used by the Model.run() function
+const char* model_finalise_docstr = R"docstr(
+    User-overridable function for custom processing after the final step in the model run.
+    Default behaviour does nothing. This function does not need to be called directly, it is called by the Model.run() function
 )docstr";
 const char* model_halt_docstr = R"docstr(
     Signal to the model to stop execution gracefully at the end of the current timestep, e.g. if some convergence criterion has been met,

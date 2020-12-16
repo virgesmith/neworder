@@ -38,9 +38,9 @@ Once an individual's union history is known, birth events can be sampled (births
 
 ## Output
 
-And the checkpoint 
+Once the end of the timeline has been reached, the `finalise` method:
 
-{{ include_snippet("./examples/riskpaths/riskpaths.py", "checkpoint") }}
+{{ include_snippet("./examples/riskpaths/riskpaths.py", "finalise") }}
 
 simply prints a couple of summary statistics:
 

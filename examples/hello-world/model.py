@@ -20,7 +20,7 @@ class HelloWorld(neworder.Model):
   - modify (optional)
   - step
   - check (optional)
-  - checkpoint
+  - finalise (optional)
   The neworder.run() function will execute the model, looping over
   the timeline and calling the methods above
   """
@@ -79,18 +79,16 @@ class HelloWorld(neworder.Model):
     self.population.talkative = self.mc().hazard(self.p_talk, len(self.population)).astype(bool)
   # !step!
 
-  # !checkpoint!
-  def checkpoint(self):
+  # !finalise!
+  def finalise(self):
     """
-    Checkpoints are run at each checkpoint
-    (NB the final timestep is always a checkpoint)
-    This method must be implemented.
+    This method (optional, if defined) is run at the end of the timeline
     Arguments: self
     Returns: NoneType
     """
     for i, r in self.population.iterrows():
       if r.talkative: neworder.log("Hello from %d" % i)
-  # !checkpoint!
+  # !finalise!
 
   # def check(self):
   #   """
