@@ -36,17 +36,15 @@ const char* lineartimeline_docstr = R"docstr(
 )docstr";
 
 const char* lineartimeline_init_docstr = R"docstr(
-    Constructs a timeline from start to end, with the checkpoints given by a non-empty list of ascending integers.
-    The total number of steps and the step size is determined by the final checkpoint value
+    Constructs a timeline from start to end, with the given number of steps.
 )docstr";
 
 const char* numerictimeline_docstr = R"docstr(
-    An custom non-claendar timeline
+    An custom non-calendar timeline where the user explicitly specifies the time points, which must be monotonically increasing.
 )docstr";
 
 const char* numerictimeline_init_docstr = R"docstr(
-    Constructs a timeline from an array of time points and a subset of indices that are checkpoints.
-    The checkpoint array must contain at least the index of the final point on the timeline.
+    Constructs a timeline from an array of time points.
 )docstr";
 
 const char* notimeline_docstr = R"docstr(
@@ -62,8 +60,7 @@ const char* calendartimeline_docstr = R"docstr(
 )docstr";
 
 const char* calendartimeline_init_docstr = R"docstr(
-    Constructs a calendar-based timeline, given start and end dates, an increment specified as a multiple of days, months or years, and the number
-    of checkpoints required. Checkpoints are spread evenly over the timeline and always include the final time point
+    Constructs a calendar-based timeline, given start and end dates, an increment specified as a multiple of days, months or years.
 )docstr";
 
 const char* timeline_start_docstr = R"docstr(
@@ -88,10 +85,6 @@ const char* timeline_dt_docstr = R"docstr(
 
 const char* timeline_nsteps_docstr = R"docstr(
     Returns the number of steps in the timeline
-)docstr";
-
-const char* timeline_at_checkpoint_docstr = R"docstr(
-    Returns True if the current step is a checkpoint
 )docstr";
 
 const char* timeline_at_end_docstr = R"docstr(

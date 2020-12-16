@@ -92,24 +92,25 @@ bool no::Model::run(py::object& model_subclass)
       }
     }
 
-    // call the checkpoint method as required
-    if (base.timeline().at_checkpoint())
-    {
-      no::log("t=%%(%%) %%.checkpoint()"s % t % timeindex % subclass_name );
-      model_subclass.attr("checkpoint")();
-    }
-
     // check python hasn't signalled early termination
     if (no::env::halt)
     {
       no::log("t=%%(%%) received halt signal"s % t % timeindex);
       // reset the flag so that subsequent model runs don't halt immediately
-      no::env::halt = false;
       break;
     }
   }
-
-  no::log("%% exec time=%%s"s % (ok ? "SUCCESS": "ERRORED") % timer.elapsed_s());
+  // call the checkpoint method as required (if not explicitly halted)
+  if (!no::env::halt)
+  {
+    no::log("t=%%(%%) %%.checkpoint()"s % base.timeline().time() % base.timeline().index() % subclass_name );
+    model_subclass.attr("checkpoint")();
+    no::log("%% exec time=%%s"s % (ok ? "SUCCESS": "ERRORED") % timer.elapsed_s());
+  }
+  else
+  {
+    no::env::halt = false;
+  }
   return ok;
 }
 

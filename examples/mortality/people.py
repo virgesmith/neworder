@@ -8,7 +8,7 @@ class PeopleDiscrete(neworder.Model):
   """ Persons sampled each represented as a row in a data frame """
   def __init__(self, mortality_hazard_file, n, max_age):
     # This is case-based model the timeline refers to the age of the cohort
-    timeline = neworder.LinearTimeline(0.0, max_age, [int(max_age)])
+    timeline = neworder.LinearTimeline(0.0, max_age, int(max_age))
     super().__init__(timeline, neworder.MonteCarlo.deterministic_identical_stream)
 
     # initialise cohort
