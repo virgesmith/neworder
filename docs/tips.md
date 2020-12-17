@@ -24,7 +24,7 @@ class MyModel(neworder.Model):
 
 If necessary, you can supply your own seeding strategy, for instance if you required some processes to have independent streams, and some identical streams.
 
-!!! note ""
+!!! note "Seeder function signature"
     The seeder function must accept an `int` (even if unused) and return an `int`
 
 ```python
@@ -67,7 +67,7 @@ def nondeterministic_identical_stream(_r):
 !!! warning "Synchronisation"
     Identically initialised random streams only stay in sync if the same number of samples are taken from each one .
 
-The "option" example relies on identical streams to reduce noise when computing differences for sensitivity analysis. It implements a `check` step that compares the internal states of the generators and fails if any are different (see code below).
+The "option" example relies on parallel processes with identical streams to reduce noise when computing differences for sensitivity analysis. It implements a `check` step that compares the internal states of the random stream in each process and fails if any are different (see the example code).
 
 ## External Sources of Randomness
 
@@ -86,6 +86,19 @@ If you've chosen a deterministic seedng strategy, then `ext_seed` will be reprod
 
 !!! note "Seeding external generators"
     Wherever possible, explicitly seed any external random generators using *neworder*'s MonteCarlo engine. This will effectively propagate your seeding strategy to the external generator.
+
+## Conditional Halting
+
+In some models, rather than (or as well as) evolving the population over a fixed timeline, it may make more sense to iterate timesteps until some condition is met. The "Schelling" example illustrates this - it runs until all agents are in a satisfied state.
+
+In these situations, the model developer can (conditionally) call the `Model.halt()` method from inside the model's `step()` method, which will end the model run. Currently, only the `LinearTimeline` class supports both fixed and open-ended timelines.
+
+!!! note "`Model.halt()`"
+    This function *does not* end execution immediatedly, it signals to the *neworder* runtime not to iterate any further timesteps. This means that the entire body of the `step` method (and the `check` method, if implemented) will still be executed. Overriding the `halt` method is not recommended.
+
+
+!!! Note "Finalisation"
+    The `finalise` method is automatically called by the *neworder* runtime only when the end of the timeline. As open-ended timelines never reach this state, the method must can be called explicitly, if needed.
 
 ## Deadlocks
 

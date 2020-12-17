@@ -31,3 +31,6 @@ dist/*
 
 *_old*
 
+# auto-generated
+docs/examples/src.md
+
