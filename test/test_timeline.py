@@ -127,6 +127,26 @@ def test_calendar_timeline():
     m = CalendarModel(t)
     no.run(m)
 
+def test_open_ended_timeline():
+
+  class OpenEndedModel(no.Model):
+    def __init__(self, calendartimeline):
+      super().__init__(calendartimeline, no.MonteCarlo.deterministic_identical_stream)
+      self.i = 0
+
+    def step(self):
+      assert self.i == self.timeline().index()
+      self.i += 1
+      if self.i > 10: self.halt()
+
+  m = OpenEndedModel(no.LinearTimeline(0, 1))
+  no.run(m)
+  assert(m.i == 11)
+
+  m = OpenEndedModel(no.CalendarTimeline(date(2020,12,17), 1, "d"))
+  no.run(m)
+  assert(m.i == 11)
+
 def test_model():
   model = _TestModel()
   no.run(model)

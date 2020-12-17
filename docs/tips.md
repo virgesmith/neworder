@@ -91,7 +91,7 @@ If you've chosen a deterministic seedng strategy, then `ext_seed` will be reprod
 
 In some models, rather than (or as well as) evolving the population over a fixed timeline, it may make more sense to iterate timesteps until some condition is met. The "Schelling" example illustrates this - it runs until all agents are in a satisfied state.
 
-In these situations, the model developer can (conditionally) call the `Model.halt()` method from inside the model's `step()` method, which will end the model run. Currently, only the `LinearTimeline` class supports both fixed and open-ended timelines.
+In these situations, the model developer can (conditionally) call the `Model.halt()` method from inside the model's `step()` method, which will end the model run. Currently, the `LinearTimeline` and `CalendarTimeline` classes support both fixed and open-ended timelines.
 
 !!! note "`Model.halt()`"
     This function *does not* end execution immediatedly, it signals to the *neworder* runtime not to iterate any further timesteps. This means that the entire body of the `step` method (and the `check` method, if implemented) will still be executed. Overriding the `halt` method is not recommended.

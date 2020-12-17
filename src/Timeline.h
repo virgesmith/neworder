@@ -153,7 +153,11 @@ class NEWORDER_EXPORT CalendarTimeline final : public Timeline
 public:
   using time_point = std::chrono::system_clock::time_point;
 
+  // Fixed-end
   CalendarTimeline(time_point start, time_point end, size_t step, char unit);
+
+  // Open-ended
+  CalendarTimeline(time_point start, size_t step, char unit);
 
   virtual ~CalendarTimeline() = default;
 
@@ -177,8 +181,20 @@ public:
   std::string repr() const;
 
 private:
+
+  // advance to next point
+  time_point advance(const time_point& time) const;
+
   size_t m_index;
+  size_t m_step;
+  char m_unit;
+  int m_refDay;
+  time_point m_start;
+
+  // this caches timesteps when the end is known
   std::vector<time_point> m_times;
+  // otherwise just store the current step start and end, and a reference day (for monthly increments)
+  std::tuple<time_point, time_point> m_currentStep;
 };
 
 namespace time {

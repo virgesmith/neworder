@@ -68,6 +68,10 @@ const char* calendartimeline_init_docstr = R"docstr(
     Constructs a calendar-based timeline, given start and end dates, an increment specified as a multiple of days, months or years.
 )docstr";
 
+const char* calendartimeline_init_open_docstr = R"docstr(
+    Constructs an open-ended calendar-based timeline, given a start date and an increment specified as a multiple of days, months or years.
+)docstr";
+
 const char* timeline_start_docstr = R"docstr(
     Returns the time of the start of the timeline
 )docstr";

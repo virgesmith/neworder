@@ -9,11 +9,24 @@ A calendar-based timeline
 ### ![instance method](https://img.shields.io/badge/-instance method-orange) `__init__`
 
 ```python
-__init__(self: neworder.CalendarTimeline, start: datetime.datetime, end: datetime.datetime, step: int, unit: str) -> None
+__init__(*args, **kwargs)
+```
+Overloaded function.
+
+```python
+ __init__(self: neworder.CalendarTimeline, start: datetime.datetime, end: datetime.datetime, step: int, unit: str) -> None
 ```
 
 
 Constructs a calendar-based timeline, given start and end dates, an increment specified as a multiple of days, months or years.
+
+
+```python
+ __init__(self: neworder.CalendarTimeline, start: datetime.datetime, step: int, unit: str) -> None
+```
+
+
+Constructs an open-ended calendar-based timeline, given a start date and an increment specified as a multiple of days, months or years.
 
 
 ### ![instance method](https://img.shields.io/badge/-instance method-orange) `at_end`

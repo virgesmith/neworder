@@ -127,6 +127,8 @@ PYBIND11_MODULE(neworder, m)
   py::class_<no::CalendarTimeline>(m, "CalendarTimeline", calendartimeline_docstr)
     .def(py::init<std::chrono::system_clock::time_point, std::chrono::system_clock::time_point, size_t, char>(),
       calendartimeline_init_docstr, "start"_a, "end"_a, "step"_a, "unit"_a)
+    .def(py::init<std::chrono::system_clock::time_point, size_t, char>(),
+      calendartimeline_init_open_docstr, "start"_a, "step"_a, "unit"_a)
     .def("start", &no::CalendarTimeline::start, timeline_start_docstr)
     .def("end", &no::CalendarTimeline::end, timeline_end_docstr)
     .def("index", &no::CalendarTimeline::index, timeline_index_docstr)

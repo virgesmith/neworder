@@ -1,8 +1,9 @@
 
 #include "Timeline.h"
 #include "Log.h"
+#include "Error.h"
 
-#include "NewOrder.h"
+//#include "NewOrder.h"
 
 #include <pybind11/chrono.h>
 
@@ -256,52 +257,73 @@ no::CalendarTimeline::time_point addMonths(no::CalendarTimeline::time_point time
 
 }
 
-
-no::CalendarTimeline::CalendarTimeline(time_point start, time_point end, size_t step, char unit) : m_index(0)
+no::CalendarTimeline::time_point no::CalendarTimeline::advance(const no::CalendarTimeline::time_point& time) const
 {
-  if (start >= end)
+  switch (m_unit)
+  {
+    case 'd': return addDays(time, m_step);
+    case 'm': return addMonths(time, m_step, m_refDay);
+    default: // m_unit has already been validated
+    case 'y': return addMonths(time, m_step * 12, m_refDay); // ensures we deal with leap years correctly
+  }
+}
+
+
+no::CalendarTimeline::CalendarTimeline(time_point start, time_point end, size_t step, char unit)
+  : m_index(0), m_step(step), m_unit(tolower(unit)), m_start(start)
+{
+  if (m_start >= end)
   {
     throw py::value_error("start time (%%) must be after end time (%%)"s % py::cast(start) % py::cast(end));
   }
 
-  if (step < 1)
+  if (m_step < 1)
   {
     throw py::value_error("time unit step (%%) must be at least 1"s % step);
   }
 
-  unit = tolower(unit);
-  if (unit != 'd' && unit != 'm' && unit != 'y')
+  if (m_unit != 'd' && m_unit != 'm' && m_unit != 'y')
   {
     throw py::value_error("invalid time unit '%%', must be one of D,d,M,m,Y,y"s % unit);
   }
 
   std::time_t t = std::chrono::system_clock::to_time_t(start);
   tm* local_tm = std::localtime(&t);
-  int refDay = local_tm->tm_mday;
+  m_refDay = local_tm->tm_mday;
 
-  m_times.push_back(start);
-  time_point time = start;
+  time_point time = m_start;
 
   for(;;)
   {
-    if (unit == 'd')
-    {
-      time = addDays(time, step);
-    }
-    else if (unit == 'm')
-    {
-      time = addMonths(time, step, refDay);
-    }
-    else if (unit == 'y')
-    {
-      time = addMonths(time, step * 12, refDay); // ensures we deal with leap years correctly
-    }
+    time = advance(time);
     if (time >= end)
       break;
     m_times.push_back(time);
   }
   m_times.push_back(end);
 }
+
+no::CalendarTimeline::CalendarTimeline(time_point start, size_t step, char unit)
+  : m_index(0), m_step(step), m_unit(tolower(unit)), m_start(start)
+{
+  if (m_step < 1)
+  {
+    throw py::value_error("time unit step (%%) must be at least 1"s % step);
+  }
+
+  if (m_unit != 'd' && m_unit != 'm' && m_unit != 'y')
+  {
+    throw py::value_error("invalid time unit '%%', must be one of D,d,M,m,Y,y"s % unit);
+  }
+
+  std::time_t t = std::chrono::system_clock::to_time_t(start);
+  tm* local_tm = std::localtime(&t);
+  m_refDay = local_tm->tm_mday;
+
+  m_currentStep = {start, advance(start) };
+
+}
+
 
 size_t no::CalendarTimeline::index() const
 {
@@ -310,14 +332,22 @@ size_t no::CalendarTimeline::index() const
 
 bool no::CalendarTimeline::at_end() const
 {
-  return m_index >= m_times.size() - 1;
+  return !m_times.empty() && m_index >= m_times.size();
 }
 
 void no::CalendarTimeline::next()
 {
-  if (m_index < m_times.size() - 1)
+  if (m_times.empty())
   {
+    m_currentStep = { std::get<1>(m_currentStep), advance(std::get<1>(m_currentStep)) };
     ++m_index;
+  }
+  else
+  {
+    if (m_index < m_times.size())
+    {
+      ++m_index;
+    }
   }
 }
 
@@ -325,14 +355,21 @@ void no::CalendarTimeline::next()
 double no::CalendarTimeline::dt() const
 {
   static const double years_per_sec = 1.0 / (365.2475 * 86400);
-  if (m_index < m_times.size() - 1)
-    return std::chrono::duration_cast<std::chrono::seconds>(m_times[m_index+1] - m_times[m_index]).count() * years_per_sec;
-  return 0.0;
+  if (m_times.empty())
+  {
+    return std::chrono::duration_cast<std::chrono::seconds>(std::get<1>(m_currentStep) - std::get<0>(m_currentStep)).count() * years_per_sec;
+  }
+  else
+  {
+    if (m_index < m_times.size())
+      return std::chrono::duration_cast<std::chrono::seconds>(m_times[m_index] - m_times[m_index-1]).count() * years_per_sec;
+    return 0.0;
+  }
 }
 
 size_t no::CalendarTimeline::nsteps() const
 {
-  return m_times.size() - 1;
+  return m_times.size();
 }
 
 // namespace {
@@ -349,9 +386,28 @@ size_t no::CalendarTimeline::nsteps() const
 
 // }
 
-py::object no::CalendarTimeline::time() const { return py::cast(m_times[m_index]); }
-py::object no::CalendarTimeline::start() const { return py::cast(m_times.front()); }
-py::object no::CalendarTimeline::end() const { return py::cast(m_times.back()); }
+py::object no::CalendarTimeline::time() const
+{
+  if (m_times.empty())
+  {
+    return py::cast(std::get<0>(m_currentStep));
+  }
+  return m_index == 0 ? py::cast(m_start) : py::cast(m_times[m_index-1]);
+}
+
+py::object no::CalendarTimeline::start() const
+{
+  return py::cast(m_start);
+}
+
+py::object no::CalendarTimeline::end() const
+{
+  if (m_times.empty())
+  {
+    return py::float_(no::time::never());
+  }
+  return py::cast(m_times.back());
+}
 
 // // Sun=0, Mon=1 etc
 // int no::CalendarTimeline::dow() const
@@ -363,8 +419,17 @@ py::object no::CalendarTimeline::end() const { return py::cast(m_times.back()); 
 
 std::string no::CalendarTimeline::repr() const
 {
-  return "<neworder.CalendarTimeline start=%% end=%% steps=%% time=%% index=%%>"s
-          % start() % end() % (m_times.size() - 1) % time() % m_index;
+  if (m_times.empty())
+  {
+    return "<neworder.CalendarTimeline start=%% end=never step=%%%% nsteps=inf time=%% index=%%>"s
+            % start() % m_step % m_unit % time() % m_index;
+  }
+  else
+  {
+    return "<neworder.CalendarTimeline start=%% end=%% step=%%%% nsteps=%% time=%% index=%%>"s
+            % start() % end() % m_step % m_unit % (m_times.size() - 1) % time() % m_index;
+  }
+
 }
 
 
