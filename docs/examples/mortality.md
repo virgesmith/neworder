@@ -40,9 +40,9 @@ The `step` method samples deaths according to the age-specific mortality rate (c
 
 {{ include_snippet("./examples/mortality/people.py", "disc_step")}}
 
-Finally the `checkpoint` runs after the final timestep, ensures that all individuals are now dead and computes the life expectancy:
+When the end of the timeline is reached the `finalise` method is called, which checks that all individuals are now dead and computes the life expectancy:
 
-{{ include_snippet("./examples/mortality/people.py", "disc_checkpoint")}}
+{{ include_snippet("./examples/mortality/people.py", "disc_finalise")}}
 
 ### Continuous
 
@@ -60,9 +60,9 @@ The single check ensures that all sampled values are finite:
 
 {{ include_snippet("./examples/mortality/people.py", "cont_check")}}
 
-And finally the checkpoint computes the life expectancy
+And finally the `finalise` method computes the life expectancy
 
-{{ include_snippet("./examples/mortality/people.py", "cont_checkpoint")}}
+{{ include_snippet("./examples/mortality/people.py", "cont_finalise")}}
 
 ## Output
 

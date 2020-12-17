@@ -27,14 +27,14 @@ This is provided by:
 
 ### Timeline
 
-*neworder*'s timeline is conceptually a sequence of steps that are iterated over (calling the Model's `step` and (optionally) `check` methods at each iteration, plus the `checkpoint` method on a user-defined subset of the time points. Checkpoints can be used to perform additional processing that is not required at each and every timestep. The final step in the timeline must be a checkpoint, and is often the only checkpoint, used purely to post-process the raw model data at the end of the model run.
+*neworder*'s timeline is conceptually a sequence of steps that are iterated over (calling the Model's `step` and (optionally) `check` methods at each iteration, plus the `finalise` method at the last time point, which is commonly used to post-process the raw model data at the end of the model run.
 
 The framework provides four types of timeline:
 
 - `NoTimeline`: an arbitrary one-step timeline which is designed for continuous-time models in which the model evolution is computed in a single step
-- `LinearTimeline`: a set of equally-spaced intervals in non-calendar time, plus user-defined checkpoints
-- `NumericTimeline`: a fully-customisable non-calendar timeline allowing for unequally-spaced intervals and checkpoints
-- `CalendarTimeline`: a timeline based on calendar dates with with (multiples of) daily, monthly or annual intervals and user-defined checkpoints
+- `LinearTimeline`: a set of equally-spaced intervals in non-calendar time
+- `NumericTimeline`: a fully-customisable non-calendar timeline allowing for unequally-spaced intervals
+- `CalendarTimeline`: a timeline based on calendar dates with with (multiples of) daily, monthly or annual intervals
 
 !!! note "Calendar Timelines"
     - Calendar timelines do not provide intraday resolution
@@ -50,7 +50,6 @@ In order to construct a functioning model, the minimal requirements of the model
 - implement the following class methods:
     - a constructor
     - the `step` method (which is run at every timestep)
-    - the `checkpoint` method (which is run at certain timesteps, always including the final one)
 - define a timeline (see above) over which the model runs
 - set a seeding policy for the random stream (3 are provided, but you can create your own)
 - instantiate an instance of the subclass with the timeline and seeding policy

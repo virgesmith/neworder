@@ -52,7 +52,7 @@ class Population(neworder.Model):
     self.migrations()
     self.age()
 
-  def checkpoint(self):
+  def finalise(self):
     pass
 
   def age(self):

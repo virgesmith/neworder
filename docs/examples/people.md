@@ -26,8 +26,6 @@ During the simulation, at each timestep the check code computes and displays som
 - the percentage of the population that are female
 - the in and out migration numbers
 
-At each checkpoint, the current population is written to a csv file.
-
 {{ include_snippet("./docs/examples/src.md", show_filename=False) }}
 
 ## Setup

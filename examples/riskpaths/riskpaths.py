@@ -10,9 +10,9 @@ import data
 
 # !ctor!
 class RiskPaths(neworder.Model):
-  def __init__(self, timeline, n):
+  def __init__(self, n):
 
-    super().__init__(timeline, neworder.MonteCarlo.deterministic_identical_stream)
+    super().__init__(neworder.NoTimeline(), neworder.MonteCarlo.deterministic_identical_stream)
 
     # initialise population - time of death only
     self.population = pd.DataFrame(index=neworder.df.unique_index(n),
@@ -56,11 +56,11 @@ class RiskPaths(neworder.Model):
     self.population.Unions = (~neworder.time.isnever(self.population["T_Union1Start"].values)).astype(int) \
                            + (~neworder.time.isnever(self.population["T_Union2Start"].values)).astype(int)
 
-  # !checkpoint!
-  def checkpoint(self):
+  # !finalise!
+  def finalise(self):
     neworder.log("mean unions = %f" % np.mean(self.population.Unions))
     neworder.log("pregnancy ratio = %f" % np.mean(self.population.Parity == Parity.PREGNANT))
-  # !checkpoint!
+  # !finalise!
 
   def __pregnancy(self):
     # We're interested in the first pregnancy that occurs for each individual

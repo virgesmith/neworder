@@ -44,9 +44,9 @@ The `check` method accounts for everyone being present and in the right place (i
 
 {{ include_snippet("examples/parallel/parallel.py", "check") }}
 
-For an explanation of why it's implemented like this, see [here](../tips.md#deadlocks). Finally, the (single) checkpoint aggregates the populations and prints a summary of the populations in each state.
+For an explanation of why it's implemented like this, see [here](../tips.md#deadlocks). The `finalise` method aggregates the populations and prints a summary of the populations in each state.
 
-{{ include_snippet("examples/parallel/parallel.py", "checkpoint") }}
+{{ include_snippet("examples/parallel/parallel.py", "finalise") }}
 
 ## Execution
 

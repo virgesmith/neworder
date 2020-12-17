@@ -31,7 +31,7 @@ public:
   virtual void modify(int rank); // optional, parallel runs only
   virtual void step(); // compulsory
   virtual bool check(); // optional
-  virtual void checkpoint(); // compulsory
+  virtual void finalise(); // optional
 
   // set the halt flag
   void halt();

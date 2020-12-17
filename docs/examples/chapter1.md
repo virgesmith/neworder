@@ -32,11 +32,11 @@ The single timestep records each person's time of death
 
 {{ include_snippet("./examples/chapter1/person.py", "step") }}
 
-And the single checkpoint compares the mean of the sampled times of death with the expected value:
+And when the timeline has reached the end, the `finalise` method compares the mean of the sampled times of death with the expected value:
 
-{{ include_snippet("./examples/chapter1/person.py", "checkpoint") }}
+{{ include_snippet("./examples/chapter1/person.py", "finalise") }}
 
-Finally this function is called from the model script when it displays the proportion of the cohort that are still alive at 10-year intervals:
+Then, from the model script, this function is called, displaying the proportion of the cohort that are still alive at 10-year intervals:
 
 {{ include_snippet("./examples/chapter1/person.py", "alive") }}
 

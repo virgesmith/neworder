@@ -33,7 +33,6 @@ public:
 
   virtual void next() = 0;
 
-  virtual bool at_checkpoint() const = 0;
   virtual bool at_end() const = 0;
 
   // used by python __repr__
@@ -41,7 +40,7 @@ public:
 
 };
 
-// An empty (one arbitrary step) timeline. The model's step and checkpoint method will each be called once only
+// An empty (one arbitrary step) timeline. The model's step method will each be called once only
 class NEWORDER_EXPORT NoTimeline final : public Timeline
 {
 public:
@@ -63,9 +62,7 @@ public:
   double dt() const;
 
   virtual void next();
-  //const std::vector<size_t>& checkpoints() const { static std::vector<size_t> checkpoints{1}; return checkpoints; }
 
-  bool at_checkpoint() const;
   bool at_end() const;
 
   // used by python __repr__
@@ -81,7 +78,7 @@ class NEWORDER_EXPORT LinearTimeline final : public Timeline
 {
 public:
 
-  LinearTimeline(double start, double end, const std::vector<size_t>& checkpoints);
+  LinearTimeline(double start, double end, size_t steps);
 
   virtual ~LinearTimeline() = default;
 
@@ -98,11 +95,8 @@ public:
   size_t nsteps() const;
   double dt() const;
 
-  const std::vector<size_t>& checkpoints() const;
-
   void next();
 
-  bool at_checkpoint() const;
   bool at_end() const;
 
   // used by python __repr__
@@ -112,15 +106,15 @@ private:
   size_t m_index;
   double m_start;
   double m_end;
-  std::vector<size_t> m_checkpoints;
+  size_t m_steps;
 };
 
 
-// A generic numeric timeline, the model developer supplies the entire timeline and the checkpoints
+// A generic numeric timeline, the model developer supplies the entire timeline
 class NEWORDER_EXPORT NumericTimeline final : public Timeline
 {
 public:
-  NumericTimeline(const std::vector<double>& times, const std::vector<size_t>& checkpoints);
+  NumericTimeline(const std::vector<double>& times);
 
   virtual ~NumericTimeline() = default;
 
@@ -136,11 +130,9 @@ public:
   size_t index() const;
   size_t nsteps() const;
   double dt() const;
-  //const std::vector<size_t>& checkpoints() const;
 
   void next();
 
-  bool at_checkpoint() const;
   bool at_end() const;
 
   std::string repr() const;
@@ -148,7 +140,6 @@ public:
 private:
   size_t m_index;
   std::vector<double> m_times;
-  std::vector<size_t> m_checkpoints;
 };
 
 // A timeline based on calendar dates and intervals (no intraday resolution, ignores DST adjustments)
@@ -157,8 +148,7 @@ class NEWORDER_EXPORT CalendarTimeline final : public Timeline
 public:
   using time_point = std::chrono::system_clock::time_point;
 
-  // TODO specify checkpoints (as multiple of steps)
-  CalendarTimeline(time_point start, time_point end, size_t step, char unit, size_t n_checkpoints);
+  CalendarTimeline(time_point start, time_point end, size_t step, char unit);
 
   virtual ~CalendarTimeline() = default;
 
@@ -174,11 +164,9 @@ public:
   size_t index() const;
   size_t nsteps() const;
   double dt() const;
-  //const std::vector<size_t>& checkpoints() const;
 
   void next();
 
-  bool at_checkpoint() const;
   bool at_end() const;
 
   std::string repr() const;
@@ -186,7 +174,6 @@ public:
 private:
   size_t m_index;
   std::vector<time_point> m_times;
-  std::vector<size_t> m_checkpoints;
 };
 
 namespace time {

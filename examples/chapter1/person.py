@@ -53,14 +53,14 @@ class People(neworder.Model):
     [p.time_mortality_event(self.mc()) for p in self.population]
 #!step!
 
-#!checkpoint!
-  def checkpoint(self):
+#!finalise!
+  def finalise(self):
     # compute mean sampled life expectancy against theoretical
     sample_le = sum([p.time_mortality for p in self.population]) / len(self.population)
     actual_le = 1.0 / self.population[0].mortality_hazard
     error = sample_le - actual_le
     neworder.log("Life expectancy = %.2f years (sampling error=%.2f years)" % (sample_le, error))
-#!checkpoint!
+#!finalise!
 
 #!alive!
   def alive(self, t):

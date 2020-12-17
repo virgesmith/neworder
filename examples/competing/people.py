@@ -38,7 +38,7 @@ class People(no.Model):
       self.population.loc[self.population[col] > self.population.time_of_death, col] = no.time.never()
       self.population.parity = self.population.parity + ~no.time.isnever(self.population[col].values)
 
-  def checkpoint(self):
+  def finalise(self):
     # compute means
     no.log("birth rate = %f" % np.mean(self.population.parity))
     no.log("percentage mothers = %f" % (100.0 * np.mean(self.population.parity > 0)))

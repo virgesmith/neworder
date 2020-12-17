@@ -20,7 +20,7 @@ in_migration_rate_data = "examples/people/ethpop_inmig.csv"
 out_migration_rate_data = "examples/people/ethpop_outmig.csv"
 
 # define the evolution timeline
-timeline = neworder.CalendarTimeline(date(2011, 1, 1), date(2051, 1, 1), 1, "y", 4)
+timeline = neworder.CalendarTimeline(date(2011, 1, 1), date(2051, 1, 1), 1, "y")
 
 # create the model
 population = Population(timeline, initial_population, fertility_rate_data, mortality_rate_data, in_migration_rate_data, out_migration_rate_data)

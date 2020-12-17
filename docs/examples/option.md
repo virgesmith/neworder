@@ -78,14 +78,14 @@ In the below implementation, all samples are sent to a single process (0) for co
 
 {{ include_snippet("examples/option/black_scholes.py", "check") }}
 
-### Checkpoint
+### Finalise
 
-Finally the checkpoint method is called at end of the timeline. Again, the calculation detail is omitted for clarity, but the method performs two tasks:
+The `finalise` method is called at end of the timeline. Again, the calculation detail is omitted for clarity, but the method performs two tasks:
 
 - checks the Monte-Carlo result against the analytic formula and displays the simulated price and the random error, for each process.
 - computes the sensitivities: process 0 gathers the results from the other processes and computes the finite-difference formulae.
 
-{{ include_snippet("examples/option/black_scholes.py", "checkpoint") }}
+{{ include_snippet("examples/option/black_scholes.py", "finalise") }}
 
 ## Execution
 

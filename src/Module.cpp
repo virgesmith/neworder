@@ -58,8 +58,8 @@ void init_env()
   no::env::uniqueIndex = static_cast<int64_t>(no::env::rank);
 
   // cache log message context for efficiency
-  no::env::logPrefix[no::env::Context::CPP] = "[no %%/%%] "s % no::env::rank % no::env::size;
-  no::env::logPrefix[no::env::Context::PY] = "[py %%/%%] "s % no::env::rank % no::env::size;
+  no::env::logPrefix[no::env::Context::CPP] = "[no %%/%%]"s % no::env::rank % no::env::size;
+  no::env::logPrefix[no::env::Context::PY] = "[py %%/%%]"s % no::env::rank % no::env::size;
 
 }
 
@@ -98,44 +98,40 @@ PYBIND11_MODULE(neworder, m)
     .def("time", &no::NoTimeline::time, timeline_time_docstr)
     .def("dt", &no::NoTimeline::dt, timeline_dt_docstr)
     .def("nsteps", &no::NoTimeline::nsteps, timeline_nsteps_docstr)
-    .def("at_checkpoint", &no::NoTimeline::at_checkpoint, timeline_at_checkpoint_docstr)
     .def("at_end", &no::NoTimeline::at_end, timeline_at_end_docstr)
     .def("__repr__", &no::NoTimeline::repr, timeline_repr_docstr);
 
   py::class_<no::LinearTimeline>(m, "LinearTimeline", lineartimeline_docstr)
-    .def(py::init<double, double, const std::vector<size_t>&>(), lineartimeline_init_docstr, "start"_a, "end"_a, "checkpoints"_a)
+    .def(py::init<double, double, size_t>(), lineartimeline_init_docstr, "start"_a, "end"_a, "nsteps"_a)
     .def("start", &no::LinearTimeline::start, timeline_start_docstr)
     .def("end", &no::LinearTimeline::end, timeline_end_docstr)
     .def("index", &no::LinearTimeline::index, timeline_index_docstr)
     .def("time", &no::LinearTimeline::time, timeline_time_docstr)
     .def("dt", &no::LinearTimeline::dt, timeline_dt_docstr)
     .def("nsteps", &no::LinearTimeline::nsteps, timeline_nsteps_docstr)
-    .def("at_checkpoint", &no::LinearTimeline::at_checkpoint, timeline_at_checkpoint_docstr)
     .def("at_end", &no::LinearTimeline::at_end, timeline_at_end_docstr)
     .def("__repr__", &no::LinearTimeline::repr, timeline_repr_docstr);
 
   py::class_<no::NumericTimeline>(m, "NumericTimeline", numerictimeline_docstr)
-    .def(py::init<const std::vector<double>&, const std::vector<size_t>&>(), numerictimeline_init_docstr, "times"_a, "checkpoints"_a)
+    .def(py::init<const std::vector<double>&>(), numerictimeline_init_docstr, "times"_a)
     .def("start", &no::NumericTimeline::start, timeline_start_docstr)
     .def("end", &no::NumericTimeline::end, timeline_end_docstr)
     .def("index", &no::NumericTimeline::index, timeline_index_docstr)
     .def("time", &no::NumericTimeline::time, timeline_time_docstr)
     .def("dt", &no::NumericTimeline::dt, timeline_dt_docstr)
     .def("nsteps", &no::NumericTimeline::nsteps, timeline_nsteps_docstr)
-    .def("at_checkpoint", &no::NumericTimeline::at_checkpoint, timeline_at_checkpoint_docstr)
     .def("at_end", &no::NumericTimeline::at_end, timeline_at_end_docstr)
     .def("__repr__", &no::NumericTimeline::repr, timeline_repr_docstr);
 
   py::class_<no::CalendarTimeline>(m, "CalendarTimeline", calendartimeline_docstr)
-    .def(py::init<std::chrono::system_clock::time_point, std::chrono::system_clock::time_point, size_t, char, size_t>(),
-      calendartimeline_init_docstr, "start"_a, "end"_a, "step"_a, "unit"_a, "n_checkpoints"_a)
+    .def(py::init<std::chrono::system_clock::time_point, std::chrono::system_clock::time_point, size_t, char>(),
+      calendartimeline_init_docstr, "start"_a, "end"_a, "step"_a, "unit"_a)
     .def("start", &no::CalendarTimeline::start, timeline_start_docstr)
     .def("end", &no::CalendarTimeline::end, timeline_end_docstr)
     .def("index", &no::CalendarTimeline::index, timeline_index_docstr)
     .def("time", &no::CalendarTimeline::time, timeline_time_docstr)
     .def("dt", &no::CalendarTimeline::dt, timeline_dt_docstr)
     .def("nsteps", &no::CalendarTimeline::nsteps, timeline_nsteps_docstr)
-    .def("at_checkpoint", &no::CalendarTimeline::at_checkpoint, timeline_at_checkpoint_docstr)
     .def("at_end", &no::CalendarTimeline::at_end, timeline_at_end_docstr)
     .def("__repr__", &no::CalendarTimeline::repr, timeline_repr_docstr);
 
@@ -150,7 +146,7 @@ PYBIND11_MODULE(neworder, m)
     .def("modify", &no::Model::modify, model_modify_docstr, "r"_a)
     .def("step", &no::Model::step, model_step_docstr)
     .def("check", &no::Model::check, model_check_docstr)
-    .def("checkpoint", &no::Model::checkpoint, model_checkpoint_docstr)
+    .def("finalise", &no::Model::finalise, model_finalise_docstr)
     .def("halt", &no::Model::halt, model_halt_docstr);
     // NB the all-important run function is not exposed to python, it can only be executed via the `neworder.run` function
 
@@ -249,7 +245,7 @@ bool no::env::verbose = false;
 bool no::env::checked = true;
 bool no::env::halt = false;
 int64_t no::env::uniqueIndex = -1;
-std::string no::env::logPrefix[2] = {"[no ?/?] ", "[py ?/?] "};
+std::string no::env::logPrefix[2] = {"[no ?/?]", "[py ?/?]"};
 
 
 

@@ -9,22 +9,11 @@ A calendar-based timeline
 ### ![instance method](https://img.shields.io/badge/-instance method-orange) `__init__`
 
 ```python
-__init__(self: neworder.CalendarTimeline, start: datetime.datetime, end: datetime.datetime, step: int, unit: str, n_checkpoints: int) -> None
+__init__(self: neworder.CalendarTimeline, start: datetime.datetime, end: datetime.datetime, step: int, unit: str) -> None
 ```
 
 
-Constructs a calendar-based timeline, given start and end dates, an increment specified as a multiple of days, months or years, and the number
-of checkpoints required. Checkpoints are spread evenly over the timeline and always include the final time point
-
-
-### ![instance method](https://img.shields.io/badge/-instance method-orange) `at_checkpoint`
-
-```python
-at_checkpoint(self: neworder.CalendarTimeline) -> bool
-```
-
-
-Returns True if the current step is a checkpoint
+Constructs a calendar-based timeline, given start and end dates, an increment specified as a multiple of days, months or years.
 
 
 ### ![instance method](https://img.shields.io/badge/-instance method-orange) `at_end`
@@ -107,22 +96,11 @@ An equally-spaced non-calendar timeline .
 ### ![instance method](https://img.shields.io/badge/-instance method-orange) `__init__`
 
 ```python
-__init__(self: neworder.LinearTimeline, start: float, end: float, checkpoints: List[int]) -> None
+__init__(self: neworder.LinearTimeline, start: float, end: float, nsteps: int) -> None
 ```
 
 
-Constructs a timeline from start to end, with the checkpoints given by a non-empty list of ascending integers.
-The total number of steps and the step size is determined by the final checkpoint value
-
-
-### ![instance method](https://img.shields.io/badge/-instance method-orange) `at_checkpoint`
-
-```python
-at_checkpoint(self: neworder.LinearTimeline) -> bool
-```
-
-
-Returns True if the current step is a checkpoint
+Constructs a timeline from start to end, with the given number of steps.
 
 
 ### ![instance method](https://img.shields.io/badge/-instance method-orange) `at_end`
@@ -257,16 +235,15 @@ Returns:
 True if checks are ok, False otherwise.
 
 
-### ![instance method](https://img.shields.io/badge/-instance method-orange) `checkpoint`
+### ![instance method](https://img.shields.io/badge/-instance method-orange) `finalise`
 
 ```python
-checkpoint(self: neworder.Model) -> None
+finalise(self: neworder.Model) -> None
 ```
 
 
-User-overridable for custom processing at certain points in the model run (at a minimum the final timestep).
-Default behaviour raises NotImplementedError.
-This function should not be called directly, it is used by the Model.run() function
+User-overridable function for custom processing after the final step in the model run.
+Default behaviour does nothing. This function does not need to be called directly, it is called by the Model.run() function
 
 
 ### ![instance method](https://img.shields.io/badge/-instance method-orange) `halt`
@@ -563,17 +540,7 @@ __init__(self: neworder.NoTimeline) -> None
 ```
 
 
-Constructs an arbitrary one step timeline, where the start and end times are undefined and there is a single step and a single checkpoint
-
-
-### ![instance method](https://img.shields.io/badge/-instance method-orange) `at_checkpoint`
-
-```python
-at_checkpoint(self: neworder.NoTimeline) -> bool
-```
-
-
-Returns True if the current step is a checkpoint
+Constructs an arbitrary one step timeline, where the start and end times are undefined and there is a single step of size zero. Useful for continuous-time models
 
 
 ### ![instance method](https://img.shields.io/badge/-instance method-orange) `at_end`
@@ -651,27 +618,16 @@ Returns the time of the current step in the timeline
 ## ![class](https://img.shields.io/badge/-class-darkgreen) `NumericTimeline`
 
 
-An custom non-claendar timeline
+An custom non-calendar timeline where the user explicitly specifies the time points, which must be monotonically increasing.
 
 ### ![instance method](https://img.shields.io/badge/-instance method-orange) `__init__`
 
 ```python
-__init__(self: neworder.NumericTimeline, times: List[float], checkpoints: List[int]) -> None
+__init__(self: neworder.NumericTimeline, times: List[float]) -> None
 ```
 
 
-Constructs a timeline from an array of time points and a subset of indices that are checkpoints.
-The checkpoint array must contain at least the index of the final point on the timeline.
-
-
-### ![instance method](https://img.shields.io/badge/-instance method-orange) `at_checkpoint`
-
-```python
-at_checkpoint(self: neworder.NumericTimeline) -> bool
-```
-
-
-Returns True if the current step is a checkpoint
+Constructs a timeline from an array of time points.
 
 
 ### ![instance method](https://img.shields.io/badge/-instance method-orange) `at_end`

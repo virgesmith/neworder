@@ -10,26 +10,26 @@ from utils import assert_throws
 
 class _TestModel(no.Model):
   def __init__(self):
-    # 10 steps of 10 with checkpoint at 50 and 100
-    super().__init__(no.LinearTimeline(0,100,[5,10]), no.MonteCarlo.deterministic_identical_stream)
+    # 10 steps of 10
+    super().__init__(no.LinearTimeline(0,100,10), no.MonteCarlo.deterministic_identical_stream)
 
     self.step_count = 0
-    self.checkpoint_count = 0
+    self.t_end = 100
+    self.i_end = 10
 
   def step(self):
     self.step_count += 1
 
-  def checkpoint(self):
-    self.checkpoint_count += 1
-    assert self.timeline().time() == 50 * self.checkpoint_count
+  def finalise(self):
+    assert self.timeline().time() == self.t_end and self.timeline().index() == self.timeline().index()
 
 class _TestModel2(no.Model):
-  def __init__(self, start, end, checkpoints):
-    super().__init__(no.LinearTimeline(start, end, checkpoints), no.MonteCarlo.deterministic_identical_stream)
+  def __init__(self, start, end, steps):
+    super().__init__(no.LinearTimeline(start, end, steps), no.MonteCarlo.deterministic_identical_stream)
 
     self.i = 0
     self.t = start
-    self.checkpoints = checkpoints
+    self.steps = steps
     self.end = end
 
   def step(self):
@@ -39,18 +39,15 @@ class _TestModel2(no.Model):
   def check(self):
     return self.timeline().index() == self.i and self.timeline().time() == self.t
 
-  def checkpoint(self):
-    assert self.timeline().at_checkpoint() and self.timeline().index() in self.checkpoints
+  def finalise(self):
+    assert self.timeline().at_end() and self.timeline().index() == self.steps
 
 class _TestResume(no.Model):
   def __init__(self, t0, n):
-    super().__init__(no.LinearTimeline(t0, t0 + n, [n]), no.MonteCarlo.deterministic_identical_stream)
+    super().__init__(no.LinearTimeline(t0, t0 + n, n), no.MonteCarlo.deterministic_identical_stream)
 
   def step(self):
     self.halt()
-
-  def checkpoint(self):
-    pass
 
 def test_time():
   t = -1e10
@@ -79,32 +76,30 @@ def test_null_timeline():
   assert t0.index() == 0
   assert no.time.isnever(t0.time())
 
-  m = _TestModel2(0, 1, [1])
+  m = _TestModel2(0, 1, 1)
   no.run(m)
-  assert m.timeline().at_checkpoint()
   assert m.timeline().at_end()
   assert m.timeline().index() == 1
   assert m.timeline().time() == 1.0
 
 def test_timeline_validation():
 
-  assert_throws(ValueError, no.LinearTimeline, 2020, 2020, [])
-  assert_throws(ValueError, no.LinearTimeline, 2020, 2019, [1])
-  assert_throws(ValueError, no.LinearTimeline, 2020, 2022, [2,1])
-  assert_throws(ValueError, no.LinearTimeline, 2020, 2022, [1,1])
+  assert_throws(TypeError, no.LinearTimeline, 2020, 2020, [])
 
-  assert_throws(ValueError, no.NumericTimeline, [2021, 2020], [1])
+  assert_throws(ValueError, no.NumericTimeline, [2021, 2020])
 
-  assert_throws(ValueError, no.CalendarTimeline, date(2021, 1, 1), date(2020, 1, 1), 1, "m", 1)
-  assert_throws(ValueError, no.CalendarTimeline, date(2019, 1, 1), date(2020, 1, 1), 1, "w", 1)
+  assert_throws(ValueError, no.CalendarTimeline, date(2021, 1, 1), date(2020, 1, 1), 1, "m")
+  assert_throws(ValueError, no.CalendarTimeline, date(2019, 1, 1), date(2020, 1, 1), 1, "w")
 
-  assert_throws(ValueError, no.CalendarTimeline, date(2019, 1, 1), date(2020, 1, 1), 1, "m", 0)
-  assert_throws(ValueError, no.CalendarTimeline, date(2019, 1, 1), date(2020, 1, 1), 1, "m", 13)
+  assert_throws(ValueError, no.CalendarTimeline, date(2019, 1, 1), date(2020, 1, 1), 1, "q")
+  assert_throws(ValueError, no.CalendarTimeline, date(2019, 1, 1), date(2020, 1, 1), 0, "m")#
+  # NOTE: passing a -ve int leads to a *TypeError* (when casting to size_t is attempted)
+  assert_throws(TypeError, no.CalendarTimeline, date(2019, 1, 1), date(2020, 1, 1), -1, "m")
 
 
 def test_linear_timeline():
-  # 40 years annual steps with 10y checkpoints
-  m = _TestModel2(2011, 2051, [10,20,30,40])
+  # 40 years annual steps
+  m = _TestModel2(2011, 2051, 40)
   assert m.timeline().time() == 2011
   assert m.timeline().dt() == 1.0
   assert m.timeline().index() == 0
@@ -124,11 +119,8 @@ def test_calendar_timeline():
     def step(self):
       assert t.time().day == min(dim[t.index()], d)
 
-    def checkpoint(self):
-      pass
-
   for d in range(1,32):
-    t = no.CalendarTimeline(date(2020, 1, d), date(2020, 7, d), 1, "m", 1)
+    t = no.CalendarTimeline(date(2020, 1, d), date(2020, 7, d), 1, "m")
 
     m = CalendarModel(t)
     no.run(m)
@@ -137,7 +129,6 @@ def test_model():
   model = _TestModel()
   no.run(model)
   assert model.step_count == 10
-  assert model.checkpoint_count == 2
 
 # check the timestepping is consistent across the different timeline implementations
 def test_consistency():
@@ -150,22 +141,19 @@ def test_consistency():
     def step(self):
       pass
 
-    def checkpoint(self):
-      pass
-
   m = ConsistencyTest(no.NoTimeline())
   assert m.timeline().nsteps() == 1
   no.run(m)
   assert m.timeline().index() == 1
 
-  m = ConsistencyTest(no.LinearTimeline(2020, 2021, [12]))
+  m = ConsistencyTest(no.LinearTimeline(2020, 2021, 12))
 
   assert m.timeline().nsteps() == 12
   no.run(m)
   assert m.timeline().index() == 12
   assert m.timeline().time() == 2021
 
-  m = ConsistencyTest(no.NumericTimeline([2020 + i/12 for i in range(13)], [12]))
+  m = ConsistencyTest(no.NumericTimeline([2020 + i/12 for i in range(13)]))
   assert m.timeline().nsteps() == 12
   no.run(m)
   assert m.timeline().index() == 12
@@ -174,7 +162,7 @@ def test_consistency():
   s = date(2019,10,31)
   e = date(2020,10,31)
 
-  m = ConsistencyTest(no.CalendarTimeline(s, e, 1, "m", 1))
+  m = ConsistencyTest(no.CalendarTimeline(s, e, 1, "m"))
   assert m.timeline().time().date() == s
   assert m.timeline().nsteps() == 12
   no.run(m)
@@ -193,4 +181,38 @@ def test_resume():
     assert m.timeline().time() == t
 
   assert m.timeline().time() == t0 + n
+
+# check that halt/finalise interaction works as expected
+def test_halt_finalise():
+
+  class HCModel(no.Model):
+    def __init__(self, timeline, halt=False):
+      super().__init__(timeline, no.MonteCarlo.deterministic_identical_stream)
+      self.do_halt = halt
+      self.finalise_called = False
+
+    def step(self):
+      if self.do_halt:
+        self.halt()
+
+    def finalise(self):
+      self.finalise_called = True
+
+  m = HCModel(no.LinearTimeline(0,3,3))
+  no.run(m)
+  assert m.finalise_called
+
+  m = HCModel(no.LinearTimeline(0,3,3), True)
+  no.run(m)
+  assert not m.finalise_called
+  assert not m.timeline().at_end()
+  assert m.timeline().index() == 1
+  no.run(m)
+  assert not m.finalise_called
+  assert not m.timeline().at_end()
+  assert m.timeline().index() == 2
+  no.run(m)
+  assert m.finalise_called
+  assert m.timeline().at_end()
+  assert m.timeline().index() == 3
 
