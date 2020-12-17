@@ -39,6 +39,11 @@ const char* lineartimeline_init_docstr = R"docstr(
     Constructs a timeline from start to end, with the given number of steps.
 )docstr";
 
+const char* lineartimeline_init_open_docstr = R"docstr(
+    Constructs an open-ended timeline give a start value and a step size. NB the model will run until the Model.halt() method is explicitly called
+    (from inside the step() method).
+)docstr";
+
 const char* numerictimeline_docstr = R"docstr(
     An custom non-calendar timeline where the user explicitly specifies the time points, which must be monotonically increasing.
 )docstr";

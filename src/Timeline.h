@@ -78,7 +78,11 @@ class NEWORDER_EXPORT LinearTimeline final : public Timeline
 {
 public:
 
+  // Fixed length timeline
   LinearTimeline(double start, double end, size_t steps);
+
+  // Open-ended timeline. Requires a call to halt() in the step() method to terminate the model run
+  LinearTimeline(double start, double step);
 
   virtual ~LinearTimeline() = default;
 
@@ -106,6 +110,7 @@ private:
   size_t m_index;
   double m_start;
   double m_end;
+  double m_dt; // store both dt and steps as (re)computing steps from dt is prone to rounding errors
   size_t m_steps;
 };
 

@@ -85,6 +85,8 @@ def test_null_timeline():
 def test_timeline_validation():
 
   assert_throws(TypeError, no.LinearTimeline, 2020, 2020, [])
+  assert_throws(ValueError, no.LinearTimeline, 2020, 0.0)
+  assert_throws(ValueError, no.LinearTimeline, 2020, -1.0)
 
   assert_throws(ValueError, no.NumericTimeline, [2021, 2020])
 

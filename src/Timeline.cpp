@@ -42,6 +42,26 @@ no::LinearTimeline::LinearTimeline(double start, double end, size_t steps)
 
   // set to start
   m_index = 0;
+  m_dt = (m_end - m_start) / m_steps;
+}
+
+no::LinearTimeline::LinearTimeline(double start, double step)
+  : m_index(0), m_start(start), m_end(no::time::far_future()), m_dt(step), m_steps(-1)
+{
+  // validate
+  // negative timesteps are disallowed as MC functions will misbehave with dt<0
+  if (m_end <= m_start)
+  {
+    throw py::value_error("end time (%%) must be after the start time (%%)"s % m_end % m_start);
+  }
+
+  if (m_dt <= 0.0)
+  {
+    throw py::value_error("timeline must have a positive step size, got %%"s % m_dt);
+  }
+
+  // set to start
+  m_index = 0;
 }
 
 size_t no::LinearTimeline::index() const
@@ -51,7 +71,7 @@ size_t no::LinearTimeline::index() const
 
 double no::LinearTimeline::dt() const
 {
-  return (m_end - m_start) / m_steps;
+  return m_dt;
 }
 
 size_t no::LinearTimeline::nsteps() const
@@ -61,7 +81,7 @@ size_t no::LinearTimeline::nsteps() const
 
 void no::LinearTimeline::next()
 {
-  if (m_index < m_steps)
+  if (m_steps > 0 && m_index < m_steps)
   {
     ++m_index;
   }
@@ -69,17 +89,17 @@ void no::LinearTimeline::next()
 
 bool no::LinearTimeline::at_end() const
 {
-  return m_index == m_steps;
+  return m_steps > 0 && m_index >= m_steps;
 }
 
-py::object no::LinearTimeline::time() const { return py::float_(m_start + dt() * m_index); }
+py::object no::LinearTimeline::time() const { return py::float_(m_start + m_dt * m_index); }
 py::object no::LinearTimeline::start() const { return py::float_(m_start); }
 py::object no::LinearTimeline::end() const { return py::float_(m_end); }
 
 std::string no::LinearTimeline::repr() const
 {
-  return "<neworder.LinearTimeline start=%% end=%% steps=%% time=%% index=%%>"s
-          % m_start % m_end % m_steps % time() % m_index;
+  return "<neworder.LinearTimeline start=%% end=%% dt=%% steps=%% time=%% index=%%>"s
+          % m_start % m_end % m_dt % m_steps % time() % m_index;
 }
 
 

@@ -108,8 +108,11 @@ class Schelling(neworder.Model):
     # !halt!
     # finish early if everyone satisfied
     if len(unsat) == 0:
+      # set the halt flag in the runtime
       self.halt()
+      # since the timeline is open-ended we need to explicitly call finalise
+      self.finalise()
     # !halt!
 
   def finalise(self):
-    pass
+    plt.pause(5.0)

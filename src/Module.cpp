@@ -103,6 +103,7 @@ PYBIND11_MODULE(neworder, m)
 
   py::class_<no::LinearTimeline>(m, "LinearTimeline", lineartimeline_docstr)
     .def(py::init<double, double, size_t>(), lineartimeline_init_docstr, "start"_a, "end"_a, "nsteps"_a)
+    .def(py::init<double, double>(), lineartimeline_init_open_docstr, "start"_a, "step"_a)
     .def("start", &no::LinearTimeline::start, timeline_start_docstr)
     .def("end", &no::LinearTimeline::end, timeline_end_docstr)
     .def("index", &no::LinearTimeline::index, timeline_index_docstr)

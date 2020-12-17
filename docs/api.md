@@ -96,11 +96,25 @@ An equally-spaced non-calendar timeline .
 ### ![instance method](https://img.shields.io/badge/-instance method-orange) `__init__`
 
 ```python
-__init__(self: neworder.LinearTimeline, start: float, end: float, nsteps: int) -> None
+__init__(*args, **kwargs)
+```
+Overloaded function.
+
+```python
+ __init__(self: neworder.LinearTimeline, start: float, end: float, nsteps: int) -> None
 ```
 
 
 Constructs a timeline from start to end, with the given number of steps.
+
+
+```python
+ __init__(self: neworder.LinearTimeline, start: float, step: float) -> None
+```
+
+
+Constructs an open-ended timeline give a start value and a step size. NB the model will run until the Model.halt() method is explicitly called
+(from inside the step() method).
 
 
 ### ![instance method](https://img.shields.io/badge/-instance method-orange) `at_end`
