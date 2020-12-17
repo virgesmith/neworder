@@ -1,4 +1,4 @@
-dist: bionic
+dist: focal
 
 cache: packages
 
@@ -26,10 +26,10 @@ jobs:
         mpiexec -n 2 $(which pytest) -sv
 
     - language: python
-      python: 3.6
+      python: 3.9
       before_install:
       - sudo apt-get update
-      - sudo apt-get -y install build-essential mpich libmpich-dev
+      - sudo apt-get -y install build-essential mpich libmpich-dev python3.9-dev
       script:
       - python -m pip install mpi4py
       - python setup.py install
