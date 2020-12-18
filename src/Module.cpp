@@ -35,18 +35,12 @@ const char* no::module_version()
 
 void init_env()
 {
-  // default settings
-  no::env::rank = 0;
-  no::env::size = 1;
-  no::env::verbose = false;
-  no::env::checked = true;
-
   try
   {
     py::module mpi = py::module::import("mpi4py.MPI");
     py::object comm = mpi.attr("COMM_WORLD");
-    no::env::rank = comm.attr("Get_rank")().cast<int>();
-    no::env::size = comm.attr("Get_size")().cast<int>();
+    no::env::rank.store(comm.attr("Get_rank")().cast<int>(), std::memory_order_relaxed);
+    no::env::size.store(comm.attr("Get_size")().cast<int>(), std::memory_order_relaxed);
   }
   catch(const py::error_already_set& pyerror)
   {
@@ -55,12 +49,11 @@ void init_env()
     no::warn("mpi4py module not found, assuming serial mode");
   }
 
-  no::env::uniqueIndex = static_cast<int64_t>(no::env::rank);
+  no::env::uniqueIndex.store(static_cast<int64_t>(no::env::rank), std::memory_order_relaxed);
 
   // cache log message context for efficiency
-  no::env::logPrefix[no::env::Context::CPP] = "[no %%/%%]"s % no::env::rank % no::env::size;
-  no::env::logPrefix[no::env::Context::PY] = "[py %%/%%]"s % no::env::rank % no::env::size;
-
+  no::env::logPrefix[no::env::Context::CPP] = "[no %%/%%]"s % no::env::rank.load(std::memory_order_relaxed) % no::env::size.load(std::memory_order_relaxed);
+  no::env::logPrefix[no::env::Context::PY] = "[py %%/%%]"s % no::env::rank.load(std::memory_order_relaxed) % no::env::size.load(std::memory_order_relaxed);
 }
 
 
@@ -78,8 +71,8 @@ PYBIND11_MODULE(neworder, m)
   m.def("version", no::module_version, version_docstr)
    .def("log", log_obj, log_docstr, "obj"_a)
    .def("run", no::Model::run, run_docstr, "model"_a)
-   .def("verbose", [](bool v = true) { no::env::verbose = v; }, verbose_docstr, "verbose"_a = true)
-   .def("checked", [](bool c = true) { no::env::checked = c; }, checked_docstr, "checked"_a = true);
+   .def("verbose", [](bool v = true) { no::env::verbose.store(v, std::memory_order_relaxed); }, verbose_docstr, "verbose"_a = true)
+   .def("checked", [](bool c = true) { no::env::checked.store(c, std::memory_order_relaxed); }, checked_docstr, "checked"_a = true);
 
   // time-related module
 
@@ -232,8 +225,8 @@ PYBIND11_MODULE(neworder, m)
 
   // MPI submodule
   m.def_submodule("mpi", mpi_docstr)
-    .def("rank", []() { return no::env::rank; }, mpi_rank_docstr)
-    .def("size", []() { return no::env::size; }, mpi_size_docstr);
+    .def("rank", []() { return no::env::rank.load(std::memory_order_relaxed); }, mpi_rank_docstr)
+    .def("size", []() { return no::env::size.load(std::memory_order_relaxed); }, mpi_size_docstr);
 
   // Map custom C++ exceptions to python ones
   py::register_exception_translator(no::exception_translator);
@@ -242,12 +235,13 @@ PYBIND11_MODULE(neworder, m)
 }
 
 // initially set to invalid values (so that if model is not properly initialised its immediately apparent)
-int no::env::rank = -1;
-int no::env::size = -1;
-bool no::env::verbose = false;
-bool no::env::checked = true;
-bool no::env::halt = false;
-int64_t no::env::uniqueIndex = -1;
+std::atomic_int no::env::rank = -1;
+std::atomic_int no::env::size = -1;
+std::atomic_bool no::env::verbose = false;
+std::atomic_bool no::env::checked = true;
+std::atomic_bool no::env::halt = false;
+std::atomic_int64_t no::env::uniqueIndex = -1;
+// TODO make atomic<array<string>>
 std::string no::env::logPrefix[2] = {"[no ?/?]", "[py ?/?]"};
 
 

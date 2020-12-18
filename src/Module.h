@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <atomic>
 
 namespace no {
 
@@ -11,12 +12,12 @@ const char* module_version();
 // - halt (if true) is reset in no::Model::run
 namespace env {
 
-extern bool verbose;
-extern bool checked;
-extern bool halt;
-extern int rank;
-extern int size;
-extern int64_t uniqueIndex;
+extern std::atomic_bool verbose;
+extern std::atomic_bool checked;
+extern std::atomic_bool halt;
+extern std::atomic_int rank;
+extern std::atomic_int size;
+extern std::atomic_int64_t uniqueIndex;
 
 struct Context { enum Value { CPP, PY, SIZE }; };
 

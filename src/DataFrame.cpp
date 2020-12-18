@@ -14,7 +14,11 @@
 
 py::array_t<int64_t> no::df::unique_index(size_t n)
 {
-  return no::make_array<int64_t>({static_cast<py::ssize_t>(n)}, [&]() { int64_t i = no::env::uniqueIndex; no::env::uniqueIndex += no::env::size; return i; });
+  int64_t i = no::env::uniqueIndex.load(std::memory_order_acquire);
+  int64_t s = no::env::size.load(std::memory_order_relaxed);
+  auto a = no::make_array<int64_t>({static_cast<py::ssize_t>(n)}, [&]() { int64_t ret = i; i += s; return ret; });
+  no::env::uniqueIndex.store(i, std::memory_order_release);
+  return a;
 }
 
 
