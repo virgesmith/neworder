@@ -15,7 +15,8 @@ def test_mc():
   if no.mpi.size() == 1:
     _test_mc_serial(model)
   else:
-    _test_mc_parallel(model)
+    model_i = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_independent_stream)
+    _test_mc_parallel(model, model_i)
 
 def test_seeders():
 
@@ -218,11 +219,12 @@ def _test_mc_serial(model):
   assert len(nhpp) == 10
 
 
-def _test_mc_parallel(model):
+def _test_mc_parallel(model, model_i):
 
   import mpi4py.MPI as mpi
   comm = mpi.COMM_WORLD
 
+  # test model has identical streams
   mc = model.mc()
   mc.reset()
   assert mc.seed() == 19937
@@ -236,12 +238,13 @@ def _test_mc_parallel(model):
       assert np.all(all_states[0] == all_states[r])
       assert np.all(a - all_a[r] == 0.0)
 
-  mc = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_independent_stream).mc()
+  # test model_i has independent streams
+  mc = model_i.mc()
+  mc.reset()
+  assert mc.seed() == 19937 + no.mpi.rank()
 
   a = mc.ustream(5)
-
   all_a = comm.gather(a, root=0)
-
   all_states = comm.gather(mc.state(), root=0)
 
   # check all other streams different
