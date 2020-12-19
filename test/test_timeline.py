@@ -141,11 +141,11 @@ def test_open_ended_timeline():
 
   m = OpenEndedModel(no.LinearTimeline(0, 1))
   no.run(m)
-  assert(m.i == 11)
+  assert m.i == 11
 
   m = OpenEndedModel(no.CalendarTimeline(date(2020,12,17), 1, "d"))
   no.run(m)
-  assert(m.i == 11)
+  assert m.i == 11
 
 def test_model():
   model = _TestModel()

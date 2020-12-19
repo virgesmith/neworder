@@ -47,22 +47,13 @@ no::LinearTimeline::LinearTimeline(double start, double end, size_t steps)
 }
 
 no::LinearTimeline::LinearTimeline(double start, double step)
-  : m_index(0), m_start(start), m_end(no::time::far_future()), m_dt(step), m_steps(-1)
+  : m_index(0), m_start(start), m_end(no::time::far_future()), m_dt(step), m_steps(0)
 {
   // validate
-  // negative timesteps are disallowed as MC functions will misbehave with dt<0
-  if (m_end <= m_start)
-  {
-    throw py::value_error("end time (%%) must be after the start time (%%)"s % m_end % m_start);
-  }
-
   if (m_dt <= 0.0)
   {
     throw py::value_error("timeline must have a positive step size, got %%"s % m_dt);
   }
-
-  // set to start
-  m_index = 0;
 }
 
 size_t no::LinearTimeline::index() const
@@ -82,7 +73,7 @@ size_t no::LinearTimeline::nsteps() const
 
 void no::LinearTimeline::next()
 {
-  if (m_steps > 0 && m_index < m_steps)
+  if (m_steps == 0 || (m_steps > 0 && m_index < m_steps))
   {
     ++m_index;
   }
@@ -372,20 +363,6 @@ size_t no::CalendarTimeline::nsteps() const
   return m_times.size();
 }
 
-// namespace {
-
-// py::object to_object(const no::CalendarTimeline::time_point& time)
-// {
-// //   py::object o = py::cast(time);
-// //   std::time_t t = std::chrono::system_clock::to_time_t(time);
-// //   std::string buf(64, 0);
-// //   std::strftime(buf.data(), buf.size(), "%F %T", std::localtime(&t));
-// //   return py::str(buf);
-//   return py::cast{time);
-// }
-
-// }
-
 py::object no::CalendarTimeline::time() const
 {
   if (m_times.empty())
@@ -408,14 +385,6 @@ py::object no::CalendarTimeline::end() const
   }
   return py::cast(m_times.back());
 }
-
-// // Sun=0, Mon=1 etc
-// int no::CalendarTimeline::dow() const
-// {
-//   std::time_t t = std::chrono::system_clock::to_time_t(m_times[m_index]);
-//   tm* local_tm = std::localtime(&t);
-//   return local_tm->tm_wday;
-// }
 
 std::string no::CalendarTimeline::repr() const
 {

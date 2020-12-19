@@ -21,6 +21,7 @@ extern std::atomic_int64_t uniqueIndex;
 
 struct Context { enum Value { CPP, PY, SIZE }; };
 
+// strings are not trivially copyable so can't be atomic
 extern std::string logPrefix[Context::SIZE];
 
 }

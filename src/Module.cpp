@@ -52,8 +52,10 @@ void init_env()
   no::env::uniqueIndex.store(static_cast<int64_t>(no::env::rank), std::memory_order_relaxed);
 
   // cache log message context for efficiency
-  no::env::logPrefix[no::env::Context::CPP] = "[no %%/%%]"s % no::env::rank.load(std::memory_order_relaxed) % no::env::size.load(std::memory_order_relaxed);
-  no::env::logPrefix[no::env::Context::PY] = "[py %%/%%]"s % no::env::rank.load(std::memory_order_relaxed) % no::env::size.load(std::memory_order_relaxed);
+  int r = no::env::rank.load(std::memory_order_relaxed);
+  int s = no::env::size.load(std::memory_order_relaxed);
+  no::env::logPrefix[no::env::Context::CPP] = "[no %%/%%]"s % r % s;
+  no::env::logPrefix[no::env::Context::PY] = "[py %%/%%]"s % r % s;
 }
 
 
@@ -241,8 +243,5 @@ std::atomic_bool no::env::verbose = false;
 std::atomic_bool no::env::checked = true;
 std::atomic_bool no::env::halt = false;
 std::atomic_int64_t no::env::uniqueIndex = -1;
-// TODO make atomic<array<string>>
-std::string no::env::logPrefix[2] = {"[no ?/?]", "[py ?/?]"};
-
-
-
+// strings are not trivially copyable so can't be atomic
+std::string no::env::logPrefix[2];

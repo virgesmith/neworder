@@ -41,7 +41,7 @@ const char* lineartimeline_init_docstr = R"docstr(
 
 const char* lineartimeline_init_open_docstr = R"docstr(
     Constructs an open-ended timeline give a start value and a step size. NB the model will run until the Model.halt() method is explicitly called
-    (from inside the step() method).
+    (from inside the step() method). Note also that nsteps() will return zero for timelines constructed this way
 )docstr";
 
 const char* numerictimeline_docstr = R"docstr(
@@ -65,11 +65,13 @@ const char* calendartimeline_docstr = R"docstr(
 )docstr";
 
 const char* calendartimeline_init_docstr = R"docstr(
-    Constructs a calendar-based timeline, given start and end dates, an increment specified as a multiple of days, months or years.
+    Constructs a calendar-based timeline, given start and end dates, an increment specified as a multiple of days, months or years
 )docstr";
 
 const char* calendartimeline_init_open_docstr = R"docstr(
     Constructs an open-ended calendar-based timeline, given a start date and an increment specified as a multiple of days, months or years.
+     NB the model will run until the Model.halt() method is explicitly called (from inside the step() method). Note also that nsteps() will
+     return zero for timelines constructed this way
 )docstr";
 
 const char* timeline_start_docstr = R"docstr(
