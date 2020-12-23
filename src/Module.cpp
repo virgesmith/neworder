@@ -47,6 +47,8 @@ void init_env()
     // if something other than module not found has occurred, fail
     if (!pyerror.matches(PyExc_ModuleNotFoundError)) throw;
     no::warn("mpi4py module not found, assuming serial mode");
+    no::env::rank.store(0, std::memory_order_relaxed);
+    no::env::size.store(1, std::memory_order_relaxed);
   }
 
   no::env::uniqueIndex.store(static_cast<int64_t>(no::env::rank), std::memory_order_relaxed);

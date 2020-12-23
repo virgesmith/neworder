@@ -18,7 +18,7 @@ Overloaded function.
 ```
 
 
-Constructs a calendar-based timeline, given start and end dates, an increment specified as a multiple of days, months or years.
+Constructs a calendar-based timeline, given start and end dates, an increment specified as a multiple of days, months or years
 
 
 ```python
@@ -27,6 +27,8 @@ Constructs a calendar-based timeline, given start and end dates, an increment sp
 
 
 Constructs an open-ended calendar-based timeline, given a start date and an increment specified as a multiple of days, months or years.
+NB the model will run until the Model.halt() method is explicitly called (from inside the step() method). Note also that nsteps() will
+return zero for timelines constructed this way
 
 
 ### ![instance method](https://img.shields.io/badge/-instance method-orange) `at_end`
@@ -127,7 +129,7 @@ Constructs a timeline from start to end, with the given number of steps.
 
 
 Constructs an open-ended timeline give a start value and a step size. NB the model will run until the Model.halt() method is explicitly called
-(from inside the step() method).
+(from inside the step() method). Note also that nsteps() will return zero for timelines constructed this way
 
 
 ### ![instance method](https://img.shields.io/badge/-instance method-orange) `at_end`
