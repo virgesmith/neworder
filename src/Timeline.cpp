@@ -47,7 +47,7 @@ no::LinearTimeline::LinearTimeline(double start, double end, size_t steps)
 }
 
 no::LinearTimeline::LinearTimeline(double start, double step)
-  : m_index(0), m_start(start), m_end(no::time::far_future()), m_dt(step), m_steps(0)
+  : m_index(0), m_start(start), m_end(no::time::far_future()), m_dt(step), m_steps(-1)
 {
   // validate
   if (m_dt <= 0.0)
@@ -366,7 +366,7 @@ double no::CalendarTimeline::dt() const
 
 int64_t no::CalendarTimeline::nsteps() const
 {
-  return m_times.size() - 1;
+  return m_times.size() > 1 ? m_times.size() - 1: -1;
 }
 
 py::object no::CalendarTimeline::time() const

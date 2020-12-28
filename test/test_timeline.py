@@ -145,10 +145,12 @@ def test_open_ended_timeline():
       if self.i > 10: self.halt()
 
   m = OpenEndedModel(no.LinearTimeline(0, 1))
+  assert m.timeline().nsteps() == -1
   no.run(m)
   assert m.i == 11
 
   m = OpenEndedModel(no.CalendarTimeline(date(2020,12,17), 1, "d"))
+  assert m.timeline().nsteps() == -1
   no.run(m)
   assert m.i == 11
 

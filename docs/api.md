@@ -28,7 +28,7 @@ Constructs a calendar-based timeline, given start and end dates, an increment sp
 
 Constructs an open-ended calendar-based timeline, given a start date and an increment specified as a multiple of days, months or years.
 NB the model will run until the Model.halt() method is explicitly called (from inside the step() method). Note also that nsteps() will
-return zero for timelines constructed this way
+return -1 for timelines constructed this way
 
 
 ### ![instance method](https://img.shields.io/badge/-instance method-orange) `at_end`
@@ -78,7 +78,7 @@ nsteps(self: neworder.CalendarTimeline) -> int
 ```
 
 
-Returns the number of steps in the timeline
+Returns the number of steps in the timeline (or -1 if open-ended)
 
 
 ### ![instance method](https://img.shields.io/badge/-instance method-orange) `start`
@@ -129,7 +129,7 @@ Constructs a timeline from start to end, with the given number of steps.
 
 
 Constructs an open-ended timeline give a start value and a step size. NB the model will run until the Model.halt() method is explicitly called
-(from inside the step() method). Note also that nsteps() will return zero for timelines constructed this way
+(from inside the step() method). Note also that nsteps() will return -1 for timelines constructed this way
 
 
 ### ![instance method](https://img.shields.io/badge/-instance method-orange) `at_end`
@@ -179,7 +179,7 @@ nsteps(self: neworder.LinearTimeline) -> int
 ```
 
 
-Returns the number of steps in the timeline
+Returns the number of steps in the timeline (or -1 if open-ended)
 
 
 ### ![instance method](https://img.shields.io/badge/-instance method-orange) `start`
@@ -619,7 +619,7 @@ nsteps(self: neworder.NoTimeline) -> int
 ```
 
 
-Returns the number of steps in the timeline
+Returns the number of steps in the timeline (or -1 if open-ended)
 
 
 ### ![instance method](https://img.shields.io/badge/-instance method-orange) `start`
@@ -706,7 +706,7 @@ nsteps(self: neworder.NumericTimeline) -> int
 ```
 
 
-Returns the number of steps in the timeline
+Returns the number of steps in the timeline (or -1 if open-ended)
 
 
 ### ![instance method](https://img.shields.io/badge/-instance method-orange) `start`
