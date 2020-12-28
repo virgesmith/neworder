@@ -27,8 +27,8 @@ public:
   virtual py::object start() const = 0;
   virtual py::object end() const = 0;
 
-  virtual size_t index() const = 0;
-  virtual size_t nsteps() const = 0;
+  virtual int64_t index() const = 0;
+  virtual int64_t nsteps() const = 0;
   virtual double dt() const = 0;
 
   virtual void next() = 0;
@@ -57,8 +57,8 @@ public:
   py::object start() const;
   py::object end() const;
 
-  size_t index() const;
-  size_t nsteps() const;
+  int64_t index() const;
+  int64_t nsteps() const;
   double dt() const;
 
   virtual void next();
@@ -95,8 +95,8 @@ public:
   py::object start() const;
   py::object end() const;
 
-  size_t index() const;
-  size_t nsteps() const;
+  int64_t index() const;
+  int64_t nsteps() const;
   double dt() const;
 
   void next();
@@ -132,8 +132,8 @@ public:
   py::object start() const;
   py::object end() const;
 
-  size_t index() const;
-  size_t nsteps() const;
+  int64_t index() const;
+  int64_t nsteps() const;
   double dt() const;
 
   void next();
@@ -170,8 +170,8 @@ public:
   py::object start() const;
   py::object end() const;
 
-  size_t index() const;
-  size_t nsteps() const;
+  int64_t index() const;
+  int64_t nsteps() const;
   double dt() const;
 
   void next();
@@ -189,9 +189,8 @@ private:
   size_t m_step;
   char m_unit;
   int m_refDay;
-  time_point m_start;
 
-  // this caches timesteps when the end is known
+  // this caches timesteps when the end is known (so we know total number of steps)
   std::vector<time_point> m_times;
   // otherwise just store the current step start and end, and a reference day (for monthly increments)
   std::tuple<time_point, time_point> m_currentStep;

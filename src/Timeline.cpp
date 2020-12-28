@@ -14,8 +14,8 @@ py::object no::NoTimeline::time() const { return py::float_(time::never()); }
 py::object no::NoTimeline::start() const { return py::float_(time::never()); }
 py::object no::NoTimeline::end() const { return py::float_(time::never()); }
 
-size_t no::NoTimeline::index() const { return static_cast<size_t>(m_stepped); }
-size_t no::NoTimeline::nsteps() const { return 1; }
+int64_t no::NoTimeline::index() const { return static_cast<size_t>(m_stepped); }
+int64_t no::NoTimeline::nsteps() const { return 1; }
 double no::NoTimeline::dt() const { return 0.0; }
 
 void no::NoTimeline::next() { m_stepped = true; }
@@ -56,7 +56,7 @@ no::LinearTimeline::LinearTimeline(double start, double step)
   }
 }
 
-size_t no::LinearTimeline::index() const
+int64_t no::LinearTimeline::index() const
 {
   return m_index;
 }
@@ -66,7 +66,7 @@ double no::LinearTimeline::dt() const
   return m_dt;
 }
 
-size_t no::LinearTimeline::nsteps() const
+int64_t no::LinearTimeline::nsteps() const
 {
   return m_steps;
 }
@@ -128,12 +128,12 @@ py::object no::NumericTimeline::end() const
   return py::float_(m_times.back());
 }
 
-size_t no::NumericTimeline::index() const
+int64_t no::NumericTimeline::index() const
 {
   return m_index;
 }
 
-size_t no::NumericTimeline::nsteps() const
+int64_t no::NumericTimeline::nsteps() const
 {
   return m_times.size() - 1;
 }
@@ -147,7 +147,7 @@ double no::NumericTimeline::dt() const
 
 void no::NumericTimeline::next()
 {
-  if (m_index < m_times.size() - 1)
+  if (m_index < m_times.size())
   {
     ++m_index;
   }
@@ -261,9 +261,9 @@ no::CalendarTimeline::time_point no::CalendarTimeline::advance(const no::Calenda
 
 
 no::CalendarTimeline::CalendarTimeline(time_point start, time_point end, size_t step, char unit)
-  : m_index(0), m_step(step), m_unit(tolower(unit)), m_start(start)
+  : m_index(0), m_step(step), m_unit(tolower(unit)), m_times(1, start)
 {
-  if (m_start >= end)
+  if (m_times[0] >= end)
   {
     throw py::value_error("start time (%%) must be after end time (%%)"s % py::cast(start) % py::cast(end));
   }
@@ -282,8 +282,7 @@ no::CalendarTimeline::CalendarTimeline(time_point start, time_point end, size_t 
   tm* local_tm = std::localtime(&t);
   m_refDay = local_tm->tm_mday;
 
-  time_point time = m_start;
-
+  time_point time = m_times[0];
   for(;;)
   {
     time = advance(time);
@@ -292,10 +291,17 @@ no::CalendarTimeline::CalendarTimeline(time_point start, time_point end, size_t 
     m_times.push_back(time);
   }
   m_times.push_back(end);
+
+  // for (const auto& t: m_m_endTimestimes)
+  // {
+  //   std::time_t tt = std::chrono::system_clock::to_time_t(t);
+  //   no::log(std::ctime(&tt));
+  // }
 }
 
+// open-ended timeline
 no::CalendarTimeline::CalendarTimeline(time_point start, size_t step, char unit)
-  : m_index(0), m_step(step), m_unit(tolower(unit)), m_start(start)
+  : m_index(0), m_step(step), m_unit(tolower(unit)), m_times(1, start)
 {
   if (m_step < 1)
   {
@@ -307,7 +313,7 @@ no::CalendarTimeline::CalendarTimeline(time_point start, size_t step, char unit)
     throw py::value_error("invalid time unit '%%', must be one of D,d,M,m,Y,y"s % unit);
   }
 
-  std::time_t t = std::chrono::system_clock::to_time_t(start);
+  std::time_t t = std::chrono::system_clock::to_time_t(m_times[0]);
   tm* local_tm = std::localtime(&t);
   m_refDay = local_tm->tm_mday;
 
@@ -316,19 +322,19 @@ no::CalendarTimeline::CalendarTimeline(time_point start, size_t step, char unit)
 }
 
 
-size_t no::CalendarTimeline::index() const
+int64_t no::CalendarTimeline::index() const
 {
   return m_index;
 }
 
 bool no::CalendarTimeline::at_end() const
 {
-  return !m_times.empty() && m_index >= m_times.size();
+  return m_times.size() > 1 && m_index >= m_times.size() - 1;
 }
 
 void no::CalendarTimeline::next()
 {
-  if (m_times.empty())
+  if (m_times.size() < 2)
   {
     m_currentStep = { std::get<1>(m_currentStep), advance(std::get<1>(m_currentStep)) };
     ++m_index;
@@ -352,34 +358,34 @@ double no::CalendarTimeline::dt() const
   }
   else
   {
-    if (m_index < m_times.size())
-      return std::chrono::duration_cast<std::chrono::seconds>(m_times[m_index] - m_times[m_index-1]).count() * years_per_sec;
+    if (m_index < m_times.size() - 1)
+      return std::chrono::duration_cast<std::chrono::seconds>(m_times[m_index+1] - m_times[m_index]).count() * years_per_sec;
     return 0.0;
   }
 }
 
-size_t no::CalendarTimeline::nsteps() const
+int64_t no::CalendarTimeline::nsteps() const
 {
-  return m_times.size();
+  return m_times.size() - 1;
 }
 
 py::object no::CalendarTimeline::time() const
 {
-  if (m_times.empty())
+  if (m_times.size() < 2)
   {
     return py::cast(std::get<0>(m_currentStep));
   }
-  return m_index == 0 ? py::cast(m_start) : py::cast(m_times[m_index-1]);
+  return py::cast(m_times[m_index]);
 }
 
 py::object no::CalendarTimeline::start() const
 {
-  return py::cast(m_start);
+  return py::cast(m_times[0]);
 }
 
 py::object no::CalendarTimeline::end() const
 {
-  if (m_times.empty())
+  if (m_times.size() < 2)
   {
     return py::float_(no::time::never());
   }

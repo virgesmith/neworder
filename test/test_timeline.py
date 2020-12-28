@@ -121,6 +121,10 @@ def test_calendar_timeline():
     def step(self):
       assert t.time().day == min(dim[t.index()], d)
 
+    def finalise(self):
+      assert self.timeline().dt() == 0.0
+      assert self.timeline().time() == self.timeline().end()
+
   for d in range(1,32):
     t = no.CalendarTimeline(date(2020, 1, d), date(2020, 7, d), 1, "m")
 
