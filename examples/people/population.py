@@ -29,8 +29,8 @@ class Population(neworder.Model):
     # TODO
     self.in_migration.Rate = 0.01
     self.out_migration.Rate = 0.01
-    self.in_migration.loc[self.in_migration.index.isin([19], level="DC1117EW_C_AGE"), "Rate"] = 0.5
-    self.out_migration.loc[self.out_migration.index.isin([22], level="DC1117EW_C_AGE"), "Rate"] = 0.3
+    self.in_migration.loc[self.in_migration.index.isin([19], level="DC1117EW_C_AGE"), "Rate"] = 0.8
+    self.out_migration.loc[self.out_migration.index.isin([22,23,24,25], level="DC1117EW_C_AGE"), "Rate"] = 0.20
 
     # make gender and age categorical
     self.population.DC1117EW_C_AGE = self.population.DC1117EW_C_AGE.astype("category")
@@ -46,7 +46,6 @@ class Population(neworder.Model):
     self.plot_pyramid()
 
   def step(self):
-    # TODO why spike in births at t=0?
     self.births()
     self.deaths()
     self.migrations()
@@ -76,26 +75,18 @@ class Population(neworder.Model):
     newborns = females[h == 1].copy()
     newborns.set_index(neworder.df.unique_index(len(newborns)), inplace=True, drop=True)
     newborns.Age = self.mc().ustream(len(newborns)) - 1.0 # born within the *next* 12 months (ageing step has yet to happen)
-    newborns.DC1117EW_C_AGE = 0 # this is 0-1 in census category
-    # NOTE: do not convert to pd.Series here to stay as this has its own index which conflicts with the main table
-    newborns.DC1117EW_C_SEX = 1 + self.mc().hazard(0.5, len(newborns)).astype(int)
+    newborns.DC1117EW_C_AGE = 1 # this is 0-1 in census category
+    newborns.DC1117EW_C_SEX = 1 + self.mc().hazard(0.5, len(newborns)).astype(int) # 1=M, 2=F
 
     self.population = self.population.append(newborns)
 
   def deaths(self):
-    # neworder.log("deaths({:.3f})".format(self.timeline().dt()))
-
-    # Map the appropriate mortality rate to each female
+    # Map the appropriate mortality rate to each person
     # might be a more efficient way of generating this array
     rates = self.population.join(self.mortality, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"]
 
-    # Then randomly determine if a birth occurred
+    # Then randomly determine if a death occurred
     h = self.mc().hazard(rates.values * self.timeline().dt())
-
-    # a = 85
-    # #neworder.log(self.population[h==1].groupby(["Area", "DC1117EW_C_SEX", "NewEthpop_ETH"]))
-    # neworder.log(len(self.population[self.population.DC1117EW_C_AGE > a]))
-    # neworder.log(len(self.population[(h==1) & (self.population.DC1117EW_C_AGE > a)]))
 
     # Finally remove deceased from table
     self.population = self.population[h!=1]

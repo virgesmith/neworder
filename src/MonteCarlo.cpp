@@ -12,7 +12,7 @@ namespace {
 
 void validate_prob(double prob)
 {
-  if (prob < 0.0 || prob > 1.0)
+  if (std::isnan(prob) || prob < 0.0 || prob > 1.0)
   {
     throw py::value_error("probabilities must be in [0,1], got %%"s % prob);
   }
@@ -26,9 +26,9 @@ void validate_prob(const py::array_t<double>& prob)
 void validate_lambda(const py::array_t<double>& lambda)
 {
   std::for_each(no::cbegin(lambda), no::cend(lambda), [](double l) {
-    if (l < 0.0)
+    if (std::isnan(l) || l < 0.0)
     {
-      throw py::value_error("hazard rates must be in >=0, got %%"s % l);
+      throw py::value_error("intensities must be >=0, got %%"s % l);
     }
   });
 }
@@ -109,17 +109,6 @@ py::array_t<int64_t> no::MonteCarlo::sample(py::ssize_t n, const py::array_t<dou
   const double* p = no::cbegin(cat_weights);
 
   std::vector<double> cumul = no::cumulative(p, m);
-  // double running_sum = 0.0;
-  // for (size_t i = 0; i < static_cast<size_t>(m); ++i)
-  // {
-  //   if (p[i] < 0.0)
-  //     throw py::value_error("category weights must be positive, got %%"s % p[i]);
-  //   running_sum += p[i];
-  //   cumul[i] = running_sum;
-  // }
-
-  // if (fabs(cumul[m-1] - 1.0) > std::numeric_limits<double>::epsilon())
-  //   throw py::value_error("category weights must sum to unity, got %%"s % cumul[m-1]);
 
   return no::make_array<int64_t>({n}, [this, &cumul]() {
       double r = u01();

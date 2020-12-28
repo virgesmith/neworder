@@ -85,6 +85,8 @@ def test_hazard():
   assert_throws(ValueError, m.mc().hazard, 1.1, 10)
   assert_throws(ValueError, m.mc().hazard, [-0.1, 0.5])
   assert_throws(ValueError, m.mc().hazard, [0.1, 1.2])
+  assert_throws(ValueError, m.mc().hazard, np.nan, 1)
+  assert_throws(ValueError, m.mc().hazard, [0.1, np.nan])
 
 def test_stopping():
   m = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
@@ -95,16 +97,22 @@ def test_stopping():
   assert_throws(ValueError, m.mc().stopping,  1.1, 10)
   assert_throws(ValueError, m.mc().stopping, [-0.1, 0.5])
   assert_throws(ValueError, m.mc().stopping, [0.1, 1.2])
+  assert_throws(ValueError, m.mc().stopping, np.nan, 1)
+  assert_throws(ValueError, m.mc().stopping, [0.1, np.nan])
 
 def test_arrivals_validation():
   m = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
   assert np.all(no.time.isnever(m.mc().first_arrival([0.0,0.0], 1.0, 10)))
   assert_throws(ValueError, m.mc().first_arrival, np.array([-1.0,0.0]), 1.0, 10)
+  assert_throws(ValueError, m.mc().first_arrival, [1.0,np.nan], 1.0, 10)
+
   assert np.all(no.time.isnever(m.mc().next_arrival(np.zeros(10), [0.0,0.0], 1.0)))
   assert_throws(ValueError, m.mc().next_arrival, np.zeros(10), [-1.0,0.0], 1.0)
+  assert_throws(ValueError, m.mc().next_arrival, np.zeros(10), [np.nan,np.nan], 1.0)
 
   assert_throws(ValueError, m.mc().arrivals, [-1.0,0.0], 1.0, 10, 0.0)
   assert_throws(ValueError, m.mc().arrivals, [1.0,1.0], 1.0, 10, 0.0)
+  assert_throws(ValueError, m.mc().arrivals, [np.nan,np.nan], 1.0, 10, 0.0)
 
 def _test_mc_serial(model):
   mc = model.mc()
