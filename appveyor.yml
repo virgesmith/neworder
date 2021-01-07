@@ -51,7 +51,7 @@ install:
       $python = $env:PYTHON + "\python.exe"
       & $python -m pip install --upgrade pip wheel setuptools --no-warn-script-location
   - sh: |
-      if [ "$APPVEYOR_BUILD_WORKER_IMAGE" == "Ubuntu" ];
+      if [ "$APPVEYOR_BUILD_WORKER_IMAGE" == "Ubuntu" ]; then
       sudo apt update && sudo apt install -y mpich libmpich-dev
       else
       brew update && brew install open-mpi
