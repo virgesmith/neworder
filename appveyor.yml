@@ -50,7 +50,12 @@ install:
       .\msmpisetup.exe -unattend # TODO this doesnt seem to do anything
       $python = $env:PYTHON + "\python.exe"
       & $python -m pip install --upgrade pip wheel setuptools --no-warn-script-location
-  - sh: apt update && apt install -y mpich libmpich-dev
+  - sh: |
+    if [ "$APPVEYOR_BUILD_WORKER_IMAGE" == "Ubuntu" ];
+      sudo apt update && sudo apt install -y mpich libmpich-dev
+    else
+      brew update && brew install open-mpi
+    fi
 
 build_script:
   - cmd: '%PYTHON%\python.exe setup.py install'
