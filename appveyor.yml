@@ -2,6 +2,8 @@
 
 image:
   - Visual Studio 2019
+  - Ubuntu
+  - macOS
 
 environment:
   matrix:
@@ -21,12 +23,10 @@ environment:
       PYTHON_ARCH: 64
       MSVC_VERSION: "Visual Studio 19 Win64"
 
-
-
 matrix:
   allow_failures:
     - PYTHON: "C:\\Python36-x64"
-  # fail fast
+  ## fail fast
   # fast_finish: true
 
 init:
@@ -43,10 +43,12 @@ install:
       & $python -m pip install --upgrade pip wheel setuptools --no-warn-script-location
 
 build_script:
-  - cmd: '%PYTHON%\python.exe setup.py install'
+  - ps: '%PYTHON%\python.exe setup.py install'
+  - sh: python setup.py install
 
 test_script:
-  - cmd: '%PYTHON%\python.exe setup.py test'
+  - ps: '%PYTHON%\python.exe setup.py test'
+  - sh: pytest
 
 notifications:
   - provider: Email
