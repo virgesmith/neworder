@@ -56,7 +56,7 @@ install:
   - cmd: |
       curl -fSs -o c:\msmpisetup.exe https://github.com/microsoft/Microsoft-MPI/releases/download/v10.1.1/msmpisetup.exe
       rem c:\msmpisetup.exe -unattend The system cannot execute the specified program.
-      '%PYTHON%\python.exe -m pip install --upgrade pip wheel setuptools --no-warn-script-location'
+      %PYTHON%\python.exe -m pip install --upgrade pip wheel setuptools --no-warn-script-location
   - sh: |
       if [ "$APPVEYOR_BUILD_WORKER_IMAGE" == "macOS" ]; then
       brew update && brew install open-mpi
