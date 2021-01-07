@@ -54,13 +54,13 @@ matrix:
 
 install:
   - cmd: |
-      :: if "%MINICONDA%" == "" (
-      :: conda create -q -n conda-env
-      :: conda activate conda-env
-      :: conda install gxx_linux-64 mpich numpy pandas pybind11 pytest mpi4py
-      :: ) else (
-      :: Start-FileDownload 'https://github.com/microsoft/Microsoft-MPI/releases/download/v10.1.1/msmpisetup.exe'
-      :: #.\msmpisetup.exe -unattend # TODO this doesnt seem to do anything
+      REM if "%MINICONDA%" == "" (
+      REM conda create -q -n conda-env
+      REM conda activate conda-env
+      REM conda install gxx_linux-64 mpich numpy pandas pybind11 pytest mpi4py
+      REM ) else (
+      REM Start-FileDownload 'https://github.com/microsoft/Microsoft-MPI/releases/download/v10.1.1/msmpisetup.exe'
+      REM #.\msmpisetup.exe -unattend # TODO this doesnt seem to do anything
       set PYTHON="%PYTHON%\\python.exe"
       %PYTHON% -m pip install --upgrade pip wheel setuptools --no-warn-script-location
       )
