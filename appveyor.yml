@@ -2,23 +2,23 @@
 
 environment:
   matrix:
-    # - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
-    #   PYTHON: "C:\\Python37-x64"
-    #   PYTHON_ARCH: 64
-    #   MSVC_VERSION: "Visual Studio 19 Win64"
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+      PYTHON: "C:\\Python37-x64"
+      PYTHON_ARCH: 64
+      MSVC_VERSION: "Visual Studio 19 Win64"
 
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
       PYTHON: "C:\\Python38-x64"
       PYTHON_ARCH: 64
       MSVC_VERSION: "Visual Studio 19 Win64"
 
-    # - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
-    #   PYTHON: "C:\\Python39-x64"
-    #   PYTHON_ARCH: 64
-    #   MSVC_VERSION: "Visual Studio 19 Win64"
-
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
-      MINICONDA: "C:\\Miniconda38-x64"
+      PYTHON: "C:\\Python39-x64"
+      PYTHON_ARCH: 64
+      MSVC_VERSION: "Visual Studio 19 Win64"
+
+    # - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+    #   MINICONDA: "C:\\Miniconda38-x64"
 
     # - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
     #   PYTHON: "3.7"
@@ -54,11 +54,11 @@ matrix:
 
 install:
   - cmd: |
-      if "%MINICONDA%" == "" (
-      conda create -q -n conda-env
-      conda activate conda-env
-      conda install gxx_linux-64 mpich numpy pandas pybind11 pytest mpi4py
-      ) else (
+      :: if "%MINICONDA%" == "" (
+      :: conda create -q -n conda-env
+      :: conda activate conda-env
+      :: conda install gxx_linux-64 mpich numpy pandas pybind11 pytest mpi4py
+      :: ) else (
       :: Start-FileDownload 'https://github.com/microsoft/Microsoft-MPI/releases/download/v10.1.1/msmpisetup.exe'
       :: #.\msmpisetup.exe -unattend # TODO this doesnt seem to do anything
       set PYTHON="%PYTHON%\\python.exe"
