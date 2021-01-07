@@ -7,21 +7,25 @@ image:
 
 environment:
   matrix:
-    - PYTHON: "C:\\Python36-x64"
-      PYTHON_ARCH: 64
-      MSVC_VERSION: "Visual Studio 19 Win64"
+    # - PYTHON: "C:\\Python36-x64"
+    #   PYTHON_ARCH: 64
+    #   MSVC_VERSION: "Visual Studio 19 Win64"
+    #   APPVEYOR_YML_DISABLE_PS_LINUX: 1
 
     - PYTHON: "C:\\Python37-x64"
       PYTHON_ARCH: 64
       MSVC_VERSION: "Visual Studio 19 Win64"
+      APPVEYOR_YML_DISABLE_PS_LINUX: 1
 
     - PYTHON: "C:\\Python38-x64"
       PYTHON_ARCH: 64
       MSVC_VERSION: "Visual Studio 19 Win64"
+      APPVEYOR_YML_DISABLE_PS_LINUX: 1
 
     - PYTHON: "C:\\Python39-x64"
       PYTHON_ARCH: 64
       MSVC_VERSION: "Visual Studio 19 Win64"
+      APPVEYOR_YML_DISABLE_PS_LINUX: 1
 
 matrix:
   allow_failures:
@@ -34,6 +38,7 @@ init:
       Write-Host "$env:PYTHON $env:PYTHON_ARCH $env:MSVC_VERSION"
       $python = $env:PYTHON + "\python.exe"
       & $python --version
+  - sh: python --version
 
 install:
   - ps: |
@@ -43,11 +48,11 @@ install:
       & $python -m pip install --upgrade pip wheel setuptools --no-warn-script-location
 
 build_script:
-  - ps: '%PYTHON%\python.exe setup.py install'
+  - cmd: '%PYTHON%\python.exe setup.py install'
   - sh: python setup.py install
 
 test_script:
-  - ps: '%PYTHON%\python.exe setup.py test'
+  - cmd: '%PYTHON%\python.exe setup.py test'
   - sh: pytest
 
 notifications:
