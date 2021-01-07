@@ -19,7 +19,7 @@ environment:
 
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
       PYTHON: "3.8"
-      MINICONDA: "C:\Miniconda38-x64"
+      MINICONDA: "C:\\Miniconda38-x64"
 
     # - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
     #   PYTHON: "3.7"
@@ -29,9 +29,9 @@ environment:
       PYTHON: "3.8"
       APPVEYOR_YML_DISABLE_PS_LINUX: true
 
-    # - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
-    #   PYTHON: "3.9"
-    #   APPVEYOR_YML_DISABLE_PS_LINUX: true
+    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
+      PYTHON: "3.9"
+      APPVEYOR_YML_DISABLE_PS_LINUX: true
 
     # - APPVEYOR_BUILD_WORKER_IMAGE: macOS
     #   PYTHON: "3.7"
