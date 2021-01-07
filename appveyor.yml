@@ -55,7 +55,7 @@ matrix:
 init:
   - cmd: |
       echo "%PYTHON% %PYTHON_ARCH% %MSVC_VERSION%"
-      set PYTHON = %PYTHON%\\python.exe
+      set PYTHON="%PYTHON%\\python.exe"
       %PYTHON% --version
 
 install:
