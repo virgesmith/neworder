@@ -53,23 +53,23 @@ matrix:
   # fast_finish: true
 
 init:
-  - ps: |
-      Write-Host "$env:PYTHON $env:PYTHON_ARCH $env:MSVC_VERSION"
-      $python = $env:PYTHON + "\python.exe"
-      & $python --version
+  - cmd: |
+      echo "%PYTHON% %PYTHON_ARCH% %MSVC_VERSION%"
+      set PYTHON = %PYTHON%\\python.exe
+      %PYTHON% --version
 
 install:
-  - ps: |
-      If ($env:MINICONDA -ne $null) {
+  - cmd: |
+      if "%MINICONDA%" == "" (
       conda create -q -n conda-env
       conda activate conda-env
       conda install gxx_linux-64 mpich numpy pandas pybind11 pytest mpi4py
-      } Else {
-      Start-FileDownload 'https://github.com/microsoft/Microsoft-MPI/releases/download/v10.1.1/msmpisetup.exe'
-      .\msmpisetup.exe -unattend # TODO this doesnt seem to do anything
-      $python = $env:PYTHON + "\python.exe"
-      & $python -m pip install --upgrade pip wheel setuptools --no-warn-script-location
-      }
+      ) else (
+      :: Start-FileDownload 'https://github.com/microsoft/Microsoft-MPI/releases/download/v10.1.1/msmpisetup.exe'
+      :: #.\msmpisetup.exe -unattend # TODO this doesnt seem to do anything
+      %PYTHON%=%PYTHON%\\python.exe
+      %PYTHON% -m pip install --upgrade pip wheel setuptools --no-warn-script-location
+      )
   - sh: |
       if [ "$APPVEYOR_BUILD_WORKER_IMAGE" == "macOS" ]; then
       brew update && brew install open-mpi
