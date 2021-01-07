@@ -54,8 +54,8 @@ matrix:
 
 install:
   - cmd: |
-      curl -fSs c:\msmpisetup.exe. https://github.com/microsoft/Microsoft-MPI/releases/download/v10.1.1/msmpisetup.exe
-      c:\MSMpiSetup.exe -unattend
+      curl -fSs c:\\msmpisetup.exe https://github.com/microsoft/Microsoft-MPI/releases/download/v10.1.1/msmpisetup.exe
+      c:\\MSMpiSetup.exe -unattend
   - sh: |
       if [ "$APPVEYOR_BUILD_WORKER_IMAGE" == "macOS" ]; then
       brew update && brew install open-mpi
