@@ -64,7 +64,7 @@ install:
       fi
 
 build_script:
-  - cmd: python.exe setup.py install'
+  - cmd: '%PYTHON%\python.exe setup.py install'
   - sh: python setup.py install
 
 test_script:
