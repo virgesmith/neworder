@@ -65,7 +65,6 @@ install:
   - sh: |
       if [ "$APPVEYOR_BUILD_WORKER_IMAGE" == "Ubuntu" ]; then
       if [ "$CONDA_ENV" == "true" ]; then
-      sudo apt update && sudo apt install -y wget
       scripts/create-conda-env.sh
       else
       sudo apt update && sudo apt install -y mpich libmpich-dev
@@ -76,11 +75,15 @@ install:
 
 build_script:
   - cmd: '%PYTHON%\python.exe setup.py install'
-  - sh: python setup.py install
+  - sh: |
+      [[ "$CONDA_ENV" == "true" ]] && source activate conda-env
+      python setup.py install
 
 test_script:
   - cmd: '%PYTHON%\python.exe setup.py test'
-  - sh: python setup.py test && mpiexec -n 2 python setup.py test
+  - sh: |
+      [[ "$CONDA_ENV" == "true" ]] && source activate conda-env
+      python setup.py test && mpiexec -n 2 python setup.py test
 
 notifications:
   - provider: Email
