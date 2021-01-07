@@ -7,20 +7,20 @@ environment:
     #   MSVC_VERSION: "Visual Studio 19 Win64"
     #   APPVEYOR_YML_DISABLE_PS_LINUX: 1
 
-    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
-      PYTHON: "C:\\Python37-x64"
-      PYTHON_ARCH: 64
-      MSVC_VERSION: "Visual Studio 19 Win64"
+    # - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+    #   PYTHON: "C:\\Python37-x64"
+    #   PYTHON_ARCH: 64
+    #   MSVC_VERSION: "Visual Studio 19 Win64"
 
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
       PYTHON: "C:\\Python38-x64"
       PYTHON_ARCH: 64
       MSVC_VERSION: "Visual Studio 19 Win64"
 
-    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
-      PYTHON: "C:\\Python39-x64"
-      PYTHON_ARCH: 64
-      MSVC_VERSION: "Visual Studio 19 Win64"
+    # - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+    #   PYTHON: "C:\\Python39-x64"
+    #   PYTHON_ARCH: 64
+    #   MSVC_VERSION: "Visual Studio 19 Win64"
 
     - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
       PYTHON: "3.8"
@@ -43,7 +43,6 @@ init:
       Write-Host "$env:PYTHON $env:PYTHON_ARCH $env:MSVC_VERSION"
       $python = $env:PYTHON + "\python.exe"
       & $python --version
-  - sh: python --version
 
 install:
   - ps: |
@@ -51,6 +50,7 @@ install:
       .\msmpisetup.exe -unattend # TODO this doesnt seem to do anything
       $python = $env:PYTHON + "\python.exe"
       & $python -m pip install --upgrade pip wheel setuptools --no-warn-script-location
+  - sh: apt update && apt install -y mpich libmpich-dev
 
 build_script:
   - cmd: '%PYTHON%\python.exe setup.py install'
@@ -58,7 +58,7 @@ build_script:
 
 test_script:
   - cmd: '%PYTHON%\python.exe setup.py test'
-  - sh: pytest
+  - sh: python setup.py test
 
 notifications:
   - provider: Email
