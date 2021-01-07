@@ -18,16 +18,15 @@ environment:
     #   MSVC_VERSION: "Visual Studio 19 Win64"
 
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
-      PYTHON: "3.8"
       MINICONDA: "C:\\Miniconda38-x64"
 
-    # - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
-    #   PYTHON: "3.7"
-    #   APPVEYOR_YML_DISABLE_PS_LINUX: true
-
     - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
-      PYTHON: "3.8"
+      PYTHON: "3.7"
       APPVEYOR_YML_DISABLE_PS_LINUX: true
+
+    # - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
+    #   PYTHON: "3.8"
+    #   APPVEYOR_YML_DISABLE_PS_LINUX: true
 
     - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
       PYTHON: "3.9"
@@ -66,10 +65,10 @@ install:
       $python = $env:PYTHON + "\python.exe"
       & $python -m pip install --upgrade pip wheel setuptools --no-warn-script-location
   - sh: |
-      if [ "$APPVEYOR_BUILD_WORKER_IMAGE" == "Ubuntu" ]; then
-      sudo apt update && sudo apt install -y mpich libmpich-dev
-      else
+      if [ "$APPVEYOR_BUILD_WORKER_IMAGE" == "macOS" ]; then
       brew update && brew install open-mpi
+      else
+      sudo apt update && sudo apt install -y mpich libmpich-dev
       fi
 
 build_script:
