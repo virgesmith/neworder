@@ -2,25 +2,24 @@
 
 environment:
   matrix:
-    # - PYTHON: "C:\\Python36-x64"
-    #   PYTHON_ARCH: 64
-    #   MSVC_VERSION: "Visual Studio 19 Win64"
-    #   APPVEYOR_YML_DISABLE_PS_LINUX: 1
-
-    # - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
-    #   PYTHON: "C:\\Python37-x64"
-    #   PYTHON_ARCH: 64
-    #   MSVC_VERSION: "Visual Studio 19 Win64"
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+      PYTHON: "C:\\Python37-x64"
+      PYTHON_ARCH: 64
+      MSVC_VERSION: "Visual Studio 19 Win64"
 
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
       PYTHON: "C:\\Python38-x64"
       PYTHON_ARCH: 64
       MSVC_VERSION: "Visual Studio 19 Win64"
 
-    # - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
-    #   PYTHON: "C:\\Python39-x64"
-    #   PYTHON_ARCH: 64
-    #   MSVC_VERSION: "Visual Studio 19 Win64"
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+      PYTHON: "C:\\Python39-x64"
+      PYTHON_ARCH: 64
+      MSVC_VERSION: "Visual Studio 19 Win64"
+
+    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
+      PYTHON: "3.7"
+      APPVEYOR_YML_DISABLE_PS_LINUX: true
 
     - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
       PYTHON: "3.8"
@@ -31,7 +30,15 @@ environment:
       APPVEYOR_YML_DISABLE_PS_LINUX: true
 
     - APPVEYOR_BUILD_WORKER_IMAGE: macOS
+      PYTHON: "3.7"
+      APPVEYOR_YML_DISABLE_PS_LINUX: true
+
+    - APPVEYOR_BUILD_WORKER_IMAGE: macOS
       PYTHON: "3.8"
+      APPVEYOR_YML_DISABLE_PS_LINUX: true
+
+    - APPVEYOR_BUILD_WORKER_IMAGE: macOS
+      PYTHON: "3.9"
       APPVEYOR_YML_DISABLE_PS_LINUX: true
 
 stack: python %PYTHON%
