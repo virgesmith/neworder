@@ -10,5 +10,5 @@ conda config --add channels conda-forge
 conda update -q conda
 conda install -q conda-build
 conda create -q -n conda-env python=$PYTHON
-source activate conda-env
+conda activate conda-env
 conda install gxx_linux-64 mpich numpy pandas pybind11 pytest mpi4py

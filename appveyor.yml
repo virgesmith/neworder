@@ -76,13 +76,13 @@ install:
 build_script:
   - cmd: '%PYTHON%\python.exe setup.py install'
   - sh: |
-      [[ "$CONDA_ENV" == "true" ]] && source activate conda-env
+      #[[ "$CONDA_ENV" == "true" ]] && source activate conda-env
       python setup.py install
 
 test_script:
   - cmd: '%PYTHON%\python.exe setup.py test'
   - sh: |
-      [[ "$CONDA_ENV" == "true" ]] && source activate conda-env
+      #[[ "$CONDA_ENV" == "true" ]] && source activate conda-env
       python setup.py test && mpiexec -n 2 python setup.py test
 
 notifications:
