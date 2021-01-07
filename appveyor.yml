@@ -53,7 +53,7 @@ matrix:
   # fast_finish: true
 
 install:
-  - cmd: >-
+  - cmd: |
       curl -fSs -o c:\msmpisetup.exe https://github.com/microsoft/Microsoft-MPI/releases/download/v10.1.1/msmpisetup.exe
       c:\msmpisetup.exe -unattend
   - sh: |
