@@ -76,6 +76,7 @@ install:
       else
       sudo apt update && sudo apt install -y mpich libmpich-dev
       fi
+      fi
 
 build_script:
   - cmd: '%PYTHON%\python.exe setup.py install'
