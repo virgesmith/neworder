@@ -80,7 +80,11 @@ install:
 
 build_script:
   - cmd: '%PYTHON%\python.exe setup.py install'
-  - sh: python setup.py install
+  - sh: |
+      if [ "$MINICONDA" == "true" ]; then
+      conda activate conda-env
+      fi
+      python setup.py install
 
 test_script:
   - cmd: '%PYTHON%\python.exe setup.py test'
