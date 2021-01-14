@@ -2,47 +2,52 @@
 
 environment:
   matrix:
-    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
-      PYTHON: "C:\\Python37-x64"
-      PYTHON_ARCH: 64
-      MSVC_VERSION: "Visual Studio 19 Win64"
+    # - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+    #   PYTHON: "C:\\Python37-x64"
+    #   PYTHON_ARCH: 64
+    #   MSVC_VERSION: "Visual Studio 19 Win64"
 
-    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
-      PYTHON: "C:\\Python38-x64"
-      PYTHON_ARCH: 64
-      MSVC_VERSION: "Visual Studio 19 Win64"
+    # - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+    #   PYTHON: "C:\\Python38-x64"
+    #   PYTHON_ARCH: 64
+    #   MSVC_VERSION: "Visual Studio 19 Win64"
 
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
       PYTHON: "C:\\Python39-x64"
       PYTHON_ARCH: 64
       MSVC_VERSION: "Visual Studio 19 Win64"
 
-    # - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
-    #   MINICONDA: "C:\\Miniconda38-x64"
+    # # - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+    # #   MINICONDA: "C:\\Miniconda38-x64"
 
-    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
-      PYTHON: "3.7"
-      APPVEYOR_YML_DISABLE_PS_LINUX: true
+    # - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
+    #   PYTHON: "3.7"
+    #   APPVEYOR_YML_DISABLE_PS_LINUX: true
 
     - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
       PYTHON: "3.8"
       APPVEYOR_YML_DISABLE_PS_LINUX: true
 
+    # - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
+    #   PYTHON: "3.9"
+    #   APPVEYOR_YML_DISABLE_PS_LINUX: true
+
     - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
-      PYTHON: "3.9"
-      APPVEYOR_YML_DISABLE_PS_LINUX: true
-
-    - APPVEYOR_BUILD_WORKER_IMAGE: macOS
-      PYTHON: "3.7"
-      APPVEYOR_YML_DISABLE_PS_LINUX: true
-
-    - APPVEYOR_BUILD_WORKER_IMAGE: macOS
+      MINICONDA: true
       PYTHON: "3.8"
       APPVEYOR_YML_DISABLE_PS_LINUX: true
 
-    - APPVEYOR_BUILD_WORKER_IMAGE: macOS
-      PYTHON: "3.9"
-      APPVEYOR_YML_DISABLE_PS_LINUX: true
+    # - APPVEYOR_BUILD_WORKER_IMAGE: macOS
+    #   PYTHON: "3.7"
+    #   APPVEYOR_YML_DISABLE_PS_LINUX: true
+
+    # - APPVEYOR_BUILD_WORKER_IMAGE: macOS
+    #   PYTHON: "3.8"
+    #   APPVEYOR_YML_DISABLE_PS_LINUX: true
+
+    # - APPVEYOR_BUILD_WORKER_IMAGE: macOS
+    #   PYTHON: "3.9"
+    #   APPVEYOR_YML_DISABLE_PS_LINUX: true
 
 stack: python %PYTHON%
 
@@ -65,6 +70,9 @@ install:
   - sh: |
       if [ "$APPVEYOR_BUILD_WORKER_IMAGE" == "macOS" ]; then
       brew update && brew install open-mpi
+      else
+      if [ "$MINICONDA" == true" ]; then
+      scripts/create-conda-env.sh
       else
       sudo apt update && sudo apt install -y mpich libmpich-dev
       fi
