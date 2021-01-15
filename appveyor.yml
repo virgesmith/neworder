@@ -83,6 +83,8 @@ build_script:
   - sh: |
       if [ "$MINICONDA" == "true" ]; then
       source ~/.bashrc
+      export PATH="${HOME}/.miniconda/bin:$PATH"
+      conda init bash
       conda activate conda-env
       fi
       python setup.py install
