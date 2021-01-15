@@ -4,12 +4,9 @@
 
 wget -O miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 bash miniconda.sh -b -p ${HOME}/.miniconda
-export PATH="${HOME}/.miniconda/bin:$PATH"
+source "${HOME}/.miniconda/etc/profile.d/conda.sh"
 conda config --set always_yes yes --set changeps1 no
 conda update -q conda
-#conda install -q conda-build
+conda info -a
 conda create -q -n conda-env python=$PYTHON gxx_linux-64 mpich numpy pandas pybind11 pytest mpi4py
-conda init bash
-source ~/.bashrc
 conda activate conda-env
-# conda install gxx_linux-64
