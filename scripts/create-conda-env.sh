@@ -10,6 +10,6 @@ conda update -q conda
 #conda install -q conda-build
 conda create -q -n conda-env python=$PYTHON gxx_linux-64 mpich numpy pandas pybind11 pytest mpi4py
 conda init bash
-# source ~/.bashrc
-# conda activate conda-env
+source ~/.bashrc
+conda activate conda-env
 # conda install gxx_linux-64

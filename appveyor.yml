@@ -71,9 +71,7 @@ install:
       if [ "$APPVEYOR_BUILD_WORKER_IMAGE" == "macOS" ]; then
       brew update && brew install open-mpi
       else
-      if [ "$MINICONDA" == "true" ]; then
-      scripts/create-conda-env.sh
-      else
+      if [ "$MINICONDA" -ne "true" ]; then
       sudo apt update && sudo apt install -y mpich libmpich-dev
       fi
       fi
@@ -81,11 +79,8 @@ install:
 build_script:
   - cmd: '%PYTHON%\python.exe setup.py install'
   - sh: |
-      if [ "$MINICONDA" == "true" ]; then
-      source ~/.bashrc
-      export PATH="${HOME}/.miniconda/bin:$PATH"
-      conda init bash
-      conda activate conda-env
+      if [ "$MINICONDA" != "true" ]; then
+      scripts/create-conda-env.sh
       fi
       python setup.py install
 
