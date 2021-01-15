@@ -81,9 +81,9 @@ build_script:
   - sh: |
       if [ "$MINICONDA" == "true" ]; then
       scripts/create-conda-env.sh
-      conda info -a
-      fi
+      else
       python setup.py install
+      fi
 
 test_script:
   - cmd: '%PYTHON%\python.exe setup.py test'
