@@ -2,6 +2,11 @@
 
 environment:
   matrix:
+    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
+      MINICONDA: true
+      PYTHON: "3.8"
+      APPVEYOR_YML_DISABLE_PS_LINUX: true
+
     # - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
     #   PYTHON: "C:\\Python37-x64"
     #   PYTHON_ARCH: 64
@@ -31,11 +36,6 @@ environment:
     # - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
     #   PYTHON: "3.9"
     #   APPVEYOR_YML_DISABLE_PS_LINUX: true
-
-    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
-      MINICONDA: true
-      PYTHON: "3.8"
-      APPVEYOR_YML_DISABLE_PS_LINUX: true
 
     # - APPVEYOR_BUILD_WORKER_IMAGE: macOS
     #   PYTHON: "3.7"
@@ -82,7 +82,8 @@ build_script:
   - cmd: '%PYTHON%\python.exe setup.py install'
   - sh: |
       if [ "$MINICONDA" == "true" ]; then
-      activate conda-env
+      source ~/.bashrc
+      conda activate conda-env
       fi
       python setup.py install
 
