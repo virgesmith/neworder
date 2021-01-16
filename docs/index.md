@@ -1,6 +1,6 @@
 # neworder
 
-![Mortality histogram](examples/img/mortality_hist_100k_noloop.gif)
+![Population pyramid](examples/img/pyramid.gif)
 
 {{ include_snippet("./README.md", "readme", show_filename=False)}}
 

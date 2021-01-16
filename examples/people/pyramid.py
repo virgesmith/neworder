@@ -8,7 +8,7 @@ import matplotlib.animation as anim
 # see https://stackoverflow.com/questions/27694221/using-python-libraries-to-plot-two-horizontal-bar-charts-sharing-same-y-axis
 def plot(ages, males, females):
 
-  xmax = 5000 #max(max(males), max(females))
+  xmax = 4000 #max(max(males), max(females))
 
   fig, axes = plt.subplots(ncols=2, sharey=True)
   plt.gca().set_ylim([min(ages),max(ages)+1])
@@ -28,6 +28,8 @@ def plot(ages, males, females):
   fbar = axes[1].barh(ages, females, align='center', color='red')
   plt.pause(0.1)
   plt.ion()
+  #plt.savefig("./pyramid2011.png")
+
   return fig, axes, mbar, fbar
 
 def update(title, fig, axes, mbar, fbar, ages, males, females):
@@ -41,6 +43,7 @@ def update(title, fig, axes, mbar, fbar, ages, males, females):
     rect.set_width(h)
 
   fig.suptitle(title)
+  #plt.savefig("./pyramid%s.png" % title)
   plt.pause(0.1)
   return mbar, fbar
 
@@ -70,34 +73,33 @@ def hist(a):
 #     return self.patches
 
 
-def animated(ages, males, females):
-  fig, axes, mbar, fbar = plot(ages, males[0], females[0])
+# def animated(ages, males, females):
+#   fig, axes, mbar, fbar = plot(ages, males[0], females[0])
 
-  def animate(i):
-    #print(type(axes[0]), dir(axes[0]))
-    #axes[0].remove()
-    # for bar in fig.subplots():
-    #   bar.remove()
-    # mbar = axes[0].barh(ages, males[i], align='center', color='blue')
-    # fbar = axes[1].barh(ages, females[i], align='center', color='red')
-    for rect, y in zip(mbar, males[i]):
-      rect.set_width(y)
-    for rect, y in zip(fbar, females[i]):
-      rect.set_width(y)
+#   def animate(i):
+#     #print(type(axes[0]), dir(axes[0]))
+#     #axes[0].remove()
+#     # for bar in fig.subplots():
+#     #   bar.remove()
+#     # mbar = axes[0].barh(ages, males[i], align='center', color='blue')
+#     # fbar = axes[1].barh(ages, females[i], align='center', color='red')
+#     for rect, y in zip(mbar, males[i]):
+#       rect.set_width(y)
+#     for rect, y in zip(fbar, females[i]):
+#       rect.set_width(y)
 
-    #axes[0].set_data(males[i])
-    #print(type(mbar), dir(mbar))
-    #axes[0].set_height(males[i])
-    fig.suptitle(str(i+2011))
-    plt.pause(0.1)
+#     #axes[0].set_data(males[i])
+#     #print(type(mbar), dir(mbar))
+#     #axes[0].set_height(males[i])
+#     fig.suptitle(str(i+2011))
+#     plt.pause(0.1)
 
-    #update(str(i+2011), fig, axes, mbar, fbar, ages, males[i], females[i])
+#     #update(str(i+2011), fig, axes, mbar, fbar, ages, males[i], females[i])
 
-  animator = anim.FuncAnimation(fig, animate, frames=41, interval=1, repeat=False)
+#   animator = anim.FuncAnimation(fig, animate, frames=41, interval=1, repeat=False)
 
-  animator.save("./pyramid.gif", dpi=80, writer=anim.FFMpegFileWriter())
-  #ImageMagickWriter(extra_args=["-loop", "1"]))
 
-  plt.show()
-  animator.save("./pyramid.gif", dpi=80, writer=anim.FFMpegFileWriter())
-  #plt.pause(1)
+#   plt.show()
+#   animator.save("./pyramid.gif", dpi=80, writer=anim.ImageMagickWriter()) #extra_args=["-loop", "1"]))
+#   #animator.save("./pyramid.gif", dpi=80, writer=anim.FFMpegFileWriter())
+#   #plt.pause(1)

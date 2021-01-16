@@ -1,5 +1,7 @@
 # Population Microsimulation
 
+![Population pyramid](./img/pyramid.gif)
+
 ## Overview
 
 In this example, the input data is a csv file containing a microsynthesised 2011 population of Newcastle generated from UK census data, by age, gender and ethnicity. The transitions modelled are: ageing, births, deaths and migrations, over a period of 40 years to 2051.

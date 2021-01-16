@@ -57,7 +57,7 @@ class Population(neworder.Model):
     self.age()
 
   def finalise(self):
-    pyramid.animated(range(86), self.saved_m, self.saved_f)
+    pass #pyramid.animated(range(86), self.saved_m, self.saved_f)
 
   def age(self):
     # Increment age by timestep and update census age category (used for ASFR/ASMR lookup)
@@ -173,10 +173,10 @@ class Population(neworder.Model):
     self.saved_m.append(m)
     self.saved_f.append(f)
 
-    # if self.fig is None:
-    #   self.fig, self.axes, self.mbar, self.fbar = pyramid.plot(a, m, f)
-    # else:
-    #   # NB self.timeline().time() is now the time at the *end* of the timestep since this is called from check() (as opposed to step())
-    #   self.mbar, self.fbar = pyramid.update(str(self.timeline().time().year), self.fig, self.axes, self.mbar, self.fbar, a, m, f)
+    if self.fig is None:
+      self.fig, self.axes, self.mbar, self.fbar = pyramid.plot(a, m, f)
+    else:
+      # NB self.timeline().time() is now the time at the *end* of the timestep since this is called from check() (as opposed to step())
+      self.mbar, self.fbar = pyramid.update(str(self.timeline().time().year), self.fig, self.axes, self.mbar, self.fbar, a, m, f)
 
 
