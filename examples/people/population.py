@@ -27,10 +27,12 @@ class Population(neworder.Model):
     self.out_migration = pd.read_csv(out_migration_file, index_col=[0,1,2])
 
     # TODO
-    self.in_migration.Rate = 0.01
-    self.out_migration.Rate = 0.01
-    self.in_migration.loc[self.in_migration.index.isin([19], level="DC1117EW_C_AGE"), "Rate"] = 0.8
-    self.out_migration.loc[self.out_migration.index.isin([22,23,24,25], level="DC1117EW_C_AGE"), "Rate"] = 0.20
+    # out migration is a hazard rate
+    # in migration is the intensity of a Poisson process (not a hazard on existing residents!)
+    # TODO check the numbers
+    self.in_migration.loc[self.in_migration.index.get_level_values("DC1117EW_C_SEX") == 1, "Rate"] *= 187.0
+    self.in_migration.loc[self.in_migration.index.get_level_values("DC1117EW_C_SEX") == 2, "Rate"] *= 213.0
+    #self.in_migration.loc[["DC1117EW_C_SEX"], 2].Rate *= 202.0
 
     # make gender and age categorical
     self.population.DC1117EW_C_AGE = self.population.DC1117EW_C_AGE.astype("category")
@@ -42,8 +44,11 @@ class Population(neworder.Model):
     # self.output_dir = "./examples/people/output"
     # if not os.path.exists(self.output_dir):
     #   os.makedirs(self.output_dir)
+    self.saved_m = []
+    self.saved_f = []
     self.fig = None
     self.plot_pyramid()
+
 
   def step(self):
     self.births()
@@ -52,7 +57,7 @@ class Population(neworder.Model):
     self.age()
 
   def finalise(self):
-    pass
+    pyramid.animated(range(86), self.saved_m, self.saved_f)
 
   def age(self):
     # Increment age by timestep and update census age category (used for ASFR/ASMR lookup)
@@ -91,35 +96,32 @@ class Population(neworder.Model):
     # Finally remove deceased from table
     self.population = self.population[h!=1]
 
+  # TODO move into C++...
+  def __arrival_counts(self, lambdas, dt):
+    return [len(self.mc().arrivals(np.array([l, 0]), dt, 1, 0.0)[0]) for l in lambdas]
+
   def migrations(self):
 
     # internal immigration:
-    # - assign the rates to the incumbent popultion appropriately by age,sex,ethnicity
-    # - randomly sample this population, clone and append
-    in_rates = self.population.join(self.in_migration, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].values
+    # - sample counts of migrants according to intensity
+    # - append result to population
 
-    # in-migration should be sampling from the whole population ex-LAD, instead do an approximation by scaling up the LAD population
-    # NOTE this is wrong for a number of reasons esp. as it cannot sample category combinations that don't already exist in the LAD
-    h_in = self.mc().hazard(in_rates * self.timeline().dt())
-
-    incoming = self.population[h_in == 1].copy()
-
-    # Append incomers to main population
-    # Assign a new id
-    incoming.set_index(neworder.df.unique_index(len(incoming)), inplace=True, drop=True)
-    incoming.Area = self.lad
-    # assign a new random fractional age based on census age category
-    incoming.Age = incoming.DC1117EW_C_AGE - self.mc().ustream(len(incoming)).tolist()
-    self.population = self.population.append(incoming)
+    self.in_migration["count"] = self.__arrival_counts(self.in_migration.Rate.values, self.timeline().dt())
+    h_in = self.in_migration.loc[self.in_migration.index.repeat(self.in_migration["count"])].drop(["Rate", "count"], axis=1)
+    h_in = h_in.reset_index().set_index(neworder.df.unique_index(len(h_in)))
+    h_in["Area"] = self.lad
+    # randomly sample exact age according to age group
+    h_in["Age"] = h_in.DC1117EW_C_AGE - self.mc().ustream(len(h_in))
+    neworder.log("%d %d" % (len(h_in[h_in.DC1117EW_C_SEX == 1]), len(h_in[h_in.DC1117EW_C_SEX == 2])))
 
     # internal emigration:
     out_rates = self.population.join(self.out_migration, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].values
     h_out = self.mc().hazard(out_rates * self.timeline().dt())
-    # remove outgoing migrants
-    self.population = self.population[h_out!=1]
+    # add incoming & remove outgoing migrants
+    self.population = self.population[h_out!=1].append(h_in)
 
     # record net migration
-    self.in_out = (h_in.sum(), h_out.sum())
+    self.in_out = (len(h_in), h_out.sum())
 
   def mean_age(self):
     return self.population.Age.mean()
@@ -129,7 +131,6 @@ class Population(neworder.Model):
     return self.population.DC1117EW_C_SEX.mean() - 1.0
 
   def net_migration():
-    # TODO named tuple
     return self.inout[0] - self.in_out[1] + self.in_out[2] - self.in_out[3]
 
   def size(self):
@@ -163,20 +164,19 @@ class Population(neworder.Model):
 
     return True # Faith
 
-  def write_table(self):
-    filename = "{}/dm_{}_{:.3f}.csv".format(self.output_dir, self.lad, self.timeline().time())
-    neworder.log("writing %s" % filename)
-    return self.population.to_csv(filename)
-
   def plot_pyramid(self):
     a = range(86)
     s = self.population.groupby(by=["DC1117EW_C_SEX", "DC1117EW_C_AGE"])["DC1117EW_C_SEX"].count()
     m = s[s.index.isin([1], level="DC1117EW_C_SEX")].values
     f = s[s.index.isin([2], level="DC1117EW_C_SEX")].values
 
-    if self.fig is None:
-      self.fig, self.axes, self.mbar, self.fbar = pyramid.plot(a, m, f)
-    else:
-      # NB self.timeline().time() is now the time at the *end* of the timestep since this is called from check() (as opposed to step())
-      self.mbar, self.fbar = pyramid.update(str(self.timeline().time().year), self.fig, self.axes, self.mbar, self.fbar, a, m, f)
+    self.saved_m.append(m)
+    self.saved_f.append(f)
+
+    # if self.fig is None:
+    #   self.fig, self.axes, self.mbar, self.fbar = pyramid.plot(a, m, f)
+    # else:
+    #   # NB self.timeline().time() is now the time at the *end* of the timestep since this is called from check() (as opposed to step())
+    #   self.mbar, self.fbar = pyramid.update(str(self.timeline().time().year), self.fig, self.axes, self.mbar, self.fbar, a, m, f)
+
 
