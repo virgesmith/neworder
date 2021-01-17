@@ -48,7 +48,7 @@ class Population(neworder.Model):
     self.age()
 
   def finalise(self):
-    pass #pyramid.animated(range(86), self.saved_m, self.saved_f)
+    pass
 
   def age(self):
     # Increment age by timestep and update census age category (used for ASFR/ASMR lookup)
@@ -87,23 +87,18 @@ class Population(neworder.Model):
     # Finally remove deceased from table
     self.population = self.population[h!=1]
 
-  # TODO move into C++...
-  def __arrival_counts(self, lambdas, dt):
-    return [len(self.mc().arrivals(np.array([l, 0]), dt, 1, 0.0)[0]) for l in lambdas]
-
   def migrations(self):
 
-    # internal immigration:
+    # immigration:
     # - sample counts of migrants according to intensity
     # - append result to population
 
-    self.in_migration["count"] = self.__arrival_counts(self.in_migration.Rate.values, self.timeline().dt())
+    self.in_migration["count"] = self.mc().counts(self.in_migration.Rate.values, self.timeline().dt())
     h_in = self.in_migration.loc[self.in_migration.index.repeat(self.in_migration["count"])].drop(["Rate", "count"], axis=1)
     h_in = h_in.reset_index().set_index(neworder.df.unique_index(len(h_in)))
     h_in["Area"] = self.lad
     # randomly sample exact age according to age group
     h_in["Age"] = h_in.DC1117EW_C_AGE - self.mc().ustream(len(h_in))
-    neworder.log("%d %d" % (len(h_in[h_in.DC1117EW_C_SEX == 1]), len(h_in[h_in.DC1117EW_C_SEX == 2])))
 
     # internal emigration:
     out_rates = self.population.join(self.out_migration, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].values
