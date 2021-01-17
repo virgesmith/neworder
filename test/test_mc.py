@@ -114,6 +114,29 @@ def test_arrivals_validation():
   assert_throws(ValueError, m.mc().arrivals, [1.0,1.0], 1.0, 10, 0.0)
   assert_throws(ValueError, m.mc().arrivals, [np.nan,np.nan], 1.0, 10, 0.0)
 
+def test_mc_counts():
+  m = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
+  mc = m.mc()
+  assert mc.seed() == 19937
+
+  def poisson_pdf(x, l):
+    y = np.exp(-l)
+    return np.array([l**k * y / np.math.factorial(k) for k in x])
+
+
+  tests = [(1.0, 1.0, 10000), (3.0, 0.5, 10000), (0.2, 2.0, 10000), (10.0, 1.0, 1000), (3.0, 1.0, 100000)]
+
+  for lam, dt, n in tests:
+
+    c = mc.counts([lam] * n, dt)
+    x = range(0,max(c))
+    # convert to counts
+    c = [(c == k).sum() / n for k in x]
+    p = poisson_pdf(x, lam*dt)
+
+    for i in x:
+      assert np.fabs(c[i] - p[i]) < 1.0 / np.sqrt(n)
+
 def _test_mc_serial(model):
   mc = model.mc()
   assert mc.seed() == 19937

@@ -21,18 +21,12 @@ class Population(neworder.Model):
     self.population.set_index(neworder.df.unique_index(len(self.population)), inplace=True, drop=True)
 
     # these datasets use a multiindex of age, gender and ethnicity
+    # out migration is a hazard rate
+    # in migration is the intensity of a Poisson process (not a hazard on existing residents!)
     self.fertility = pd.read_csv(fertility_file, index_col=[0,1,2])
     self.mortality = pd.read_csv(mortality_file, index_col=[0,1,2])
     self.in_migration = pd.read_csv(in_migration_file, index_col=[0,1,2])
     self.out_migration = pd.read_csv(out_migration_file, index_col=[0,1,2])
-
-    # TODO
-    # out migration is a hazard rate
-    # in migration is the intensity of a Poisson process (not a hazard on existing residents!)
-    # TODO check the numbers
-    self.in_migration.loc[self.in_migration.index.get_level_values("DC1117EW_C_SEX") == 1, "Rate"] *= 187.0
-    self.in_migration.loc[self.in_migration.index.get_level_values("DC1117EW_C_SEX") == 2, "Rate"] *= 213.0
-    #self.in_migration.loc[["DC1117EW_C_SEX"], 2].Rate *= 202.0
 
     # make gender and age categorical
     self.population.DC1117EW_C_AGE = self.population.DC1117EW_C_AGE.astype("category")
@@ -41,11 +35,8 @@ class Population(neworder.Model):
     # actual age is randomised within the bound of the category (NB category values are age +1)
     self.population["Age"] = self.population.DC1117EW_C_AGE.astype(int) - self.mc().ustream(len(self.population))
 
-    # self.output_dir = "./examples/people/output"
-    # if not os.path.exists(self.output_dir):
-    #   os.makedirs(self.output_dir)
-    self.saved_m = []
-    self.saved_f = []
+    # self.saved_m = []
+    # self.saved_f = []
     self.fig = None
     self.plot_pyramid()
 
@@ -170,8 +161,8 @@ class Population(neworder.Model):
     m = s[s.index.isin([1], level="DC1117EW_C_SEX")].values
     f = s[s.index.isin([2], level="DC1117EW_C_SEX")].values
 
-    self.saved_m.append(m)
-    self.saved_f.append(f)
+    # self.saved_m.append(m)
+    # self.saved_f.append(f)
 
     if self.fig is None:
       self.fig, self.axes, self.mbar, self.fbar = pyramid.plot(a, m, f)

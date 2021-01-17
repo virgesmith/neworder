@@ -150,7 +150,6 @@ py::array_t<double> no::MonteCarlo::stopping(const py::array_t<double>& prob)
   return no::unary_op<double, double>(prob, [this](double p) { return -::log(u01()) / p; });
 }
 
-
 // multiple-arrival (0+) process
 py::array_t<double> no::MonteCarlo::arrivals(const py::array_t<double>& lambda_t, double dt, py::ssize_t n, double gap)
 {
@@ -294,6 +293,29 @@ py::array_t<double> no::MonteCarlo::next_arrival(const py::array_t<double>& star
   }
   return times;
 }
+
+py::array_t<int64_t> no::MonteCarlo::counts(const py::array_t<double>& lambda, double dt)
+{
+  validate_lambda(lambda);
+
+  size_t n = lambda.size();
+  py::array_t<int64_t> counts(n);
+  int64_t* pc = no::begin(counts);
+
+  for (const double* it = no::cbegin(lambda); it != no::cend(lambda); ++it, ++pc)
+  {
+    // sample arrivals within [0,dt)
+    *pc = 0;
+    double t = -std::log(u01()) / *it;
+    while (t < dt)
+    {
+      ++*pc;
+      t += -std::log(u01()) / *it;
+    }
+  }
+  return counts;
+}
+
 
 //
 std::vector<double> no::cumulative(const double* p, size_t n)

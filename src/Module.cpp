@@ -175,6 +175,9 @@ PYBIND11_MODULE(neworder, m)
     .def("stopping", py::overload_cast<const py::array_t<double>&>(&no::MonteCarlo::stopping),
                      mc_stopping_a_docstr,
                      "lambda"_a)
+    .def("counts", &no::MonteCarlo::counts,
+                   mc_counts_docstr,
+                   "lambda"_a, "dt"_a)
     .def("arrivals", &no::MonteCarlo::arrivals,
                      mc_arrivals_docstr,
                      "lambda"_a , "dt"_a, "n"_a, "mingap"_a)

@@ -166,6 +166,10 @@ const char* mc_stopping_a_docstr = R"docstr(
     Returns an array of stopping times (with hazard rate lambda[i]) for each element in lambda
 )docstr";
 
+const char* mc_counts_docstr = R"docstr(
+    Returns an array of simulated arrival counts (within time dt) for each intensity in lambda
+)docstr";
+
 const char* mc_arrivals_docstr = R"docstr(
     Returns an array of n arrays of multiple arrival times from a nonhomogeneous Poisson process (with hazard rate lambda[i], time interval dt),
     with a minimum separation between events of mingap. Sampling uses the Lewis-Shedler "thinning" algorithm

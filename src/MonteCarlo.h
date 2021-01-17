@@ -69,6 +69,9 @@ public:
   // relative = true means lambda_t is relative to the starting point *plus minsep*
   py::array_t<double> next_arrival(const py::array_t<double>& startingpoints, const py::array_t<double>& lambda_t, double dt, bool relative, double minsep);
 
+  // returns sampled arrival counts (within time interval dt) for each intensity lambda
+  py::array_t<int64_t> counts(const py::array_t<double>& lambda, double dt);
+
 private:
 
   // Use this over std::uniform_real_distribution as can make C++ and rust implementations produce identical streams

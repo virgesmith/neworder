@@ -351,6 +351,16 @@ The final value of lambda must be zero, and thus arrivals don't always occur, in
 The inner dimension of the returned 2d array is governed by the the maximum number of arrivals sampled, and will thus vary
 
 
+### ![instance method](https://img.shields.io/badge/-instance method-orange) `counts`
+
+```python
+counts(self: neworder.MonteCarlo, lambda: numpy.ndarray[numpy.float64], dt: float) -> numpy.ndarray[numpy.int64]
+```
+
+
+Returns an array of simulated arrival counts (within time dt) for each intensity in lambda
+
+
 ### ![function](https://img.shields.io/badge/-function-red) `deterministic_identical_stream`
 
 ```python
