@@ -6,7 +6,7 @@ If you use `neworder` in any published work, please cite it. You can use the fol
 @software{neworder,
    doi = { {{ insert_doi() }} },
    author = { Andrew P Smith },
-   year = { 2020 },
+   year = { 2021 },
    version = { {{ insert_version() }} },
    url = { https://neworder.readthedocs.io/ },
    title = { neworder: A dynamic microsimulation framework for python }
