@@ -2,7 +2,6 @@
 import numpy as np
 import pandas as pd
 import neworder as no
-#import ethpop
 
 class People(no.Model):
   """ A simple aggregration of Persons each represented as a row in a data frame """

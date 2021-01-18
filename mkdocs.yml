@@ -36,7 +36,7 @@ plugins:
 
 nav:
   - Home: index.md
-  - Description: description.md
+  - Overview: overview.md
   - Examples:
     - Hello World: examples/hello-world.md
     - Parallel: examples/parallel.md

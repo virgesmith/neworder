@@ -124,7 +124,7 @@ setup(
   long_description = readme(),
   long_description_content_type="text/markdown",
   ext_modules=ext_modules,
-  install_requires=['numpy>=1.19.1,<1.20', 'pandas>=1.0.5,<1.2'],
+  install_requires=['numpy>=1.19.1', 'pandas>=1.0.5'],
   setup_requires=['pybind11>=2.5.0', 'pytest-runner'],
   tests_require=['pytest', 'mpi4py>=3.0.3'],
   cmdclass={'build_ext': BuildExt},

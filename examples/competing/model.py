@@ -12,8 +12,8 @@ from visualise import plot
 # create model
 # data are for white British women in a London Borough at 1 year time resolution
 dt = 1.0 # years
-fertility_hazard_file = "examples/competing/ethpop_fertility_wbi.csv"
-mortality_hazard_file = "examples/competing/ethpop_mortality_wbi.csv"
+fertility_hazard_file = "examples/competing/fertility-wbi.csv"
+mortality_hazard_file = "examples/competing/mortality-wbi.csv"
 population_size = 100000
 pop = People(dt, fertility_hazard_file, mortality_hazard_file, population_size)
 

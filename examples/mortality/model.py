@@ -14,7 +14,7 @@ neworder.checked(False)
 # the max value in the timeline
 max_age = 100.0
 # The mortality rate data
-mortality_hazard_file = "examples/mortality/ethpop_mortality_wbi.csv"
+mortality_hazard_file = "examples/mortality/mortality-wbi.csv"
 population_size = 100000
 
 neworder.log("Population = %d" % population_size)

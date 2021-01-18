@@ -6,7 +6,7 @@ This is a case-based continuous-time microsimulation of the competing risks of (
 
 ## Inputs
 
-Ethpop fertility and mortality (females only)
+Age- and ethnicity-specfic fertility and mortality rates (females only)
 
 ## Implementation
 

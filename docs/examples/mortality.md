@@ -10,7 +10,7 @@ This example implements the model in two different ways: firstly a discrete case
 
 ## Inputs
 
-The mortality data is sourced from the NewETHPOP[[1]](../references.md) project and represents the mortality rate for white British males in one of the London Boroughs. For timeline definition a maximum age of 100 is defined. Note though that the age at death may be higher than this, it's just the cutoff point at which the hazard rate is assumed to be constant.
+The mortality data is derived from the NewETHPOP[[1]](../references.md) project and represents the mortality rate for white British males in one of the London Boroughs. For timeline definition a maximum age of 100 is defined. Note though that the age at death may be higher than this, it's just the cutoff point at which the hazard rate is assumed to be constant.
 
 {{ include_snippet("./examples/mortality/model.py")}}
 
