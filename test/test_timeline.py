@@ -146,11 +146,19 @@ def test_open_ended_timeline():
 
   m = OpenEndedModel(no.LinearTimeline(0, 1))
   assert m.timeline().nsteps() == -1
+  assert m.timeline().dt() == 1.0
   no.run(m)
   assert m.i == 11
 
   m = OpenEndedModel(no.CalendarTimeline(date(2020,12,17), 1, "d"))
   assert m.timeline().nsteps() == -1
+  assert np.fabs(m.timeline().dt() - 1.0/365.2475) < 1e-8
+  no.run(m)
+  assert m.i == 11
+
+  m = OpenEndedModel(no.CalendarTimeline(date(2020,12,17), 1, "m"))
+  assert m.timeline().nsteps() == -1
+  assert np.fabs(m.timeline().dt() - 31.0/365.2475) < 1e-8
   no.run(m)
   assert m.i == 11
 

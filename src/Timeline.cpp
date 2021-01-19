@@ -352,7 +352,7 @@ void no::CalendarTimeline::next()
 double no::CalendarTimeline::dt() const
 {
   static const double years_per_sec = 1.0 / (365.2475 * 86400);
-  if (m_times.empty())
+  if (m_times.size() < 2)
   {
     return std::chrono::duration_cast<std::chrono::seconds>(std::get<1>(m_currentStep) - std::get<0>(m_currentStep)).count() * years_per_sec;
   }
