@@ -90,8 +90,9 @@ py::object no::LinearTimeline::end() const { return py::float_(m_end); }
 
 std::string no::LinearTimeline::repr() const
 {
-  return "<neworder.LinearTimeline start=%% end=%% dt=%% steps=%% time=%% index=%%>"s
-          % m_start % m_end % m_dt % m_steps % time() % m_index;
+  return m_end == no::time::far_future()
+    ? "<neworder.LinearTimeline start=%% end=never dt=%% steps=inf time=%% index=%%>"s % m_start % m_dt % time() % m_index
+    : "<neworder.LinearTimeline start=%% end=%% dt=%% steps=%% time=%% index=%%>"s % m_start % m_end % m_dt % m_steps % time() % m_index;
 }
 
 
@@ -394,7 +395,7 @@ py::object no::CalendarTimeline::end() const
 
 std::string no::CalendarTimeline::repr() const
 {
-  if (m_times.empty())
+  if (m_times.size() < 2)
   {
     return "<neworder.CalendarTimeline start=%% end=never step=%%%% nsteps=inf time=%% index=%%>"s
             % start() % m_step % m_unit % time() % m_index;
