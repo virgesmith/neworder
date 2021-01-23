@@ -139,6 +139,8 @@ See the Examples section for details on each example.
 
 Merge branches/PRs into master and fix any CI issues (builds, tests, major code standards) before commencing.
 
+If necessary, use `test.pypi.org` to upload a release candidate, which can then be installed to a model implementation for testing "in the wild".
+
 1. Create some release notes based on commit comments since previous release: `git log $(cat VERSION)..HEAD --oneline`
 2. Bump `VERSION`
 3. Clean, rebuild, test, regenerate examples and code docs: `scripts/code_doc.sh`

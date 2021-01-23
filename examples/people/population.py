@@ -35,11 +35,8 @@ class Population(neworder.Model):
     # actual age is randomised within the bound of the category (NB category values are age +1)
     self.population["Age"] = self.population.DC1117EW_C_AGE.astype(int) - self.mc().ustream(len(self.population))
 
-    # self.saved_m = []
-    # self.saved_f = []
     self.fig = None
     self.plot_pyramid()
-
 
   def step(self):
     self.births()
@@ -155,9 +152,6 @@ class Population(neworder.Model):
     s = self.population.groupby(by=["DC1117EW_C_SEX", "DC1117EW_C_AGE"])["DC1117EW_C_SEX"].count()
     m = s[s.index.isin([1], level="DC1117EW_C_SEX")].values
     f = s[s.index.isin([2], level="DC1117EW_C_SEX")].values
-
-    # self.saved_m.append(m)
-    # self.saved_f.append(f)
 
     if self.fig is None:
       self.fig, self.axes, self.mbar, self.fbar = pyramid.plot(a, m, f)
