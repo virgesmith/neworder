@@ -31,3 +31,5 @@ dist/*
 
 *_old*
 
+test-coverage/
+
