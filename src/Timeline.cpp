@@ -388,7 +388,7 @@ py::object no::CalendarTimeline::end() const
 {
   if (m_times.size() < 2)
   {
-    return py::float_(no::time::never());
+    return py::float_(no::time::far_future());
   }
   return py::cast(m_times.back());
 }

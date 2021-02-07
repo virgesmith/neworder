@@ -135,6 +135,16 @@ mpiexec -n <N> python examples/<name>/model.py
 
 See the Examples section for details on each example.
 
+## Test Coverage
+
+Uses the `gcov` and `lcov` tools on an instrumented build (requires extra compile flags). This can be run locally (on linux at least) using the script
+
+```bash
+scripts/coverage.sh
+```
+
+and the output can be viewed in a browser pointed to `test-coverage/index.html`.
+
 ## Release Checklist
 
 Merge branches/PRs into master and fix any CI issues (builds, tests, major code standards) before commencing.

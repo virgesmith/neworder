@@ -75,6 +75,7 @@ def test_null_timeline():
   assert not t0.at_end()
   assert t0.index() == 0
   assert no.time.isnever(t0.time())
+  assert no.time.isnever(t0.end())
 
   m = _TestModel2(0, 1, 1)
   no.run(m)
@@ -87,8 +88,14 @@ def test_timeline_validation():
   assert_throws(TypeError, no.LinearTimeline, 2020, 2020, [])
   assert_throws(ValueError, no.LinearTimeline, 2020, 0.0)
   assert_throws(ValueError, no.LinearTimeline, 2020, -1.0)
+  assert_throws(ValueError, no.LinearTimeline, 2020, 2019, 1)
+  assert_throws(ValueError, no.LinearTimeline, 2020, 2021, 0)
 
   assert_throws(ValueError, no.NumericTimeline, [2021, 2020])
+  assert_throws(ValueError, no.NumericTimeline, [2020])
+
+  assert_throws(ValueError, no.CalendarTimeline, date(2021, 1, 1), 0, "y")
+  assert_throws(ValueError, no.CalendarTimeline, date(2021, 1, 1), 12, "n")
 
   assert_throws(ValueError, no.CalendarTimeline, date(2021, 1, 1), date(2020, 1, 1), 1, "m")
   assert_throws(ValueError, no.CalendarTimeline, date(2019, 1, 1), date(2020, 1, 1), 1, "w")
@@ -105,10 +112,31 @@ def test_linear_timeline():
   assert m.timeline().time() == 2011
   assert m.timeline().dt() == 1.0
   assert m.timeline().index() == 0
+  assert m.timeline().end() == 2051
 
   no.run(m)
   assert m.timeline().index() == 40
   assert m.timeline().time() == 2051
+
+def test_numeric_timeline():
+
+  class NumericTimelineModel(no.Model):
+    def __init__(self, numerictimeline):
+      super().__init__(numerictimeline, no.MonteCarlo.deterministic_identical_stream)
+    def step(self):
+      assert self.timeline().dt() == 1/16
+      assert self.timeline().time() == self.timeline().index() / 16
+
+    def finalise(self):
+      assert self.timeline().time() == 1.0
+      assert self.timeline().time() == self.timeline().end()
+      assert self.timeline().index() == 16
+  # 16 steps to avoid rounding errors
+  m = NumericTimelineModel(no.NumericTimeline(np.linspace(0.0, 1.0, 17)))
+  assert m.timeline().time() == 0.0
+  assert m.timeline().index() == 0
+  no.run(m)
+
 
 def test_calendar_timeline():
   # monthly timesteps checking we don't overshoot in shorter months
@@ -119,7 +147,7 @@ def test_calendar_timeline():
       super().__init__(calendartimeline, no.MonteCarlo.deterministic_identical_stream)
 
     def step(self):
-      assert t.time().day == min(dim[t.index()], d)
+      assert self.timeline().time().day == min(dim[self.timeline().index()], d)
 
     def finalise(self):
       assert self.timeline().dt() == 0.0
@@ -145,18 +173,21 @@ def test_open_ended_timeline():
       if self.i > 10: self.halt()
 
   m = OpenEndedModel(no.LinearTimeline(0, 1))
+  assert m.timeline().end() == no.time.far_future()
   assert m.timeline().nsteps() == -1
   assert m.timeline().dt() == 1.0
   no.run(m)
   assert m.i == 11
 
   m = OpenEndedModel(no.CalendarTimeline(date(2020,12,17), 1, "d"))
+  assert m.timeline().end() == no.time.far_future()
   assert m.timeline().nsteps() == -1
   assert np.fabs(m.timeline().dt() - 1.0/365.2475) < 1e-8
   no.run(m)
   assert m.i == 11
 
   m = OpenEndedModel(no.CalendarTimeline(date(2020,12,17), 1, "m"))
+  assert m.timeline().end() == no.time.far_future()
   assert m.timeline().nsteps() == -1
   assert np.fabs(m.timeline().dt() - 31.0/365.2475) < 1e-8
   no.run(m)
