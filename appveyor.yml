@@ -80,7 +80,7 @@ install:
       if [ "$MINICONDA" == "true" ]; then
       scripts/create-conda-env.sh
       else
-      sudo apt update && sudo apt install -y mpich libmpich-dev
+      sudo apt update && sudo apt install -y mpich libmpich-dev gcov
       fi
       fi
 
