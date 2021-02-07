@@ -3,7 +3,7 @@
 environment:
   matrix:
 
-    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
+    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
       PYTHON: "3.8"
       APPVEYOR_YML_DISABLE_PS_LINUX: true
       CODECOV_BUILD: true
@@ -106,7 +106,7 @@ test_script:
       fi
       python setup.py test && mpiexec -n 2 python setup.py test
       if [ "$CODECOV_BUILD" == "true" ]; then
-      bash <(curl -s https://codecov.io/bash)
+      bash <(curl -s https://codecov.io/bash) -Z
       fi
 
 notifications:
