@@ -3,11 +3,6 @@
 environment:
   matrix:
 
-    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
-      PYTHON: "3.8"
-      APPVEYOR_YML_DISABLE_PS_LINUX: true
-      CODECOV_BUILD: true
-
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
       PYTHON: "C:\\Python37-x64"
       PYTHON_ARCH: 64
@@ -43,6 +38,11 @@ environment:
       PYTHON: "3.8"
       APPVEYOR_YML_DISABLE_PS_LINUX: true
 
+    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
+      CODECOV_BUILD: true
+      PYTHON: "3.8"
+      APPVEYOR_YML_DISABLE_PS_LINUX: true
+
     - APPVEYOR_BUILD_WORKER_IMAGE: macOS
       PYTHON: "3.7"
       APPVEYOR_YML_DISABLE_PS_LINUX: true
@@ -57,11 +57,11 @@ environment:
 
 stack: python %PYTHON%
 
-matrix:
-  allow_failures:
-    - PYTHON: "C:\\Python36-x64"
-  ## fail fast
-  fast_finish: true
+# matrix:
+#   allow_failures:
+#     - PYTHON: "C:\\Python36-x64"
+#   # fail fast
+#   #fast_finish: true
 
 install:
   # - cmd: |
