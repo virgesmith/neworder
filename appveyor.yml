@@ -2,6 +2,12 @@
 
 environment:
   matrix:
+
+    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
+      PYTHON: "3.8"
+      APPVEYOR_YML_DISABLE_PS_LINUX: true
+      CODECOV_BUILD: true
+
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
       PYTHON: "C:\\Python37-x64"
       PYTHON_ARCH: 64
@@ -55,7 +61,7 @@ matrix:
   allow_failures:
     - PYTHON: "C:\\Python36-x64"
   ## fail fast
-  # fast_finish: true
+  fast_finish: true
 
 install:
   # - cmd: |
@@ -81,11 +87,13 @@ install:
 build_script:
   - cmd: '%PYTHON%\python.exe setup.py install'
   - sh: |
-      if [ "$MINICONDA" == "true" ]; then
+      if [ "$CODECOV_BUILD" == "true" ]; then
+      EXTRA_COMPILE_FLAGS=--coverage
+      elif [ "$MINICONDA" == "true" ]; then
       source "${HOME}/.miniconda/etc/profile.d/conda.sh"
       conda activate conda-env
       fi
-      python setup.py install
+      CFLAGS=$EXTRA_COMPILE_FLAGS python setup.py install
 
 test_script:
   - cmd: '%PYTHON%\python.exe setup.py test'
@@ -95,6 +103,9 @@ test_script:
       conda activate conda-env
       fi
       python setup.py test && mpiexec -n 2 python setup.py test
+      if [ "$CODECOV_BUILD" == "true" ]; then
+      bash <(curl -s https://codecov.io/bash)
+      fi
 
 notifications:
   - provider: Email
