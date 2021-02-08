@@ -13,10 +13,10 @@ fig = plt.figure(figsize=(6,6))
 ax = Axes3D(fig)
 
 def _plot(bodies):
-  g = ax.scatter(bodies.x, bodies.y, bodies.z, c=bodies.index.values, s=bodies.m * 20)
-  ax.set_xlim(-0.6,0.6)
-  ax.set_ylim(-0.6,0.6)
-  ax.set_zlim(-0.6,0.6)
+  g = ax.scatter(bodies.x, bodies.y, bodies.z, c=bodies.index.values, s=bodies.m * 5000 / bodies.m.sum())
+  ax.set_xlim(-0.5,0.5)
+  ax.set_ylim(-0.5,0.5)
+  ax.set_zlim(-0.5,0.5)
   ax.xaxis.set_ticklabels([])
   ax.yaxis.set_ticklabels([])
   ax.zaxis.set_ticklabels([])
@@ -37,7 +37,6 @@ class NBody(no.Model):
     x_max = 1.0
     y_max = 1.0
 
-    #
     r = self.mc().ustream(N) - 0.5
     theta = self.mc().ustream(N) * np.pi
     x = r * np.cos(theta) * x_max
@@ -79,24 +78,30 @@ class NBody(no.Model):
 
   # also calc energy of system
   def __calc_a(self):
-
-    for _,b in self.bodies.iterrows():
-      dist2s = (self.bodies.x.values - b.x) ** 2 \
-             + (self.bodies.y.values - b.y) ** 2 \
-             + (self.bodies.z.values - b.z) ** 2
+    n = len(self.bodies)
+    dx = self.bodies.x.values.repeat(n).reshape((n,n))
+    dy = self.bodies.y.values.repeat(n).reshape((n,n))
+    dz = self.bodies.z.values.repeat(n).reshape((n,n))
+    dist2s = (dx - dx.T)**2 + (dy - dy.T)**2 + (dz - dz.T)**2 #fudge factor
+    dist2s = np.where(dist2s == 0.0, np.inf, dist2s)
+    dist2s += 0.01
+    dists = np.sqrt(dist2s)
+    for i,b in self.bodies.iterrows():
+      # dist2s = (self.bodies.x.values - b.x) ** 2 \
+      #        + (self.bodies.y.values - b.y) ** 2 \
+      #        + (self.bodies.z.values - b.z) ** 2
       # first remove self-interactions
-      dist2s = np.where(dist2s == 0.0, np.inf, dist2s)
+      #dist2s = np.where(dist2s == 0.0, np.inf, dist2s)
       # fudge to avoid acceleration spikes when particles too close
-      dist2s += .01
-      dists = np.sqrt(dist2s)
-      xhat = (self.bodies.x.values - b.x) / dists
-      yhat = (self.bodies.y.values - b.y) / dists
-      zhat = (self.bodies.z.values - b.z) / dists
-      b.ax = self.G * np.sum(self.bodies.m * xhat / dist2s)
-      b.ay = self.G * np.sum(self.bodies.m * yhat / dist2s)
-      b.az = self.G * np.sum(self.bodies.m * zhat / dist2s)
+      #dist2s += .01
+      xhat = (self.bodies.x.values - b.x) / dists[i]
+      yhat = (self.bodies.y.values - b.y) / dists[i]
+      zhat = (self.bodies.z.values - b.z) / dists[i]
+      b.ax = self.G * np.sum(self.bodies.m * xhat / dist2s[i])
+      b.ay = self.G * np.sum(self.bodies.m * yhat / dist2s[i])
+      b.az = self.G * np.sum(self.bodies.m * zhat / dist2s[i])
       b.ke = b.m * (b.vx ** 2 + b.vy ** 2 + b.vz ** 2)
-      b.pe = -self.G * b.m * np.sum(self.bodies.m / dists)
+      b.pe = -self.G * b.m * np.sum(self.bodies.m / dists[i])
 
   def __update_pos(self):
     self.bodies.x += self.bodies.vx * self.dt
