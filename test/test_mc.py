@@ -142,6 +142,13 @@ def _test_mc_serial(model):
   assert mc.seed() == 19937
 
   mc.reset()
+  assert mc.raw() == 6231104047474287856
+  assert mc.raw() == 14999272868227999252
+  mc.reset()
+  assert mc.raw() == 6231104047474287856
+  assert mc.raw() == 14999272868227999252
+
+  mc.reset()
   s = mc.state()
   a = mc.ustream(5)
   if platform.system() != "Darwin":
@@ -223,6 +230,15 @@ def _test_mc_serial(model):
   assert a[3] == 7.883336832344425
   assert a[4] == 6.461894711350323
   assert a[5] == 2.8566436418145944
+
+  mc.reset()
+  a = mc.arrivals([1.0, 2.0, 3.0, 0.0], 1.0, 1, 0.0)
+  assert np.allclose(a[0], [0.361778116731657, 0.430740169244778, 1.580095480774, 2.226284951909032, 2.511949316090492, 2.809348320658414, 2.929632529913839])
+  mc.reset()
+  # now with a mim separation of 1.0
+  a = mc.arrivals([1.0, 2.0, 3.0, 0.0], 1.0, 1, 1.0)
+  assert np.allclose(a[0], [0.361778116731657, 1.430740169244778])
+  mc.reset()
 
   # Exp.value = p +/- 1/sqrt(N)
   h = model.mc().hazard(0.2, 10000)

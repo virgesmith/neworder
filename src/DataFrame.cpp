@@ -42,9 +42,9 @@ void no::df::transition(no::Model& model, py::array_t<int64_t> categories, py::a
 
   // check matrix is 2d, square & categories len = matrix len
   if (matrix.ndim() != 2)
-    throw py::type_error("cumulative transition matrix dimension is %%"s % matrix.ndim());
+    throw py::value_error("cumulative transition matrix dimension is %%"s % matrix.ndim());
   if (matrix.shape(0) != matrix.shape(1))
-    throw py::type_error("cumulative transition matrix shape is not square: %% by %%"s % matrix.shape(0) % matrix.shape(1));
+    throw py::value_error("cumulative transition matrix shape is not square: %% by %%"s % matrix.shape(0) % matrix.shape(1));
   if (m != matrix.shape(0))
     throw py::value_error("cumulative transition matrix size (%%) is not same as length of categories (%%)"s % matrix.shape(0) % m);
 

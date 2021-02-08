@@ -21,10 +21,16 @@ def test_errors():
   # identity matrix means no transitions
   trans = np.identity(len(cats))
 
-  # category data MUST be 64bit integer. This will alomst certainly be the default on linux/OSX but not on windows
+  # invalid transition matrices
+  assert_throws(ValueError, no.df.transition, model, cats, np.ones((1,2)), df, "DC2101EW_C_ETHPUK11")
+  assert_throws(ValueError, no.df.transition, model, cats, np.ones((1,1)), df, "DC2101EW_C_ETHPUK11")
+  assert_throws(ValueError, no.df.transition, model, cats, trans+0.1, df, "DC2101EW_C_ETHPUK11")
+
+  # category data MUST be 64bit integer. This will almost certainly be the default on linux/OSX (LP64) but maybe not on windows (LLP64)
   df["DC2101EW_C_ETHPUK11"]= df["DC2101EW_C_ETHPUK11"].astype(np.int32)
 
   assert_throws(TypeError, no.df.transition, model, cats, trans, df, "DC2101EW_C_ETHPUK11")
+
 
 def test_basic():
 
