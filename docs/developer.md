@@ -137,13 +137,9 @@ See the Examples section for details on each example.
 
 ## Test Coverage
 
-Uses the `gcov` and `lcov` tools on an instrumented build (requires extra compile flags). This can be run locally (on linux at least) using the script
+The C++ module needs to be built with instrumentation (the `--coverage` flag) and when pytest runs it will produce coverage output in `*.gcda` files.
 
-```bash
-scripts/coverage.sh
-```
-
-and the output can be viewed in a browser pointed to `test-coverage/index.html`.
+The script from [codecov.io](https://codecov.io/gh/virgesmith/neworder/) uses `gcov` to process the output and upload it. NB it's important to ensure that the `gcc` and `gcov` versions are consistent otherwise it will crash (the ubuntu 20.04 appveyor image defaults to gcc-7 and gcov-9).
 
 ## Release Checklist
 
