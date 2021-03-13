@@ -9,6 +9,8 @@ PAUSE=0.001
 
 WOLF_COLOUR = "black"
 SHEEP_COLOUR = "red"
+GRASS_COLOUR = "green"
+
 class WolfSheep(no.Model):
 
   def __init__(self, width, height, n_wolves, n_sheep):
@@ -63,7 +65,7 @@ class WolfSheep(no.Model):
     )
     self.__assign_cell(self.sheep)
 
-    (self.ax_g, self.ax_w, self.ax_s, self.ax_t, self.ax_wt, self.ax_st) = self.__init_plot()
+    (self.ax_g, self.ax_w, self.ax_s, self.ax_t0, self.ax_wt, self.ax_st, self.ax_t1, self.ax_gt) = self.__init_plot()
 
     self.wolf_pop = [len(self.wolves)]
     self.sheep_pop = [len(self.sheep)]
@@ -85,7 +87,7 @@ class WolfSheep(no.Model):
     self.t.append(self.timeline().index()+1)
     self.wolf_pop.append(len(self.wolves))
     self.sheep_pop.append(len(self.sheep))
-    self.grass_prop.append(self.grass.fully_grown.mean())
+    self.grass_prop.append(100.0 * self.grass.fully_grown.mean())
 
     self.__update_plot()
 
@@ -159,40 +161,50 @@ class WolfSheep(no.Model):
     agents["cell"] = (agents.x.astype(int) + self.width * agents.y.astype(int)).astype(int)
 
   def __init_plot(self):
-    fig, axs = plt.subplots(1,2, figsize=(10,5))
+    figs = plt.figure(constrained_layout=True, figsize=(10,5))
+    gs = figs.add_gridspec(2, 2)
+    ax0 = figs.add_subplot(gs[:, 0])
+    ax1 = figs.add_subplot(gs[0, 1])
+    ax2 = figs.add_subplot(gs[1, 1])
 
-    ax_g = axs[0].imshow(np.flip(self.grass.countdown.values.reshape(self.height, self.width), axis=0),
+    # agent map
+    ax_g = ax0.imshow(np.flip(self.grass.countdown.values.reshape(self.height, self.width), axis=0),
       extent=[0, self.width, 0, self.height], cmap="Greens_r", alpha=0.5)
-    #plt.scatter(self.grass.x, self.grass.y, marker="o", s=40, c=self.grass.countdown, cmap="Greens")
-    ax_w = axs[0].scatter(self.wolves.x, self.wolves.y, color=WOLF_COLOUR)
-    ax_s = axs[0].scatter(self.sheep.x, self.sheep.y, color=SHEEP_COLOUR)
-    axs[0].set_axis_off()
+    ax_w = ax0.scatter(self.wolves.x, self.wolves.y, color=WOLF_COLOUR)
+    ax_s = ax0.scatter(self.sheep.x, self.sheep.y, color=SHEEP_COLOUR)
+    ax0.set_axis_off()
 
-    ax_wt = axs[1].plot(0,len(self.wolves), color=WOLF_COLOUR)
-    ax_st = axs[1].plot(0,len(self.sheep), color=SHEEP_COLOUR)
-    axs[1].set_xlim([0, 100])
-    axs[1].set_ylim([0, max(self.n_wolves, self.n_sheep)])
-    axs[1].set_xlabel("Step")
-    axs[1].legend(["Wolves", "Sheep"])
+    # wolf and sheep population
+    ax_wt = ax1.plot(0,len(self.wolves), color=WOLF_COLOUR)
+    ax_st = ax1.plot(0,len(self.sheep), color=SHEEP_COLOUR)
+    ax1.set_xlim([0, 100])
+    ax1.set_ylim([0, max(self.n_wolves, self.n_sheep)])
+    #ax1.set_xlabel("Step")
+    ax1.legend(["Wolves", "Sheep"])
+
+    # grass
+    ax_gt = ax2.plot(0, 100.0 * self.grass.fully_grown.mean(), color=GRASS_COLOUR)
+    ax2.set_xlim([0.0, 100])
+    ax2.set_ylim([0.0, 100.0])
+    ax2.legend(["% fully grown grass"])
+    ax2.set_xlabel("Step")
+
     plt.tight_layout()
     plt.pause(PAUSE)
-    return ax_g, ax_w, ax_s, axs[1], ax_wt, ax_st
+    return ax_g, ax_w, ax_s, ax1, ax_wt, ax_st, ax2, ax_gt
 
   def __update_plot(self):
     self.ax_g.set_data(np.flip(self.grass.countdown.values.reshape(self.height, self.width), axis=0))
     self.ax_w.set_offsets(np.c_[self.wolves.x, self.wolves.y])
     self.ax_s.set_offsets(np.c_[self.sheep.x, self.sheep.y])
 
-    #self.ax_t.append((self.timeline().index(), len(self.wolves)))
-    #self.ax_t.lines[0].get_xydata().append([self.timeline().index(), len(self.wolves)])
     self.ax_wt[0].set_data(self.t, self.wolf_pop)
     self.ax_st[0].set_data(self.t, self.sheep_pop)
-    self.ax_t.set_xlim([0,self.t[-1]])
-    self.ax_t.set_ylim([0,max(max(self.wolf_pop), max(self.sheep_pop))])
-    #print(self.ax_t[0].get_data())
-    # self.ax_t.lines[0].set_xdata(list(range(self.timeline().index())))
-    #self.ax_t[0].set_xdata(list(range(self.timeline().index())))
-    #self.ax_t[0].set_ydata(self.wolf_pop)
-    #stop
+    self.ax_t0.set_xlim([0,self.t[-1]])
+    self.ax_t0.set_ylim([0,max(max(self.wolf_pop), max(self.sheep_pop))])
+
+    self.ax_gt[0].set_data(self.t, self.grass_prop)
+    self.ax_t1.set_xlim([0,self.t[-1]])
+
     plt.pause(PAUSE)
 
