@@ -5,26 +5,7 @@ import neworder as no
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-# https://stackoverflow.com/questions/41602588/matplotlib-3d-scatter-animations
-
-plt.style.use('dark_background')
-# axes instance
-fig = plt.figure(figsize=(6,6))
-ax = Axes3D(fig)
-
-def _plot(bodies):
-  g = ax.scatter(bodies.x, bodies.y, bodies.z, c=bodies.index.values, s=bodies.m * 5000 / bodies.m.sum())
-  ax.set_xlim(-0.5,0.5)
-  ax.set_ylim(-0.5,0.5)
-  ax.set_zlim(-0.5,0.5)
-  ax.xaxis.set_ticklabels([])
-  ax.yaxis.set_ticklabels([])
-  ax.zaxis.set_ticklabels([])
-  ax.set_axis_off()
-  return g
-
-def _update(g, bodies):
-  g._offsets3d = (bodies.x, bodies.y, bodies.z)
+PAUSE=1e-6
 
 class NBody(no.Model):
 
@@ -43,11 +24,6 @@ class NBody(no.Model):
     y = r * np.sin(theta) * y_max
 
     self.bodies = pd.DataFrame(index=no.df.unique_index(N), data={
-        # "m": [10.0,0.1],
-        # "x": [0.0, 0.5],
-        # "y": [0.0, 0.0],
-        # "vx": [0.0, 0.0],
-        # "vy": [0.0, 0.25],
         "m": self.mc().ustream(N) * m_max,
         "x": x,
         "y": y,
@@ -63,18 +39,15 @@ class NBody(no.Model):
         "pe": np.nan
       })
 
-    # balance momentum by changing mass and velocity of body 0
+    # balance momentum by changing velocity of body 0
     self.bodies.vx[0] -= (self.bodies.m * self.bodies.vx).sum() / self.bodies.m[0]
     self.bodies.vy[0] -= (self.bodies.m * self.bodies.vy).sum() / self.bodies.m[0]
     self.bodies.vz[0] -= (self.bodies.m * self.bodies.vz).sum() / self.bodies.m[0]
 
     self.__calc_a()
-    #self.bodies.to_csv("bodies0.csv")
     self.E0 = np.sum(self.bodies.pe + self.bodies.ke)
 
-    self.g = _plot(self.bodies)
-
-    plt.pause(0.001)
+    self.g = self.__init_visualisation()
 
   # also calc energy of system
   def __calc_a(self):
@@ -122,7 +95,7 @@ class NBody(no.Model):
     ke = np.sum(self.bodies.ke)
     pe = np.sum(self.bodies.pe)
     no.log("p=%g,%g,%g" % (px, py, pz))
-    no.log("e=%f" % (ke+pe-self.E0))
+    no.log("delta E=%f" % (ke+pe-self.E0))
 
     return np.fabs(ke+pe-self.E0) < 20.2
 
@@ -134,6 +107,28 @@ class NBody(no.Model):
     self.__update_v(0.5)
 
     #_plot(self.bodies)
-    _update(self.g, self.bodies)
-    plt.pause(0.001)
+    self.__update_visualisation()
+
+  def __init_visualisation(self):
+    # https://stackoverflow.com/questions/41602588/matplotlib-3d-scatter-animations
+    plt.style.use('dark_background')
+    # axes instance
+    fig = plt.figure(figsize=(6,6))
+    ax = Axes3D(fig)
+
+    g = ax.scatter(self.bodies.x, self.bodies.y, self.bodies.z, c=self.bodies.index.values, s=self.bodies.m * 5000 / self.bodies.m.sum())
+    ax.set_xlim(-0.5,0.5)
+    ax.set_ylim(-0.5,0.5)
+    ax.set_zlim(-0.5,0.5)
+    ax.xaxis.set_ticklabels([])
+    ax.yaxis.set_ticklabels([])
+    ax.zaxis.set_ticklabels([])
+    ax.set_axis_off()
+    plt.pause(PAUSE)
+    return g
+
+  def __update_visualisation(self):
+    self.g._offsets3d = (self.bodies.x, self.bodies.y, self.bodies.z)
+    #plt.savefig("/tmp/n-body%04d.png" % i)
+    plt.pause(PAUSE)
 

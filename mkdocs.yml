@@ -48,6 +48,8 @@ nav:
     - People: ./examples/people.md
     - Option: examples/option.md
     - Schelling: examples/schelling.md
+    - Wolf-Sheep: examples/wolf-sheep.md
+    - N-body: examples/n-body.md
   - API:
     - API Reference: api.md
     - Tips and Tricks: tips.md

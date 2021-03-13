@@ -16,7 +16,7 @@ class WolfSheep(no.Model):
   def __init__(self, width, height, n_wolves, n_sheep):
 
     # hard-coded to unit timestep
-    super().__init__(no.LinearTimeline(0.0, 1.0), no.MonteCarlo.nondeterministic_stream)
+    super().__init__(no.LinearTimeline(0.0, 1.0), no.MonteCarlo.deterministic_independent_stream)
 
     self.width = width
     self.height = height
@@ -94,7 +94,7 @@ class WolfSheep(no.Model):
     # no.log("wolves=%d sheep=%d grass=%f" % (len(self.wolves),
     #                                         len(self.sheep),
     #                                         100.0 * len(self.grass[self.grass.fully_grown]) / (self.width *self.height)))
-    #if self.timeline().index() > 200: self.halt()
+    if self.timeline().index() > 300: self.halt()
     if self.wolves.empty:
       no.log("Wolves have died out")
     if self.sheep.empty:
@@ -170,8 +170,8 @@ class WolfSheep(no.Model):
     # agent map
     ax_g = ax0.imshow(np.flip(self.grass.countdown.values.reshape(self.height, self.width), axis=0),
       extent=[0, self.width, 0, self.height], cmap="Greens_r", alpha=0.5)
-    ax_w = ax0.scatter(self.wolves.x, self.wolves.y, color=WOLF_COLOUR)
-    ax_s = ax0.scatter(self.sheep.x, self.sheep.y, color=SHEEP_COLOUR)
+    ax_w = ax0.scatter(self.wolves.x, self.wolves.y, s=6, color=WOLF_COLOUR)
+    ax_s = ax0.scatter(self.sheep.x, self.sheep.y, s=6, color=SHEEP_COLOUR)
     ax0.set_axis_off()
 
     # wolf and sheep population
@@ -184,7 +184,7 @@ class WolfSheep(no.Model):
 
     # grass
     ax_gt = ax2.plot(0, 100.0 * self.grass.fully_grown.mean(), color=GRASS_COLOUR)
-    ax2.set_xlim([0.0, 100])
+    ax2.set_xlim([0, 100])
     ax2.set_ylim([0.0, 100.0])
     ax2.legend(["% fully grown grass"])
     ax2.set_xlabel("Step")
@@ -207,4 +207,5 @@ class WolfSheep(no.Model):
     self.ax_t1.set_xlim([0,self.t[-1]])
 
     plt.pause(PAUSE)
+    #plt.savefig("/tmp/wolf-sheep%04d.png" % self.timeline().index(), dpi=80)
 

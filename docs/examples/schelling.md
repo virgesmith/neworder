@@ -1,6 +1,6 @@
 # Schelling's Segregation Model
 
-An implementation of the Schelling's segregation model [[7]](../references.md), which is traditionally considered to be an agent-based as opposed to a microsimulation, model. However, the distinction is somewhat vague and subjective.
+An implementation of Schelling's segregation model [[7]](../references.md), which is traditionally considered to be an agent-based as opposed to a microsimulation, model. However, the distinction is somewhat vague and subjective.
 
 ![Schelling](./img/schelling.gif)
 
