@@ -13,7 +13,8 @@ class WolfSheep(no.Model):
 
   def __init__(self, width, height, n_wolves, n_sheep):
 
-    super().__init__(no.LinearTimeline(0.0, 1.0), no.MonteCarlo.deterministic_identical_stream)
+    # hard-coded to unit timestep
+    super().__init__(no.LinearTimeline(0.0, 1.0), no.MonteCarlo.nondeterministic_stream)
 
     self.width = width
     self.height = height
@@ -62,9 +63,12 @@ class WolfSheep(no.Model):
     )
     self.__assign_cell(self.sheep)
 
-    (self.ax_g, self.ax_w, self.ax_s, self.ax_t) = self.__init_plot()
+    (self.ax_g, self.ax_w, self.ax_s, self.ax_t, self.ax_wt, self.ax_st) = self.__init_plot()
 
-    plt.pause(PAUSE)
+    self.wolf_pop = [len(self.wolves)]
+    self.sheep_pop = [len(self.sheep)]
+    self.grass_prop = [self.grass.fully_grown.mean()]
+    self.t = [self.timeline().index()]
 
     # no.log(self.wolves)
     # no.log(self.sheep)
@@ -72,17 +76,28 @@ class WolfSheep(no.Model):
 
   def step(self):
 
+    # step each population
     self.__step_grass()
     self.__step_wolves()
     self.__step_sheep()
 
+    # record data
+    self.t.append(self.timeline().index()+1)
+    self.wolf_pop.append(len(self.wolves))
+    self.sheep_pop.append(len(self.sheep))
+    self.grass_prop.append(self.grass.fully_grown.mean())
+
     self.__update_plot()
 
-    no.log("wolves=%d sheep=%d grass=%f" % (len(self.wolves),
-                                            len(self.sheep),
-                                            100.0 * len(self.grass[self.grass.fully_grown]) / (self.width *self.height)))
-    #if self.timeline().index() > 100: self.halt()
-    if self.sheep.empty: self.halt()
+    # no.log("wolves=%d sheep=%d grass=%f" % (len(self.wolves),
+    #                                         len(self.sheep),
+    #                                         100.0 * len(self.grass[self.grass.fully_grown]) / (self.width *self.height)))
+    #if self.timeline().index() > 200: self.halt()
+    if self.wolves.empty:
+      no.log("Wolves have died out")
+    if self.sheep.empty:
+      no.log("Sheep have died out")
+      self.halt()
 
   def __step_grass(self):
     # grow grass
@@ -105,15 +120,14 @@ class WolfSheep(no.Model):
     # no.log(self.sheep[self.sheep.cell.isin(self.wolves.cell)])
     diners = self.wolves.loc[self.wolves.cell.isin(self.sheep.cell)]
     self.wolves.loc[self.wolves.cell.isin(self.sheep.cell), "energy"] += self.wolf_gain_from_food
-    # TODO *all* the sheep in cells with wolves get eaten
-    #no.log("%d wolves eat %d sheep" % (len(diners), self.sheep.cell.isin(diners.cell).sum()))
+    # NB *all* the sheep in cells with wolves get eaten (or at least killed)
     self.sheep = self.sheep[~self.sheep.cell.isin(diners.cell)]
 
     # remove dead
     self.wolves = self.wolves[self.wolves.energy >= 0]
 
     # breed
-    m = self.mc().hazard(self.wolf_reproduce * self.timeline().dt(), len(self.wolves))
+    m = self.mc().hazard(self.wolf_reproduce, len(self.wolves))
     self.wolves.loc[m == 1, "energy"] /= 2
     cubs = self.wolves[m == 1].copy().set_index(no.df.unique_index(int(sum(m))))
     self.wolves = self.wolves.append(cubs)
@@ -135,7 +149,7 @@ class WolfSheep(no.Model):
     self.sheep = self.sheep[self.sheep.energy >= 0]
 
     # breed
-    m = self.mc().hazard(self.sheep_reproduce * self.timeline().dt(), len(self.sheep))
+    m = self.mc().hazard(self.sheep_reproduce, len(self.sheep))
     self.sheep.loc[m == 1, "energy"] /= 2
     lambs = self.sheep[m == 1].copy().set_index(no.df.unique_index(int(sum(m))))
     self.sheep = self.sheep.append(lambs)
@@ -145,15 +159,24 @@ class WolfSheep(no.Model):
     agents["cell"] = (agents.x.astype(int) + self.width * agents.y.astype(int)).astype(int)
 
   def __init_plot(self):
-    fig, axs = plt.subplots(1,2)
+    fig, axs = plt.subplots(1,2, figsize=(10,5))
 
     ax_g = axs[0].imshow(np.flip(self.grass.countdown.values.reshape(self.height, self.width), axis=0),
       extent=[0, self.width, 0, self.height], cmap="Greens_r", alpha=0.5)
     #plt.scatter(self.grass.x, self.grass.y, marker="o", s=40, c=self.grass.countdown, cmap="Greens")
     ax_w = axs[0].scatter(self.wolves.x, self.wolves.y, color=WOLF_COLOUR)
     ax_s = axs[0].scatter(self.sheep.x, self.sheep.y, color=SHEEP_COLOUR)
-    axs[1].plot([0],[len(self.wolves)]) #, TODO color=WOLF_COLOUR)
-    return ax_g, ax_w, ax_s, axs[1]
+    axs[0].set_axis_off()
+
+    ax_wt = axs[1].plot(0,len(self.wolves), color=WOLF_COLOUR)
+    ax_st = axs[1].plot(0,len(self.sheep), color=SHEEP_COLOUR)
+    axs[1].set_xlim([0, 100])
+    axs[1].set_ylim([0, max(self.n_wolves, self.n_sheep)])
+    axs[1].set_xlabel("Step")
+    axs[1].legend(["Wolves", "Sheep"])
+    plt.tight_layout()
+    plt.pause(PAUSE)
+    return ax_g, ax_w, ax_s, axs[1], ax_wt, ax_st
 
   def __update_plot(self):
     self.ax_g.set_data(np.flip(self.grass.countdown.values.reshape(self.height, self.width), axis=0))
@@ -161,7 +184,15 @@ class WolfSheep(no.Model):
     self.ax_s.set_offsets(np.c_[self.sheep.x, self.sheep.y])
 
     #self.ax_t.append((self.timeline().index(), len(self.wolves)))
-    #print(self.ax_t.lines[0].get_xydata())
+    #self.ax_t.lines[0].get_xydata().append([self.timeline().index(), len(self.wolves)])
+    self.ax_wt[0].set_data(self.t, self.wolf_pop)
+    self.ax_st[0].set_data(self.t, self.sheep_pop)
+    self.ax_t.set_xlim([0,self.t[-1]])
+    self.ax_t.set_ylim([0,max(max(self.wolf_pop), max(self.sheep_pop))])
+    #print(self.ax_t[0].get_data())
+    # self.ax_t.lines[0].set_xdata(list(range(self.timeline().index())))
+    #self.ax_t[0].set_xdata(list(range(self.timeline().index())))
+    #self.ax_t[0].set_ydata(self.wolf_pop)
     #stop
     plt.pause(PAUSE)
 

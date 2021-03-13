@@ -3,7 +3,7 @@ import neworder as no
 from wolf_sheep import WolfSheep
 import matplotlib.pyplot as plt
 width = 100
-height = 75
+height = 100
 
 n_wolves = 150
 n_sheep = 300
