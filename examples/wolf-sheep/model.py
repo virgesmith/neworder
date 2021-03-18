@@ -2,14 +2,31 @@
 import neworder as no
 from wolf_sheep import WolfSheep
 import matplotlib.pyplot as plt
-width = 100
-height = 100
-
-n_wolves = 150
-n_sheep = 300
 
 
-m = WolfSheep(width, height, n_wolves, n_sheep)
+params = {
+  "grid": {
+    "width": 100,
+    "height": 100
+  },
+  "wolves": {
+    "starting_population": 150,
+    "reproduce": 0.05,
+    "speed": 2.4,
+    "gain_from_food": 20
+  },
+  "sheep": {
+    "starting_population": 300,
+    "reproduce": 0.04,
+    "speed": 0.9,
+    "gain_from_food": 4
+  },
+  "grass": {
+    "regrowth_time": 30
+  }
+}
+
+m = WolfSheep(params)
 
 # test cell assignment
 # for _,r in m.wolves.iterrows():
@@ -19,7 +36,5 @@ m = WolfSheep(width, height, n_wolves, n_sheep)
 #   c = int(r.cell)
 #   print(r.x, r.y, c, m.grass.loc[c, "x"], m.grass.loc[c,"y"])
 
-
-#plt.show()
 no.run(m)
 

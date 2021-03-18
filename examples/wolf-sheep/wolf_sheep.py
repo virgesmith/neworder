@@ -13,24 +13,24 @@ GRASS_COLOUR = "green"
 
 class WolfSheep(no.Model):
 
-  def __init__(self, width, height, n_wolves, n_sheep):
+  def __init__(self, params):
 
     # hard-coded to unit timestep
     super().__init__(no.LinearTimeline(0.0, 1.0), no.MonteCarlo.deterministic_independent_stream)
 
-    self.width = width
-    self.height = height
-    self.n_wolves = n_wolves
-    self.n_sheep = n_sheep
+    self.width = params["grid"]["width"]
+    self.height = params["grid"]["height"]
+    n_wolves = params["wolves"]["starting_population"]
+    n_sheep =params["sheep"]["starting_population"]
 
-    self.wolf_reproduce = 0.05
-    self.sheep_reproduce = 0.04
-    self.wolf_speed = 1.4
-    self.sheep_speed = 0.9
+    self.wolf_reproduce = params["wolves"]["reproduce"]
+    self.sheep_reproduce = params["sheep"]["reproduce"]
+    self.wolf_speed = params["wolves"]["speed"]
+    self.sheep_speed = params["sheep"]["speed"]
 
-    self.wolf_gain_from_food = 20
-    self.sheep_gain_from_food = 4
-    self.grass_regrowth_time = 30
+    self.wolf_gain_from_food = params["wolves"]["gain_from_food"]
+    self.sheep_gain_from_food = params["sheep"]["gain_from_food"]
+    self.grass_regrowth_time = params["grass"]["regrowth_time"]
 
     ncells = self.width * self.height
     self.grass = pd.DataFrame(
@@ -46,31 +46,31 @@ class WolfSheep(no.Model):
     self.grass.loc[self.grass.fully_grown, "countdown"] = self.grass_regrowth_time
 
     self.wolves = pd.DataFrame(
-      index=pd.Index(name="id", data=no.df.unique_index(self.n_wolves)),
+      index=pd.Index(name="id", data=no.df.unique_index(n_wolves)),
       data={
-        "x": self.mc().ustream(self.n_wolves) * self.width,
-        "y": self.mc().ustream(self.n_wolves) * self.height,
-        "energy": (self.mc().ustream(self.n_wolves) + self.mc().ustream(self.n_wolves)) * self.wolf_gain_from_food
+        "x": self.mc().ustream(n_wolves) * self.width,
+        "y": self.mc().ustream(n_wolves) * self.height,
+        "energy": (self.mc().ustream(n_wolves) + self.mc().ustream(n_wolves)) * self.wolf_gain_from_food
       }
     )
     self.__assign_cell(self.wolves)
 
     self.sheep = pd.DataFrame(
-      index=pd.Index(name="id", data=no.df.unique_index(self.n_sheep)),
+      index=pd.Index(name="id", data=no.df.unique_index(n_sheep)),
       data={
-        "x": self.mc().ustream(self.n_sheep) * self.width,
-        "y": self.mc().ustream(self.n_sheep) * self.height,
-        "energy": (self.mc().ustream(self.n_sheep) + self.mc().ustream(self.n_sheep)) * self.sheep_gain_from_food
+        "x": self.mc().ustream(n_sheep) * self.width,
+        "y": self.mc().ustream(n_sheep) * self.height,
+        "energy": (self.mc().ustream(n_sheep) + self.mc().ustream(n_sheep)) * self.sheep_gain_from_food
       }
     )
     self.__assign_cell(self.sheep)
 
-    (self.ax_g, self.ax_w, self.ax_s, self.ax_t0, self.ax_wt, self.ax_st, self.ax_t1, self.ax_gt) = self.__init_plot()
-
     self.wolf_pop = [len(self.wolves)]
     self.sheep_pop = [len(self.sheep)]
-    self.grass_prop = [self.grass.fully_grown.mean()]
+    self.grass_prop = [100.0 * self.grass.fully_grown.mean()]
     self.t = [self.timeline().index()]
+
+    (self.ax_g, self.ax_w, self.ax_s, self.ax_t0, self.ax_wt, self.ax_st, self.ax_t1, self.ax_gt) = self.__init_plot()
 
     # no.log(self.wolves)
     # no.log(self.sheep)
@@ -83,8 +83,9 @@ class WolfSheep(no.Model):
     self.__step_wolves()
     self.__step_sheep()
 
+  def check(self):
     # record data
-    self.t.append(self.timeline().index()+1)
+    self.t.append(self.timeline().index())
     self.wolf_pop.append(len(self.wolves))
     self.sheep_pop.append(len(self.sheep))
     self.grass_prop.append(100.0 * self.grass.fully_grown.mean())
@@ -100,6 +101,7 @@ class WolfSheep(no.Model):
     if self.sheep.empty:
       no.log("Sheep have died out")
       self.halt()
+    return True
 
   def __step_grass(self):
     # grow grass
@@ -175,15 +177,15 @@ class WolfSheep(no.Model):
     ax0.set_axis_off()
 
     # wolf and sheep population
-    ax_wt = ax1.plot(0,len(self.wolves), color=WOLF_COLOUR)
-    ax_st = ax1.plot(0,len(self.sheep), color=SHEEP_COLOUR)
+    ax_wt = ax1.plot(self.t, self.wolf_pop, color=WOLF_COLOUR)
+    ax_st = ax1.plot(self.t, self.sheep_pop, color=SHEEP_COLOUR)
     ax1.set_xlim([0, 100])
-    ax1.set_ylim([0, max(self.n_wolves, self.n_sheep)])
+    ax1.set_ylim([0, max(self.wolf_pop[0], self.sheep_pop[0])])
     #ax1.set_xlabel("Step")
     ax1.legend(["Wolves", "Sheep"])
 
     # grass
-    ax_gt = ax2.plot(0, 100.0 * self.grass.fully_grown.mean(), color=GRASS_COLOUR)
+    ax_gt = ax2.plot(0, self.grass_prop[0], color=GRASS_COLOUR)
     ax2.set_xlim([0, 100])
     ax2.set_ylim([0.0, 100.0])
     ax2.legend(["% fully grown grass"])
