@@ -85,7 +85,7 @@ install:
       fi
 
 build_script:
-  - cmd: '%PYTHON%\python.exe setup.py install'
+  - cmd: '%PYTHON%\python.exe -m pip install .'
   - sh: |
       if [ "$CODECOV_BUILD" == "true" ]; then
       EXTRA_COMPILE_FLAGS=--coverage
@@ -95,7 +95,7 @@ build_script:
       source "${HOME}/.miniconda/etc/profile.d/conda.sh"
       conda activate conda-env
       fi
-      CFLAGS=$EXTRA_COMPILE_FLAGS pip install .
+      CFLAGS=$EXTRA_COMPILE_FLAGS python -m pip install .
 
 test_script:
   - cmd: '%PYTHON%\python.exe setup.py test'
