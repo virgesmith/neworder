@@ -80,9 +80,10 @@ install:
       if [ "$MINICONDA" == "true" ]; then
       scripts/create-conda-env.sh
       else
-      sudo apt update && sudo apt install -y pytest mpich libmpich-dev
+      sudo apt update && sudo apt install -y mpich libmpich-dev
       fi
       fi
+      python -m pip install pytest
 
 build_script:
   - cmd: '%PYTHON%\python.exe -m pip install .'
