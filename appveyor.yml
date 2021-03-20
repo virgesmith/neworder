@@ -72,7 +72,7 @@ install:
       Start-FileDownload 'https://github.com/microsoft/Microsoft-MPI/releases/download/v10.1.1/msmpisetup.exe'
       .\msmpisetup.exe -unattend # TODO this doesnt seem to do anything
       $python = $env:PYTHON + "\python.exe"
-      & $python -m pip install --upgrade pip wheel setuptools pytest --no-warn-script-location
+      & $python -m pip install --upgrade pip wheel setuptools mpi4py pytest --no-warn-script-location
   - sh: |
       if [ "$APPVEYOR_BUILD_WORKER_IMAGE" == "macOS" ]; then
       brew update && brew install open-mpi
@@ -83,20 +83,20 @@ install:
       sudo apt update && sudo apt install -y mpich libmpich-dev
       fi
       fi
-      python -m pip install pytest
+      python -m pip install mpi4py pytest
 
 build_script:
   - cmd: '%PYTHON%\python.exe -m pip install .'
   - sh: |
       if [ "$CODECOV_BUILD" == "true" ]; then
-      EXTRA_COMPILE_FLAGS=--coverage
+      export CFLAGS=--coverage
       gcc --version
       gcov --version
       elif [ "$MINICONDA" == "true" ]; then
       source "${HOME}/.miniconda/etc/profile.d/conda.sh"
       conda activate conda-env
       fi
-      CFLAGS=$EXTRA_COMPILE_FLAGS python -m pip install .
+      python -m pip install .
 
 test_script:
   - cmd: '%PYTHON%\python.exe -m pytest'
