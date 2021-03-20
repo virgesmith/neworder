@@ -2,8 +2,8 @@
 
 import os
 import glob
-from setuptools import setup, Extension
-from setuptools.command.build_ext import build_ext
+from setuptools import setup
+from pybind11.setup_helpers import Pybind11Extension, ParallelCompile
 import sys
 import setuptools
 
@@ -57,62 +57,36 @@ def defines(platform):
     ("NEWORDER_VERSION", version())
   ]
 
-class get_pybind_include(object):
-  """Helper class to determine the pybind11 include path
-
-  The purpose of this class is to postpone importing pybind11
-  until it is actually installed, so that the ``get_include()``
-  method can be invoked. """
-
-  def __str__(self):
-    import pybind11
-    return pybind11.get_include()
-
-
 ext_modules = [
-  Extension(
+  Pybind11Extension(
     'neworder',
     sources=list_files(['src'], ["cpp"]),
-    include_dirs=[
-      get_pybind_include(),
-    ],
-    depends=["VERSION"] + list_files(["src"], ["h"]),
-    language='c++'
+    define_macros=[("NEWORDER_VERSION", "0.3.0")],
+    depends=["setup.py", "VERSION"] + list_files(["src"], ["h"]),
+    cxx_std=17
   ),
 ]
 
-class BuildExt(build_ext):
-  """A custom build extension for adding compiler-specific options."""
-  # c_opts = {
-  #     'msvc': ['/EHsc'],
-  #     'unix': [],
-  # }
-  # l_opts = {
-  #     'msvc': [],
-  #     'unix': [],
-  # }
+# class BuildExt(build_ext):
+#   """A custom build extension for adding compiler-specific options."""
+#   # c_opts = {
+#   #     'msvc': ['/EHsc'],
+#   #     'unix': [],
+#   # }
+#   # l_opts = {
+#   #     'msvc': [],
+#   #     'unix': [],
+#   # }
 
-  # if sys.platform == 'darwin':
-  #   darwin_opts = ['-stdlib=libc++', '-mmacosx-version-min=10.7']
-  #   c_opts['unix'] += darwin_opts
-  #   l_opts['unix'] += darwin_opts
+#   # if sys.platform == 'darwin':
+#   #   darwin_opts = ['-stdlib=libc++', '-mmacosx-version-min=10.7']
+#   #   c_opts['unix'] += darwin_opts
+#   #   l_opts['unix'] += darwin_opts
 
-  def build_extensions(self):
-    ct = self.compiler.compiler_type
+#   def build_extensions(self):
+#     ct = self.compiler.compiler_type
 
-    # opts = self.c_opts.get(ct, [])
-    # link_opts = self.l_opts.get(ct, [])
-    # if ct == 'unix':
-    #   if True: #has_flag(self.compiler, '-fvisibility=hidden'):
-    #     opts.append('-fvisibility=hidden')
-
-    for ext in self.extensions:
-      print(self.distribution.get_version())
-      ext.define_macros = defines(ct)
-      ext.extra_compile_args = cxxflags(ct)
-      ext.extra_link_args = ldflags(ct)
-
-    build_ext.build_extensions(self)
+ParallelCompile(default=4).install()
 
 setup(
   name='neworder',
@@ -127,7 +101,6 @@ setup(
   install_requires=['numpy>=1.19.1', 'pandas>=1.0.5'],
   setup_requires=['pybind11>=2.5.0', 'pytest-runner'],
   tests_require=['pytest', 'mpi4py>=3.0.3'],
-  cmdclass={'build_ext': BuildExt},
   classifiers=[
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
