@@ -86,7 +86,7 @@ ext_modules = [
 #   def build_extensions(self):
 #     ct = self.compiler.compiler_type
 
-ParallelCompile(default=4).install()
+ParallelCompile().install()
 
 setup(
   name='neworder',

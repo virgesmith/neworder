@@ -95,7 +95,7 @@ build_script:
       source "${HOME}/.miniconda/etc/profile.d/conda.sh"
       conda activate conda-env
       fi
-      CFLAGS=$EXTRA_COMPILE_FLAGS python setup.py install
+      CFLAGS=$EXTRA_COMPILE_FLAGS pip install .
 
 test_script:
   - cmd: '%PYTHON%\python.exe setup.py test'
