@@ -6,4 +6,10 @@ requires = [
     "pytest"
 ]
 
+[tool.pytest.ini_options]
+minversion = "6.0"
+testpaths = [
+    "test"
+]
+
 build-backend = "setuptools.build_meta"
