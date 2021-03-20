@@ -98,13 +98,13 @@ build_script:
       CFLAGS=$EXTRA_COMPILE_FLAGS python -m pip install .
 
 test_script:
-  - cmd: '%PYTHON%\python.exe setup.py test'
+  - cmd: '%PYTHON%\python.exe -m pytest'
   - sh: |
       if [ "$MINICONDA" == "true" ]; then
       source "${HOME}/.miniconda/etc/profile.d/conda.sh"
       conda activate conda-env
       fi
-      python setup.py test && mpiexec -n 2 python setup.py test
+      python -m pytest && mpiexec -n 2 python -m pytest
       if [ "$CODECOV_BUILD" == "true" ]; then
       bash <(curl -s https://codecov.io/bash) -Z
       fi
