@@ -2,7 +2,7 @@
 
 ## Pip
 
-Bump [VERSION](./VERSION), then build and test. If ok, run this script, which packages a source distribution and uploads it to PyPI (credentials required):
+Bump version in `neworder/__init__.py`, then build and test. If ok, run this script, which packages a source distribution and uploads it to PyPI (credentials required):
 
 ```bash
 scripts/package.sh

@@ -60,7 +60,7 @@ pip install numpy pandas pybind11 mpi4py
 Now install the local package
 
 ```bash
-python setup.py install
+pip install -e .
 ```
 
 If you want to use a specific compiler you can do something like this:
@@ -113,7 +113,7 @@ and in parallel by running in MPI:
 ```bash
 mpiexec -n 2 pytest
 # or
-mpiexec -n 2 python setup.py test
+mpiexec -n 2 python -m pytest
 ```
 
 !!! warning "Parallel testing"
@@ -147,12 +147,12 @@ Merge branches/PRs into master and fix any CI issues (builds, tests, major code 
 
 If necessary, use `test.pypi.org` to upload a release candidate, which can then be installed to a model implementation for testing "in the wild".
 
-1. Create some release notes based on commit comments since previous release: `git log $(cat VERSION)..HEAD --oneline`
-2. Bump `VERSION`
+1. Create some release notes based on commit comments since previous release, e.g.: `git log 0.2.1..HEAD --oneline`
+2. Bump `__version__` in `neworder/__init__.py`
 3. Clean, rebuild, test, regenerate examples and code docs: `scripts/code_doc.sh`
 4. Commit changes
-5. Tag: `git tag -a $(cat VERSION) -m"release v$(cat VERSION)"`
-6. Push, including tag: `git push --atomic origin master $(cat VERSION)`
+5. Tag, e.g.: `git tag -a 0.3.0 -m"release v0.3.0"`
+6. Push, including tag e.g.: `git push --atomic origin master 0.3.0`
 7. Check tagged CI builds and docker image are ok
 8. Package and upload to PyPI: `scripts/package.sh`
 9. Update and check conda feedstock (if this doesn't happen automatically, see instructions [here](https://github.com/conda-forge/neworder-feedstock))

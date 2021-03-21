@@ -8,12 +8,11 @@ import neworder as no
 
 
 def test_basics():
-  with open("VERSION") as f:
-    assert f.readline().rstrip() == no.version()
 
+  # just check you can read the attrs/call the functions
   assert hasattr(no, "verbose")
   assert hasattr(no, "checked")
-  # just check you can call the functions
+  assert hasattr(no, "__version__")
   no.log("testing")
   no.log(1)
   no.log(no)

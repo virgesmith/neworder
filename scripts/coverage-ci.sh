@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CFLAGS="--coverage" ./setup.py install
+CFLAGS=--coverage python -m pip install -e .
 pytest
 
 bash <(curl -s https://codecov.io/bash)

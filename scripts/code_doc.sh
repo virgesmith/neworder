@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION=$(cat VERSION)
+VERSION=$(cat neworder/__init__.py |grep __version__|cut  -d' ' -d'=' -d'"' - -f2)
 
 sed -e "s/VERSION/${VERSION}/g" docs/examples/src.md_template > docs/examples/src.md
 

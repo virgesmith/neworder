@@ -25,7 +25,7 @@ def badge(t):
 def format_overloads(lines):
   for i, l in enumerate(lines):
     if l[:2] == "1." or l[:2] == "2." or l[:2] == "3." or l[:2] == "4.":
-      lines[i] = "```python\n" + l[2:] + "\n```"
+      lines[i] = "```python\n" + l[2:].replace("_neworder_core", "neworder") + "\n```"
   return lines
 
 def format_heading(l, a, t):
@@ -39,7 +39,7 @@ def format_docstr(m, t):
   for i,l in enumerate(lines):
     lines[i] = l.lstrip()
   if t in ["instance method", "function"]:
-    lines[0] = "```python\n" + lines[0] + "\n```"
+    lines[0] = "```python\n" + lines[0].replace("_neworder_core", "neworder") + "\n```"
   return "\n".join(lines) + "\n"
 
 
@@ -56,10 +56,11 @@ def recurse_attrs(m, parents, l, f):
       f.write("---\n\n")
     # if t == "module":
     #   l = 1
-    f.write(format_heading(l, [sm.__name__], t))
+    name = sm.__name__.replace("_neworder_core", "neworder")
+    f.write(format_heading(l, [name], t))
     f.write(format_docstr(sm, t))
     if "class" in t or "module" in t:
-      recurse_attrs(sm, parents + [sm.__name__], l+1, f)
+      recurse_attrs(sm, parents + [name], l+1, f)
   parents = parents[:-2]
 
 module = importlib.import_module(module_name)

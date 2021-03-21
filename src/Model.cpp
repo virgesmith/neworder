@@ -11,7 +11,7 @@
 no::Model::Model(std::unique_ptr<Timeline> timeline, const py::function& seeder)
   : m_timeline(std::move(timeline)), m_monteCarlo(seeder(no::env::rank.load(std::memory_order_relaxed)).cast<int32_t>())
 {
-  no::log("neworder %% model init: timeline=%% mc=%%"s % module_version() % m_timeline->repr() % m_monteCarlo.repr());
+  no::log("model init: timeline=%% mc=%%"s % m_timeline->repr() % m_monteCarlo.repr());
 }
 
 

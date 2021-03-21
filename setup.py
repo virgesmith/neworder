@@ -13,10 +13,14 @@ def readme():
   with open('README.md') as f:
     return f.read()
 
-def version():
-  """ The file VERSION in the project root is now the single source of version info """
-  with open("VERSION") as fd:
-    return fd.readline().rstrip()
+# def version():
+#   """ The __init__.py is now the single source of version info, but we can't import it here """
+#   with open("neworder/__init__.py") as fd:
+#     line = fd.readline().rstrip()
+#     if line.startswith("__version__"):
+#       return line.split("= ")[1]
+#   raise ValueError("__version__ not found")
+
 
 def list_files(dirs, exts, exclude=[]):
   files = []
@@ -45,52 +49,27 @@ def cxxflags(platform):
       "-fvisibility=hidden"
     ]
   elif platform == "msvc":
-    return ['/std:c++17', '/EHsc']
+    return ['/EHsc']
   else:
     return []
 
 def ldflags(_platform):
   return []
 
-def defines(platform):
-  return [
-    ("NEWORDER_VERSION", version())
-  ]
-
 ext_modules = [
   Pybind11Extension(
-    'neworder',
+    '_neworder_core',
     sources=list_files(['src'], ["cpp"]),
-    define_macros=[("NEWORDER_VERSION", "0.3.0")],
-    depends=["setup.py", "VERSION"] + list_files(["src"], ["h"]),
+    depends=["setup.py", "neworder/__init__.py"] + list_files(["src"], ["h"]),
     cxx_std=17
   ),
 ]
-
-# class BuildExt(build_ext):
-#   """A custom build extension for adding compiler-specific options."""
-#   # c_opts = {
-#   #     'msvc': ['/EHsc'],
-#   #     'unix': [],
-#   # }
-#   # l_opts = {
-#   #     'msvc': [],
-#   #     'unix': [],
-#   # }
-
-#   # if sys.platform == 'darwin':
-#   #   darwin_opts = ['-stdlib=libc++', '-mmacosx-version-min=10.7']
-#   #   c_opts['unix'] += darwin_opts
-#   #   l_opts['unix'] += darwin_opts
-
-#   def build_extensions(self):
-#     ct = self.compiler.compiler_type
 
 ParallelCompile().install()
 
 setup(
   name='neworder',
-  version=version(),
+  #version=version,
   author='Andrew P Smith',
   author_email='a.p.smith@leeds.ac.uk',
   url='https://neworder.readthedocs.io',
@@ -98,9 +77,9 @@ setup(
   long_description = readme(),
   long_description_content_type="text/markdown",
   ext_modules=ext_modules,
-  install_requires=['numpy>=1.19.1', 'pandas>=1.0.5'],
-  setup_requires=['pybind11>=2.5.0', 'pytest-runner'],
-  tests_require=['pytest', 'mpi4py>=3.0.3'],
+#  install_requires=['numpy>=1.19.1', 'pandas>=1.0.5'],
+#  setup_requires=['pybind11>=2.5.0', 'pytest-runner'],
+#  tests_require=['pytest', 'mpi4py>=3.0.3'],
   classifiers=[
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",

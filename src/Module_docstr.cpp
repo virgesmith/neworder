@@ -5,10 +5,6 @@ A dynamic microsimulation framework";
 
 // top-level functions
 
-const char* version_docstr = R"docstr(
-    Gets the module version
-)docstr";
-
 const char* log_docstr = R"docstr(
     The logging function. Prints obj to the console, annotated with process information
 )docstr";

@@ -990,15 +990,3 @@ verbose(verbose: bool = True) -> None
 Sets the verbose flag, which toggles detailed runtime logs
 
 
----
-
-## ![function](https://img.shields.io/badge/-function-red) `version`
-
-```python
-version() -> str
-```
-
-
-Gets the module version
-
-

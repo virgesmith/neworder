@@ -5,8 +5,6 @@
 
 namespace no {
 
-const char* module_version();
-
 // module-level attributes that should *not be modified directly* - call the env_init function. But note:
 // - python functions are exposed for modifying verbose and checked
 // - halt (if true) is reset in no::Model::run

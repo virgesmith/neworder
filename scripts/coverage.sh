@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# deprecated - see coverage-ci.sh
+
 # clean: ./setup.py clean doesnt work, so...
 touch VERSION
 

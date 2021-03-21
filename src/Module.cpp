@@ -23,15 +23,6 @@ void log_obj(const py::object& msg)
 
 }
 
-// jump through hoops as msvc seems to strip quotes from defines, so need to add them here
-#define STR2(x) #x
-#define STR(x) STR2(x)
-
-const char* no::module_version()
-{
-  return STR(NEWORDER_VERSION);
-}
-
 
 void init_env()
 {
@@ -62,7 +53,7 @@ void init_env()
 
 
 // python-visible log function defined above
-PYBIND11_MODULE(neworder, m)
+PYBIND11_MODULE(_neworder_core, m)
 {
   // py::options options;
   // options.disable_function_signatures();
@@ -72,8 +63,7 @@ PYBIND11_MODULE(neworder, m)
 
   // model control plus utility/diagnostics
 
-  m.def("version", no::module_version, version_docstr)
-   .def("log", log_obj, log_docstr, "obj"_a)
+  m.def("log", log_obj, log_docstr, "obj"_a)
    .def("run", no::Model::run, run_docstr, "model"_a)
    .def("verbose", [](bool v = true) { no::env::verbose.store(v, std::memory_order_relaxed); }, verbose_docstr, "verbose"_a = true)
    .def("checked", [](bool c = true) { no::env::checked.store(c, std::memory_order_relaxed); }, checked_docstr, "checked"_a = true);
