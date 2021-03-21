@@ -3,35 +3,35 @@
 environment:
   matrix:
 
-    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
-      PYTHON: "C:\\Python37-x64"
-      PYTHON_ARCH: 64
-      MSVC_VERSION: "Visual Studio 19 Win64"
+    # - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+    #   PYTHON: "C:\\Python37-x64"
+    #   PYTHON_ARCH: 64
+    #   MSVC_VERSION: "Visual Studio 19 Win64"
 
-    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
-      PYTHON: "C:\\Python38-x64"
-      PYTHON_ARCH: 64
-      MSVC_VERSION: "Visual Studio 19 Win64"
+    # - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+    #   PYTHON: "C:\\Python38-x64"
+    #   PYTHON_ARCH: 64
+    #   MSVC_VERSION: "Visual Studio 19 Win64"
 
-    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
-      PYTHON: "C:\\Python39-x64"
-      PYTHON_ARCH: 64
-      MSVC_VERSION: "Visual Studio 19 Win64"
+    # - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+    #   PYTHON: "C:\\Python39-x64"
+    #   PYTHON_ARCH: 64
+    #   MSVC_VERSION: "Visual Studio 19 Win64"
 
     # - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
     #   MINICONDA: "C:\\Miniconda38-x64"
 
-    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
-      PYTHON: "3.7"
-      APPVEYOR_YML_DISABLE_PS_LINUX: true
+    # - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
+    #   PYTHON: "3.7"
+    #   APPVEYOR_YML_DISABLE_PS_LINUX: true
 
-    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
-      PYTHON: "3.8"
-      APPVEYOR_YML_DISABLE_PS_LINUX: true
+    # - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
+    #   PYTHON: "3.8"
+    #   APPVEYOR_YML_DISABLE_PS_LINUX: true
 
-    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
-      PYTHON: "3.9"
-      APPVEYOR_YML_DISABLE_PS_LINUX: true
+    # - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
+    #   PYTHON: "3.9"
+    #   APPVEYOR_YML_DISABLE_PS_LINUX: true
 
     - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
       MINICONDA: true
@@ -47,13 +47,13 @@ environment:
       PYTHON: "3.7"
       APPVEYOR_YML_DISABLE_PS_LINUX: true
 
-    - APPVEYOR_BUILD_WORKER_IMAGE: macOS
-      PYTHON: "3.8"
-      APPVEYOR_YML_DISABLE_PS_LINUX: true
+    # - APPVEYOR_BUILD_WORKER_IMAGE: macOS
+    #   PYTHON: "3.8"
+    #   APPVEYOR_YML_DISABLE_PS_LINUX: true
 
-    - APPVEYOR_BUILD_WORKER_IMAGE: macOS
-      PYTHON: "3.9"
-      APPVEYOR_YML_DISABLE_PS_LINUX: true
+    # - APPVEYOR_BUILD_WORKER_IMAGE: macOS
+    #   PYTHON: "3.9"
+    #   APPVEYOR_YML_DISABLE_PS_LINUX: true
 
 stack: python %PYTHON%
 
@@ -83,20 +83,20 @@ install:
       sudo apt update && sudo apt install -y mpich libmpich-dev
       fi
       fi
-      python -m pip install mpi4py pytest
+      python -m pip install pytest
 
 build_script:
   - cmd: '%PYTHON%\python.exe -m pip install .'
   - sh: |
       if [ "$CODECOV_BUILD" == "true" ]; then
       export CFLAGS=--coverage
-      gcc --version
+      gcc --version # things go badly wrong is gcc and gcov versions arent in sync
       gcov --version
       elif [ "$MINICONDA" == "true" ]; then
       source "${HOME}/.miniconda/etc/profile.d/conda.sh"
       conda activate conda-env
       fi
-      python -m pip install .
+      python -m pip install -v -e .
 
 test_script:
   - cmd: '%PYTHON%\python.exe -m pytest'
