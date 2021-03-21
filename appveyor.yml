@@ -18,8 +18,8 @@ environment:
       PYTHON_ARCH: 64
       MSVC_VERSION: "Visual Studio 19 Win64"
 
-    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
-      MINICONDA: "C:\\Miniconda38-x64"
+    # - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+    #   MINICONDA: "C:\\Miniconda38-x64"
 
     - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
       PYTHON: "3.7"
