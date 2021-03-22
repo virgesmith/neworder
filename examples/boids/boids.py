@@ -5,9 +5,23 @@ import neworder as no
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
+# for 3d roations see https://stackoverflow.com/questions/6802577/rotation-of-3d-vector
+# from numpy import cross, eye, dot
+# from scipy.linalg import expm, norm
+
+# def M(axis, theta):
+#     return expm(cross(eye(3), axis/norm(axis)*theta))
+
+# v, axis, theta = [3,5,0], [4,4,1], 1.2
+# M0 = M(axis, theta)
+
+# print(dot(M0,v))
+## [ 2.74911638  4.77180932  1.91629719]
+
+
 PAUSE=1e-6
 
-TEST_MODE=False #True
+TEST_MODE=False#True
 
 class Boids(no.Model):
 
@@ -15,9 +29,15 @@ class Boids(no.Model):
     super().__init__(no.LinearTimeline(0.0, 1.0), no.MonteCarlo.deterministic_identical_stream)
 
     self.N = N
-    self.speed = 0.01
+    self.speed = 0.05
 
     self.range = 1.0
+
+    self.vision = 0.1
+    self.exclusion = 0.01
+    self.sep_wt = 1e-3
+    self.align_wt = 1e-2
+    self.cohere_wt = 1e-4
 
     if TEST_MODE:
       self.N = 2
@@ -44,50 +64,56 @@ class Boids(no.Model):
           "z": 0.0, #self.mc().ustream(N) * self.range,
           "vx": vx - np.mean(vx), # ensure v is balanced
           "vy": vy - np.mean(vy),
-          "vz": 0.0 #vz - np.mean(vz)
+          "vz": 0, #vz - np.mean(vz)
+          # "vx": 0.0,
+          # "vy": 0.0,
+          # "vz": 0.0
         }
       )
     self.__normalise_velocity(self.speed)
-    #no.log(np.sqrt(self.boids.vx ** 2 + self.boids.vy ** 2 + self.boids.vz ** 2))
 
     self.ax, self.g = self.__init_visualisation()
 
   def step(self):
 
-    vision = 0.5
-    exclusion = 0.1
-
-    sep_wt = 1e-5
-    align_wt = 1e-5
-    cohere_wt = 1e-5
-
     #no.log(self.boids)
-
-    # TODO can just work on v not pos?
-
     dx, dy, dz, d2 = self.__dists()
-    #no.log(d2)
-    nearest = np.where(np.amin(d2, axis=0) == d2, True, False)
-    #no.log(nearest)
-    #self.halt()
-    nearest_in_range = np.where(np.logical_and(nearest, d2 < exclusion**2), 1.0, 0.0)
-    #no.log(in_range)
+    mindists = np.tile(np.amin(d2,axis=0), self.N).reshape((self.N, self.N))
+    nearest = np.where(mindists == d2, True, False)
+    #print(np.argmin(d2,axis=0))
+    #np.savetxt("d2.csv", d2, delimiter=",")
 
-    self.__separate(nearest_in_range, dx, dy, dz, sep_wt)
-    #in_range = np.where(np.logical_and(np.logical_not(in_range), np.logical_and(d2 < vision**2, d2 >= exclusion**2)), 1.0, 0.0)
-    in_range = np.where(np.logical_and(d2 < vision**2, d2 >= exclusion**2), 1.0, 0.0)
-    self.__align(in_range, align_wt)
-    self.__cohere(in_range, dx, dy, dz, cohere_wt)
+    #print(nearest)
+    too_close = np.where(d2 < self.exclusion**2, 1.0, 0.0)
+    #print(too_close)
+    nearest_in_range = np.logical_and(nearest, too_close).astype(float) #, 1.0, 0.0)
+    #no.log(np.sum(nearest_in_range, axis=0))
+    #print(nearest_in_range)
+    #print(np.sum(nearest_in_range, axis=0))
+
+    self.__separate(nearest_in_range, dx, dy, dz, self.sep_wt)
+
+    # this masks the align/cohere steps for boids that need to separate
+    mask = np.repeat(1.0-np.sum(nearest_in_range, axis=0), self.N).reshape(self.N, self.N)
+    #print(mask)
+
+    in_range = np.where(d2 < self.vision**2, 1.0, 0.0)
+    #print(in_range)
+    in_range = np.logical_and(in_range, mask).astype(float)
+    #print(in_range)
+    self.__cohere(in_range, dx, dy, dz, self.cohere_wt)
+    self.__align(in_range, self.align_wt)
 
     #no.log(self.boids)
 
     self.__normalise_velocity(self.speed)
+    #assert np.allclose(np.sqrt(self.boids.vx.values ** 2 + self.boids.vy.values ** 2 + self.boids.vz.values ** 2), self.speed)
 
     self.boids.x = (self.boids.x + self.boids.vx * self.timeline().dt())
     self.boids.y = (self.boids.y + self.boids.vy * self.timeline().dt())
     #self.boids.z = (self.boids.z + self.boids.vz * self.timeline().dt())
 
-    self.__track()
+    #self.__track()
     self.__update_visualisation()
     #self.halt()
 
@@ -115,31 +141,29 @@ class Boids(no.Model):
     weights = 1.0 / np.sum(in_range, axis=0)
     weights[weights==np.inf] = 0.0
 
-    vx = in_range @ self.boids.vx.values @ weights
-    vy = in_range @ self.boids.vy.values @ weights
-    vz = in_range @ self.boids.vz.values @ weights
-    # no.log(vx)
-    # no.log(vy)
-    # no.log(vz)
+    #no.log(in_range)
+    #no.log(weights)
+
+    # matrix x vector <piecewise-x> vector = vector
+    vx = in_range @ self.boids.vx.values * weights
+    vy = in_range @ self.boids.vy.values * weights
+    vz = in_range @ self.boids.vz.values * weights
 
     self.boids.vx += weight * vx
     self.boids.vy += weight * vy
     #self.boids.vz += weight * vz
-    #self.halt()
 
   def __cohere(self, in_range, dx, dy, dz, weight):
-    #no.log(in_range)
     weights = 1.0 / np.sum(in_range, axis=0)
     weights[weights==np.inf] = 0.0
-    #no.log(weights)
     # compute vectors to centre of gravity of neighbours (if any)
+    # matrix * matrix * vector = vector
     delta_x = in_range @ dx @ weights
     delta_y = in_range @ dy @ weights
-    delta_z = in_range @ dz @ weights
-    # no.log(self.boids.x.values)
+    #delta_z = in_range @ dz @ weights
     self.boids.vx -= weight * delta_x / self.timeline().dt()
     self.boids.vy -= weight * delta_y / self.timeline().dt()
-    self.boids.vz -= weight * delta_z / self.timeline().dt()
+    #self.boids.vz -= weight * delta_z / self.timeline().dt()
 
   def __separate(self, in_range, dx, dy, dz, weight):
     #no.log(in_range)
@@ -149,16 +173,17 @@ class Boids(no.Model):
     # compute vectors to centre of gravity of neighbours (if any)
     delta_x = in_range @ dx @ weights
     delta_y = in_range @ dy @ weights
-    delta_z = in_range @ dz @ weights
+    #delta_z = in_range @ dz @ weights
     # no.log(self.boids.x.values)
     self.boids.vx += weight * delta_x / self.timeline().dt()
     self.boids.vy += weight * delta_y / self.timeline().dt()
-    self.boids.vz += weight * delta_z / self.timeline().dt()
+    #self.boids.vz += weight * delta_z / self.timeline().dt()
 
   def __track(self):
     """ adjust origin to CoG of flock, has the effect of camera tracking """
     self.boids.x -= self.boids.x.mean() - self.range/2
     self.boids.y -= self.boids.y.mean() - self.range/2
+    self.boids.z -= self.boids.z.mean() - self.range/2
 
 
   def __init_visualisation(self):
@@ -178,7 +203,7 @@ class Boids(no.Model):
     # plt.pause(PAUSE)
     # return ax, g
 
-    plt.figure(figsize=(6,6))
+    plt.figure(constrained_layout=True, figsize=(10,10))
     g = plt.scatter(self.boids.x, self.boids.y, s=20)
     plt.xlim(-2, 3)
     plt.ylim(-2, 3)
