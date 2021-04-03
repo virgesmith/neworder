@@ -17,16 +17,16 @@ class Boids(no.Model):
     super().__init__(no.LinearTimeline(0.0, 0.01), no.MonteCarlo.deterministic_identical_stream)
 
     self.N = N
-    self.speed = 1.0
+    self.speed = 0.5
 
     self.range = 1.0
 
-    self.vision = 0.1
-    self.exclusion = 0.1
+    self.vision = 0.2
+    self.exclusion = 0.01
 
-    self.sep_turn = TWO_PI / 36 # 10 degrees
-    self.align_turn = TWO_PI / 72
-    self.cohere_wt = TWO_PI / 72
+    self.sep_max_turn = TWO_PI / 180
+    self.align_max_turn = TWO_PI / 90
+    self.cohere_max_turn = TWO_PI / 90
 
     if TEST_MODE:
       self.N = 2
@@ -69,21 +69,18 @@ class Boids(no.Model):
     # print(nearest_in_range)
     # print(np.sum(nearest_in_range, axis=0))
 
-    #self.__separate(nearest_in_range, self.sep_turn * 5)
+    self.__separate(nearest_in_range, dx, dy, self.sep_max_turn)
 
     # this masks the align/cohere steps for boids that need to separate
-    #mask = np.repeat(1.0-np.sum(nearest_in_range, axis=0), self.N).reshape(self.N, self.N)
+    mask = np.repeat(1.0-np.sum(nearest_in_range, axis=0), self.N).reshape(self.N, self.N)
     #print(mask)
 
     in_range = np.where(d2e < self.vision**2, 1.0, 0.0)
     #print(in_range)
-    #in_range = np.logical_and(in_range, mask).astype(float)
+    in_range = np.logical_and(in_range, mask).astype(float)
     #print(in_range)
-    #self.__cohere(in_range, dx, dy, self.cohere_wt)
-    self.__align(in_range, self.align_turn)
-
-    #no.log(self.boids)
-    #assert np.allclose(np.sqrt(self.boids.vx.values ** 2 + self.boids.vy.values ** 2 + self.boids.vz.values ** 2), self.speed)
+    self.__cohere(in_range, dx, dy, self.cohere_max_turn)
+    self.__align(in_range, self.align_max_turn)
 
     self.boids.x = (self.boids.x + np.cos(self.boids.theta) * self.speed * self.timeline().dt())
     self.boids.y = (self.boids.y + np.sin(self.boids.theta) * self.speed * self.timeline().dt())
@@ -108,17 +105,17 @@ class Boids(no.Model):
     weights = 1.0 / np.sum(in_range, axis=0)
     weights[weights==np.inf] = 0.0
 
-    no.log("weights=%s" % weights)
+    #no.log("weights=%s" % weights)
 
     # matrix x vector <piecewise-x> vector = vector
     #delta = np.clip(in_range @ self.boids.theta * weights - self.boids.theta, -max_turn, max_turn)
     mean_vx = in_range @ np.cos(self.boids.theta) * weights
     mean_vy = in_range @ np.sin(self.boids.theta) * weights
-    no.log(mean_vx)
-    no.log(mean_vy)
+    # no.log(mean_vx)
+    # no.log(mean_vy)
     delta = np.clip(np.arctan2(mean_vy, mean_vx), -max_turn, max_turn)
     #delta = np.arctan2(mean_vy, mean_vx)
-    no.log("delta=%s" % delta)
+    # no.log("delta=%s" % delta)
     self.boids.theta = (self.boids.theta + delta) % TWO_PI
 
   def __cohere(self, in_range, dx, dy, max_turn):
@@ -131,13 +128,15 @@ class Boids(no.Model):
     heading = np.clip(np.arctan2(ybar, xbar), -max_turn, max_turn)
     self.boids.theta = (self.boids.theta + heading) % TWO_PI
 
-  def __separate(self, in_range, max_turn):
+  def __separate(self, in_range, dx, dy, max_turn):
     weights = 1.0 / np.sum(in_range, axis=0)
     weights[weights==np.inf] = 0.0
-    no.log(weights)
-    # get nearest neighbour's heading (if in range)
-    delta = np.clip((in_range @ self.boids.theta - self.boids.theta) * weights, -max_turn, max_turn)
-    no.log(delta.values)
+
+    x = in_range @ dx @ weights
+    y = in_range @ dy @ weights
+    heading = np.clip(np.arctan2(y, x), -max_turn, max_turn)
+    self.boids.theta = (self.boids.theta - heading) % TWO_PI
+
     # delta_y = in_range @ dy @ weights
     # # no.log(self.boids.x.values)
     # self.boids.vx += weight * delta_x / self.timeline().dt()
@@ -156,6 +155,7 @@ class Boids(no.Model):
     g = plt.scatter(self.boids.x, self.boids.y, s=20)
     plt.xlim(-0.5, 1.5)
     plt.ylim(-0.5, 1.5)
+    plt.axis("off")
 
     def on_keypress(event):
       if event.key == "p":
