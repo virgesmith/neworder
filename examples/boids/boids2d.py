@@ -14,19 +14,19 @@ TWO_PI = 2 * np.pi
 class Boids(no.Model):
 
   def __init__(self, N):
-    super().__init__(no.LinearTimeline(0.0, 0.01), no.MonteCarlo.deterministic_identical_stream)
+    super().__init__(no.LinearTimeline(0.0, 0.01), no.MonteCarlo.nondeterministic_stream)
 
     self.N = N
-    self.speed = 0.5
+    self.speed = 1.0
 
     self.range = 1.0
 
     self.vision = 0.2
     self.exclusion = 0.01
 
-    self.sep_max_turn = TWO_PI / 180
-    self.align_max_turn = TWO_PI / 90
-    self.cohere_max_turn = TWO_PI / 90
+    self.sep_max_turn = TWO_PI / 240 # 1.5 degrees
+    self.align_max_turn = TWO_PI / 72 # 5 degrees
+    self.cohere_max_turn = TWO_PI / 120 # 3 degrees
 
     if TEST_MODE:
       self.N = 2
@@ -52,33 +52,19 @@ class Boids(no.Model):
 
   def step(self):
 
-    #no.log(self.boids)
     dx, dy, d2 = self.__dists()
-    d2e = d2.copy()
-    np.fill_diagonal(d2e, np.inf) # distance excluding self
-    mindists = np.tile(np.amin(d2e, axis=0), self.N).reshape((self.N, self.N))
-    nearest = np.where(mindists == d2e, True, False)
-    #print(np.argmin(d2,axis=0))
-    #np.savetxt("d2.csv", d2, delimiter=",")
+    mindists = np.tile(np.amin(d2, axis=0), self.N).reshape((self.N, self.N))
+    nearest = np.where(mindists == d2, True, False)
 
-    #print(nearest)
     too_close = np.where(d2 < self.exclusion**2, 1.0, 0.0)
-    #print(too_close)
     nearest_in_range = np.logical_and(nearest, too_close).astype(float) #, 1.0, 0.0)
-    #no.log(np.sum(nearest_in_range, axis=0))
-    # print(nearest_in_range)
-    # print(np.sum(nearest_in_range, axis=0))
 
     self.__separate(nearest_in_range, dx, dy, self.sep_max_turn)
 
     # this masks the align/cohere steps for boids that need to separate
     mask = np.repeat(1.0-np.sum(nearest_in_range, axis=0), self.N).reshape(self.N, self.N)
-    #print(mask)
 
-    in_range = np.where(d2e < self.vision**2, 1.0, 0.0)
-    #print(in_range)
-    in_range = np.logical_and(in_range, mask).astype(float)
-    #print(in_range)
+    in_range = np.logical_and(np.where(d2 < self.vision**2, 1.0, 0.0), mask).astype(float)
     self.__cohere(in_range, dx, dy, self.cohere_max_turn)
     self.__align(in_range, self.align_max_turn)
 
@@ -97,7 +83,7 @@ class Boids(no.Model):
     dx -= dx.T
     dy -= dy.T
     d2 = dx**2 + dy**2
-    #np.fill_diagonal(d2, np.inf) # no self-influence
+    np.fill_diagonal(d2, np.inf) # no self-influence
     return (dx, dy, d2)
 
   def __align(self, in_range, max_turn):
@@ -105,17 +91,11 @@ class Boids(no.Model):
     weights = 1.0 / np.sum(in_range, axis=0)
     weights[weights==np.inf] = 0.0
 
-    #no.log("weights=%s" % weights)
-
+    # need to convert to x,y to average angles correctly
     # matrix x vector <piecewise-x> vector = vector
-    #delta = np.clip(in_range @ self.boids.theta * weights - self.boids.theta, -max_turn, max_turn)
     mean_vx = in_range @ np.cos(self.boids.theta) * weights
     mean_vy = in_range @ np.sin(self.boids.theta) * weights
-    # no.log(mean_vx)
-    # no.log(mean_vy)
     delta = np.clip(np.arctan2(mean_vy, mean_vx), -max_turn, max_turn)
-    #delta = np.arctan2(mean_vy, mean_vx)
-    # no.log("delta=%s" % delta)
     self.boids.theta = (self.boids.theta + delta) % TWO_PI
 
   def __cohere(self, in_range, dx, dy, max_turn):
@@ -137,12 +117,6 @@ class Boids(no.Model):
     heading = np.clip(np.arctan2(y, x), -max_turn, max_turn)
     self.boids.theta = (self.boids.theta - heading) % TWO_PI
 
-    # delta_y = in_range @ dy @ weights
-    # # no.log(self.boids.x.values)
-    # self.boids.vx += weight * delta_x / self.timeline().dt()
-    # self.boids.vy += weight * delta_y / self.timeline().dt()
-    #self.boids.theta = (self.boids.theta + delta) % TWO_PI
-
   def __track(self):
     """ adjust origin to CoG of flock, has the effect of camera tracking """
     self.boids.x -= self.boids.x.mean() - self.range/2
@@ -158,14 +132,10 @@ class Boids(no.Model):
     plt.axis("off")
 
     def on_keypress(event):
-      if event.key == "p":
-        self.halt()
-      # if event.key == "r":
-      #   no.run(self)
-      elif event.key == "q":
+      if event.key == "q":
         self.halt()
       else:
-       no.log("%s doesnt do anything. p to pause/resume, q to quit" % event.key)
+       no.log("press q to quit")
 
     fig.canvas.mpl_connect('key_press_event', on_keypress)
 
@@ -174,9 +144,5 @@ class Boids(no.Model):
   def __update_visualisation(self):
 
     self.g.set_offsets(np.c_[self.boids.x, self.boids.y])
-    # plt.xlim(np.min(self.boids.x), np.max(self.boids.x))
-    # plt.ylim(np.min(self.boids.y), np.max(self.boids.y))
-
-
     plt.pause(PAUSE)
 
