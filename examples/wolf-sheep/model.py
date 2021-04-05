@@ -11,21 +11,21 @@ params = {
     "height": 100
   },
   "wolves": {
-    "starting_population": 150,
+    "starting_population": 100,
     "reproduce": 0.05,
-    "speed": 2.4,
-    "speed_variance": 0.01,
+    "speed": 2.5,
+    "speed_variance": 0.05,
     "gain_from_food": 20
   },
   "sheep": {
     "starting_population": 300,
     "reproduce": 0.04,
     "speed": 0.9,
-    "speed_variance": 0.01,
+    "speed_variance": 0.02,
     "gain_from_food": 4
   },
   "grass": {
-    "regrowth_time": 30
+    "regrowth_time": 10
   }
 }
 

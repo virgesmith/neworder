@@ -166,6 +166,7 @@ class WolfSheep(no.Model):
     # eat grass if available
     self.sheep.energy += self.grass.loc[self.sheep.cell, "fully_grown"].values * self.sheep_gain_from_food
     self.grass.loc[self.sheep.cell, "fully_grown"] = False
+    self.grass.loc[self.sheep.cell, "countdown"] = self.grass_regrowth_time
 
     # remove dead
     self.sheep = self.sheep[self.sheep.energy >= 0]
