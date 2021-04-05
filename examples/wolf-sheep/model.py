@@ -3,6 +3,7 @@ import neworder as no
 from wolf_sheep import WolfSheep
 import matplotlib.pyplot as plt
 
+#no.verbose()
 
 params = {
   "grid": {
@@ -13,12 +14,14 @@ params = {
     "starting_population": 150,
     "reproduce": 0.05,
     "speed": 2.4,
+    "speed_variance": 0.01,
     "gain_from_food": 20
   },
   "sheep": {
     "starting_population": 300,
     "reproduce": 0.04,
     "speed": 0.9,
+    "speed_variance": 0.01,
     "gain_from_food": 4
   },
   "grass": {
@@ -36,5 +39,7 @@ m = WolfSheep(params)
 #   c = int(r.cell)
 #   print(r.x, r.y, c, m.grass.loc[c, "x"], m.grass.loc[c,"y"])
 
+
 no.run(m)
+
 
