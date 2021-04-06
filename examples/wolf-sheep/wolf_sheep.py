@@ -79,8 +79,8 @@ class WolfSheep(no.Model):
     (self.ax_g, self.ax_w, self.ax_s,
      self.ax_t1, self.ax_wt, self.ax_st,
      self.ax_t2, self.ax_gt,
-     self.ax_t3, self.ax_ws, self.ax_ss,
-     self.ax_t4, self.ax_wv, self.ax_sv) = self.__init_plot()
+     self.ax_t3, self.ax_ws, self.b_ws,
+     self.ax_t4, self.ax_ss, self.b_ss) = self.__init_plot()
 
     # no.log(self.wolves)
     # no.log(self.sheep)
@@ -212,20 +212,20 @@ class WolfSheep(no.Model):
     ax2.set_ylabel("% fully grown grass")
     ax2.set_xlabel("Step")
 
-    # wolf and sheep speed
-    ax_ws = ax3.plot(self.t, self.wolf_speed, color=WOLF_COLOUR)
-    ax_ss = ax3.plot(self.t, self.sheep_speed, color=SHEEP_COLOUR)
-    ax3.set_xlim([0, 100])
-    ax3.set_ylim([0, max(self.wolf_speed[0], self.sheep_speed[0])])
-    ax3.set_ylabel("Average speed")
+    # wolf speed distribution
 
-    # wolf and sheep speed variance
-    ax_wv = ax4.plot(self.t, self.wolf_speed_var[0], color=WOLF_COLOUR)
-    ax_sv = ax4.plot(self.t, self.sheep_speed_var[0], color=SHEEP_COLOUR)
-    ax4.set_xlim([0, 100])
-    ax4.set_ylim([0, max(self.wolf_speed_var[0], self.sheep_speed_var[0])])
-    ax4.set_ylabel("Speed variance")
-    ax4.set_xlabel("Step")
+    bins = np.linspace(0, self.init_wolf_speed * 3.0,51)
+    width = self.init_wolf_speed * 3.0 / 50
+    _, b_ws, ax_ws = ax3.hist([self.init_wolf_speed], bins=bins, width=width, color=WOLF_COLOUR)
+    #ax3.set_xlabel("Speed distribution")
+    ax3.axvline(self.init_wolf_speed)
+
+    # sheep speed distribution
+    bins = np.linspace(0, self.init_sheep_speed * 3.0,51)
+    width = self.init_sheep_speed * 3.0 / 50
+    _, b_ss, ax_ss = ax4.hist([self.init_sheep_speed], bins=bins, width=width, color=SHEEP_COLOUR)
+    ax4.set_xlabel("Speed distribution")
+    ax4.axvline(self.init_sheep_speed)
 
     plt.tight_layout()
     #plt.pause(PAUSE)
@@ -241,8 +241,8 @@ class WolfSheep(no.Model):
     return ax_g, ax_w, ax_s, \
            ax1, ax_wt, ax_st, \
            ax2, ax_gt, \
-           ax3, ax_ws, ax_ss, \
-           ax4, ax_wv, ax_sv
+           ax3, ax_ws, b_ws, \
+           ax4, ax_ss, b_ss
 
 
   def __update_plot(self):
@@ -250,21 +250,31 @@ class WolfSheep(no.Model):
     self.ax_w.set_offsets(np.c_[self.wolves.x, self.wolves.y])
     self.ax_s.set_offsets(np.c_[self.sheep.x, self.sheep.y])
 
-    def __update_axis(ax, s0, s1, t, d0, d1):
-      s0[0].set_data(t, d0)
-      s1[0].set_data(t, d1)
-      ax.set_xlim([0,t[-1]])
-      ax.set_ylim([0,max(max(d0), max(d1))])
+    # def __update_axis(ax, s0, s1, t, d0, d1):
+    #   s0[0].set_data(t, d0)
+    #   s1[0].set_data(t, d1)
+    #   ax.set_xlim([0,t[-1]])
+    #   ax.set_ylim([0,max(max(d0), max(d1))])
 
-    __update_axis(self.ax_t1, self.ax_wt, self.ax_st, self.t, self.wolf_pop, self.sheep_pop)
+    # __update_axis(self.ax_t1, self.ax_wt, self.ax_st, self.t, self.wolf_pop, self.sheep_pop)
+    self.ax_wt[0].set_data(self.t, self.wolf_pop)
+    self.ax_st[0].set_data(self.t, self.sheep_pop)
+    self.ax_t1.set_xlim([0,self.t[-1]])
+    self.ax_t1.set_ylim([0,max(max(self.wolf_pop), max(self.sheep_pop))])
 
     self.ax_gt[0].set_data(self.t, self.grass_prop)
     self.ax_t2.set_xlim([0,self.t[-1]])
 
-    __update_axis(self.ax_t3, self.ax_ws, self.ax_ss, self.t, self.wolf_speed, self.sheep_speed)
-    __update_axis(self.ax_t4, self.ax_wv, self.ax_sv, self.t, self.wolf_speed_var, self.sheep_speed_var)
+    n, bins = np.histogram(self.wolves.speed, bins=self.b_ws)
+    for rect, h in zip(self.ax_ws, n/len(self.wolves)):
+      rect.set_height(h)
+    self.ax_t3.set_ylim([0, max(n/len(self.wolves))])
+
+    n, bins = np.histogram(self.sheep.speed, bins=self.b_ss)
+    for rect, h in zip(self.ax_ss, n/len(self.sheep)):
+      rect.set_height(h)
+    self.ax_t4.set_ylim([0, max(n/len(self.sheep))])
 
     plt.pause(PAUSE)
-
     #plt.savefig("/tmp/wolf-sheep%04d.png" % self.timeline().index(), dpi=80)
 
