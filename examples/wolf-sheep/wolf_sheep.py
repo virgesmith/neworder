@@ -5,7 +5,7 @@ import neworder as no
 
 import matplotlib.pyplot as plt
 
-PAUSE=0.001
+PAUSE=1e-6
 
 WOLF_COLOUR = "black"
 SHEEP_COLOUR = "red"
@@ -40,12 +40,10 @@ class WolfSheep(no.Model):
       data={
         "x": np.tile(np.arange(self.width) + 0.5, self.height),
         "y": np.repeat(np.arange(self.height) + 0.5, self.width),
-        "fully_grown": self.mc().sample(ncells, [0.5, 0.5]).astype(bool), # equal likelihood
-        "countdown": (self.mc().ustream(ncells) * self.grass_regrowth_time).astype(int)
+        # 50% initial probability of being fully grown, other states uniform
+        "countdown": self.mc().sample(ncells, [0.5] + [0.5/(self.grass_regrowth_time-1)]*(self.grass_regrowth_time-1))
       }
     )
-    # adjust grass countdown (to max) for fully grown
-    self.grass.loc[self.grass.fully_grown, "countdown"] = self.grass_regrowth_time
 
     self.wolves = pd.DataFrame(
       index=pd.Index(name="id", data=no.df.unique_index(n_wolves)),
@@ -71,7 +69,7 @@ class WolfSheep(no.Model):
 
     self.wolf_pop = [len(self.wolves)]
     self.sheep_pop = [len(self.sheep)]
-    self.grass_prop = [100.0 * self.grass.fully_grown.mean()]
+    self.grass_prop = [100.0 * len(self.grass[self.grass.countdown==0])/len(self.grass)]
     self.wolf_speed = [self.wolves.speed.mean()]
     self.sheep_speed = [self.sheep.speed.mean()]
     self.wolf_speed_var = [self.wolves.speed.var()]
@@ -104,7 +102,7 @@ class WolfSheep(no.Model):
     self.t.append(self.timeline().index())
     self.wolf_pop.append(len(self.wolves))
     self.sheep_pop.append(len(self.sheep))
-    self.grass_prop.append(100.0 * self.grass.fully_grown.mean())
+    self.grass_prop.append(100.0 * len(self.grass[self.grass.countdown==0])/len(self.grass))
     self.wolf_speed.append(self.wolves.speed.mean())
     self.sheep_speed.append(self.sheep.speed.mean())
     self.wolf_speed_var.append(self.wolves.speed.var())
@@ -121,10 +119,7 @@ class WolfSheep(no.Model):
 
   def __step_grass(self):
     # grow grass
-    self.grass.countdown -= 1
-    just_grown = (~self.grass.fully_grown) & (self.grass.countdown <= 0)
-    self.grass.loc[just_grown, "fully_grown"] = True
-    self.grass.loc[just_grown, "countdown"] = self.grass_regrowth_time
+    self.grass.countdown = np.clip(self.grass.countdown-1, 0, None)
 
   def __step_wolves(self):
     # move wolves (wrapped) and update cell
@@ -164,9 +159,9 @@ class WolfSheep(no.Model):
     self.__assign_cell(self.sheep)
 
     # eat grass if available
-    self.sheep.energy += self.grass.loc[self.sheep.cell, "fully_grown"].values * self.sheep_gain_from_food
-    self.grass.loc[self.sheep.cell, "fully_grown"] = False
-    self.grass.loc[self.sheep.cell, "countdown"] = self.grass_regrowth_time
+    grass_available = self.grass.loc[self.sheep.cell]
+    self.sheep.energy += (grass_available.countdown.values == 0) * self.sheep_gain_from_food
+    self.grass.loc[self.sheep.cell, "countdown"] = self.grass.loc[self.sheep.cell, "countdown"].apply(lambda c: self.grass_regrowth_time if c == 0 else c)
 
     # remove dead
     self.sheep = self.sheep[self.sheep.energy >= 0]
