@@ -25,7 +25,7 @@ params = {
     "gain_from_food": 4
   },
   "grass": {
-    "regrowth_time": 10
+    "regrowth_time": 12
   }
 }
 

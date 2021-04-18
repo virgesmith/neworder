@@ -5,8 +5,6 @@ import neworder as no
 
 import matplotlib.pyplot as plt
 
-PAUSE=1e-6
-
 WOLF_COLOUR = "black"
 SHEEP_COLOUR = "red"
 GRASS_COLOUR = "green"
@@ -110,10 +108,8 @@ class WolfSheep(no.Model):
 
     self.__update_plot()
 
-    if self.wolves.empty:
-      no.log("Wolves have died out")
-    if self.sheep.empty:
-      no.log("Sheep have died out")
+    if self.wolves.empty and self.sheep.empty:
+      no.log("Wolves and sheep have died out")
       self.halt()
     return True
 
@@ -179,6 +175,9 @@ class WolfSheep(no.Model):
     agents["cell"] = (agents.x.astype(int) + self.width * agents.y.astype(int)).astype(int)
 
   def __init_plot(self):
+
+    plt.ion()
+
     self.figs = plt.figure(figsize=(15,5))
     self.figs.suptitle("[q to quit]", y=0.05, x= 0.05)
     gs = self.figs.add_gridspec(2, 3)
@@ -201,7 +200,6 @@ class WolfSheep(no.Model):
     ax_st = ax1.plot(self.t, self.sheep_pop, color=SHEEP_COLOUR)
     ax1.set_xlim([0, 100])
     ax1.set_ylim([0, max(self.wolf_pop[0], self.sheep_pop[0])])
-    #ax1.set_xlabel("Step")
     ax1.set_ylabel("Population")
     ax1.legend(["Wolves", "Sheep"])
 
@@ -228,15 +226,14 @@ class WolfSheep(no.Model):
     ax4.axvline(self.init_sheep_speed)
 
     plt.tight_layout()
-    #plt.pause(PAUSE)
-    plt.ion()
-    #plt.show()
 
     def on_keypress(event):
       if event.key == "q":
         self.halt()
 
     self.figs.canvas.mpl_connect('key_press_event', on_keypress)
+
+    self.figs.canvas.flush_events()
 
     return ax_g, ax_w, ax_s, \
            ax1, ax_wt, ax_st, \
@@ -250,13 +247,6 @@ class WolfSheep(no.Model):
     self.ax_w.set_offsets(np.c_[self.wolves.x, self.wolves.y])
     self.ax_s.set_offsets(np.c_[self.sheep.x, self.sheep.y])
 
-    # def __update_axis(ax, s0, s1, t, d0, d1):
-    #   s0[0].set_data(t, d0)
-    #   s1[0].set_data(t, d1)
-    #   ax.set_xlim([0,t[-1]])
-    #   ax.set_ylim([0,max(max(d0), max(d1))])
-
-    # __update_axis(self.ax_t1, self.ax_wt, self.ax_st, self.t, self.wolf_pop, self.sheep_pop)
     self.ax_wt[0].set_data(self.t, self.wolf_pop)
     self.ax_st[0].set_data(self.t, self.sheep_pop)
     self.ax_t1.set_xlim([0,self.t[-1]])
@@ -268,13 +258,13 @@ class WolfSheep(no.Model):
     n, bins = np.histogram(self.wolves.speed, bins=self.b_ws)
     for rect, h in zip(self.ax_ws, n/len(self.wolves)):
       rect.set_height(h)
-    self.ax_t3.set_ylim([0, max(n/len(self.wolves))])
+    self.ax_t3.set_ylim([0, max(n/max(len(self.wolves), 1))])
 
     n, bins = np.histogram(self.sheep.speed, bins=self.b_ss)
     for rect, h in zip(self.ax_ss, n/len(self.sheep)):
       rect.set_height(h)
-    self.ax_t4.set_ylim([0, max(n/len(self.sheep))])
+    self.ax_t4.set_ylim([0, max(n/max(len(self.sheep), 1))])
 
-    plt.pause(PAUSE)
     #plt.savefig("/tmp/wolf-sheep%04d.png" % self.timeline().index(), dpi=80)
+    self.figs.canvas.flush_events()
 
