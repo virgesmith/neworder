@@ -5,8 +5,6 @@ import neworder as no
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-PAUSE=1e-6
-
 class NBody(no.Model):
 
   def __init__(self, N, G, dt):
@@ -111,10 +109,13 @@ class NBody(no.Model):
 
   def __init_visualisation(self):
     # https://stackoverflow.com/questions/41602588/matplotlib-3d-scatter-animations
+    plt.ion()
     plt.style.use('dark_background')
     # axes instance
-    fig = plt.figure(figsize=(6,6))
-    ax = Axes3D(fig)
+    self.fig = plt.figure(figsize=(8,8))
+    self.fig.suptitle("[q to quit]", y=0.05, x= 0.05)
+    ax = Axes3D(self.fig)
+    self.ax = ax
 
     g = ax.scatter(self.bodies.x, self.bodies.y, self.bodies.z, c=self.bodies.index.values, s=self.bodies.m * 5000 / self.bodies.m.sum())
     ax.set_xlim(-0.5,0.5)
@@ -124,11 +125,18 @@ class NBody(no.Model):
     ax.yaxis.set_ticklabels([])
     ax.zaxis.set_ticklabels([])
     ax.set_axis_off()
-    plt.pause(PAUSE)
+    self.fig.canvas.flush_events()
+
+    def on_keypress(event):
+      if event.key == "q":
+        self.halt()
+    self.fig.canvas.mpl_connect('key_press_event', on_keypress)
+
     return g
 
   def __update_visualisation(self):
     self.g._offsets3d = (self.bodies.x, self.bodies.y, self.bodies.z)
+    self.fig.canvas.draw()
+    self.fig.canvas.flush_events()
     #plt.savefig("/tmp/n-body%04d.png" % i)
-    plt.pause(PAUSE)
 
