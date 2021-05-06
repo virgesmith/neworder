@@ -46,27 +46,27 @@ class NEWORDER_EXPORT NoTimeline final : public Timeline
 public:
   NoTimeline() : m_stepped(false) { }
 
-  virtual ~NoTimeline() = default;
+  ~NoTimeline() override = default;
   NoTimeline(const NoTimeline&) = default;
   NoTimeline& operator=(const NoTimeline&) = default;
   NoTimeline(NoTimeline&&) = default;
   NoTimeline& operator=(NoTimeline&&) = default;
 
   // the actual types may differ in derived classes
-  py::object time() const;
-  py::object start() const;
-  py::object end() const;
+  py::object time() const override;
+  py::object start() const override;
+  py::object end() const override;
 
-  int64_t index() const;
-  int64_t nsteps() const;
-  double dt() const;
+  int64_t index() const override;
+  int64_t nsteps() const override;
+  double dt() const override;
 
-  virtual void next();
+  void next() override;
 
-  bool at_end() const;
+  bool at_end() const override;
 
   // used by python __repr__
-  std::string repr() const;
+  std::string repr() const override;
 
 private:
   // flag whether we've done the arbitrary step
@@ -84,27 +84,27 @@ public:
   // Open-ended timeline. Requires a call to halt() in the step() method to terminate the model run
   LinearTimeline(double start, double step);
 
-  virtual ~LinearTimeline() = default;
+  ~LinearTimeline() override = default;
 
   LinearTimeline(const LinearTimeline&) = default;
   LinearTimeline& operator=(const LinearTimeline&) = default;
   LinearTimeline(LinearTimeline&&) = default;
   LinearTimeline& operator=(LinearTimeline&&) = default;
 
-  py::object time() const;
-  py::object start() const;
-  py::object end() const;
+  py::object time() const override;
+  py::object start() const override;
+  py::object end() const override;
 
-  int64_t index() const;
-  int64_t nsteps() const;
-  double dt() const;
+  int64_t index() const override;
+  int64_t nsteps() const override;
+  double dt() const override;
 
-  void next();
+  void next() override;
 
-  bool at_end() const;
+  bool at_end() const override;
 
   // used by python __repr__
-  std::string repr() const;
+  std::string repr() const override;
 
 private:
   size_t m_index;
@@ -121,26 +121,26 @@ class NEWORDER_EXPORT NumericTimeline final : public Timeline
 public:
   NumericTimeline(const std::vector<double>& times);
 
-  virtual ~NumericTimeline() = default;
+  ~NumericTimeline() override = default;
 
   NumericTimeline(const NumericTimeline&) = default;
   NumericTimeline& operator=(const NumericTimeline&) = default;
   NumericTimeline(NumericTimeline&&) = default;
   NumericTimeline& operator=(NumericTimeline&&) = default;
 
-  py::object time() const;
-  py::object start() const;
-  py::object end() const;
+  py::object time() const override;
+  py::object start() const override;
+  py::object end() const override;
 
-  int64_t index() const;
-  int64_t nsteps() const;
-  double dt() const;
+  int64_t index() const override;
+  int64_t nsteps() const override;
+  double dt() const override;
 
-  void next();
+  void next() override;
 
-  bool at_end() const;
+  bool at_end() const override;
 
-  std::string repr() const;
+  std::string repr() const override;
 
 private:
   size_t m_index;
@@ -159,26 +159,26 @@ public:
   // Open-ended
   CalendarTimeline(time_point start, size_t step, char unit);
 
-  virtual ~CalendarTimeline() = default;
+  ~CalendarTimeline() override = default;
 
   CalendarTimeline(const CalendarTimeline&) = default;
   CalendarTimeline& operator=(const CalendarTimeline&) = default;
   CalendarTimeline(CalendarTimeline&&) = default;
   CalendarTimeline& operator=(CalendarTimeline&&) = default;
 
-  py::object time() const;
-  py::object start() const;
-  py::object end() const;
+  py::object time() const override;
+  py::object start() const override;
+  py::object end() const override;
 
-  int64_t index() const;
-  int64_t nsteps() const;
-  double dt() const;
+  int64_t index() const override;
+  int64_t nsteps() const override;
+  double dt() const override;
 
-  void next();
+  void next() override;
 
-  bool at_end() const;
+  bool at_end() const override;
 
-  std::string repr() const;
+  std::string repr() const override;
 
 private:
 
