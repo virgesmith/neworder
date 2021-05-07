@@ -127,10 +127,7 @@ class NBody(no.Model):
     ax.set_axis_off()
     self.fig.canvas.flush_events()
 
-    def on_keypress(event):
-      if event.key == "q":
-        self.halt()
-    self.fig.canvas.mpl_connect('key_press_event', on_keypress)
+    self.fig.canvas.mpl_connect('key_press_event', lambda event: self.halt() if event.key == "q" else None)
 
     return g
 

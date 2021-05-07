@@ -179,7 +179,7 @@ class WolfSheep(no.Model):
     plt.ion()
 
     self.figs = plt.figure(figsize=(15,5))
-    self.figs.suptitle("[q to quit]", y=0.05, x= 0.05)
+    self.figs.suptitle("[q to quit, s to save, f toggles full screen]", y=0.05, x=0.15)
     gs = self.figs.add_gridspec(2, 3)
     ax0 = self.figs.add_subplot(gs[:, 0])
     ax1 = self.figs.add_subplot(gs[0, 1])
@@ -227,11 +227,7 @@ class WolfSheep(no.Model):
 
     plt.tight_layout()
 
-    def on_keypress(event):
-      if event.key == "q":
-        self.halt()
-
-    self.figs.canvas.mpl_connect('key_press_event', on_keypress)
+    self.figs.canvas.mpl_connect('key_press_event', lambda event: self.halt() if event.key == "q" else None)
 
     self.figs.canvas.flush_events()
 
