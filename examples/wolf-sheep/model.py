@@ -31,15 +31,6 @@ params = {
 
 m = WolfSheep(params)
 
-# test cell assignment
-# for _,r in m.wolves.iterrows():
-#   c = int(r.cell)
-#   print(r.x, r.y, c, m.grass.loc[c, "x"], m.grass.loc[c,"y"])
-# for _,r in m.sheep.iterrows():
-#   c = int(r.cell)
-#   print(r.x, r.y, c, m.grass.loc[c, "x"], m.grass.loc[c,"y"])
-
-
 no.run(m)
 
 
