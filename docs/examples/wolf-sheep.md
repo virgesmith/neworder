@@ -6,7 +6,6 @@ Another implementation of a classic agent-based model
 
 {{ include_snippet("./docs/examples/src.md", show_filename=False) }}
 
-
 ## Implementation
 
 Rather than representing the agents (wolves, sheep, and grass) as objects, as would be typical in packages like [netlogo](https://ccl.northwestern.edu/netlogo/) or [mesa](https://mesa.readthedocs.io/en/stable/), they are represented as individual rows in pandas DataFrames, which permits efficient vectorised operations on them. Grass grows in fixed "cells" which are used to process interactions. The wolves and sheep roam about randomly at a fixed speed: sheep can only eat grass that is fully grown in the cell they currently occupy, and wolves can only eat sheep within the cell they both occupy.

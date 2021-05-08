@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=$(cat neworder/__init__.py |grep __version__|cut  -d' ' -d'=' -d'"' - -f2)
+version=$(grep __version__ neworder/__init__.py | cut  -d' ' -d'=' -d'"' - -f2)
 
 # package as source dist
 python setup.py sdist
