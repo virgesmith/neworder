@@ -1,5 +1,5 @@
 ---
-title: 'neworder: A dynamic microsimulation framework for python'
+title: 'neworder: a dynamic microsimulation framework for python'
 tags:
   - Python
   - Pybind11
@@ -34,7 +34,7 @@ The *neworder* framework is designed to be as unrestrictive and flexible as poss
 
 It supports both serial and parallel execution modes, with the latter using MPI to distribute computations for large populations or to perform sensitivity or convergence analyses. *neworder* runs as happily on a desktop PC as it does on a HPC cluster.
 
-*neworder* was inspired by @government_of_canada_modgen_2009-1 and, to a lesser extent, the python-based @liam2_nodate tool, and can be thought of as a powerful best-of-both-worlds hybrid of MODGEN and LIAM2.
+*neworder* was inspired by MODGEN [@government_of_canada_modgen_2009-1] and, to a lesser extent, the python-based LIAM2 [@noauthor_liam2_nodate] tool, and can be thought of as a powerful best-of-both-worlds hybrid of MODGEN and LIAM2.
 
 Both MODGEN and LIAM2 require their models to be specified in proprietary languages (based on C++ and yaml, respectively), whereas our framework eliminates the extra learning curve as users simply define their models in standard python code.
 
@@ -42,7 +42,7 @@ Whilst MODGEN supports parallel execution, LIAM2 does not. MODGEN is very restri
 
 Both MODGEN and LIAM2 require manual installation and configuration of an environment in order to develop models; *neworder* and its dependencies can simply be installed with a single command.
 
-The framework is comprehensively documented (@smith_neworder_nodate) and specifically provides detailed examples that are translations of MODGEN models from @belanger_microsimulation_2017 and Statistics Canada [@government_of_canada_general_2009, @government_of_canada_modgen_2009], demonstrating how *neworder* implementations can be both simpler and more performant (see the Mortality example in the documentation [@smith_neworder_nodate]).
+The framework is comprehensively documented [@smith_neworder_2021] and specifically provides detailed examples that are translations of MODGEN models from @belanger_microsimulation_2017 and Statistics Canada [@government_of_canada_general_2009, @government_of_canada_modgen_2009], demonstrating how *neworder* implementations can be both simpler and more performant (see the Mortality example in the documentation).
 
 Part of the design ethos is not to reinvent the wheel and leverage the huge range of statistical functions in packages like *numpy* and *scipy*. However, functions are provided where there is a useful niche function or a major efficiency gain to be had. An example of the former are methods provided to sample extremely efficiently from non-homogeneous Poisson processes using the Lewis-Shedler algorithm [@lewis_simulation_1979], and the ability to perform Markov transitions *in situ* in a pandas dataframe, both of which result in at least a factor-of-ten performance gain.
 
