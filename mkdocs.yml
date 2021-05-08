@@ -18,7 +18,8 @@ markdown_extensions:
   - toc:
       permalink: "¶"
   - admonition
-  - codehilite
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
   - pymdownx.arithmatex:
       generic: true
 
