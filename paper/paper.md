@@ -1,5 +1,5 @@
 ---
-title: 'neworder: A dynamic microsimulation framework for Python'
+title: 'neworder: A dynamic microsimulation framework for python'
 tags:
   - Python
   - Pybind11
@@ -12,7 +12,7 @@ authors:
     orcid: 0000-0002-9951-6642
     affiliation: 1
 affiliations:
- - name: School of Law, University of Leeds
+ - name: School of Law, University of Leeds, UK
    index: 1
    date: 7 May 2021
 bibliography: paper.bib
@@ -42,15 +42,15 @@ Whilst MODGEN supports parallel execution, LIAM2 does not. MODGEN is very restri
 
 Both MODGEN and LIAM2 require manual installation and configuration of an environment in order to develop models; *neworder* and its dependencies can simply be installed with a single command.
 
-The framework is comprehensively documented (@smith_neworder_nodate) and specifically provides detailed examples that are translations of MODGEN models from @belanger_microsimulation_2017 and Statistics Canada @[government_of_canada_general_2009, government_of_canada_modgen_2009], demonstrating how *neworder* implementations can be both simpler and more performant (see the Mortality example in the documentation @[smith_neworder_nodate]).
+The framework is comprehensively documented (@smith_neworder_nodate) and specifically provides detailed examples that are translations of MODGEN models from @belanger_microsimulation_2017 and Statistics Canada [@government_of_canada_general_2009, @government_of_canada_modgen_2009], demonstrating how *neworder* implementations can be both simpler and more performant (see the Mortality example in the documentation [@smith_neworder_nodate]).
 
-Part of the design ethos is not to reinvent the wheel and leverage the huge range of statistical functions in packages like *numpy* and *scipy*. However, functions are provided where there is a useful niche function or a major efficiency gain to be had. An example of the former are methods provided to sample extremely efficiently from non-homogeneous Poisson processes using the Lewis-Shedler algorithm @[lewis_simulation_1979], and the ability to perform Markov transitions *in situ* in a pandas dataframe, both of which result in at least a factor-of-ten performance gain.
+Part of the design ethos is not to reinvent the wheel and leverage the huge range of statistical functions in packages like *numpy* and *scipy*. However, functions are provided where there is a useful niche function or a major efficiency gain to be had. An example of the former are methods provided to sample extremely efficiently from non-homogeneous Poisson processes using the Lewis-Shedler algorithm [@lewis_simulation_1979], and the ability to perform Markov transitions *in situ* in a pandas dataframe, both of which result in at least a factor-of-ten performance gain.
 
 ![Sampling mortality: "Discrete" samples repeatedly at 1 year intervals, "Continuous" uses the Lewis-Shedler algorithm to sample the entire curve, with a tenfold performance improvement.\label{fig:mortality-example}](mortality-100k.png)
 
 Another important consideration in *neworder*'s design is reproducibility, especially with regard to random number generators. Inbuilt extensible seeding strategies allow for fully deterministic execution and control over whether parallel processes should be correlated or uncorrelated, and users can implement their own custom strategies as necessary.
 
-*neworder* is currently being used in a project developing a supply-demand model of police and crime: an agent-based model of police resourcing (implemented in netlogo) is driven by a microsimulation of crime at high spatial, temporal and categorical resolution. The implementation can be found [here](https://github.com/M-O-P-D/Police-Supply-Demand).
+*neworder* is currently being used for a project developing an integrated supply-demand model of police and crime [@noauthor_m-o-p-dpolice-supply-demand_2021]: a microsimulation of crime at high spatial, temporal and categorical resolution drives an agent-based model of police resourcing (implemented in netlogo), which in turn can dynamically alter the microsimulation parameters according to how well it responds to the events generated.
 
 ## Acknowledgements
 
