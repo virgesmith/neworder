@@ -9,4 +9,4 @@ python setup.py sdist
 twine upload --repository-url https://upload.pypi.org/legacy/ dist/neworder-$version.tar.gz
 
 # NB on testPyPI, deps need to been installed from main repo. Use this:
-#pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple
+#pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple neworder

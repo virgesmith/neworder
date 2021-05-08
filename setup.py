@@ -76,6 +76,7 @@ setup(
   description='A dynamic microsimulation framework',
   long_description = readme(),
   long_description_content_type="text/markdown",
+  packages=["neworder"],
   ext_modules=ext_modules,
   install_requires=['numpy>=1.19.1', 'pandas>=1.0.5'],
 #  setup_requires=['pybind11>=2.5.0', 'pytest-runner'],
