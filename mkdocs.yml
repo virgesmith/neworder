@@ -19,7 +19,7 @@ markdown_extensions:
       permalink: "¶"
   - admonition
   - pymdownx.highlight
-  - pymdownx.inlinehilite
+  - pymdownx.superfences
   - pymdownx.arithmatex:
       generic: true
 
