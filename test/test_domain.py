@@ -74,14 +74,14 @@ def test_space3d():
   #print(np.split(p, space.dim, axis=1))
 
 
-def test_grid2d():
-  grid2d = no.domain.Grid(np.array([8,8], dtype=np.int64))
+# def test_grid2d():
+#   grid2d = no.domain.Grid(np.array([8,8], dtype=np.int64))
 
-  points = np.array([[0,0], [1,2], [3,4]], dtype=np.int64)
+#   points = np.array([[0,0], [1,2], [3,4]], dtype=np.int64)
 
-  to_points = np.array([[0,0]], dtype=np.int64)
+#   to_points = np.array([[0,0]], dtype=np.int64)
 
 
 
-  print(grid2d.dists(points, to_points))
-  assert False
+#   print(grid2d.dists(points, to_points))
+#   #assert False
