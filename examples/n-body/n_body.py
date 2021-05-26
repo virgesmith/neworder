@@ -2,6 +2,7 @@
 import numpy as np
 import pandas as pd
 import neworder as no
+from neworder.domain import Space
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
@@ -9,6 +10,9 @@ class NBody(no.Model):
 
   def __init__(self, N, G, dt):
     super().__init__(no.LinearTimeline(0, dt), no.MonteCarlo.deterministic_identical_stream)
+
+    # unbounded domain
+    self.domain = Space.unbounded(3)
 
     self.G = G
     self.dt = dt
@@ -49,22 +53,12 @@ class NBody(no.Model):
 
   # also calc energy of system
   def __calc_a(self):
-    n = len(self.bodies)
-    dx = self.bodies.x.values.repeat(n).reshape((n,n))
-    dy = self.bodies.y.values.repeat(n).reshape((n,n))
-    dz = self.bodies.z.values.repeat(n).reshape((n,n))
-    dist2s = (dx - dx.T)**2 + (dy - dy.T)**2 + (dz - dz.T)**2 #fudge factor
+    dist2s = self.domain.dists2((self.bodies.x, self.bodies.y, self.bodies.z))
+
     dist2s = np.where(dist2s == 0.0, np.inf, dist2s)
     dist2s += 0.01
     dists = np.sqrt(dist2s)
     for i,b in self.bodies.iterrows():
-      # dist2s = (self.bodies.x.values - b.x) ** 2 \
-      #        + (self.bodies.y.values - b.y) ** 2 \
-      #        + (self.bodies.z.values - b.z) ** 2
-      # first remove self-interactions
-      #dist2s = np.where(dist2s == 0.0, np.inf, dist2s)
-      # fudge to avoid acceleration spikes when particles too close
-      #dist2s += .01
       xhat = (self.bodies.x.values - b.x) / dists[i]
       yhat = (self.bodies.y.values - b.y) / dists[i]
       zhat = (self.bodies.z.values - b.z) / dists[i]
@@ -75,9 +69,8 @@ class NBody(no.Model):
       b.pe = -self.G * b.m * np.sum(self.bodies.m / dists[i])
 
   def __update_pos(self):
-    self.bodies.x += self.bodies.vx * self.dt
-    self.bodies.y += self.bodies.vy * self.dt
-    self.bodies.z += self.bodies.vz * self.dt
+    self.bodies.x, self.bodies.y, self.bodies.z = self.domain.move((self.bodies.x, self.bodies.y, self.bodies.z), 
+                                                                   (self.bodies.vx*self.dt, self.bodies.vy*self.dt, self.bodies.vz*self.dt), ungroup=True)
 
   def __update_v(self, frac=1):
     dt = self.dt * frac
