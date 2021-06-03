@@ -13,14 +13,6 @@ def readme():
   with open('README.md') as f:
     return f.read()
 
-# def version():
-#   """ The __init__.py is now the single source of version info, but we can't import it here """
-#   with open("neworder/__init__.py") as fd:
-#     line = fd.readline().rstrip()
-#     if line.startswith("__version__"):
-#       return line.split("= ")[1]
-#   raise ValueError("__version__ not found")
-
 
 def list_files(dirs, exts, exclude=[]):
   files = []
@@ -32,29 +24,29 @@ def list_files(dirs, exts, exclude=[]):
   [f in files and files.remove(f) for f in exclude]
   return files
 
-def cxxflags(platform):
+# def cxxflags(platform):
 
-  if platform == "unix":
-    return [
-      "-Wall",
-      "-pedantic",
-      "-pthread",
-      "-Wsign-compare",
-      "-fstack-protector-strong",
-      "-Wformat",
-      "-Werror=format-security",
-      "-Wdate-time",
-      "-fPIC",
-      "-std=c++17",
-      "-fvisibility=hidden"
-    ]
-  elif platform == "msvc":
-    return ['/EHsc']
-  else:
-    return []
+#   if platform == "unix":
+#     return [
+#       "-Wall",
+#       "-pedantic",
+#       "-pthread",
+#       "-Wsign-compare",
+#       "-fstack-protector-strong",
+#       "-Wformat",
+#       "-Werror=format-security",
+#       "-Wdate-time",
+#       "-fPIC",
+#       "-std=c++17",
+#       "-fvisibility=hidden"
+#     ]
+#   elif platform == "msvc":
+#     return ['/EHsc']
+#   else:
+#     return []
 
-def ldflags(_platform):
-  return []
+# def ldflags(_platform):
+#   return []
 
 ext_modules = [
   Pybind11Extension(
@@ -69,7 +61,7 @@ ParallelCompile().install()
 
 setup(
   name='neworder',
-  #version=version,
+  # version set from __init__.py via setup.cfg,
   author='Andrew P Smith',
   author_email='a.p.smith@leeds.ac.uk',
   url='https://neworder.readthedocs.io',
@@ -79,8 +71,8 @@ setup(
   packages=["neworder"],
   ext_modules=ext_modules,
   install_requires=['numpy>=1.19.1', 'pandas>=1.0.5'],
-#  setup_requires=['pybind11>=2.5.0', 'pytest-runner'],
-#  tests_require=['pytest', 'mpi4py>=3.0.3'],
+  setup_requires=['pybind11>=2.5.0', 'pytest-runner'],
+  tests_require=['pytest', 'mpi4py>=3.0.3'],
   classifiers=[
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
