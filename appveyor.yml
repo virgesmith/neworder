@@ -38,10 +38,10 @@ environment:
       PYTHON: "3.8"
       APPVEYOR_YML_DISABLE_PS_LINUX: true
 
-    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
-      CODECOV_BUILD: true
-      PYTHON: "3.8"
-      APPVEYOR_YML_DISABLE_PS_LINUX: true
+    # - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
+    #   CODECOV_BUILD: true
+    #   PYTHON: "3.8"
+    #   APPVEYOR_YML_DISABLE_PS_LINUX: true
 
     # - APPVEYOR_BUILD_WORKER_IMAGE: macOS
     #   PYTHON: "3.7"
