@@ -14,7 +14,7 @@ class SpaceTest(no.Model):
     self.space2d = no.Space(np.array([-1.0, -3.0]), np.array([2.0, 5.0]), edge)
 
     self.positions = self.mc().ustream(n * 2).reshape(n, 2)
-    self.velocities = (self.mc().ustream(n * 2) - 0.5).reshape(n, 2) 
+    self.velocities = (self.mc().ustream(n * 2) - 0.4).reshape(n, 2) 
 
     self.fig, self.g = self.__init_visualisation()
 
@@ -43,6 +43,8 @@ class SpaceTest(no.Model):
   def step(self):
     self.positions, self.velocities = self.space2d.move(self.positions, self.velocities, 0.1)
 
+    no.log(self.space2d.in_range(1.0, self.positions, count=True))
+
     self.__update_visualisation()
     sleep(0.01)
     #self.halt()
@@ -50,11 +52,10 @@ class SpaceTest(no.Model):
   def check(self):
     if self.space2d.edge == Domain.WRAP:
       d = (self.space2d.max - self.space2d.min)/2
-      no.log(d@d)
-      return np.all(self.space2d.dists2(self.positions, self.positions) < d@d)
+      return np.all(self.space2d.dists2(self.positions) < d@d)
     return True
 
 
 if __name__ == "__main__":
-  m = SpaceTest(300, Domain.WRAP)
+  m = SpaceTest(50, Domain.WRAP)
   no.run(m)

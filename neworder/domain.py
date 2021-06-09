@@ -42,7 +42,7 @@ class Space(Domain):
 
   def __init__(self, min, max, edge=Domain.CONSTRAIN):
     assert len(min) and len(min) == len(max)
-    super().__init__(len(min), edge, edge)
+    super().__init__(len(min), edge, True)
 
     # Space supports all edge behaviours
     assert edge in [Domain.UNBOUNDED, Domain.WRAP, Domain.CONSTRAIN, Domain.BOUNCE]
@@ -95,35 +95,41 @@ class Space(Domain):
       v = np.split(v, self.dim, axis=1)
     return p, v
 
-  def dists2(self, points, to_points):
+  def dists2(self, positions, to_points=None):
     # group tuples into a single array if necessary
-    if type(points) == tuple:
-      points = np.column_stack(points)
+    if type(positions) == tuple:
+      positions = np.column_stack(positions)
     if type(to_points) == tuple:
       to_points = np.column_stack(to_points)
     # distances w.r.t. self if to_points not explicitly specified
     if to_points is None:
-      to_points = points
-    assert points.dtype == float
+      to_points = positions
+    assert positions.dtype == float
     assert to_points.dtype == float
-    n = points.shape[0]
+    n = positions.shape[0]
     m = to_points.shape[0]
-    d = points.shape[1]
+    d = positions.shape[1]
     d2 = np.zeros((m,n))
     if self.edge != Domain.WRAP:
       for i in range(d):
-        d2 += (np.tile(points[:,i],m).reshape((m,n)) - np.repeat(to_points[:,i],n).reshape(m,n))**2
+        d2 += (np.tile(positions[:,i],m).reshape((m,n)) - np.repeat(to_points[:,i],n).reshape(m,n))**2
     else: # wrapped domains need special treatment - distance across an edge may be less than naive distance
       for i in range(d):
-        d1d = np.abs(np.tile(points[:,i],m).reshape((m,n)) - np.repeat(to_points[:,i],n).reshape(m,n))
+        d1d = np.abs(np.tile(positions[:,i],m).reshape((m,n)) - np.repeat(to_points[:,i],n).reshape(m,n))
         r = self.max[i] - self.min[i]
         d1d = np.where(d1d > r/2, r - d1d, d1d)
         d2 += d1d*d1d
 
     return d2
 
-  def dists(self, points, to_points=None):
-    return np.sqrt(self.dists2(points, to_points))
+  def dists(self, positions, to_points=None):
+    return np.sqrt(self.dists2(positions, to_points))
+
+  def in_range(self, distance, positions, count=False): # to_points=None, 
+    ind = np.where(self.dists2(positions) < distance*distance, 1, 0)
+    # fill diagonal so as not to include self - TODO how does this work if to_points!=positions
+    np.fill_diagonal(ind, 0)
+    return ind if not count else np.sum(ind, axis=1)
 
   def __repr__(self):
     return "%s dim=%d min=%s max=%s edge=%s" % (self.__class__.__name__, self.dim, self.min, self.max, self.edge)
@@ -131,50 +137,53 @@ class Space(Domain):
 class Grid(Domain):
   """ Discrete rectangular n-dimensional domain """
 
-  def __init__(self, ext, edge = Domain.CONSTRAIN):
-    assert len(ext) and ext.dtype == np.int64
-    super().__init__(len(ext), edge, False)
-    self.__extent = ext
+  def __init__(self, extent, edge = Domain.CONSTRAIN):
+    assert len(extent) and ext.dtype == np.int64
+    # grid domains must be bounded
+    assert edge in [Domain.WRAP, Domain.CONSTRAIN, Domain.BOUNCE]
+    super().__init__(len(extent), edge, False)
+
+    self.__extent = extent
 
   @property
   def extent(self):
     return self.__extent
 
-  def move(self, points, delta):
+  def move(self, positions, delta):
     # group tuples into a single array if necessary
-    if type(points) == tuple:
-      points = np.column_stack(points)
+    if type(positions) == tuple:
+      positions = np.column_stack(positions)
     # group tuples into a single array if necessary
     if type(delta) == tuple:
-      points = np.column_stack(delta)
-    assert points.dtype == np.int64
+      positions = np.column_stack(delta)
+    assert positions.dtype == np.int64
     assert delta.dtype == np.int64
-    assert points.shape[-1] == self.dim and delta.shape[-1] == self.dim
+    assert positions.shape[-1] == self.dim and delta.shape[-1] == self.dim
     if self.edge == Domain.CONSTRAIN:
-      return np.clip(points + delta, self.min, self.max)
+      return np.clip(positions + delta, self.min, self.max)
     else:
-      return np.mod(points + delta - self.min, self.extent)
+      return np.mod(positions + delta - self.min, self.extent)
 
-  def dists2(self, points, to_points=None):
+  def dists2(self, positions, to_points=None):
     # group tuples into a single array if necessary
-    if type(points) == tuple:
-      points = np.column_stack(points)
+    if type(positions) == tuple:
+      positions = np.column_stack(positions)
     if type(to_points) == tuple:
       to_points = np.column_stack(to_points)
     # distances w.r.t. self if to_points not explicitly specified
     if to_points is None:
-      to_points = points
-    n = points.shape[0]
+      to_points = positions
+    n = positions.shape[0]
     m = to_points.shape[0]
-    d = points.shape[1]
+    d = positions.shape[1]
     dmatrix = np.zeros((m,n), dtype=np.int64)
     for i in range(d):
       # for non-diagonal neighbours only, distance in hops
-      #dmatrix += np.abs(np.tile(points[:,i],m).reshape((m,n)) - np.repeat(to_points[:,i],n).reshape(m,n))
-      dmatrix += (np.tile(points[:,i],m).reshape((m,n)) - np.repeat(to_points[:,i],n).reshape(m,n))**2
+      #dmatrix += np.abs(np.tile(positions[:,i],m).reshape((m,n)) - np.repeat(to_points[:,i],n).reshape(m,n))
+      dmatrix += (np.tile(positions[:,i],m).reshape((m,n)) - np.repeat(to_points[:,i],n).reshape(m,n))**2
     return dmatrix
 
-  def dists(self, points, to_points=None):
-    return np.sqrt(self.dists2(points, to_points))
+  def dists(self, positions, to_points=None):
+    return np.sqrt(self.dists2(positions, to_points))
 
 
