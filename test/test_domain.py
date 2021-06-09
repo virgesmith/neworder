@@ -15,7 +15,7 @@ def test_space2d():
   print(point)
   print(delta)
   for _ in range(10):
-    point = space2d.move(point, delta)
+    point, delta = space2d.move(point, delta, 1.0)
     print(point)
 
   space2dw = no.Space(np.array([-1.0, -3.0]), np.array([2.0, 5.0]), True)
@@ -29,7 +29,7 @@ def test_space2d():
   x = [point[0]]
   y = [point[1]]
   for _ in range(100):
-    point = space2dw.move(point, delta)
+    point, delta = space2dw.move(point, delta, 1.0)
     x.append(point[0])
     y.append(point[1])
 
@@ -67,7 +67,7 @@ def test_space3d():
   print(space.dim)
 
   dt = 1.0
-  bodies.x, bodies.y, bodies.z = space.move((bodies.x, bodies.y, bodies.z), (bodies.vx*dt, bodies.vy*dt, bodies.vz*dt), ungroup=True)
+  (bodies.x, bodies.y, bodies.z), (bodies.vx, bodies.vy, bodies.vz) = space.move((bodies.x, bodies.y, bodies.z), (bodies.vx, bodies.vy, bodies.vz), dt, ungroup=True)
   print(bodies)
 
   #print(p.shape)
