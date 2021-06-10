@@ -65,10 +65,10 @@ class Space(Domain):
     assert positions.dtype == float
     assert velocities.dtype == float
     assert positions.shape[-1] == self.dim and velocities.shape[-1] == self.dim
-    if self.edge == Domain.UNBOUNDED: 
+    if self.edge == Domain.UNBOUNDED:
       p = positions + velocities * delta_t
       v = velocities
-    elif self.edge == Domain.CONSTRAIN: 
+    elif self.edge == Domain.CONSTRAIN:
       p = positions + velocities * delta_t
       v = velocities
       hitmin = np.where(p < self.min, 1, 0)
@@ -76,7 +76,7 @@ class Space(Domain):
       v = np.where(hitmin, 0, v)
       hitmax = np.where(p > self.max, 1, 0)
       p = np.where(hitmax, self.max, p)
-      v = np.where(hitmax, 0, v)   
+      v = np.where(hitmax, 0, v)
     elif self.edge == Domain.BOUNCE:
       p = positions + velocities * delta_t
       v = velocities
@@ -85,7 +85,7 @@ class Space(Domain):
       v = np.where(hitmin, -v, v)
       hitmax = np.where(p > self.max, 1, 0)
       p = np.where(hitmax, 2*self.max - p, p)
-      v = np.where(hitmax, -v, v)   
+      v = np.where(hitmax, -v, v)
     else:
       p = self.min + np.mod(positions + velocities * delta_t - self.min, self.max - self.min)
       v = velocities
@@ -96,6 +96,7 @@ class Space(Domain):
     return p, v
 
   def dists2(self, positions, to_points=None):
+    """ Returns squared distance between points and separations in each axis """
     # group tuples into a single array if necessary
     if type(positions) == tuple:
       positions = np.column_stack(positions)
@@ -110,23 +111,29 @@ class Space(Domain):
     m = to_points.shape[0]
     d = positions.shape[1]
     d2 = np.zeros((m,n))
+    separations = ()
     if self.edge != Domain.WRAP:
       for i in range(d):
-        d2 += (np.tile(positions[:,i],m).reshape((m,n)) - np.repeat(to_points[:,i],n).reshape(m,n))**2
+        delta = np.tile(positions[:,i],m).reshape((m,n)) - np.repeat(to_points[:,i],n).reshape(m,n)
+        separations += (delta,)
+        d2 += delta * delta
     else: # wrapped domains need special treatment - distance across an edge may be less than naive distance
       for i in range(d):
-        d1d = np.abs(np.tile(positions[:,i],m).reshape((m,n)) - np.repeat(to_points[:,i],n).reshape(m,n))
+        delta = np.tile(positions[:,i],m).reshape((m,n)) - np.repeat(to_points[:,i],n).reshape(m,n)
+        #d1d = np.abs(delta)
         r = self.max[i] - self.min[i]
-        d1d = np.where(d1d > r/2, r - d1d, d1d)
-        d2 += d1d*d1d
+        delta = np.where(delta > r/2, delta - r, delta)
+        delta = np.where(delta < -r/2, delta + r, delta)
+        separations += (delta,)
+        d2 += delta*delta
 
-    return d2
+    return d2, separations
 
   def dists(self, positions, to_points=None):
-    return np.sqrt(self.dists2(positions, to_points))
+    return np.sqrt(self.dists2(positions, to_points)[0])
 
-  def in_range(self, distance, positions, count=False): # to_points=None, 
-    ind = np.where(self.dists2(positions) < distance*distance, 1, 0)
+  def in_range(self, distance, positions, count=False): # to_points=None,
+    ind = np.where(self.dists2(positions)[0] < distance*distance, 1, 0)
     # fill diagonal so as not to include self - TODO how does this work if to_points!=positions
     np.fill_diagonal(ind, 0)
     return ind if not count else np.sum(ind, axis=1)
@@ -184,6 +191,6 @@ class Grid(Domain):
     return dmatrix
 
   def dists(self, positions, to_points=None):
-    return np.sqrt(self.dists2(positions, to_points))
+    return np.sqrt(self.dists2(positions, to_points)[0])
 
 

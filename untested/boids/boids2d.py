@@ -21,6 +21,9 @@ class Boids(no.Model):
 
     self.range = 1.0
 
+    # continuous wraparound 2d space
+    self.domain = no.Space(np.array([0,0]), np.array([self.range, self.range]), edge=no.Domain.WRAP)
+
     self.vision = 0.2
     self.exclusion = 0.01
 
@@ -51,8 +54,9 @@ class Boids(no.Model):
     self.fig, self.g = self.__init_visualisation()
 
   def step(self):
+    d2, (dx, dy) = self.domain.dists2((self.boids.x, self.boids.y))
+    np.fill_diagonal(d2, np.inf) # no self-influence
 
-    dx, dy, d2 = self.__dists()
     mindists = np.tile(np.amin(d2, axis=0), self.N).reshape((self.N, self.N))
     nearest = np.where(mindists == d2, True, False)
 
@@ -68,29 +72,15 @@ class Boids(no.Model):
     self.__cohere(in_range, dx, dy, self.cohere_max_turn)
     self.__align(in_range, self.align_max_turn)
 
-    # # bounce off walls
-    # self.boids.loc[self.boids.x < 0.0, "theta"] = np.pi - self.boids.loc[self.boids.x < 0.0, "theta"]
-    # self.boids.loc[self.boids.x > self.range, "theta"] = np.pi - self.boids.loc[self.boids.x > self.range, "theta"]
-    # self.boids.loc[self.boids.y < 0.0, "theta"] = 2.0 * np.pi - self.boids.loc[self.boids.y < 0.0, "theta"]
-    # self.boids.loc[self.boids.y > self.range, "theta"] = 2.0 * np.pi - self.boids.loc[self.boids.y > self.range, "theta"]
-
-    self.boids.x = (self.boids.x + np.cos(self.boids.theta) * self.speed * self.timeline().dt())
-    self.boids.y = (self.boids.y + np.sin(self.boids.theta) * self.speed * self.timeline().dt())
+    (self.boids.x, self.boids.y), _ = self.domain.move((self.boids.x, self.boids.y),
+                                                       (np.cos(self.boids.theta) * self.speed, np.sin(self.boids.theta) * self.speed),
+                                                       self.timeline().dt(), ungroup=True)
+    # for a contrained domain convert updated velocity to angle
+    # self.boids.theta = np.arctan2(vy, vx)
 
     #self.__track()
     self.__update_visualisation()
     #self.halt()
-
-
-  def __dists(self):
-    """ Compute vector distances and squared distance matrix, adjusted diagonal to remove self-influence """
-    dx = self.boids.x.values.repeat(self.N).reshape((self.N,self.N))
-    dy = self.boids.y.values.repeat(self.N).reshape((self.N,self.N))
-    dx -= dx.T
-    dy -= dy.T
-    d2 = dx**2 + dy**2
-    np.fill_diagonal(d2, np.inf) # no self-influence
-    return (dx, dy, d2)
 
   def __align(self, in_range, max_turn):
 

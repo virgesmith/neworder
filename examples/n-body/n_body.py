@@ -69,8 +69,10 @@ class NBody(no.Model):
       b.pe = -self.G * b.m * np.sum(self.bodies.m / dists[i])
 
   def __update_pos(self):
-    self.bodies.x, self.bodies.y, self.bodies.z = self.domain.move((self.bodies.x, self.bodies.y, self.bodies.z), 
-                                                                   (self.bodies.vx*self.dt, self.bodies.vy*self.dt, self.bodies.vz*self.dt), ungroup=True)
+    # ignore returned v (will not be altered in an unconstrained domain)
+    (self.bodies.x, self.bodies.y, self.bodies.z), _  = self.domain.move((self.bodies.x, self.bodies.y, self.bodies.z),
+                                                                   (self.bodies.vx, self.bodies.vy, self.bodies.vz),
+                                                                   self.dt, ungroup=True)
 
   def __update_v(self, frac=1):
     dt = self.dt * frac
