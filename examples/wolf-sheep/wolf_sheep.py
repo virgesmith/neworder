@@ -140,8 +140,8 @@ class WolfSheep(no.Model):
     m = self.mc().hazard(self.wolf_reproduce, len(self.wolves))
     self.wolves.loc[m == 1, "energy"] /= 2
     cubs = self.wolves[m == 1].copy().set_index(no.df.unique_index(int(sum(m))))
-    # evolve speed/burn rate from mother + random factor
-    cubs.speed += self.npgen.normal(0.0, self.wolf_speed_stddev, len(cubs))
+    # evolve speed/burn rate from mother + random factor (don't allow to go <=0) should probably be lognormal
+    cubs.speed = np.maximum(cubs.speed + self.npgen.normal(0.0, self.wolf_speed_stddev, len(cubs)), 0.1)
     self.wolves = self.wolves.append(cubs)
 
   def __step_sheep(self):
@@ -167,7 +167,7 @@ class WolfSheep(no.Model):
     self.sheep.loc[m == 1, "energy"] /= 2
     lambs = self.sheep[m == 1].copy().set_index(no.df.unique_index(int(sum(m))))
     # evolve speed from mother + random factor
-    lambs.speed += self.npgen.normal(0.0, self.sheep_speed_stddev, len(lambs))
+    lambs.speed = np.maximum(lambs.speed + self.npgen.normal(0.0, self.sheep_speed_stddev, len(lambs)), 0.1)
     self.sheep = self.sheep.append(lambs)
 
   def __assign_cell(self, agents):
@@ -251,15 +251,17 @@ class WolfSheep(no.Model):
     self.ax_gt[0].set_data(self.t, self.grass_prop)
     self.ax_t2.set_xlim([0,self.t[-1]])
 
-    n, bins = np.histogram(self.wolves.speed, bins=self.b_ws)
-    for rect, h in zip(self.ax_ws, n/len(self.wolves)):
-      rect.set_height(h)
-    self.ax_t3.set_ylim([0, max(n/max(len(self.wolves), 1))])
+    if not self.wolves.empty:
+      n, bins = np.histogram(self.wolves.speed, bins=self.b_ws)
+      for rect, h in zip(self.ax_ws, n/len(self.wolves)):
+        rect.set_height(h)
+      self.ax_t3.set_ylim([0, max(n/len(self.wolves))])
 
-    n, bins = np.histogram(self.sheep.speed, bins=self.b_ss)
-    for rect, h in zip(self.ax_ss, n/len(self.sheep)):
-      rect.set_height(h)
-    self.ax_t4.set_ylim([0, max(n/max(len(self.sheep), 1))])
+    if not self.sheep.empty:
+      n, bins = np.histogram(self.sheep.speed, bins=self.b_ss)
+      for rect, h in zip(self.ax_ss, n/len(self.sheep)):
+        rect.set_height(h)
+      self.ax_t4.set_ylim([0, max(n/len(self.sheep))])
 
     #plt.savefig("/tmp/wolf-sheep%04d.png" % self.timeline().index(), dpi=80)
     self.figs.canvas.flush_events()
