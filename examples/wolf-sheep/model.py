@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 
 #no.verbose()
 
+assert no.mpi.rank() == 0 and no.mpi.size() == 1, "this example should only be run in serial mode"
+
 params = {
   "grid": {
     "width": 100,
