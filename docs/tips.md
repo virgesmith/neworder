@@ -76,7 +76,7 @@ Other libraries, such as *numpy*, contain a much broader selection of Monte-Carl
 In your model constructor, you can seed the *numpy* generator like so
 
 ```python
-ext_seed = self.mc().raw()
+ext_seed = self.mc.raw()
 self.nprand = np.random.Generator(np.random.MT19937(ext_seed))
 # get some values
 x = self.nprand.normal(5)

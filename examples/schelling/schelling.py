@@ -14,7 +14,7 @@ class Schelling(neworder.Model):
     # category 0 is empty cell
     self.ncategories = len(categories)
     # randomly sample initial population according to category weights
-    self.pop = self.mc().sample(np.prod(gridsize), categories)
+    self.pop = self.mc.sample(np.prod(gridsize), categories)
     #reshape to 2D
     self.pop.shape = gridsize
     self.cmap = colors.ListedColormap(['white', 'red', 'blue', 'green', 'yellow'][:self.ncategories])
@@ -79,7 +79,7 @@ class Schelling(neworder.Model):
             .rename({"level_0": "y", "level_1": "x", 0: "occ"}, axis=1)
     # !sample!
     # sample randomly empty cells only (seeding with neworder's mc engine to ensure reproduciblity)
-    empty = empty[empty['occ'] == 0].sample(frac=1, random_state=self.mc().raw() % 2**32).reset_index(drop=True)
+    empty = empty[empty['occ'] == 0].sample(frac=1, random_state=self.mc.raw() % 2**32).reset_index(drop=True)
     # !sample!
 
     # enumerate unsatisfied
@@ -90,9 +90,9 @@ class Schelling(neworder.Model):
     unsat = unsat[unsat['sat'] == False]
     if len(unsat):
       # sample randomly empty cells only (seeding with neworder's mc engine to ensure reproduciblity)
-      unsat = unsat.sample(frac=1, random_state=self.mc().raw() % 2**32).reset_index(drop=True)
+      unsat = unsat.sample(frac=1, random_state=self.mc.raw() % 2**32).reset_index(drop=True)
 
-    neworder.log("step %d %.2f%% unsatisfied" % (self.timeline().index(), 100.0 * len(unsat) / pop.size))
+    neworder.log("step %d %.2f%% unsatisfied" % (self.timeline.index(), 100.0 * len(unsat) / pop.size))
 
     # move unsatisfied to empty
     for i in range(min(len(unsat), len(empty))):

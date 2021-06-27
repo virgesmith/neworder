@@ -4,3 +4,4 @@ mkdocs-macros-plugin>=0.5.5
 mkdocs-material-extensions>=1.0.1
 #mkdocstrings==0.13.2
 #Pygments>=2.9.0
+requests

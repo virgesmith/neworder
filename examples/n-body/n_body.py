@@ -20,16 +20,16 @@ class NBody(no.Model):
     x_max = 1.0
     y_max = 1.0
 
-    r = self.mc().ustream(N) - 0.5
-    theta = self.mc().ustream(N) * np.pi
+    r = self.mc.ustream(N) - 0.5
+    theta = self.mc.ustream(N) * np.pi
     x = r * np.cos(theta) * x_max
     y = r * np.sin(theta) * y_max
 
     self.bodies = pd.DataFrame(index=no.df.unique_index(N), data={
-        "m": self.mc().ustream(N) * m_max,
+        "m": self.mc.ustream(N) * m_max,
         "x": x,
         "y": y,
-        "z": 0.1*(self.mc().ustream(N) - 0.5),
+        "z": 0.1*(self.mc.ustream(N) - 0.5),
         # create angular momentum
         "vx": -y,
         "vy": x,
@@ -53,7 +53,7 @@ class NBody(no.Model):
 
   # also calc energy of system
   def __calc_a(self):
-    dist2s = self.domain.dists2((self.bodies.x, self.bodies.y, self.bodies.z))
+    dist2s, _ = self.domain.dists2((self.bodies.x, self.bodies.y, self.bodies.z))
 
     dist2s = np.where(dist2s == 0.0, np.inf, dist2s)
     dist2s += 0.01

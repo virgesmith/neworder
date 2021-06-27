@@ -141,7 +141,7 @@ class Space(Domain):
   def __repr__(self):
     return "%s dim=%d min=%s max=%s edge=%s" % (self.__class__.__name__, self.dim, self.min, self.max, self.edge)
 
-class Grid(Domain):
+class PositionalGrid(Domain):
   """ Discrete rectangular n-dimensional domain """
 
   def __init__(self, extent, edge = Domain.CONSTRAIN):

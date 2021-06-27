@@ -232,10 +232,10 @@ const char* model_init_calendartimelime_docstr = R"docstr(
 )docstr";
 
 const char* model_timeline_docstr = R"docstr(
-    Returns the model's timeline object
+    The model's timeline object
 )docstr";
 const char* model_mc_docstr = R"docstr(
-    Returns the models Monte-Carlo engine
+    The model's Monte-Carlo engine
 )docstr";
 const char* model_modify_docstr = R"docstr(
     User-overridable method used to modify state in a per-process basis for multiprocess model runs.
