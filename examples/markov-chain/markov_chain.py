@@ -30,7 +30,7 @@ class MarkovChain(no.Model):
     def _sample(u, tc, c):
       return c[_interp(tc, u)]
 
-    #u = m.mc().ustream(len(df))
+    #u = m.mc.ustream(len(df))
     tc = np.cumsum(self.transition_matrix, axis=1)
 
     # reverse mapping of category label to index
@@ -40,7 +40,7 @@ class MarkovChain(no.Model):
     #   current = df.loc[i, colname]
     #   df.loc[i, colname] = sample(u[i], tc[lookup[current]], c)
     # this is a much faster equivalent of the loop in the commented code immediately above
-    self.pop[colname] = self.pop[colname].apply(lambda current: _sample(self.mc().ustream(1), tc[lookup[current]], self.states))
+    self.pop[colname] = self.pop[colname].apply(lambda current: _sample(self.mc.ustream(1), tc[lookup[current]], self.states))
 
   def step(self):
     #self.transition_py("state")
@@ -49,8 +49,8 @@ class MarkovChain(no.Model):
     self.summary = self.summary.append(self.pop.state.value_counts().transpose())#, ignore_index=True)
 
   def finalise(self):
-    self.summary["t"] = np.linspace(self.timeline().start(), self.timeline().end(), self.timeline().nsteps() + 1)
-    #self.summary.set_index(np.linspace(self.timeline().start(), self.timeline().end(), self.timeline().nsteps() + 1), drop=True, inplace=True)
+    self.summary["t"] = np.linspace(self.timeline.start(), self.timeline.end(), self.timeline.nsteps() + 1)
+    #self.summary.set_index(np.linspace(self.timeline.start(), self.timeline.end(), self.timeline.nsteps() + 1), drop=True, inplace=True)
     self.summary.reset_index(drop=True, inplace=True)
     self.summary.fillna(0, inplace=True)
 

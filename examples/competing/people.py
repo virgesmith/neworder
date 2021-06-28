@@ -24,10 +24,10 @@ class People(no.Model):
 
   def step(self):
     # sample deaths
-    self.population["time_of_death"] = self.mc().first_arrival(self.mortality_hazard.Rate.values, self.dt, len(self.population))
+    self.population["time_of_death"] = self.mc.first_arrival(self.mortality_hazard.Rate.values, self.dt, len(self.population))
 
     # sample (multiple) births with events at least 9 months apart
-    births = self.mc().arrivals(self.fertility_hazard.Rate.values, self.dt, len(self.population), 0.75)
+    births = self.mc.arrivals(self.fertility_hazard.Rate.values, self.dt, len(self.population), 0.75)
 
     # the number of columns is governed by the maximum number of arrivals in the births data
     for i in range(births.shape[1]):

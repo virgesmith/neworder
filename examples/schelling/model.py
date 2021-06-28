@@ -5,7 +5,7 @@ from schelling import Schelling
 #neworder.verbose()
 
 # category 0 is empty
-gridsize = [100,125]
+gridsize = [100,100]
 categories = np.array([0.56, 0.19, 0.19, 0.6])
 # normalise
 categories = categories / sum(categories)

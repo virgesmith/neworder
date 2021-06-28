@@ -39,7 +39,7 @@ def sample(u, tc, c):
   return c[interp(tc, u)]
 
 def transition(model, c, t, df, colname):
-  #u = m.mc().ustream(len(df))
+  #u = m.mc.ustream(len(df))
   tc = np.cumsum(t, axis=1)
 
   # reverse mapping of category label to index
@@ -49,7 +49,7 @@ def transition(model, c, t, df, colname):
   #   current = df.loc[i, colname]
   #   df.loc[i, colname] = sample(u[i], tc[lookup[current]], c)
 
-  df[colname] = df[colname].apply(lambda current: sample(m.mc().ustream(1), tc[lookup[current]], c))
+  df[colname] = df[colname].apply(lambda current: sample(m.mc.ustream(1), tc[lookup[current]], c))
 
 def python_impl(m, df):
 
@@ -114,7 +114,7 @@ if __name__ == "__main__":
   rows, tc, colcpp = cpp_impl(m, get_data())
   no.log("C++ %d: %f" % (rows, tc))
 
-  m.mc().reset()
+  m.mc.reset()
   rows, tp, colpy = python_impl(m, get_data())
   no.log("py  %d: %f" % (rows, tp))
 

@@ -13,8 +13,8 @@ class SpaceTest(no.Model):
 
     self.space2d = no.Space(np.array([-1.0, -3.0]), np.array([2.0, 5.0]), edge)
 
-    self.positions = self.mc().ustream(n * 2).reshape(n, 2)
-    self.velocities = (self.mc().ustream(n * 2) - 0.4).reshape(n, 2) 
+    self.positions = self.mc.ustream(n * 2).reshape(n, 2)
+    self.velocities = (self.mc.ustream(n * 2) - 0.4).reshape(n, 2)
 
     self.fig, self.g = self.__init_visualisation()
 

@@ -77,7 +77,10 @@ PYBIND11_MODULE(_neworder_core, m)
     .def("isnever", no::time::isnever, time_isnever_docstr, "t"_a) // scalar
     .def("isnever", no::time::isnever_a, time_isnever_a_docstr, "t"_a); // array
 
-  py::class_<no::NoTimeline>(m, "NoTimeline", notimeline_docstr)
+  // register abstract base class
+  py::class_<no::Timeline>(m, "Timeline");
+
+  py::class_<no::NoTimeline, no::Timeline>(m, "NoTimeline", notimeline_docstr)
     .def(py::init<>(), notimeline_init_docstr)
     .def("start", &no::NoTimeline::start, timeline_start_docstr)
     .def("end", &no::NoTimeline::end, timeline_end_docstr)
@@ -88,7 +91,7 @@ PYBIND11_MODULE(_neworder_core, m)
     .def("at_end", &no::NoTimeline::at_end, timeline_at_end_docstr)
     .def("__repr__", &no::NoTimeline::repr, timeline_repr_docstr);
 
-  py::class_<no::LinearTimeline>(m, "LinearTimeline", lineartimeline_docstr)
+  py::class_<no::LinearTimeline, no::Timeline>(m, "LinearTimeline", lineartimeline_docstr)
     .def(py::init<double, double, size_t>(), lineartimeline_init_docstr, "start"_a, "end"_a, "nsteps"_a)
     .def(py::init<double, double>(), lineartimeline_init_open_docstr, "start"_a, "step"_a)
     .def("start", &no::LinearTimeline::start, timeline_start_docstr)
@@ -100,7 +103,7 @@ PYBIND11_MODULE(_neworder_core, m)
     .def("at_end", &no::LinearTimeline::at_end, timeline_at_end_docstr)
     .def("__repr__", &no::LinearTimeline::repr, timeline_repr_docstr);
 
-  py::class_<no::NumericTimeline>(m, "NumericTimeline", numerictimeline_docstr)
+  py::class_<no::NumericTimeline, no::Timeline>(m, "NumericTimeline", numerictimeline_docstr)
     .def(py::init<const std::vector<double>&>(), numerictimeline_init_docstr, "times"_a)
     .def("start", &no::NumericTimeline::start, timeline_start_docstr)
     .def("end", &no::NumericTimeline::end, timeline_end_docstr)
@@ -111,7 +114,7 @@ PYBIND11_MODULE(_neworder_core, m)
     .def("at_end", &no::NumericTimeline::at_end, timeline_at_end_docstr)
     .def("__repr__", &no::NumericTimeline::repr, timeline_repr_docstr);
 
-  py::class_<no::CalendarTimeline>(m, "CalendarTimeline", calendartimeline_docstr)
+  py::class_<no::CalendarTimeline, no::Timeline>(m, "CalendarTimeline", calendartimeline_docstr)
     .def(py::init<std::chrono::system_clock::time_point, std::chrono::system_clock::time_point, size_t, char>(),
       calendartimeline_init_docstr, "start"_a, "end"_a, "step"_a, "unit"_a)
     .def(py::init<std::chrono::system_clock::time_point, size_t, char>(),
@@ -127,12 +130,10 @@ PYBIND11_MODULE(_neworder_core, m)
 
   // Microsimulation (or ABM) model class
   py::class_<no::Model>(m, "Model", model_docstr)
-    .def(py::init([](no::NoTimeline& t, const py::function& s) { return no::Model(std::make_unique<no::NoTimeline>(t), s); }), model_init_notimeline_docstr,"timeline"_a, "seeder"_a)
-    .def(py::init([](no::LinearTimeline& t, const py::function& s) { return no::Model(std::make_unique<no::LinearTimeline>(t), s); }), model_init_lineartimeline_docstr,"timeline"_a, "seeder"_a)
-    .def(py::init([](no::NumericTimeline& t, const py::function& s) { return no::Model(std::make_unique<no::NumericTimeline>(t), s); }), model_init_numerictimeline_docstr,"timeline"_a, "seeder"_a)
-    .def(py::init([](no::CalendarTimeline& t, const py::function& s) { return no::Model(std::make_unique<no::CalendarTimeline>(t), s); }), model_init_calendartimelime_docstr,"timeline"_a, "seeder"_a)
-    .def("timeline", &no::Model::timeline, py::return_value_policy::reference, model_timeline_docstr)
-    .def("mc", &no::Model::mc, py::return_value_policy::reference, model_mc_docstr)
+    .def(py::init<no::Timeline&, const py::function&>(), model_init_notimeline_docstr,"timeline"_a, "seeder"_a)
+    // properties are readonly only in the sense you can't assign to them; you CAN call their mutable methods
+    .def_property_readonly("timeline", &no::Model::timeline, model_timeline_docstr)
+    .def_property_readonly("mc", &no::Model::mc, model_mc_docstr)
     .def("modify", &no::Model::modify, model_modify_docstr, "r"_a)
     .def("step", &no::Model::step, model_step_docstr)
     .def("check", &no::Model::check, model_check_docstr)

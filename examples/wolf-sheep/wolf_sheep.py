@@ -39,17 +39,17 @@ class WolfSheep(no.Model):
         "x": np.tile(np.arange(self.width) + 0.5, self.height),
         "y": np.repeat(np.arange(self.height) + 0.5, self.width),
         # 50% initial probability of being fully grown, other states uniform
-        "countdown": self.mc().sample(ncells, [0.5] + [0.5/(self.grass_regrowth_time-1)]*(self.grass_regrowth_time-1))
+        "countdown": self.mc.sample(ncells, [0.5] + [0.5/(self.grass_regrowth_time-1)]*(self.grass_regrowth_time-1))
       }
     )
 
     self.wolves = pd.DataFrame(
       index=pd.Index(name="id", data=no.df.unique_index(n_wolves)),
       data={
-        "x": self.mc().ustream(n_wolves) * self.width,
-        "y": self.mc().ustream(n_wolves) * self.height,
+        "x": self.mc.ustream(n_wolves) * self.width,
+        "y": self.mc.ustream(n_wolves) * self.height,
         "speed": self.init_wolf_speed,
-        "energy": (self.mc().ustream(n_wolves) + self.mc().ustream(n_wolves)) * self.wolf_gain_from_food
+        "energy": (self.mc.ustream(n_wolves) + self.mc.ustream(n_wolves)) * self.wolf_gain_from_food
       }
     )
     self.__assign_cell(self.wolves)
@@ -57,10 +57,10 @@ class WolfSheep(no.Model):
     self.sheep = pd.DataFrame(
       index=pd.Index(name="id", data=no.df.unique_index(n_sheep)),
       data={
-        "x": self.mc().ustream(n_sheep) * self.width,
-        "y": self.mc().ustream(n_sheep) * self.height,
+        "x": self.mc.ustream(n_sheep) * self.width,
+        "y": self.mc.ustream(n_sheep) * self.height,
         "speed": self.init_sheep_speed,
-        "energy": (self.mc().ustream(n_sheep) + self.mc().ustream(n_sheep)) * self.sheep_gain_from_food
+        "energy": (self.mc.ustream(n_sheep) + self.mc.ustream(n_sheep)) * self.sheep_gain_from_food
       }
     )
     self.__assign_cell(self.sheep)
@@ -72,7 +72,7 @@ class WolfSheep(no.Model):
     self.sheep_speed = [self.sheep.speed.mean()]
     self.wolf_speed_var = [self.wolves.speed.var()]
     self.sheep_speed_var = [self.sheep.speed.var()]
-    self.t = [self.timeline().index()]
+    self.t = [self.timeline.index()]
 
     (self.ax_g, self.ax_w, self.ax_s,
      self.ax_t1, self.ax_wt, self.ax_st,
@@ -86,7 +86,7 @@ class WolfSheep(no.Model):
     self.paused = False
 
     # seed numpy random generator using our generator (for reproducible normal samples)
-    self.npgen = np.random.default_rng(self.mc().raw())
+    self.npgen = np.random.default_rng(self.mc.raw())
 
   def step(self):
 
@@ -97,7 +97,7 @@ class WolfSheep(no.Model):
 
   def check(self):
     # record data
-    self.t.append(self.timeline().index())
+    self.t.append(self.timeline.index())
     self.wolf_pop.append(len(self.wolves))
     self.sheep_pop.append(len(self.sheep))
     self.grass_prop.append(100.0 * len(self.grass[self.grass.countdown==0])/len(self.grass))
@@ -119,9 +119,9 @@ class WolfSheep(no.Model):
 
   def __step_wolves(self):
     # move wolves (wrapped) and update cell
-    self.wolves.x += (2 * self.mc().ustream(len(self.wolves)) - 1.0) * self.wolves.speed
+    self.wolves.x += (2 * self.mc.ustream(len(self.wolves)) - 1.0) * self.wolves.speed
     self.wolves.x = self.wolves.x % self.width
-    self.wolves.y += (2 * self.mc().ustream(len(self.wolves)) - 1.0) * self.wolves.speed
+    self.wolves.y += (2 * self.mc.ustream(len(self.wolves)) - 1.0) * self.wolves.speed
     self.wolves.y = self.wolves.y % self.height
     # half of energy (initially) is consumed by moving
     self.wolves.energy -= 0.5 + 0.5 * self.wolves.speed / self.init_wolf_speed
@@ -137,7 +137,7 @@ class WolfSheep(no.Model):
     self.wolves = self.wolves[self.wolves.energy >= 0]
 
     # breed
-    m = self.mc().hazard(self.wolf_reproduce, len(self.wolves))
+    m = self.mc.hazard(self.wolf_reproduce, len(self.wolves))
     self.wolves.loc[m == 1, "energy"] /= 2
     cubs = self.wolves[m == 1].copy().set_index(no.df.unique_index(int(sum(m))))
     # evolve speed/burn rate from mother + random factor (don't allow to go <=0) should probably be lognormal
@@ -146,9 +146,9 @@ class WolfSheep(no.Model):
 
   def __step_sheep(self):
     # move sheep (wrapped)
-    self.sheep.x += (2 * self.mc().ustream(len(self.sheep)) - 1.0) * self.sheep.speed
+    self.sheep.x += (2 * self.mc.ustream(len(self.sheep)) - 1.0) * self.sheep.speed
     self.sheep.x = self.sheep.x % self.width
-    self.sheep.y += (2 * self.mc().ustream(len(self.sheep)) - 1.0) * self.sheep.speed
+    self.sheep.y += (2 * self.mc.ustream(len(self.sheep)) - 1.0) * self.sheep.speed
     self.sheep.y = self.sheep.y % self.height
     # half of energy (initially) is consumed by moving
     self.sheep.energy -= 0.5 + 0.5 * self.sheep.speed / self.init_sheep_speed
@@ -163,7 +163,7 @@ class WolfSheep(no.Model):
     self.sheep = self.sheep[self.sheep.energy >= 0]
 
     # breed
-    m = self.mc().hazard(self.sheep_reproduce, len(self.sheep))
+    m = self.mc.hazard(self.sheep_reproduce, len(self.sheep))
     self.sheep.loc[m == 1, "energy"] /= 2
     lambs = self.sheep[m == 1].copy().set_index(no.df.unique_index(int(sum(m))))
     # evolve speed from mother + random factor
@@ -263,6 +263,6 @@ class WolfSheep(no.Model):
         rect.set_height(h)
       self.ax_t4.set_ylim([0, max(n/len(self.sheep))])
 
-    #plt.savefig("/tmp/wolf-sheep%04d.png" % self.timeline().index(), dpi=80)
+    #plt.savefig("/tmp/wolf-sheep%04d.png" % self.timeline.index(), dpi=80)
     self.figs.canvas.flush_events()
 

@@ -22,6 +22,11 @@ void no::NoTimeline::next() { m_stepped = true; }
 
 bool no::NoTimeline::at_end() const { return m_stepped; }
 
+std::unique_ptr<no::Timeline> no::NoTimeline::clone() const
+{
+  return std::make_unique<no::NoTimeline>();
+}
+
 // used by python __repr__
 std::string no::NoTimeline::repr() const { return "<NoTimeline stepped=%%>"s % (m_stepped ? "True": "False"); }
 
@@ -87,6 +92,12 @@ bool no::LinearTimeline::at_end() const
 py::object no::LinearTimeline::time() const { return py::float_(m_start + m_dt * m_index); }
 py::object no::LinearTimeline::start() const { return py::float_(m_start); }
 py::object no::LinearTimeline::end() const { return py::float_(m_end); }
+
+std::unique_ptr<no::Timeline> no::LinearTimeline::clone() const
+{
+  return std::make_unique<no::LinearTimeline>(*this);
+}
+
 
 std::string no::LinearTimeline::repr() const
 {
@@ -158,6 +169,12 @@ bool no::NumericTimeline::at_end() const
 {
   return m_index >= m_times.size() - 1;
 }
+
+std::unique_ptr<no::Timeline> no::NumericTimeline::clone() const
+{
+  return std::make_unique<no::NumericTimeline>(*this);
+}
+
 
 std::string no::NumericTimeline::repr() const
 {
@@ -392,6 +409,12 @@ py::object no::CalendarTimeline::end() const
   }
   return py::cast(m_times.back());
 }
+
+std::unique_ptr<no::Timeline> no::CalendarTimeline::clone() const
+{
+  return std::make_unique<no::CalendarTimeline>(*this);
+}
+
 
 std::string no::CalendarTimeline::repr() const
 {

@@ -50,7 +50,7 @@ class People(neworder.Model):
   def step(self):
     # sample each person's age at death.
     # (this is not an efficient implementation when everyone has the same hazard rate)
-    [p.time_mortality_event(self.mc()) for p in self.population]
+    [p.time_mortality_event(self.mc) for p in self.population]
 #!step!
 
 #!finalise!

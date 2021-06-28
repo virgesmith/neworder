@@ -8,12 +8,15 @@ type_mapping = {
   "<class 'pybind11_builtins.pybind11_type'>": "class",
   "<class 'instancemethod'>": "instance method",
   "<class 'builtin_function_or_method'>": "function",
-  "<class 'module'>": "module"
+  "<class 'module'>": "module",
+  "<class 'type'>": "class",
+  "<class 'property'>": "property"
 }
 
 def badge(t):
   colour = {
     "class": "darkgreen",
+    "property": "lightgreen",
     "instance method": "orange",
     "function": "red",
     "module": "blue"
@@ -45,21 +48,26 @@ def format_docstr(m, t):
 
 def recurse_attrs(m, parents, l, f):
   attrs = [a for a in dir(m) if a[:2] != "__" or a == "__init__"]
-  #print("parents=%s" % ".".join(parents))
+  print("parents=%s" % ".".join(parents))
   for a in attrs:
+    if a in ["itertools", "numpy"]:
+      return
     sm = getattr(m, a)
-    #print(str(type(sm)))
+    print(a, str(type(sm)))
     t = type_mapping.get(str(type(sm)), None)
     #t = str(type(sm))
-    if t is None: continue
+    if t is None: break
     if t != "instance method" and t != "function" or (t == "function" and l == 2):
       f.write("---\n\n")
     # if t == "module":
     #   l = 1
-    name = sm.__name__.replace("_neworder_core", "neworder")
+    if hasattr(sm, "__name__"):
+      name = sm.__name__.replace("_neworder_core", "neworder")
+    else:
+      name = a
     f.write(format_heading(l, [name], t))
     f.write(format_docstr(sm, t))
-    if "class" in t or "module" in t:
+    if ("class" in t or "module" in t) and "itertools" not in t:
       recurse_attrs(sm, parents + [name], l+1, f)
   parents = parents[:-2]
 

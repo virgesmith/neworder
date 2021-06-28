@@ -42,7 +42,7 @@ class BlackScholes(neworder.Model):
     # comparing, and broadcasting the result. If one process fails the
     # check and exits without notifying the others, deadlocks can result.
     # send the state representation to process 0
-    states = comm.gather(self.mc().state(), 0)
+    states = comm.gather(self.mc.state(), 0)
     # process 0 checks the values
     if neworder.mpi.rank() == 0:
       ok = all(s == states[0] for s in states)
@@ -63,8 +63,8 @@ class BlackScholes(neworder.Model):
 
   def simulate(self):
     # get the single timestep from the timeline
-    dt = self.timeline().dt()
-    normals = nstream(self.mc().ustream(self.nsims))
+    dt = self.timeline.dt()
+    normals = nstream(self.mc.ustream(self.nsims))
 
     # compute underlying prices at t=dt
     S = self.market["spot"]

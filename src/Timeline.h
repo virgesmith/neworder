@@ -35,6 +35,8 @@ public:
 
   virtual bool at_end() const = 0;
 
+  virtual std::unique_ptr<Timeline> clone() const = 0;
+
   // used by python __repr__
   virtual std::string repr() const = 0;
 
@@ -64,6 +66,8 @@ public:
   void next() override;
 
   bool at_end() const override;
+
+  virtual std::unique_ptr<Timeline> clone() const override;
 
   // used by python __repr__
   std::string repr() const override;
@@ -103,6 +107,8 @@ public:
 
   bool at_end() const override;
 
+  virtual std::unique_ptr<Timeline> clone() const override;
+
   // used by python __repr__
   std::string repr() const override;
 
@@ -139,6 +145,8 @@ public:
   void next() override;
 
   bool at_end() const override;
+
+  virtual std::unique_ptr<Timeline> clone() const override;
 
   std::string repr() const override;
 
@@ -177,6 +185,8 @@ public:
   void next() override;
 
   bool at_end() const override;
+
+  virtual std::unique_ptr<Timeline> clone() const override;
 
   std::string repr() const override;
 

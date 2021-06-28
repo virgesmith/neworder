@@ -33,7 +33,7 @@ class Population(neworder.Model):
     self.population.DC1117EW_C_SEX = self.population.DC1117EW_C_SEX.astype("category")
 
     # actual age is randomised within the bound of the category (NB category values are age +1)
-    self.population["Age"] = self.population.DC1117EW_C_AGE.astype(int) - self.mc().ustream(len(self.population))
+    self.population["Age"] = self.population.DC1117EW_C_AGE.astype(int) - self.mc.ustream(len(self.population))
 
     self.fig = None
     self.plot_pyramid()
@@ -50,7 +50,7 @@ class Population(neworder.Model):
   def age(self):
     # Increment age by timestep and update census age category (used for ASFR/ASMR lookup)
     # NB census age category max value is 86 (=85 or over)
-    self.population.Age = self.population.Age + 1 # NB self.timeline().dt() wont be exactly 1 as based on an average length year of 365.2475 days
+    self.population.Age = self.population.Age + 1 # NB self.timeline.dt() wont be exactly 1 as based on an average length year of 365.2475 days
     # reconstruct census age group
     self.population.DC1117EW_C_AGE = np.clip(np.ceil(self.population.Age), 1, 86).astype(int)
 
@@ -62,14 +62,14 @@ class Population(neworder.Model):
     # might be a more efficient way of generating this array
     rates = females.join(self.fertility, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].values
     # Then randomly determine if a birth occurred
-    h = self.mc().hazard(rates * self.timeline().dt())
+    h = self.mc.hazard(rates * self.timeline.dt())
 
     # The babies are a clone of the new mothers, with with changed PID, reset age and randomised gender (keeping location and ethnicity)
     newborns = females[h == 1].copy()
     newborns.set_index(neworder.df.unique_index(len(newborns)), inplace=True, drop=True)
-    newborns.Age = self.mc().ustream(len(newborns)) - 1.0 # born within the *next* 12 months (ageing step has yet to happen)
+    newborns.Age = self.mc.ustream(len(newborns)) - 1.0 # born within the *next* 12 months (ageing step has yet to happen)
     newborns.DC1117EW_C_AGE = 1 # this is 0-1 in census category
-    newborns.DC1117EW_C_SEX = 1 + self.mc().hazard(0.5, len(newborns)).astype(int) # 1=M, 2=F
+    newborns.DC1117EW_C_SEX = 1 + self.mc.hazard(0.5, len(newborns)).astype(int) # 1=M, 2=F
 
     self.population = self.population.append(newborns)
 
@@ -79,7 +79,7 @@ class Population(neworder.Model):
     rates = self.population.join(self.mortality, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"]
 
     # Then randomly determine if a death occurred
-    h = self.mc().hazard(rates.values * self.timeline().dt())
+    h = self.mc.hazard(rates.values * self.timeline.dt())
 
     # Finally remove deceased from table
     self.population = self.population[h!=1]
@@ -90,16 +90,16 @@ class Population(neworder.Model):
     # - sample counts of migrants according to intensity
     # - append result to population
 
-    self.in_migration["count"] = self.mc().counts(self.in_migration.Rate.values, self.timeline().dt())
+    self.in_migration["count"] = self.mc.counts(self.in_migration.Rate.values, self.timeline.dt())
     h_in = self.in_migration.loc[self.in_migration.index.repeat(self.in_migration["count"])].drop(["Rate", "count"], axis=1)
     h_in = h_in.reset_index().set_index(neworder.df.unique_index(len(h_in)))
     h_in["Area"] = self.lad
     # randomly sample exact age according to age group
-    h_in["Age"] = h_in.DC1117EW_C_AGE - self.mc().ustream(len(h_in))
+    h_in["Age"] = h_in.DC1117EW_C_AGE - self.mc.ustream(len(h_in))
 
     # internal emigration:
     out_rates = self.population.join(self.out_migration, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].values
-    h_out = self.mc().hazard(out_rates * self.timeline().dt())
+    h_out = self.mc.hazard(out_rates * self.timeline.dt())
     # add incoming & remove outgoing migrants
     self.population = self.population[h_out!=1].append(h_in)
 
@@ -139,7 +139,7 @@ class Population(neworder.Model):
       return False
 
     neworder.log("check OK: time={} size={} mean_age={:.2f}, pct_female={:.2f} net_migration={} ({}-{})" \
-      .format(self.timeline().time().date(), self.size(), self.mean_age(), 100.0 * self.gender_split(),
+      .format(self.timeline.time().date(), self.size(), self.mean_age(), 100.0 * self.gender_split(),
       self.in_out[0] - self.in_out[1], self.in_out[0], self.in_out[1]))
 
     # if all is ok, plot the data
@@ -156,7 +156,7 @@ class Population(neworder.Model):
     if self.fig is None:
       self.fig, self.axes, self.mbar, self.fbar = pyramid.plot(a, m, f)
     else:
-      # NB self.timeline().time() is now the time at the *end* of the timestep since this is called from check() (as opposed to step())
-      self.mbar, self.fbar = pyramid.update(str(self.timeline().time().year), self.fig, self.axes, self.mbar, self.fbar, a, m, f)
+      # NB self.timeline.time() is now the time at the *end* of the timestep since this is called from check() (as opposed to step())
+      self.mbar, self.fbar = pyramid.update(str(self.timeline.time().year), self.fig, self.axes, self.mbar, self.fbar, a, m, f)
 
 

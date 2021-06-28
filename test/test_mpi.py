@@ -67,7 +67,7 @@ else:
     model = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
 
     # # check identical streams (independent=False)
-    u = model.mc().ustream(1000)
+    u = model.mc.ustream(1000)
     v = comm.bcast(u, root=root)
     # u == v on all processes
     assert np.array_equal(u, v)
@@ -76,7 +76,7 @@ else:
     model = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_independent_stream)
 
     # # check identical streams (independent=False)
-    u = model.mc().ustream(1000)
+    u = model.mc.ustream(1000)
     v = comm.bcast(u, root=root)
     # u != v on all non-root processes
     if no.mpi.rank() != root:
