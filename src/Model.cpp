@@ -7,7 +7,8 @@
 #include "Error.h"
 
 #include <pybind11/pybind11.h>
-  
+
+// take a copy of the (const) timeline and clone it (original object may get deleted)
 no::Model::Model(const Timeline& timeline, const py::function& seeder)
   : m_timeline(timeline.clone()), m_monteCarlo(seeder(no::env::rank.load(std::memory_order_relaxed)).cast<int32_t>())
 {

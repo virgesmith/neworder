@@ -24,7 +24,7 @@ bool no::NoTimeline::at_end() const { return m_stepped; }
 
 std::unique_ptr<no::Timeline> no::NoTimeline::clone() const
 {
-  return std::unique_ptr<no::NoTimeline>(new no::NoTimeline(*this));
+  return std::make_unique<no::NoTimeline>();
 }
 
 // used by python __repr__
@@ -95,7 +95,7 @@ py::object no::LinearTimeline::end() const { return py::float_(m_end); }
 
 std::unique_ptr<no::Timeline> no::LinearTimeline::clone() const
 {
-  return std::unique_ptr<no::LinearTimeline>(new no::LinearTimeline(*this));
+  return std::make_unique<no::LinearTimeline>(*this);
 }
 
 
@@ -172,7 +172,7 @@ bool no::NumericTimeline::at_end() const
 
 std::unique_ptr<no::Timeline> no::NumericTimeline::clone() const
 {
-  return std::unique_ptr<no::NumericTimeline>(new no::NumericTimeline(*this));
+  return std::make_unique<no::NumericTimeline>(*this);
 }
 
 
@@ -412,7 +412,7 @@ py::object no::CalendarTimeline::end() const
 
 std::unique_ptr<no::Timeline> no::CalendarTimeline::clone() const
 {
-  return std::unique_ptr<no::CalendarTimeline>(new no::CalendarTimeline(*this));
+  return std::make_unique<no::CalendarTimeline>(*this);
 }
 
 
