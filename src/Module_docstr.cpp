@@ -215,21 +215,9 @@ const char* model_docstr = R"docstr(
     The base model class from which all neworder models should be subclassed
 )docstr";
 
-const char* model_init_notimeline_docstr = R"docstr(
-    Constructs a model object with an empty timeline and a seeder function, for continuous-time models
+const char* model_init_docstr = R"docstr(
+    Constructs a model object with a timeline and a seeder function
 )docstr";
-
-// const char* model_init_lineartimeline_docstr = R"docstr(
-//     Constructs a model object from a linear timeline and a seeder function, providing equally spaced timesteps
-// )docstr";
-
-// const char* model_init_numerictimeline_docstr = R"docstr(
-//     Constructs a model object from a numeric timeline and a seeder function, allowing user defined timesteps
-// )docstr";
-
-// const char* model_init_calendartimelime_docstr = R"docstr(
-//     Constructs a model object from a calendar timeline and a seeder function, with date-based timesteps
-// )docstr";
 
 const char* model_timeline_docstr = R"docstr(
     The model's timeline object

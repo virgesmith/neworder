@@ -106,7 +106,7 @@ Returns the time of the current step in the timeline
 ## ![class](https://img.shields.io/badge/-class-darkgreen) `Domain`
 
 
-Base class for spatial domains
+Base class for spatial domains.
 
 ---
 
@@ -219,40 +219,11 @@ The base model class from which all neworder models should be subclassed
 ### ![instance method](https://img.shields.io/badge/-instance method-orange) `__init__`
 
 ```python
-__init__(*args, **kwargs)
-```
-Overloaded function.
-
-```python
- __init__(self: neworder.Model, timeline: neworder.NoTimeline, seeder: function) -> None
+__init__(self: neworder.Model, timeline: neworder.Timeline, seeder: function) -> None
 ```
 
 
-Constructs a model object with an empty timeline and a seeder function, for continuous-time models
-
-
-```python
- __init__(self: neworder.Model, timeline: neworder.LinearTimeline, seeder: function) -> None
-```
-
-
-Constructs a model object from a linear timeline and a seeder function, providing equally spaced timesteps
-
-
-```python
- __init__(self: neworder.Model, timeline: neworder.NumericTimeline, seeder: function) -> None
-```
-
-
-Constructs a model object from a numeric timeline and a seeder function, allowing user defined timesteps
-
-
-```python
- __init__(self: neworder.Model, timeline: neworder.CalendarTimeline, seeder: function) -> None
-```
-
-
-Constructs a model object from a calendar timeline and a seeder function, with date-based timesteps
+Constructs a model object with a timeline and a seeder function
 
 
 ### ![instance method](https://img.shields.io/badge/-instance method-orange) `check`
@@ -517,12 +488,23 @@ Returns the time of the current step in the timeline
 
 ## ![class](https://img.shields.io/badge/-class-darkgreen) `PositionalGrid`
 
-Discrete rectangular n-dimensional domain 
+
+Discrete rectangular n-dimensional domain
+
 ---
 
 ## ![class](https://img.shields.io/badge/-class-darkgreen) `Space`
 
-Continuous rectangular n-dimensional domain 
+
+Continuous rectangular n-dimensional finite or infinite domain.
+If finite, positioning and/or movement near the domain boundary is
+dictated by the `wrap` attribute.
+
+---
+
+## ![class](https://img.shields.io/badge/-class-darkgreen) `Timeline`
+
+__doc__ empty
 ---
 
 ## ![function](https://img.shields.io/badge/-function-red) `checked`
@@ -590,15 +572,21 @@ Spatial structures for positioning and moving entities and computing distances
 ### ![class](https://img.shields.io/badge/-class-darkgreen) `Domain`
 
 
-Base class for spatial domains
+Base class for spatial domains.
 
 ---
 
 ### ![class](https://img.shields.io/badge/-class-darkgreen) `PositionalGrid`
 
-Discrete rectangular n-dimensional domain 
+
+Discrete rectangular n-dimensional domain
+
 ---
 
 ### ![class](https://img.shields.io/badge/-class-darkgreen) `Space`
 
-Continuous rectangular n-dimensional domain 
+
+Continuous rectangular n-dimensional finite or infinite domain.
+If finite, positioning and/or movement near the domain boundary is
+dictated by the `wrap` attribute.
+
