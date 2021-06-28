@@ -7,9 +7,9 @@
 #include "Error.h"
 
 #include <pybind11/pybind11.h>
-
-no::Model::Model(std::unique_ptr<Timeline> timeline, const py::function& seeder)
-  : m_timeline(std::move(timeline)), m_monteCarlo(seeder(no::env::rank.load(std::memory_order_relaxed)).cast<int32_t>())
+  
+no::Model::Model(const Timeline& timeline, const py::function& seeder)
+  : m_timeline(timeline.clone()), m_monteCarlo(seeder(no::env::rank.load(std::memory_order_relaxed)).cast<int32_t>())
 {
   no::log("model init: timeline=%% mc=%%"s % m_timeline->repr() % m_monteCarlo.repr());
 }
