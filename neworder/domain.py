@@ -1,3 +1,7 @@
+"""
+Spatial structures for positioning and moving entities and computing distances
+"""
+
 import numpy as np
 import itertools
 
@@ -8,8 +12,11 @@ def _bounce(point, min, max):
   return point
 
 class Domain:
+  """
+  Base class for spatial domains.
+  """
 
-  # Edge behaviour
+  """ Edge behaviour """
   UNBOUNDED = 0
   WRAP = 1
   CONSTRAIN = 2
@@ -33,10 +40,17 @@ class Domain:
     return self.__continuous
 
 class Space(Domain):
-  """ Continuous rectangular n-dimensional domain """
+  """
+  Continuous rectangular n-dimensional finite or infinite domain.
+  If finite, positioning and/or movement near the domain boundary is
+  dictated by the `wrap` attribute.
+  """
 
   @staticmethod
   def unbounded(dim):
+    """
+    Construct an unbounded Space
+    """
     assert dim
     return Space(np.full(dim, -np.inf), np.full(dim, +np.inf), edge=Domain.UNBOUNDED)
 
@@ -55,7 +69,9 @@ class Space(Domain):
     return self.min, self.max
 
   def move(self, positions, velocities, delta_t, ungroup=False):
-    """ Returns translated positions AND velocities """
+    """
+    Returns translated positions AND velocities
+    """
     # group tuples into a single array if necessary
     if type(positions) == tuple:
       positions = np.column_stack(positions)
@@ -142,7 +158,9 @@ class Space(Domain):
     return "%s dim=%d min=%s max=%s edge=%s" % (self.__class__.__name__, self.dim, self.min, self.max, self.edge)
 
 class PositionalGrid(Domain):
-  """ Discrete rectangular n-dimensional domain """
+  """
+  Discrete rectangular n-dimensional domain
+  """
 
   def __init__(self, extent, edge = Domain.CONSTRAIN):
     assert len(extent) and extent.dtype == np.int64
