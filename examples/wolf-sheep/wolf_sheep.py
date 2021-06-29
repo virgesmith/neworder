@@ -1,4 +1,5 @@
 
+from neworder.domain import Domain
 import numpy as np
 import pandas as pd
 import neworder as no
@@ -13,11 +14,12 @@ class WolfSheep(no.Model):
 
   def __init__(self, params):
 
-    # hard-coded to unit timestep
     super().__init__(no.LinearTimeline(0.0, 1.0), no.MonteCarlo.deterministic_independent_stream)
-
+    # hard-coded to unit timestep
     self.width = params["grid"]["width"]
     self.height = params["grid"]["height"]
+    self.domain = no.Space(np.array([0,0]), np.array([self.width, self.height]), edge=Domain.WRAP)
+
     n_wolves = params["wolves"]["starting_population"]
     n_sheep =params["sheep"]["starting_population"]
 
@@ -119,10 +121,10 @@ class WolfSheep(no.Model):
 
   def __step_wolves(self):
     # move wolves (wrapped) and update cell
-    self.wolves.x += (2 * self.mc.ustream(len(self.wolves)) - 1.0) * self.wolves.speed
-    self.wolves.x = self.wolves.x % self.width
-    self.wolves.y += (2 * self.mc.ustream(len(self.wolves)) - 1.0) * self.wolves.speed
-    self.wolves.y = self.wolves.y % self.height
+    vx = (2 * self.mc.ustream(len(self.wolves)) - 1.0) * self.wolves.speed
+    vy = (2 * self.mc.ustream(len(self.wolves)) - 1.0) * self.wolves.speed
+    (self.wolves.x, self.wolves.y), _ = self.domain.move((self.wolves.x, self.wolves.y), (vx, vy), 1.0, ungroup=True)
+
     # half of energy (initially) is consumed by moving
     self.wolves.energy -= 0.5 + 0.5 * self.wolves.speed / self.init_wolf_speed
     self.__assign_cell(self.wolves)
@@ -145,12 +147,10 @@ class WolfSheep(no.Model):
     self.wolves = self.wolves.append(cubs)
 
   def __step_sheep(self):
-    # move sheep (wrapped)
-    self.sheep.x += (2 * self.mc.ustream(len(self.sheep)) - 1.0) * self.sheep.speed
-    self.sheep.x = self.sheep.x % self.width
-    self.sheep.y += (2 * self.mc.ustream(len(self.sheep)) - 1.0) * self.sheep.speed
-    self.sheep.y = self.sheep.y % self.height
-    # half of energy (initially) is consumed by moving
+    # move sheep randomly (wrapped)
+    vx = (2 * self.mc.ustream(len(self.sheep)) - 1.0) * self.sheep.speed
+    vy = (2 * self.mc.ustream(len(self.sheep)) - 1.0) * self.sheep.speed
+    (self.sheep.x, self.sheep.y), _ = self.domain.move((self.sheep.x, self.sheep.y), (vx, vy), 1.0, ungroup=True)
     self.sheep.energy -= 0.5 + 0.5 * self.sheep.speed / self.init_sheep_speed
     self.__assign_cell(self.sheep)
 
