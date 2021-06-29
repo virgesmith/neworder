@@ -7,6 +7,7 @@ md = "docs/api.md"
 type_mapping = {
   "<class 'pybind11_builtins.pybind11_type'>": "class",
   "<class 'instancemethod'>": "instance method",
+  "<class 'wrapper_descriptor'>": "(ignore)",
   "<class 'builtin_function_or_method'>": "function",
   "<class 'module'>": "module",
   "<class 'type'>": "class",
@@ -36,7 +37,7 @@ def format_heading(l, a, t):
 
 def format_docstr(m, t):
   if not m.__doc__:
-    return "__doc__ empty\n"
+    return "\n`__doc__` empty\n\n"
   doc = m.__doc__
   lines = format_overloads(doc.split("\n"))
   for i,l in enumerate(lines):
@@ -48,15 +49,17 @@ def format_docstr(m, t):
 
 def recurse_attrs(m, parents, l, f):
   attrs = [a for a in dir(m) if a[:2] != "__" or a == "__init__"]
-  print("parents=%s" % ".".join(parents))
+  #print(attrs)
+  #print("%s: parents=%s" % (m, ".".join(parents)))
   for a in attrs:
     if a in ["itertools", "numpy"]:
-      return
+      break
     sm = getattr(m, a)
     print(a, str(type(sm)))
     t = type_mapping.get(str(type(sm)), None)
     #t = str(type(sm))
     if t is None: break
+    if t == "(ignore)": continue
     if t != "instance method" and t != "function" or (t == "function" and l == 2):
       f.write("---\n\n")
     # if t == "module":
@@ -67,7 +70,7 @@ def recurse_attrs(m, parents, l, f):
       name = a
     f.write(format_heading(l, [name], t))
     f.write(format_docstr(sm, t))
-    if ("class" in t or "module" in t) and "itertools" not in t:
+    if ("class" in t or "module" in t or "property" in t) and "itertools" not in t:
       recurse_attrs(sm, parents + [name], l+1, f)
   parents = parents[:-2]
 
