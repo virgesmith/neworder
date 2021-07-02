@@ -6,23 +6,18 @@ In order to make *neworder* easier to package, distribute and integrate with oth
 
 The original embedded configuration is still provided (builds on linux platforms only), although the module has evolved significantly since then. See the "embedded" branch if you're interested.
 
+## Contributions
+
+The source code is on [github](https://github.com/virgesmith/neworder). To contribute, please fork the repository and submit a PR with your changes/additions.
+
+!!! note "Legal"
+    Contributors retain copyright on their contributions. When submitting a PR, please add yourself as an additional copyright holder in [LICENCE.md](https://github.com/virgesmith/neworder/LICENCE.md).
+
+The instructions below assume you've already cloned a local copy of the neworder repo.
+
 ## Requirements
 
 *neworder* works on 64 bit linux, OSX and Windows platforms, and requires python 3.6 or higher. For parallel execution, it requires an MPI environment (e.g. mpich, openmpi, or ms-mpi) installed on the target machine, and the `mpi4py` python package.
-
-## Repo
-
-The source code is on [github](https://github.com/virgesmith/neworder). To contribute, please fork the repository and submit a PR.
-
-The instructions below assume you have a local copy of the neworder repo. Alternatively, you can simply install the latest version directly from the repo like so:
-
-```bash
-pip install -e git+https://github.com/virgesmith/neworder.git
-```
-
-## Legal
-
-Contributors retain copyright on their contributions. When submitting a PR, please add yourself as an additional copyright holder in [LICENCE.md](https://github.com/virgesmith/neworder/LICENCE.md).
 
 ## Dependencies
 
