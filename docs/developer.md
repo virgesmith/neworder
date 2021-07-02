@@ -17,8 +17,12 @@ The source code is on [github](https://github.com/virgesmith/neworder). To contr
 The instructions below assume you have a local copy of the neworder repo. Alternatively, you can simply install the latest version directly from the repo like so:
 
 ```bash
-pip install git+https://github.com/virgesmith/neworder.git
+pip install -e git+https://github.com/virgesmith/neworder.git
 ```
+
+## Legal
+
+Contributors retain copyright on their contributions. When submitting a PR, please add yourself as an additional copyright holder in [LICENCE.md](https://github.com/virgesmith/neworder/LICENCE.md).
 
 ## Dependencies
 
