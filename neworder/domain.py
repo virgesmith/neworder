@@ -61,6 +61,8 @@ class Space(Domain):
     # Space supports all edge behaviours
     assert edge in [Domain.UNBOUNDED, Domain.WRAP, Domain.CONSTRAIN, Domain.BOUNCE]
 
+    assert np.all(max>min)
+
     self.min = min
     self.max = max
 
@@ -156,84 +158,4 @@ class Space(Domain):
 
   def __repr__(self):
     return "%s dim=%d min=%s max=%s edge=%s" % (self.__class__.__name__, self.dim, self.min, self.max, self.edge)
-
-class PositionalGrid(Domain):
-  """
-  Discrete rectangular n-dimensional domain
-  """
-
-  def __init__(self, extent, edge = Domain.CONSTRAIN):
-    assert len(extent) and extent.dtype == np.int64
-    # grid domains must be bounded
-    assert edge in [Domain.WRAP, Domain.CONSTRAIN, Domain.BOUNCE]
-    super().__init__(len(extent), edge, False)
-
-    self.__extent = extent
-
-    #self.strides = [np.prod(self.extent[i+1:]) for i in range(len(self.extent))]
-
-  def ncells(self):
-    return np.prod(self.__extent)
-
-  def index(self, coord):
-    return np.ravel_multi_index(coord, self.extent)
-
-  def coord(self, index):
-    return np.array(np.unravel_index(index, self.extent))
-
-  def neighbours(self, cell, as_coords=False):
-    if type(cell) is int:
-      cell = self.coord(cell)
-    # https://stackoverflow.com/questions/40292190/calculate-the-neighbours-of-n-dimensional-fields-in-python
-    stencil = list(itertools.product([-1,0,1], repeat=len(self.__extent)))
-    stencil.remove((0,)*len(self.__extent))
-    if self.edge == Domain.WRAP:
-      coords = [np.mod(cell + p, self.__extent) for p in stencil]
-    else:
-      coords = [np.clip(cell + p, 0, self.__extent - 1) for p in stencil]
-    if as_coords:
-      return coords
-    return np.unique([self.index(c) for c in coords])
-
-  @property
-  def extent(self):
-    return self.__extent
-
-  # def move(self, positions, deltas):
-  #   # group tuples into a single array if necessary
-  #   if type(positions) == tuple:
-  #     positions = np.column_stack(positions)
-  #   # group tuples into a single array if necessary
-  #   if type(deltas) == tuple:
-  #     positions = np.column_stack(delta)
-  #   assert positions.dtype == np.int64
-  #   assert delta.dtype == np.int64
-  #   assert positions.shape[-1] == self.dim and delta.shape[-1] == self.dim
-  #   if self.edge == Domain.CONSTRAIN:
-  #     return np.clip(positions + delta, self.min, self.max)
-  #   else:
-  #     return np.mod(positions + delta - self.min, self.extent)
-
-  # def dists2(self, positions, to_points=None):
-  #   # group tuples into a single array if necessary
-  #   if type(positions) == tuple:
-  #     positions = np.column_stack(positions)
-  #   if type(to_points) == tuple:
-  #     to_points = np.column_stack(to_points)
-  #   # distances w.r.t. self if to_points not explicitly specified
-  #   if to_points is None:
-  #     to_points = positions
-  #   n = positions.shape[0]
-  #   m = to_points.shape[0]
-  #   d = positions.shape[1]
-  #   dmatrix = np.zeros((m,n), dtype=np.int64)
-  #   for i in range(d):
-  #     # for non-diagonal neighbours only, distance in hops
-  #     #dmatrix += np.abs(np.tile(positions[:,i],m).reshape((m,n)) - np.repeat(to_points[:,i],n).reshape(m,n))
-  #     dmatrix += (np.tile(positions[:,i],m).reshape((m,n)) - np.repeat(to_points[:,i],n).reshape(m,n))**2
-  #   return dmatrix
-
-  # def dists(self, positions, to_points=None):
-  #   return np.sqrt(self.dists2(positions, to_points)[0])
-
 

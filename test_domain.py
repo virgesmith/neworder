@@ -52,10 +52,19 @@ class SpaceTest(no.Model):
   def check(self):
     if self.space2d.edge == Domain.WRAP:
       d = (self.space2d.max - self.space2d.min)/2
-      return np.all(self.space2d.dists2(self.positions) < d@d)
+      d2, _ = self.space2d.dists2(self.positions)
+      #print(np.where(self.space2d.dists2(self.positions) < d@d))
+      return np.all(d2 < d@d)
     return True
 
 
+#class StateGridTest(no.Model):
+
+def test_state_grid():
+
+  g = no.StateGrid(np.zeros(5,5))
+
+
 if __name__ == "__main__":
-  m = SpaceTest(50, Domain.WRAP)
-  no.run(m)
+  # m = SpaceTest(50, Domain.WRAP)
+  # no.run(m)

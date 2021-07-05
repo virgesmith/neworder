@@ -3,45 +3,74 @@ import numpy as np
 import neworder as no
 import pandas as pd
 
+from utils import assert_throws
+
+def test_invalid():
+
+  assert_throws(AssertionError, no.Space, [], [])
+
+  assert_throws(AssertionError, no.Space, np.array([0.0]), np.array([0.0]))
+  assert_throws(AssertionError, no.Space, np.array([0.0, 1.0]), np.array([1.0, -1.0]))
+
 
 def test_space2d():
 
-  space2d = no.Space(np.array([-1.0, -3.0]), np.array([2.0, 5.0]))
+  # constrained edges
+  space2dc = no.Space(np.array([-1.0, -3.0]), np.array([2.0, 5.0]), no.Domain.CONSTRAIN)
 
   point = np.zeros(2)
   delta = np.array([0.6, 0.7])
 
-  print(space2d)
-  print(point)
-  print(delta)
-  for _ in range(10):
-    point, delta = space2d.move(point, delta, 1.0)
-    print(point)
+  # move point until stuck in corner
+  for _ in range(100):
+    point, delta = space2dc.move(point, delta, 1.0)
 
-  space2dw = no.Space(np.array([-1.0, -3.0]), np.array([2.0, 5.0]), True)
+  # check its in corner and not moving
+  assert point[0] == 2.0
+  assert point[1] == 5.0
+  assert delta[0] == 0.0
+  assert delta[1] == 0.0
+
+  # wrapped edges
+  space2dw = no.Space(np.array([-1.0, -3.0]), np.array([2.0, 5.0]), no.Domain.WRAP)
 
   assert space2dw.dim == 2
 
-  point = np.zeros(2)
+  points = np.array([[0.,0.],[1.,0.],[0.,1.]])
+  delta = np.array([0.6, 0.7])
 
-  print(space2dw)
-  delta = np.array([0.06, 0.07])
-  x = [point[0]]
-  y = [point[1]]
+  # move point
   for _ in range(100):
-    point, delta = space2dw.move(point, delta, 1.0)
-    x.append(point[0])
-    y.append(point[1])
+    points, delta = space2dw.move(points, delta, 1.0)
+    # check distances dont change
+    d2, _ = space2dw.dists2(points)
+    assert np.all(d2.diagonal() == 0.0)
+    assert np.allclose(d2[0], np.array([0., 1., 1.]))
+    assert np.allclose(d2[1], np.array([1., 0., 2.]))
 
-  # plt.plot(x, y, ".")
-  # plt.show()
+  # check its still in domain and speed unchanged
+  assert np.all(points[:,0] >= -1.0) and np.all(points[:, 0] < 2.0)
+  assert np.all(points[:,1] >= -3.0) and np.all(points[:, 1] < 5.0)
+  assert delta[0] == 0.6
+  assert delta[1] == 0.7
 
+  # bounce edges
+  space2db = no.Space(np.array([-1.0, -3.0]), np.array([2.0, 5.0]), no.Domain.BOUNCE)
 
-  points = np.array([[0.,0.], [0., 1.], [1.,1.], [3., 4.]])
-  # print(points)
-  # #points2 = space2d.move(points, delta)
-  # #print(points2)
-  print(space2dw.dists(points))
+  assert space2db.dim == 2
+
+  points = np.array([[0.,0.],[1.,0.],[0.,1.]])
+  deltas = np.array([[0.6, 0.7],[0.6, 0.7],[0.6, 0.7]])
+
+  # move points
+  for _ in range(100):
+    points, deltas = space2dw.move(points, deltas, 1.0)
+
+  # check points still in domain and absolute speed unchanged
+  assert np.all(points[:,0] >= -1.0) and np.all(points[:, 0] < 2.0)
+  assert np.all(points[:,1] >= -3.0) and np.all(points[:, 1] < 5.0)
+  assert np.all(np.abs(deltas[:,0]) == 0.6)
+  assert np.all(np.abs(deltas[:,1]) == 0.7)
 
 
 def test_space3d():
@@ -57,31 +86,15 @@ def test_space3d():
       "vz": 0.01
     })
 
-  print(bodies)
-
   space = no.domain.Space.unbounded(3)
 
   s = np.column_stack((bodies.x, bodies.y, bodies.z))
-  print(space.dists(s))
+  assert np.all(space.dists(s).diagonal() == 0.0)
 
-  print(space.dim)
+  assert space.dim == 3
 
   dt = 1.0
   (bodies.x, bodies.y, bodies.z), (bodies.vx, bodies.vy, bodies.vz) = space.move((bodies.x, bodies.y, bodies.z), (bodies.vx, bodies.vy, bodies.vz), dt, ungroup=True)
-  print(bodies)
 
-  #print(p.shape)
-  #print(np.split(p, space.dim, axis=1))
-
-
-# def test_grid2d():
-#   grid2d = no.domain.Grid(np.array([8,8], dtype=np.int64))
-
-#   points = np.array([[0,0], [1,2], [3,4]], dtype=np.int64)
-
-#   to_points = np.array([[0,0]], dtype=np.int64)
-
-
-
-#   print(grid2d.dists(points, to_points))
-#   #assert False
+if __name__ == "__main__":
+  test_space3d()
