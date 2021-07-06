@@ -4,8 +4,6 @@ import numpy as np
 # for inverse cumulative normal
 import scipy.stats
 
-# TODO move this functionality into C++
-
 def nstream(u):
   """ Return a vector of n normally distributed pseudorandom variates (mean zero unity variance) """
   return scipy.stats.norm.ppf(u)

@@ -43,8 +43,8 @@ class Boids(no.Model):
       self.boids = pd.DataFrame(
         index = pd.Index(name="id", data=no.df.unique_index(self.N)),
         data={
-          "x": self.mc.ustream(N) * self.range/2,
-          "y": self.mc.ustream(N) * self.range/2,
+          "x": self.mc.ustream(N) * self.range,
+          "y": self.mc.ustream(N) * self.range,
           "theta": self.mc.ustream(N) * TWO_PI # zero is +ve x axis
         }
       )
@@ -107,6 +107,7 @@ class Boids(no.Model):
     self.boids.theta = (self.boids.theta + delta) % TWO_PI
 
   def __separate(self, in_range, dx, dy, max_turn):
+    if np.all(in_range == 0): return
     weights = 1.0 / np.sum(in_range, axis=0)
     weights[weights==np.inf] = 0.0
 
