@@ -22,4 +22,4 @@ Which is run like so:
 
 ## Outputs
 
-The main output is the animation image above. Log messages also record when either the wolf or sheep populations die out completely. The model halts when the sheep population dies out.
+The main output (see image above) is an animation depicting the wolves, sheep and grass in the domain, plus graphs of the populations and histograms of the wolf and sheep speeds. Log messages also record when either the wolf or sheep populations die out completely. The model halts when the wolf and sheep populations die out.

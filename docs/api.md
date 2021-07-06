@@ -713,13 +713,6 @@ Returns the time of the current step in the timeline
 
 ---
 
-## ![class](https://img.shields.io/badge/-class-darkgreen) `PositionalGrid`
-
-
-Discrete rectangular n-dimensional domain
-
----
-
 ## ![class](https://img.shields.io/badge/-class-darkgreen) `Space`
 
 
@@ -802,13 +795,6 @@ Spatial structures for positioning and moving entities and computing distances
 
 
 Base class for spatial domains.
-
----
-
-### ![class](https://img.shields.io/badge/-class-darkgreen) `PositionalGrid`
-
-
-Discrete rectangular n-dimensional domain
 
 ---
 

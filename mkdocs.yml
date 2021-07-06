@@ -51,6 +51,7 @@ nav:
     - Schelling: examples/schelling.md
     - Wolf-Sheep: examples/wolf-sheep.md
     - N-body: examples/n-body.md
+    - Boids: examples/boids.md
   - API:
     - API Reference: api.md
     - Tips and Tricks: tips.md
