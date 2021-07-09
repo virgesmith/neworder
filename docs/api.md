@@ -805,3 +805,42 @@ Continuous rectangular n-dimensional finite or infinite domain.
 If finite, positioning and/or movement near the domain boundary is
 dictated by the `wrap` attribute.
 
+---
+
+## ![function](https://img.shields.io/badge/-function-red) `log`
+
+```python
+log(obj: object) -> None
+```
+
+
+The logging function. Prints obj to the console, annotated with process information
+
+
+---
+
+## ![module](https://img.shields.io/badge/-module-blue) `neworder.mpi`
+
+
+Submodule for basic MPI environment discovery
+
+### ![function](https://img.shields.io/badge/-function-red) `rank`
+
+```python
+rank() -> int
+```
+
+
+Returns the MPI rank of the process
+
+
+### ![function](https://img.shields.io/badge/-function-red) `size`
+
+```python
+size() -> int
+```
+
+
+Returns the MPI size (no. of processes) of the run
+
+

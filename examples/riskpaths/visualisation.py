@@ -18,5 +18,5 @@ def plot(model):
   plt.title("Age distribution of first pregnancy, dependent on union state")
   plt.xlabel("Age (y)")
   plt.ylabel("Frequency")
-  plt.savefig("./docs/examples/img/riskpaths.png", dpi=80)
+  #plt.savefig("./docs/examples/img/riskpaths.png", dpi=80)
   plt.show()

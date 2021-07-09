@@ -8,17 +8,17 @@ Example of how simple interaction rules can give rise to collective behaviours, 
 
 ## Implementation
 
-Each entity travels at a fixed speed in a 2d wraparound universe, and interact with the other entities in three ways:
+Each entity travels at a fixed speed in a 2 dimensional wrap-around universe, and interacts with the other entities in three ways:
 
-- separation: will turn to avoid contact with other entities in close range 
-- alignment: will turn towards the mean heading of nearby entities
-- cohesion: will turn towards the centre of gravity of nearby entities
+- separation: turns to avoid contact with other entities in close range, or
+- alignment: turns towards the mean heading of nearby entities, and
+- cohesion: turns towards the centre of gravity of nearby entities
 
-Turns are constrained to a maximum angle per timestep (1.5&deg; for separation, 5&deg; for alignment, 3&deg; for cohesion). 
+(if a separation turn is required, the boid will not attempt to align or cohere)
 
-If a separation turn is required, the boid will not attempt to align or cohere.
+Turns are constrained to a maximum angle per timestep (1.5&deg; for separation, 5&deg; for alignment, 3&deg; for cohesion).
 
-The entities are stored in a `DataFrame` and use `neworder.Space` to update positions. Computations are "vectorised"<sup>&ast;</sup> using numpy functionality for efficiency.
+The entities are stored in a pandas `DataFrame` and use `neworder.Space` to update positions. Computations are "vectorised"<sup>&ast;</sup> using numpy functionality for efficiency.
 
 &ast; in this context "vectorisation" merely means the avoidance of explicit loops in an interpreted language. The actual implementation may be compiled to assembly language, vectorised in the true ([SIMD](https://en.wikipedia.org/wiki/SIMD)) sense, parallelised, optimised in other ways, or any combination thereof. (It's definitely parallelised judging by CPU usage).
 

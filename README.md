@@ -8,8 +8,8 @@
 
 [![License](https://img.shields.io/github/license/mashape/apistatus.svg)](https://opensource.org/licenses/MIT)
 [![DOI](https://zenodo.org/badge/111997710.svg)](https://zenodo.org/badge/latestdoi/111997710)
+[![status](https://joss.theoj.org/papers/4b7cc8402819ff48fc7403c0e9a265e9/status.svg)](https://joss.theoj.org/papers/4b7cc8402819ff48fc7403c0e9a265e9)
 
-<!--[![Build Status](https://travis-ci.org/virgesmith/neworder.png?branch=master)](https://travis-ci.org/virgesmith/neworder)-->
 [![python (pip) build](https://github.com/virgesmith/neworder/actions/workflows/pip-package.yml/badge.svg)]()
 [![Build status](https://ci.appveyor.com/api/projects/status/oycn4is2insoiun7?svg=true)](https://ci.appveyor.com/project/virgesmith/neworder)
 [![codecov](https://codecov.io/gh/virgesmith/neworder/branch/master/graph/badge.svg?token=g5mDOcjGTD)](https://codecov.io/gh/virgesmith/neworder)
@@ -26,7 +26,7 @@
 - **data agnosticism**: the framework does not impose any constraints on data formats for either sources or outputs.
 - **reusability**: leverage python modules like *numpy*, *pandas* and *matplotlib*.
 - **reproducibility**: built-in, customisable random generator seeding strategies
-- **speed**: the module is written in optimised C++ and provides fast Monte-Carlo, statistical and data manipulation functions.
+- **speed**: the module is predominantly written in optimised C++ and provides fast Monte-Carlo, statistical and data manipulation functions.
 - **compatibility**: operate directly on *numpy* arrays and *pandas* DataFrames
 - **scalability**: can be run on a desktop or a HPC cluster, supporting parallel execution using MPI.
 

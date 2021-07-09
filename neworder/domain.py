@@ -3,7 +3,6 @@ Spatial structures for positioning and moving entities and computing distances
 """
 
 import numpy as np
-import itertools
 
 def _bounce(point, min, max):
   for d in range(len(point)):

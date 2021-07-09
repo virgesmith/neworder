@@ -52,7 +52,7 @@ def recurse_attrs(m, parents, l, f):
   #print(attrs)
   #print("%s: parents=%s" % (m, ".".join(parents)))
   for a in attrs:
-    if a in ["itertools", "numpy"]:
+    if a in ["np", "numpy"]:
       break
     sm = getattr(m, a)
     print(a, str(type(sm)))
