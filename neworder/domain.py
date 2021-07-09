@@ -16,7 +16,9 @@ class Domain:
   Base class for spatial domains.
   """
 
-  """ Edge behaviour """
+  """
+  Edge behaviour
+  """
   UNBOUNDED = 0
   WRAP = 1
   CONSTRAIN = 2
@@ -29,14 +31,18 @@ class Domain:
 
   @property
   def dim(self):
+    """ The dimension of the spatial domain """
     return self.__dim
 
   @property
   def edge(self):
+    """ The tyoe of edge constraint """
+
     return self.__edge
 
   @property
   def continuous(self):
+    """ Whether space is continuous or discrete """
     return self.__continuous
 
 class Space(Domain):
@@ -48,9 +54,7 @@ class Space(Domain):
 
   @staticmethod
   def unbounded(dim):
-    """
-    Construct an unbounded Space
-    """
+    """ Construct an unbounded Space """
     assert dim
     return Space(np.full(dim, -np.inf), np.full(dim, +np.inf), edge=Domain.UNBOUNDED)
 
@@ -68,12 +72,11 @@ class Space(Domain):
 
   @property
   def extent(self):
+    """ The extent of the space in terms of two opposing points """
     return self.min, self.max
 
   def move(self, positions, velocities, delta_t, ungroup=False):
-    """
-    Returns translated positions AND velocities
-    """
+    """ Returns translated positions AND velocities """
     # group tuples into a single array if necessary
     if type(positions) == tuple:
       positions = np.column_stack(positions)
@@ -114,7 +117,7 @@ class Space(Domain):
     return p, v
 
   def dists2(self, positions, to_points=None):
-    """ Returns squared distance between points and separations in each axis """
+    """ The squared distance between points and separations along each axis """
     # group tuples into a single array if necessary
     if type(positions) == tuple:
       positions = np.column_stack(positions)
@@ -148,9 +151,11 @@ class Space(Domain):
     return d2, separations
 
   def dists(self, positions, to_points=None):
+    """ Returns distances between the points"""
     return np.sqrt(self.dists2(positions, to_points)[0])
 
   def in_range(self, distance, positions, count=False): # to_points=None,
+    """ Returns either indices or counts of points within the specified distance from each point """
     ind = np.where(self.dists2(positions)[0] < distance*distance, 1, 0)
     # fill diagonal so as not to include self - TODO how does this work if to_points!=positions
     np.fill_diagonal(ind, 0)
