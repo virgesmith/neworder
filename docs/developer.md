@@ -8,7 +8,7 @@ The original embedded configuration is still provided (builds on linux platforms
 
 ## Contributions
 
-The source code is on [github](https://github.com/virgesmith/neworder). To contribute, please fork the repository and submit a PR with your changes/additions.
+To contribute, please submit a pull request. More information on how to do this [here](./contributing.md)
 
 !!! note "Legal"
     Contributors retain copyright on their contributions. When submitting a PR, please add yourself as an additional copyright holder in [LICENCE.md](https://github.com/virgesmith/neworder/LICENCE.md).
@@ -41,25 +41,16 @@ Create and activate python3 virtualenv, e.g.
 virtualenv -p python3 .venv
 source .venv/bin/activate
 ```
-
-And then install the python dependencies...
-
-...for all the examples to run:
-
-```bash.
-pip install -r requirements.txt
-```
-
-...or, for a minimal development environment
-
-```bash
-pip install numpy pandas pybind11 mpi4py
-```
-
 Now install the local package
 
 ```bash
 pip install -e .
+```
+
+And then install the python dependencies for a development environment:
+
+```bash
+pip install -r requirements-developer.txt
 ```
 
 If you want to use a specific compiler you can do something like this:
@@ -76,8 +67,10 @@ python -c "import neworder"
 
 ### Conda
 
+Using python 3.9 (adjust as necessary)
+
 ```bash
-conda create -q -n neworder-env python=3.8
+conda create -q -n neworder-env python=3.9
 conda activate neworder-env
 conda install gxx_linux-64 mpich numpy pandas pybind11 pytest mpi4py
 ```
@@ -85,7 +78,8 @@ conda install gxx_linux-64 mpich numpy pandas pybind11 pytest mpi4py
 Then, as above
 
 ```bash
-python setup.py install
+pip install -e .
+conda install --file requirements-developer.txt
 ```
 
 ### Docker
@@ -104,7 +98,7 @@ Tests use the `pytest` framework and can be invoked serially with either
 ```bash
 pytest
 # or
-python setup.py test
+python -m pytest
 ```
 
 and in parallel by running in MPI:

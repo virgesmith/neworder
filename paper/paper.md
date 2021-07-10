@@ -1,5 +1,5 @@
 ---
-title: 'neworder: a dynamic microsimulation framework for python'
+title: 'neworder: a dynamic microsimulation framework for Python'
 tags:
   - Python
   - Pybind11
@@ -20,13 +20,13 @@ bibliography: paper.bib
 
 ## Summary
 
-Traditional microsimulation frameworks typically use a proprietary modelling language, often place restrictions on data formats, and vary in terms of efficiency or scalability. *neworder* provides an efficient, flexible, and scalable framework for implementing microsimulation models using standard python code. Being a framework, it has been designed with reusability and extensibility as primary motivations.
+Traditional microsimulation frameworks typically use a proprietary modelling language, often place restrictions on data formats, and vary in terms of efficiency or scalability. *neworder* provides an efficient, flexible, and scalable framework for implementing microsimulation models using standard Python code. Being a framework, it has been designed with reusability and extensibility as primary motivations.
 
-It is implemented in C++ for maximal performance and supports both serial and parallel execution. Particular attention has been paid to provision of powerful and flexible random number generation and timestepping functionality.
+It is predominantly implemented in C++ for maximal performance and supports both serial and parallel execution. Particular attention has been paid to provision of powerful and flexible random number generation and timestepping functionality.
 
 The package is extensively documented, including numerous detailed examples that showcase the functionality across a diverse range of applications including demography, finance, physics and ecology.
 
-It is available through the standard python repositories (PyPI, conda-forge) and also as a docker image.
+It is available through the standard Python repositories (PyPI, conda-forge) and also as a Docker image.
 
 ## Statement of Need
 
@@ -34,9 +34,9 @@ The *neworder* framework is designed to be as unrestrictive and flexible as poss
 
 It supports both serial and parallel execution modes, with the latter using MPI to distribute computations for large populations or to perform sensitivity or convergence analyses. *neworder* runs as happily on a desktop PC as it does on a HPC cluster.
 
-*neworder* was inspired by MODGEN [@government_of_canada_modgen_2009-1] and, to a lesser extent, the python-based LIAM2 [@noauthor_liam2_nodate] tool, and can be thought of as a powerful best-of-both-worlds hybrid of MODGEN and LIAM2.
+*neworder* was inspired by MODGEN [@government_of_canada_modgen_2009-1] and, to a lesser extent, the Python-based LIAM2 [@noauthor_liam2_nodate] tool, and can be thought of as a powerful best-of-both-worlds hybrid of MODGEN and LIAM2.
 
-Both MODGEN and LIAM2 require their models to be specified in proprietary languages (based on C++ and yaml, respectively), whereas our framework eliminates the extra learning curve as users simply define their models in standard python code.
+Both MODGEN and LIAM2 require their models to be specified in proprietary languages (based on C++ and YAML, respectively), whereas our framework eliminates the extra learning curve as users simply define their models in standard Python code.
 
 Whilst MODGEN supports parallel execution, LIAM2 does not. MODGEN is very restrictive with input data (which must be defined within the model code) and output data (which is a SQL database). *neworder* supports parallel execution, thus having the scalability of MODGEN, but without any restrictions on data sources or formats.
 

@@ -58,7 +58,8 @@ nav:
   - References: references.md
   - About:
     - Citing: citing.md
-    - Contributing: developer.md
+    - Contributing: contributing.md
+    - Developer: developer.md
     - Support: support.md
     - Licence: licence.md
 #  - 'test.md'
