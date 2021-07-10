@@ -22,9 +22,9 @@ bibliography: paper.bib
 
 Traditional microsimulation frameworks typically use a proprietary modelling language, often place restrictions on data formats, and vary in terms of efficiency or scalability. *neworder* provides an efficient, flexible, and scalable framework for implementing microsimulation models using standard Python code. Being a framework, it has been designed with reusability and extensibility as primary motivations.
 
-It is predominantly implemented in C++ for maximal performance and supports both serial and parallel execution. Particular attention has been paid to provision of powerful and flexible random number generation and timestepping functionality.
+It is predominantly implemented in C++ for maximal performance and supports both serial and parallel execution. Particular attention has been paid to the provision of powerful and flexible random number generation and timestepping functionality.
 
-The package is extensively documented, including numerous detailed examples that showcase the functionality across a diverse range of applications including demography, finance, physics and ecology.
+The package is extensively documented, including numerous detailed examples that showcase the functionality across a diverse range of applications including demography, finance, physics, and ecology.
 
 It is available through the standard Python repositories (PyPI, conda-forge) and also as a Docker image.
 
@@ -44,7 +44,7 @@ Both MODGEN and LIAM2 require manual installation and configuration of an enviro
 
 The framework is comprehensively documented [@smith_neworder_2021] and specifically provides detailed examples that are translations of MODGEN models from @belanger_microsimulation_2017 and Statistics Canada [@government_of_canada_general_2009, @government_of_canada_modgen_2009], demonstrating how *neworder* implementations can be both simpler and more performant (see the Mortality example in the documentation).
 
-Part of the design ethos is not to reinvent the wheel and leverage the huge range of statistical functions in packages like *numpy* and *scipy*. However, functions are provided where there is a useful niche function or a major efficiency gain to be had. An example of the former are methods provided to sample extremely efficiently from non-homogeneous Poisson processes using the Lewis-Shedler algorithm [@lewis_simulation_1979], and the ability to perform Markov transitions *in situ* in a pandas dataframe, both of which result in at least a factor-of-ten performance gain.
+Part of the design ethos is not to reinvent the wheel and to leverage the huge range of statistical functions in packages like *numpy* and *scipy*. However, functions are provided where there is a useful niche function or a major efficiency gain to be had. An example of the former are methods provided to sample extremely efficiently from non-homogeneous Poisson processes using the Lewis-Shedler algorithm [@lewis_simulation_1979], and the ability to perform Markov transitions *in situ* in a pandas dataframe, both of which result in at least a factor-of-ten performance gain.
 
 ![Sampling mortality: "Discrete" samples repeatedly at 1 year intervals, "Continuous" uses the Lewis-Shedler algorithm to sample the entire curve, with a tenfold performance improvement.\label{fig:mortality-example}](mortality-100k.png)
 
