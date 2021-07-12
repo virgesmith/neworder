@@ -1,6 +1,6 @@
 # Derivative Pricing
 
-This example showcases how to run parallel simulations, each with slightly different input data, in order to compute sensitivities to the input parameters.
+This example showcases how to run parallel simulations, each with identical random streams but slightly different input data, in order to compute sensitivities to the input parameters.
 
 {{ include_snippet("./docs/examples/src.md", show_filename=False) }}
 
@@ -16,22 +16,22 @@ In order to calculate the fair value of a derivative contract one can simulate a
 \frac{dS}{S} = (r-q)dt + \sigma dW
 \]
 
-where \(S\) is price, \(r\) is risk-free rate, \(q\) is continuous dividend yield, \(\sigma\) is volatility and \(dW\) a Wiener process (a 1-d Brownian motion), and the value of the option \(V\) at \(t=0\) is
+where \(S\) is price, \(r\) is risk-free rate, \(q\) is continuous dividend yield, \(\sigma\) is volatility and \(dW\) a Wiener process (a 1-d Brownian motion), and the value of the call option \(V\) at \(t=0\) is
 
 \[
-V(0) = e^{-rT}.V(T) = e^{-rT}.\text{max}\left( S(T)-K,0 \right)
+V(0) = e^{-rT}\mathbb{E}\big[V(T)\big] = e^{-rT}\mathbb{E}\big[\text{max}\left( S(T)-K,0 \right)\big]
 \]
 
-We can compute this by simulating paths to get \(S(T)\) and taking the mean. The first term above discounts back to \(t=0\), so we get the *current* fair value.
+We can compute this by simulating paths to get \(S(T)\) and taking the mean. The first term above discounts back to \(t=0\), giving us the *current* fair value.
 
 We can easily frame this derivative pricing problem in terms of a microsimulation model:
 
-- Start with an intial \(t=0\) population of \(N\) (identical) underlying prices \(S(0)\). Social scientists could refer to this as a 'cohort'.
+- Start with an intial \(t=0\) population of \(N\) (identical) underlying prices \(S(0)\). Social scientists might refer to this as a 'cohort'.
 - Evolve each underlying path to option expiry using Monte-Carlo simulation, to get a distribution of \(S(T)\).
 - Compute the value \(V(T)\) of the option for each underlying path.
-- Compute the mean of the option prices and discount it back to \(t=0\) to get the result.
+- Compute the expected value of the option price and discount it back to \(t=0\) to get the result.
 
-For this simple option we can also compute an analytic fair value under the Black-Scholes model, and use this to determine the accuracy of the Monte-Carlo simulation. We also demonstrate the capabilities neworder has in terms of sensitivity analysis, by using multiple processes to compute finite-difference approximations to the following risk measures:
+For this simple option we can also compute an analytic fair value under the Black-Scholes model and use it to determine the accuracy of the Monte-Carlo simulation. We also demonstrate the capabilities _neworder_ has in terms of sensitivity analysis, by using multiple processes to compute finite-difference approximations to the following risk measures:
 
 - delta: \(\Delta=\frac{dV}{dS}\)
 - gamma: \(\Gamma=\frac{d^2V}{dS^2}\)
@@ -72,7 +72,7 @@ Even though we explicitly requested that each process has identical random strea
 This method compares the internal states of each stream and will return `False` if any of them are different, which will halt the model _for all processes_.
 
 !!! danger "Deadlocks"
-    The implementation needs to be careful here is if some processes stop and others continue, a deadlock can occur when a process tries to communicate with a process that has ended. The check method must therefore ensure that ALL processes either pass or fail.
+    This implementation uses _blocking communication_ and therefore needs to be implemented carefully, since if some processes stop and others continue, a deadlock can occur when a running process tries to communicate with a dead or otherwise non-responsive process. The check method must therefore ensure that **all** processes either pass or fail.
 
 In the below implementation, all samples are sent to a single process (0) for comparison and the result is broadcast back to every process, which can then all fail simultaneously if necessary.
 
@@ -103,7 +103,6 @@ which will produce something like
 [py 2/4]  mc: 6.646473 / ref: 6.665127 err=-0.28%
 [py 3/4]  mc: 7.216204 / ref: 7.235288 err=-0.26%
 [py 1/4]  mc: 7.740759 / ref: 7.760108 err=-0.25%
-[py 0/4]  check() ok: True
 [py 0/4]  mc: 7.182313 / ref: 7.201286 err=-0.26%
 [py 0/4]  PV=7.182313
 [py 0/4]  delta=0.547143
@@ -111,4 +110,3 @@ which will produce something like
 [py 0/4]  vega 10bp=0.033892
 ```
 
-{{ include_snippet("./docs/examples/src.md") }}
