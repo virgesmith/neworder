@@ -8,12 +8,12 @@ The original embedded configuration is still provided (builds on linux platforms
 
 ## Contributions
 
-To contribute, please submit a pull request. More information on how to do this [here](./contributing.md)
+To contribute, please submit a pull request. More information on how to do this [here](./contributing.md).
 
 !!! note "Legal"
-    Contributors retain copyright on their contributions. When submitting a PR, please add yourself as an additional copyright holder in [LICENCE.md](https://github.com/virgesmith/neworder/LICENCE.md).
+    Contributors retain copyright on their substantial contributions. If applicable, when submitting a PR, please add yourself as an additional copyright holder in [LICENCE.md](https://github.com/virgesmith/neworder/LICENCE.md).
 
-The instructions below assume you've already cloned a local copy of the neworder repo.
+The instructions below assume you've already forked and cloned a local copy of the neworder repo.
 
 ## Requirements
 
@@ -40,7 +40,9 @@ Create and activate python3 virtualenv, e.g.
 ```bash
 virtualenv -p python3 .venv
 source .venv/bin/activate
+
 ```
+
 Now install the local package
 
 ```bash
@@ -110,7 +112,7 @@ mpiexec -n 2 python -m pytest
 ```
 
 !!! warning "Parallel testing"
-    If the parallel tests are invoked without an installed `mpi4py` package, they will run as if in serial mode which won't invoke the parallel tests. If in doubt check the test log for warnings.
+    If the tests are invoked in parallel, but without an installed `mpi4py` package, they will run independently, as if in serial mode, and the interprocess tests won't get run. If in doubt check the test log for warnings.
 
 ## Running the Examples
 

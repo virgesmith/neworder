@@ -1,9 +1,9 @@
 
-FROM python:3.8
+FROM python:3.9
 
 WORKDIR /app
 
-COPY . /app
+COPY ./examples /app/examples
 
 RUN apt-get update -y \
  && apt-get install -y --no-install-recommends -y mpich libmpich-dev \
@@ -11,11 +11,11 @@ RUN apt-get update -y \
  && rm -rf /var/lib/apt/lists/*
 
 # install python deps
-RUN pip install -U pip pytest
-RUN python -m pip install -r examples/requirements.txt
+RUN pip install -U pip
+RUN pip install -r examples/requirements.txt
 
-# use setup.py to get pytest (not in requirements.txt)
-RUN pip install -e . && python -m pytest && mpiexec -n 2 python -m pytest
+# just use the latest release
+# RUN pip install -e . && python -m pytest && mpiexec -n 2 python -m pytest
 
 ENV DISPLAY :0
 

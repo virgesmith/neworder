@@ -2,6 +2,9 @@
 
 Contributions and bug fixes are always welcome, even if you're only reporting a bug.
 
+!!! note "Legal"
+    Contributors retain copyright on their substantial contributions. If applicable, when submitting a PR, please add yourself as an additional copyright holder in [LICENCE.md](https://github.com/virgesmith/neworder/LICENCE.md).
+
 ## Opening issues
 
 If you find a bug or would like a new feature, please feel free to [open an issue](https://github.com/virgesmith/neworder/issues).
@@ -12,7 +15,7 @@ See the [developer guide](./developer.md) to get a development environment set u
 
 ## Contribution workflow
 
-Here’s a quick guide for those unfamiliar with the contriution process:
+Here’s a quick guide for those unfamiliar with the contribution process:
 
 1. [Fork this repository](https://github.com/virgesmith/neworder/fork) and then clone it locally:
 ```sh
@@ -24,7 +27,7 @@ git checkout -b bug/fix-a-thing
 # or
 git checkout -b feature/add-a-thing
 ```
-3. If a bug, create and commit a test that uses the new feature or illustrates the bug. It should fail:
+3. Create and commit a test that uses the new feature or illustrates the bug. It should fail:
 ```sh
 pytest # fails
 git commit -m <appropriate message>
