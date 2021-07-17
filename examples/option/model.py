@@ -1,15 +1,15 @@
-""" Example - pricing a simple option
+""" 
+Example - pricing a simple option
 
 The main vanishing point of this example is to illustrate how different processes 
-can interact within the model.
-
+can interact within the model, and how to synchronise the random streams in each process
 """
 
 import neworder
 from black_scholes import BlackScholes
 
-# neworder.verbose() # defaults to False
-# neworder.checked() # defaults to True
+# neworder.verbose() # uncomment for verbose logging
+# neworder.checked(False) # uncomment to disable checks
 
 # requires 4 identical sims with perturbations to compute market sensitivities 
 # (a.k.a. Greeks)
