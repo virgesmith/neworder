@@ -27,7 +27,7 @@ If you use `neworder` in any published work, please cite it. You can use either 
    author = { Andrew P Smith },
    year = { 2021 },
    version = { {{ insert_version() }} },
-   url = { https://neworder.readthedocs.io/ },
+   url = { https://github.com/virgesmith/neworder },
    title = { neworder: a dynamic microsimulation framework for Python }
 }
 ```
