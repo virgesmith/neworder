@@ -4,11 +4,15 @@ Spatial structures for positioning and moving entities and computing distances
 
 import numpy as np
 
+
 def _bounce(point, min, max):
   for d in range(len(point)):
-    if point[d] < min[d]: point[d] = min[d] - point[d]
-    if point[d] > max[d]: point[d] = max[d] - point[d]
+    if point[d] < min[d]:
+      point[d] = min[d] - point[d]
+    if point[d] > max[d]:
+      point[d] = max[d] - point[d]
   return point
+
 
 class Domain:
   """
@@ -44,6 +48,7 @@ class Domain:
     """ Whether space is continuous or discrete """
     return self.__continuous
 
+
 class Space(Domain):
   """
   Continuous rectangular n-dimensional finite or infinite domain.
@@ -64,7 +69,7 @@ class Space(Domain):
     # Space supports all edge behaviours
     assert edge in [Domain.UNBOUNDED, Domain.WRAP, Domain.CONSTRAIN, Domain.BOUNCE]
 
-    assert np.all(max>min)
+    assert np.all(max > min)
 
     self.min = min
     self.max = max
@@ -101,10 +106,10 @@ class Space(Domain):
       p = positions + velocities * delta_t
       v = velocities
       hitmin = np.where(p < self.min, 1, 0)
-      p = np.where(hitmin, 2*self.min - p, p)
+      p = np.where(hitmin, 2 * self.min - p, p)
       v = np.where(hitmin, -v, v)
       hitmax = np.where(p > self.max, 1, 0)
-      p = np.where(hitmax, 2*self.max - p, p)
+      p = np.where(hitmax, 2 * self.max - p, p)
       v = np.where(hitmax, -v, v)
     else:
       p = self.min + np.mod(positions + velocities * delta_t - self.min, self.max - self.min)
@@ -130,22 +135,21 @@ class Space(Domain):
     n = positions.shape[0]
     m = to_points.shape[0]
     d = positions.shape[1]
-    d2 = np.zeros((m,n))
+    d2 = np.zeros((m, n))
     separations = ()
     if self.edge != Domain.WRAP:
       for i in range(d):
-        delta = np.tile(positions[:,i],m).reshape((m,n)) - np.repeat(to_points[:,i],n).reshape(m,n)
+        delta = np.tile(positions[:, i], m).reshape((m, n)) - np.repeat(to_points[:, i], n).reshape(m, n)
         separations += (delta,)
         d2 += delta * delta
     else: # wrapped domains need special treatment - distance across an edge may be less than naive distance
       for i in range(d):
-        delta = np.tile(positions[:,i],m).reshape((m,n)) - np.repeat(to_points[:,i],n).reshape(m,n)
-        #d1d = np.abs(delta)
+        delta = np.tile(positions[:, i], m).reshape((m, n)) - np.repeat(to_points[:, i], n).reshape(m, n)
         r = self.max[i] - self.min[i]
-        delta = np.where(delta > r/2, delta - r, delta)
-        delta = np.where(delta < -r/2, delta + r, delta)
+        delta = np.where(delta > r / 2, delta - r, delta)
+        delta = np.where(delta < -r / 2, delta + r, delta)
         separations += (delta,)
-        d2 += delta*delta
+        d2 += delta * delta
 
     return d2, separations
 
@@ -155,11 +159,10 @@ class Space(Domain):
 
   def in_range(self, distance, positions, count=False): # to_points=None,
     """ Returns either indices or counts of points within the specified distance from each point """
-    ind = np.where(self.dists2(positions)[0] < distance*distance, 1, 0)
+    ind = np.where(self.dists2(positions)[0] < distance * distance, 1, 0)
     # fill diagonal so as not to include self - TODO how does this work if to_points!=positions
     np.fill_diagonal(ind, 0)
     return ind if not count else np.sum(ind, axis=1)
 
   def __repr__(self):
     return "%s dim=%d min=%s max=%s edge=%s" % (self.__class__.__name__, self.dim, self.min, self.max, self.edge)
-
