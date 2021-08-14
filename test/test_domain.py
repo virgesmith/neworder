@@ -86,7 +86,7 @@ def test_space3d():
       "vz": 0.01
     })
 
-  space = no.domain.Space.unbounded(3)
+  space = no.Space.unbounded(3)
 
   s = np.column_stack((bodies.x, bodies.y, bodies.z))
   assert np.all(space.dists(s).diagonal() == 0.0)
@@ -95,6 +95,35 @@ def test_space3d():
 
   dt = 1.0
   (bodies.x, bodies.y, bodies.z), (bodies.vx, bodies.vy, bodies.vz) = space.move((bodies.x, bodies.y, bodies.z), (bodies.vx, bodies.vy, bodies.vz), dt, ungroup=True)
+
+def test_grid():
+
+  assert_throws(ValueError, no.Grid, np.empty(shape=(3,3)), no.Domain.UNBOUNDED)
+  assert_throws(ValueError, no.Grid, np.empty(shape=(3,3)), no.Domain.BOUNCE)
+  assert_throws(ValueError, no.Grid, np.empty(shape=()))
+  assert_throws(ValueError, no.Grid, np.empty(shape=(2,0)))
+
+  state = np.zeros((5,5))
+  state[0,0] = 1
+  state[1,1] = 2
+  state[1,-1] = 3
+
+  # total neighbours should be 3 in corner, 5 on edge, 8 in middle
+  g = no.Grid(state, no.Domain.CONSTRAIN)
+  assert np.sum(g.count_neighbours()) == 3
+  assert np.sum(g.count_neighbours(lambda x: x==2)) == 8
+  assert np.sum(g.count_neighbours(lambda x: x==3)) == 5
+  assert np.sum(g.count_neighbours(lambda x: x!=0)) == 16
+
+  state = np.zeros((4,4,4))
+  state[0,0,0] = 1
+  state[-1,1,-1] = -1
+
+  # total neighbours should be 26
+  g = no.Grid(state, no.Domain.WRAP)
+  assert np.sum(g.count_neighbours()) == 26
+  assert np.sum(g.count_neighbours(lambda x: x==-1)) == 26
+  assert np.sum(g.count_neighbours(lambda x: x!=0)) == 52
 
 if __name__ == "__main__":
   test_space3d()

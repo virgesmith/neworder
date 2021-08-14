@@ -3,6 +3,7 @@ Spatial structures for positioning and moving entities and computing distances
 """
 
 import numpy as np
+from scipy import signal
 
 def _bounce(point, min, max):
   for d in range(len(point)):
@@ -162,4 +163,53 @@ class Space(Domain):
 
   def __repr__(self):
     return "%s dim=%d min=%s max=%s edge=%s" % (self.__class__.__name__, self.dim, self.min, self.max, self.edge)
+
+
+class Grid(Domain):
+  """
+  Discrete rectangular n-dimensional finite grid domain with each cell having an integer state.
+  Allows for counting of neighbours according to the supported edge behaviours:
+    CONSTRAIN (no neighburs over edge), WRAP (toroidal), BOUNCE (reflect)
+  """
+
+  __mode_lookup = {
+    Domain.CONSTRAIN: "constant",
+    Domain.WRAP: "wrap",
+    Domain.BOUNCE: "reflect"
+  }
+
+  def __init__(self, initial_values, edge=Domain.CONSTRAIN):
+    super().__init__(initial_values.ndim, edge, False)
+
+    # Grid supports two edge behaviours
+    if edge not in [Domain.WRAP, Domain.CONSTRAIN]:
+      raise ValueError("edge policy must be one of Domain.WRAP, Domain.CONSTRAIN")
+
+    if initial_values.ndim < 1:
+      raise ValueError("state array must have dimension of 1 or above")
+    if initial_values.size < 1:
+      raise ValueError("state array must have size of 1 or above in every dimension")
+
+    self.state = initial_values
+
+    # int neighbour kernel (not including self)
+    self.kernel = np.ones([3]*self.dim)
+    self.kernel[(1,)*self.dim] = 0
+
+  @property
+  def extent(self):
+    """ The extent of the space in terms of two opposing points """
+    return self.state.shape
+
+  def count_neighbours(self, indicator=lambda x: x == 1):
+    """ Counts neighbouring cells with a state indicated by supplied indicator function """
+
+    ind = np.array([indicator(x) for x in self.state]).astype(int)  # automagically preserves shape
+    # pad with boundary according to edge policy
+    bounded = np.pad(ind, pad_width=1, mode=self.__mode_lookup[self.edge])
+
+    # count neighbours, drop padding, covert to int
+    count = signal.convolve(bounded, self.kernel, mode="same")[(slice(1,-1),)*self.dim].astype(int)
+
+    return count
 
