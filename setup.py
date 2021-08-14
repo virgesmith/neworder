@@ -4,10 +4,9 @@ import os
 import glob
 from setuptools import setup
 from pybind11.setup_helpers import Pybind11Extension, ParallelCompile
-import sys
-import setuptools
 
 # see https://github.com/pybind/python_example
+
 
 def readme():
   with open('README.md') as f:
@@ -25,7 +24,6 @@ def list_files(dirs, exts, exclude=[]):
   return files
 
 # def cxxflags(platform):
-
 #   if platform == "unix":
 #     return [
 #       "-Wall",
@@ -48,6 +46,7 @@ def list_files(dirs, exts, exclude=[]):
 # def ldflags(_platform):
 #   return []
 
+
 ext_modules = [
   Pybind11Extension(
     '_neworder_core',
@@ -66,7 +65,7 @@ setup(
   author_email='a.p.smith@leeds.ac.uk',
   url='https://neworder.readthedocs.io',
   description='A dynamic microsimulation framework',
-  long_description = readme(),
+  long_description=readme(),
   long_description_content_type="text/markdown",
   packages=["neworder"],
   ext_modules=ext_modules,

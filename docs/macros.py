@@ -14,6 +14,7 @@ _inline_code_styles = {
   ".md": None
 }
 
+
 def define_env(env):
 
   # @env.macro
@@ -52,7 +53,6 @@ def define_env(env):
         return "[json error retrieving doi]"
     return "[http error %d retrieving doi]" % response.status_code
 
-
   @env.macro
   def include_snippet(filename, tag=None, show_filename=True):
     """ looks for code in <filename> between lines containing "!<tag>!" """
@@ -68,18 +68,18 @@ def define_env(env):
     if tag:
       tag = "!%s!" % tag
       span = []
-      for i,l in enumerate(lines):
+      for i, l in enumerate(lines):
         if tag in l:
           span.append(i)
       if len(span) != 2:
         return "```ERROR %s (%s) too few/many tags (%s) for '%s'```" % (filename, code_style, len(span), tag)
-      lines = lines[span[0]+1: span[1]]
+      lines = lines[span[0] + 1: span[1]]
 
     if show_filename:
       footer = "\n[file: **%s**]\n" % filename
     else:
       footer = ""
-    #line_range = lines[start_line+1:end_line]
+    # line_range = lines[start_line+1:end_line]
     if code_style is not None:
       return "```%s\n" % code_style + "".join(lines) + "```" + footer
     else:
