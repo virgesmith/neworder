@@ -8,11 +8,11 @@ An implementation of Schelling's segregation model [[7]](../references.md), whic
 
 ## Inputs
 
-In the above example, the similarity threshold is 50% and the cells states are (approximately): 36% empty, 12% red, 12% blue and 39% green, on a 640 x 480 grid. The initial population is randomly constructed using the model's Monte-Carlo engine, the process of moving agents uses randomly swaps unsatisfied agents with empty cells.
+In this example, the similarity threshold is 60% and the cells states are: 36% empty, 12% red, 12% blue and 40% green, on a 480 x 360 grid. The initial population is randomly constructed using the model's Monte-Carlo engine, the process of moving agents randomly swaps unsatisfied agents with empty cells. The boundaries are "sinks", i.e. there are no neighbouring cells
 
 ## Implementation
 
-The key features that this example uses are the `StateGrid` class for efficient neighbour counting and the use of a conditional halting: an open-ended timeline and a call to the `Model.halt()` method when a certain state is achieved.
+The key features used in this example are the `StateGrid` class for efficient neighbour counting and the use of a conditional halting: an open-ended timeline and a call to the `Model.halt()` method when a certain state is achieved.
 
 Since the key output for this model is graphical, the visualisation code sits within the model. The model reaches a steady state when there are no unsatisfied agents remaining and there is nothing to be gained by continuing, so when this happens the `neworder.Model.halt()` method is called, at the end of the `step()` implementation:
 
@@ -29,15 +29,15 @@ The `StateGrid.count_neighbours` takes a function argument that filters the stat
 The output is an animation as shown above. Log messages also record the timestep and the proportion of the population that remains unsatisfied:
 
 ```text
-[py 0/1] step 0 42.6660% unsatisfied
-[py 0/1] step 1 39.5765% unsatisfied
-[py 0/1] step 2 37.5599% unsatisfied
-[py 0/1] step 3 36.2454% unsatisfied
-[py 0/1] step 4 35.2279% unsatisfied
+[py 0/1] step 0 43.1493% unsatisfied
+[py 0/1] step 1 39.1400% unsatisfied
+[py 0/1] step 2 36.9196% unsatisfied
+[py 0/1] step 3 35.3113% unsatisfied
+[py 0/1] step 4 33.9259% unsatisfied
 ...
-[py 0/1] step 458 0.0003% unsatisfied
-[py 0/1] step 459 0.0003% unsatisfied
-[py 0/1] step 460 0.0003% unsatisfied
-[py 0/1] step 461 0.0003% unsatisfied
-[py 0/1] step 462 0.0000% unsatisfied
+[py 0/1] step 133 0.0017% unsatisfied
+[py 0/1] step 134 0.0012% unsatisfied
+[py 0/1] step 135 0.0012% unsatisfied
+[py 0/1] step 136 0.0006% unsatisfied
+[py 0/1] step 137 0.0000% unsatisfied
 ```

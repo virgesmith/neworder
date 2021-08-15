@@ -81,6 +81,5 @@ class Schelling(neworder.Model):
 
   def __update_visualisation(self):
     self.img.set_array(self.domain.state.T)
-    # if not self.timeline.index() % 5:
-    #   plt.savefig("/tmp/schelling%04d.png" % (self.timeline.index()//5), dpi=80)
+    # plt.savefig("/tmp/schelling%04d.png" % self.timeline.index(), dpi=80)
     self.fig.canvas.flush_events()

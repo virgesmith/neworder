@@ -48,6 +48,7 @@ nav:
     - RiskPaths: examples/riskpaths.md
     - People: ./examples/people.md
     - Option: examples/option.md
+    - Conway: examples/conway.md
     - Schelling: examples/schelling.md
     - Wolf-Sheep: examples/wolf-sheep.md
     - N-body: examples/n-body.md
