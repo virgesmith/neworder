@@ -8,38 +8,36 @@ An implementation of Schelling's segregation model [[7]](../references.md), whic
 
 ## Inputs
 
-In the above example, the similarity threshold is 50% and the cells composition is: 30% empty, 30% red, 30% blue and 10% green, on a 80 x 100 grid. Whilst the initial population is randomly constructed using the model's Monte-Carlo engine, the process of moving agents uses the *pandas* `sample` method, which uses its own random generator.
+In the above example, the similarity threshold is 50% and the cells composition is: 30% empty, 30% red, 30% blue and 10% green, on a 640 x 480 grid. The initial population is randomly constructed using the model's Monte-Carlo engine, the process of moving agents uses randomly swaps unsatisfied agents with empty cells.
 
 ## Implementation
 
-The key points to note from the example code for this model are the use of visualisation inside the model, the use of the `Model.halt()` method, and using the Model's Monte-Carlo engine to seed external random generators for reproducibility.
+The key features that this example uses are the `StateGrid` class for efficient neighbour counting and the use of a conditional halting: an open-ended timeline and a call to the `Model.halt()` method when a certain state is achieved.
 
-Since the key output for this model is graphical, the visualisation code sits within the model. The timeline only represents an upper limit for the number of iterations: the model reaches a steady state when there are no unsatisfied agents remaining and there is nothing to be gained by continuing, so when this happens the `neworder.Model.halt()` method is called, at the end of the `step()` implementation:
+Since the key output for this model is graphical, the visualisation code sits within the model. The model reaches a steady state when there are no unsatisfied agents remaining and there is nothing to be gained by continuing, so when this happens the `neworder.Model.halt()` method is called, at the end of the `step()` implementation:
 
 {{ include_snippet("examples/schelling/schelling.py", "halt") }}
 
-Also in the `step()` method, we use the *pandas* `sample()` function, which uses it's own random number generator. In order to ensure that the results are consistent with our chosen seeding strategy (i.e deterministic and thus reproducible), the function is explicitly seeded using the model's Monte-Carlo engine:
+Note that calling the `halt()` method doesn't immediately halt the model, it flags the neworder runtime to not execute any further timesteps. Thus the remainder of the `step` method, and the `check` method (if implemented) will still be called.
 
-{{ include_snippet("examples/schelling/schelling.py", "sample") }}
+The `StateGrid.count_neighbours` takes a function argument that filters the states of the neighbours. By default it will count cells with a state of 1 (the default value is `lambda x: x==1`). In this model we use it to count any occupied cells, and cells with a specific state:
 
-Note that this particular function expects a 32-bit integer so we pass the modulus of the 64-bit integer that `raw()` returns.
+{{ include_snippet("examples/schelling/schelling.py", "count") }}
 
 ## Outputs
 
-The main output is the image above. Log messages also record the timestep and the proportion of the population that remains unsatisfied:
+The output is an animation as shown above. Log messages also record the timestep and the proportion of the population that remains unsatisfied:
 
 ```text
-[py 0/1]  step 1 39.02% unsatisfied
-[py 0/1]  step 2 34.02% unsatisfied
-[py 0/1]  step 3 31.52% unsatisfied
-[py 0/1]  step 4 29.32% unsatisfied
-[py 0/1]  step 5 27.78% unsatisfied
-[py 0/1]  step 6 25.74% unsatisfied
+[py 0/1] step 0 42.6660% unsatisfied
+[py 0/1] step 1 39.5765% unsatisfied
+[py 0/1] step 2 37.5599% unsatisfied
+[py 0/1] step 3 36.2454% unsatisfied
+[py 0/1] step 4 35.2279% unsatisfied
 ...
-[py 0/1]  step 81 0.02% unsatisfied
-[py 0/1]  step 82 0.01% unsatisfied
-[py 0/1]  step 83 0.01% unsatisfied
-[py 0/1]  step 84 0.01% unsatisfied
-[py 0/1]  step 85 0.01% unsatisfied
-[py 0/1]  step 86 0.00% unsatisfied
+[py 0/1] step 458 0.0003% unsatisfied
+[py 0/1] step 459 0.0003% unsatisfied
+[py 0/1] step 460 0.0003% unsatisfied
+[py 0/1] step 461 0.0003% unsatisfied
+[py 0/1] step 462 0.0000% unsatisfied
 ```

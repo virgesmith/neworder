@@ -25,11 +25,15 @@ class Schelling(neworder.Model):
     # start with empty cells being satisfied
     self.sat = (self.domain.state == 0)
 
+    # !count!
+    # count all neighbours, scaling by acceptable similarity ratio
     n_any = self.domain.count_neighbours(lambda x: x>0) * self.similarity
 
     for c in range(1,self.ncategories):
+      # count neighbour with a specific state
       n_cat = self.domain.count_neighbours(lambda x: x==c)
       self.sat = np.logical_or(self.sat, np.logical_and(n_cat > n_any, self.domain.state == c))
+    # !count!
 
     n_unsat = np.sum(~self.sat)
 
@@ -46,7 +50,7 @@ class Schelling(neworder.Model):
 
     self.domain.state = pop
 
-    neworder.log("step %d %.2f%% unsatisfied" % (self.timeline.index(), 100.0 * n_unsat / pop.size))
+    neworder.log("step %d %.4f%% unsatisfied" % (self.timeline.index(), 100.0 * n_unsat / pop.size))
 
     self.__update_visualisation()
 
@@ -77,4 +81,6 @@ class Schelling(neworder.Model):
 
   def __update_visualisation(self):
     self.img.set_array(self.domain.state.T)
+    # if not self.timeline.index() % 5:
+    #   plt.savefig("/tmp/schelling%04d.png" % (self.timeline.index()//5), dpi=80)
     self.fig.canvas.flush_events()
