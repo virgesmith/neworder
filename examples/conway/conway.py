@@ -16,7 +16,7 @@ class Conway(no.Model):
      init_state[s] = 1
     #for i in s:
 
-    self.domain = no.Grid(init_state.reshape(ny, nx), edge=edge)
+    self.domain = no.StateGrid(init_state.reshape(ny, nx), edge=edge)
 
     self.fig, self.g = self.__init_visualisation()
 

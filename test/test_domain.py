@@ -98,10 +98,10 @@ def test_space3d():
 
 def test_grid():
 
-  assert_throws(ValueError, no.Grid, np.empty(shape=(3,3)), no.Domain.UNBOUNDED)
-  assert_throws(ValueError, no.Grid, np.empty(shape=(3,3)), no.Domain.BOUNCE)
-  assert_throws(ValueError, no.Grid, np.empty(shape=()))
-  assert_throws(ValueError, no.Grid, np.empty(shape=(2,0)))
+  assert_throws(ValueError, no.StateGrid, np.empty(shape=(3,3)), no.Domain.UNBOUNDED)
+  assert_throws(ValueError, no.StateGrid, np.empty(shape=(3,3)), no.Domain.BOUNCE)
+  assert_throws(ValueError, no.StateGrid, np.empty(shape=()))
+  assert_throws(ValueError, no.StateGrid, np.empty(shape=(2,0)))
 
   state = np.zeros((5,5))
   state[0,0] = 1
@@ -109,7 +109,7 @@ def test_grid():
   state[1,-1] = 3
 
   # total neighbours should be 3 in corner, 5 on edge, 8 in middle
-  g = no.Grid(state, no.Domain.CONSTRAIN)
+  g = no.StateGrid(state, no.Domain.CONSTRAIN)
   assert np.sum(g.count_neighbours()) == 3
   assert np.sum(g.count_neighbours(lambda x: x==2)) == 8
   assert np.sum(g.count_neighbours(lambda x: x==3)) == 5
@@ -120,7 +120,7 @@ def test_grid():
   state[-1,1,-1] = -1
 
   # total neighbours should be 26
-  g = no.Grid(state, no.Domain.WRAP)
+  g = no.StateGrid(state, no.Domain.WRAP)
   assert np.sum(g.count_neighbours()) == 26
   assert np.sum(g.count_neighbours(lambda x: x==-1)) == 26
   assert np.sum(g.count_neighbours(lambda x: x!=0)) == 52

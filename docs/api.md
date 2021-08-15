@@ -722,6 +722,15 @@ dictated by the `wrap` attribute.
 
 ---
 
+## ![class](https://img.shields.io/badge/-class-darkgreen) `StateGrid`
+
+
+Discrete rectangular n-dimensional finite grid domain with each cell having an integer state.
+Allows for counting of neighbours according to the supported edge behaviours:
+CONSTRAIN (no neighburs over edge), WRAP (toroidal), BOUNCE (reflect)
+
+---
+
 ## ![class](https://img.shields.io/badge/-class-darkgreen) `Timeline`
 
 
@@ -804,6 +813,15 @@ Base class for spatial domains.
 Continuous rectangular n-dimensional finite or infinite domain.
 If finite, positioning and/or movement near the domain boundary is
 dictated by the `wrap` attribute.
+
+---
+
+### ![class](https://img.shields.io/badge/-class-darkgreen) `StateGrid`
+
+
+Discrete rectangular n-dimensional finite grid domain with each cell having an integer state.
+Allows for counting of neighbours according to the supported edge behaviours:
+CONSTRAIN (no neighburs over edge), WRAP (toroidal), BOUNCE (reflect)
 
 ---
 

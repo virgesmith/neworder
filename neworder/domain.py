@@ -169,7 +169,7 @@ class Space(Domain):
     return "%s dim=%d min=%s max=%s edge=%s" % (self.__class__.__name__, self.dim, self.min, self.max, self.edge)
 
 
-class Grid(Domain):
+class StateGrid(Domain):
   """
   Discrete rectangular n-dimensional finite grid domain with each cell having an integer state.
   Allows for counting of neighbours according to the supported edge behaviours:
@@ -185,7 +185,7 @@ class Grid(Domain):
   def __init__(self, initial_values, edge=Domain.CONSTRAIN):
     super().__init__(initial_values.ndim, edge, False)
 
-    # Grid supports two edge behaviours
+    # StateGrid supports two edge behaviours
     if edge not in [Domain.WRAP, Domain.CONSTRAIN]:
       raise ValueError("edge policy must be one of Domain.WRAP, Domain.CONSTRAIN")
 
