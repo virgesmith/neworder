@@ -8,7 +8,7 @@ An implementation of Schelling's segregation model [[7]](../references.md), whic
 
 ## Inputs
 
-In the above example, the similarity threshold is 50% and the cells composition is: 30% empty, 30% red, 30% blue and 10% green, on a 640 x 480 grid. The initial population is randomly constructed using the model's Monte-Carlo engine, the process of moving agents uses randomly swaps unsatisfied agents with empty cells.
+In the above example, the similarity threshold is 50% and the cells states are (approximately): 36% empty, 12% red, 12% blue and 39% green, on a 640 x 480 grid. The initial population is randomly constructed using the model's Monte-Carlo engine, the process of moving agents uses randomly swaps unsatisfied agents with empty cells.
 
 ## Implementation
 

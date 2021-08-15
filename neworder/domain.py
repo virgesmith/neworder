@@ -213,7 +213,7 @@ class StateGrid(Domain):
     bounded = np.pad(ind, pad_width=1, mode=self.__mode_lookup[self.edge])
 
     # count neighbours, drop padding, covert to int
-    count = signal.convolve(bounded, self.kernel, mode="same")[(slice(1,-1),)*self.dim].astype(int)
+    count = signal.convolve(bounded, self.kernel, mode="same", method="direct")[(slice(1,-1),)*self.dim].astype(int)
 
     return count
 

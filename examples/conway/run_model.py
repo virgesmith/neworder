@@ -3,14 +3,14 @@ from conway import Conway
 import neworder as no
 
 # size of domain
-nx, ny = (640, 480)
+nx, ny = (480, 360)
 
 # saturation (proportion initially alive)
 sat = 0.36
 
 n = int(nx * ny * sat)
 
-# edges do not wrap - try with no.Domain.WRAP
-m = Conway(nx, ny, n, no.Domain.CONSTRAIN)
+# edges wrap - try with no.Domain.CONSTRAIN
+m = Conway(nx, ny, n, no.Domain.WRAP)
 
 no.run(m)
