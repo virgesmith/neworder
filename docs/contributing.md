@@ -19,7 +19,7 @@ Here’s a quick guide for those unfamiliar with the contribution process:
 
 1. [Fork this repository](https://github.com/virgesmith/neworder/fork) and then clone it locally:
 ```sh
-git clone https://github.com/virgesmith/neworder
+git clone https://github.com/<your-github-handle>/neworder
 ```
 2. Create a branch for your changes:
 ```sh
