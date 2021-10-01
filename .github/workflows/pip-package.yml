@@ -9,6 +9,9 @@ on:
     tags: '**'
   pull_request:
     branches: [ master ]
+  schedule:
+    # 5:00 every saturday
+    - cron:  '0 5 * * SAT'
 
 jobs:
   build:
