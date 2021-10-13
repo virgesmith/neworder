@@ -27,7 +27,7 @@ jobs:
         python -m pip install pybind11 pytest
     - name: Build
       run: |
-        CFLAGS=-coverage python -m pip install -e .
+        CFLAGS=-coverage python -m pip install .
     - name: Test
       run: |
         python -m pytest
