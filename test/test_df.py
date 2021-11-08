@@ -10,6 +10,7 @@ from utils import assert_throws
 #   i = int(np.interp(u, t, range(len(t))))
 #   return c[i]
 
+
 def test_errors():
 
   df = pd.read_csv("./test/df.csv")
@@ -22,8 +23,8 @@ def test_errors():
   trans = np.identity(len(cats))
 
   # invalid transition matrices
-  assert_throws(ValueError, no.df.transition, model, cats, np.ones((1,2)), df, "DC2101EW_C_ETHPUK11")
-  assert_throws(ValueError, no.df.transition, model, cats, np.ones((1,1)), df, "DC2101EW_C_ETHPUK11")
+  assert_throws(ValueError, no.df.transition, model, cats, np.ones((1, 2)), df, "DC2101EW_C_ETHPUK11")
+  assert_throws(ValueError, no.df.transition, model, cats, np.ones((1, 1)), df, "DC2101EW_C_ETHPUK11")
   assert_throws(ValueError, no.df.transition, model, cats, trans+0.1, df, "DC2101EW_C_ETHPUK11")
 
   # category data MUST be 64bit integer. This will almost certainly be the default on linux/OSX (LP64) but maybe not on windows (LLP64)

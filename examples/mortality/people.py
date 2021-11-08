@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import neworder
 
+
 # !disc_ctor!
 class PeopleDiscrete(neworder.Model):
   """ Persons sampled each represented as a row in a data frame """
@@ -17,7 +18,7 @@ class PeopleDiscrete(neworder.Model):
     # store the largest age we have a rate for
     self.max_rate_age = max(self.mortality_hazard.DC1117EW_C_AGE) - 1
 
-    #neworder.log(self.mortality_hazard.head())
+    # neworder.log(self.mortality_hazard.head())
     self.population = pd.DataFrame(index=neworder.df.unique_index(n),
                                    data={"alive": True,
                                          "age": 0.0,
@@ -60,12 +61,13 @@ class PeopleDiscrete(neworder.Model):
     # at final timestep everybody dies (at some later time) so dt is infinite
     if self.timeline.time() == self.max_age:
       dt = neworder.time.far_future()
-    newly_dead = alive[r<dt]
+    newly_dead = alive[r < dt]
 
     # kill off those who die before next timestep
     self.population.loc[newly_dead, "alive"] = False
     # and set the age at death according to the stopping time above
-    self.population.loc[newly_dead, "age_at_death"] = self.population.loc[newly_dead, "age"] + r[r<dt]
+    self.population.loc[newly_dead, "age_at_death"] = self.population.loc[newly_dead, "age"] + r[r < dt]
+
 
 # !cont_ctor!
 class PeopleContinuous(neworder.Model):
@@ -79,7 +81,7 @@ class PeopleContinuous(neworder.Model):
     # store the largest age we have a rate for
     self.max_rate_age = max(self.mortality_hazard.DC1117EW_C_AGE) - 1
 
-    #neworder.log(self.mortality_hazard.head())
+    # neworder.log(self.mortality_hazard.head())
     self.population = pd.DataFrame(index=neworder.df.unique_index(n),
                                    data={"age_at_death": neworder.time.far_future()})
 

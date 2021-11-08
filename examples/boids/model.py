@@ -13,5 +13,3 @@ m = Boids(N, range, vision, exclusion, speed)
 
 no.log("q to quit")
 no.run(m)
-
-

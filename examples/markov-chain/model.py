@@ -6,7 +6,7 @@ from markov_chain import MarkovChain
 import visualisation
 
 # Logging and checking options
-#no.verbose()
+# no.verbose()
 no.checked()
 
 npeople = 100000

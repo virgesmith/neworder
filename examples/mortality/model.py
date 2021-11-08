@@ -1,4 +1,3 @@
-import numpy as np
 import time
 
 import neworder
@@ -7,7 +6,7 @@ from people import PeopleDiscrete, PeopleContinuous
 # visualisation code
 from plot import plot
 
-#neworder.verbose()
+# neworder.verbose()
 # checks disabled to emphasise performance differences
 neworder.checked(False)
 
@@ -34,6 +33,6 @@ end = time.perf_counter()
 neworder.log("Continuous model life expectancy = %f, exec time = %f" % (mortality_continuous.life_expectancy, end - start))
 
 # visualise some results
-#hist_file = "docs/examples/img/mortality_%dk.png" % (population_size//1000)
-#anim_file = "docs/examples/img/mortality_hist_%dk.gif" % (population_size//1000)
+# hist_file = "docs/examples/img/mortality_%dk.png" % (population_size//1000)
+# anim_file = "docs/examples/img/mortality_hist_%dk.gif" % (population_size//1000)
 plot(mortality_discrete.population, mortality_continuous.population)

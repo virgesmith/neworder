@@ -6,12 +6,13 @@ It subclasses neworder.Model adds implements a toy model which
 - say hello, which is called at the end of the "simulation".
 """
 
-#!class!
+# !class!
 import pandas as pd
 import neworder
 
 # uncomment for verbose output
-#neworder.verbose()
+# neworder.verbose()
+
 
 class HelloWorld(neworder.Model):
   """
@@ -24,7 +25,7 @@ class HelloWorld(neworder.Model):
   The neworder.run() function will execute the model, looping over
   the timeline and calling the methods above
   """
-#!class!
+# !class!
 
   # !constructor!
   def __init__(self, n, p):
@@ -67,7 +68,7 @@ class HelloWorld(neworder.Model):
     """
     return self.__class__.__name__
 
-  #!step!
+  # !step!
   def step(self):
     """
     Transitions to run at each timestep.
@@ -87,7 +88,8 @@ class HelloWorld(neworder.Model):
     Returns: NoneType
     """
     for i, r in self.population.iterrows():
-      if r.talkative: neworder.log("Hello from %d" % i)
+      if r.talkative:
+        neworder.log("Hello from %d" % i)
   # !finalise!
 
   # def check(self):
@@ -99,16 +101,18 @@ class HelloWorld(neworder.Model):
   #   """
   #   return True
 
-#!script!
+# !script!
 # uncomment for verbose output
 # neworder.verbose()
 # uncomment to disable checks entirely
 # neworder.checked(False)
+
 
 # construct the model with the population size and the probability of becoming talkative
 hello_world = HelloWorld(10, 0.5)
 
 # run the model and check it worked
 ok = neworder.run(hello_world)
-if not ok: neworder.log("model failed!")
-#!script!
+if not ok:
+  neworder.log("model failed!")
+# !script!

@@ -7,7 +7,7 @@ from people import People
 # separate visualisation code
 from visualise import plot
 
-#neworder.verbose()
+# neworder.verbose()
 
 # create model
 # data are for white British women in a London Borough at 1 year time resolution

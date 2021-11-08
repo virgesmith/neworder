@@ -3,7 +3,6 @@ import neworder as no
 import matplotlib.pyplot as plt
 from matplotlib import colors
 
-#from time import sleep
 
 class Conway(no.Model):
 
@@ -14,9 +13,9 @@ class Conway(no.Model):
 
     # create n automata at random positions
     rng = np.random.default_rng(self.mc.raw())
-    s = rng.choice(np.arange(nx*ny), n, replace=False)
+    s = rng.choice(np.arange(nx * ny), n, replace=False)
 
-    init_state = np.zeros((nx*ny))
+    init_state = np.zeros((nx * ny))
     for s in s:
      init_state[s] = 1
 
@@ -49,7 +48,7 @@ class Conway(no.Model):
   def __init_visualisation(self):
     plt.ion()
     cmap = colors.ListedColormap(['black', 'white', 'purple', 'blue', 'green', 'yellow', 'orange', 'red', 'brown'])
-    fig = plt.figure(constrained_layout=True, figsize=(8,6))
+    fig = plt.figure(constrained_layout=True, figsize=(8, 6))
     g = plt.imshow(self.domain.state, cmap=cmap, vmax=9)
     plt.axis("off")
 

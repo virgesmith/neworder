@@ -7,7 +7,7 @@ import numpy as np
 import neworder
 from person import People
 
-#neworder.verbose() # uncomment for detailed output
+# neworder.verbose() # uncomment for detailed output
 
 # "An arbitrarily selected value, chosen to produce a life expectancy of about 70 years."
 # (see the "mortality" example for a more realistic model)

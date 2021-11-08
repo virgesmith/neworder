@@ -6,6 +6,7 @@ from neworder.domain import Space
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
+
 class NBody(no.Model):
 
   def __init__(self, N, G, dt):
@@ -29,7 +30,7 @@ class NBody(no.Model):
         "m": self.mc.ustream(N) * m_max,
         "x": x,
         "y": y,
-        "z": 0.1*(self.mc.ustream(N) - 0.5),
+        "z": 0.1 * (self.mc.ustream(N) - 0.5),
         # create angular momentum
         "vx": -y,
         "vy": x,
@@ -58,7 +59,7 @@ class NBody(no.Model):
     dist2s = np.where(dist2s == 0.0, np.inf, dist2s)
     dist2s += 0.01
     dists = np.sqrt(dist2s)
-    for i,b in self.bodies.iterrows():
+    for i, b in self.bodies.iterrows():
       xhat = (self.bodies.x.values - b.x) / dists[i]
       yhat = (self.bodies.y.values - b.y) / dists[i]
       zhat = (self.bodies.z.values - b.z) / dists[i]
@@ -70,9 +71,9 @@ class NBody(no.Model):
 
   def __update_pos(self):
     # ignore returned v (will not be altered in an unconstrained domain)
-    (self.bodies.x, self.bodies.y, self.bodies.z), _  = self.domain.move((self.bodies.x, self.bodies.y, self.bodies.z),
-                                                                   (self.bodies.vx, self.bodies.vy, self.bodies.vz),
-                                                                   self.dt, ungroup=True)
+    (self.bodies.x, self.bodies.y, self.bodies.z), _ = self.domain.move((self.bodies.x, self.bodies.y, self.bodies.z),
+                                                                        (self.bodies.vx, self.bodies.vy, self.bodies.vz),
+                                                                        self.dt, ungroup=True)
 
   def __update_v(self, frac=1):
     dt = self.dt * frac
@@ -88,9 +89,9 @@ class NBody(no.Model):
     ke = np.sum(self.bodies.ke)
     pe = np.sum(self.bodies.pe)
     no.log("p=%g,%g,%g" % (px, py, pz))
-    no.log("delta E=%f" % (ke+pe-self.E0))
+    no.log("delta E=%f" % (ke + pe - self.E0))
 
-    return np.fabs(ke+pe-self.E0) < 20.2
+    return np.fabs(ke + pe - self.E0) < 20.2
 
   def step(self):
     # 2nd order accurate, see https://medium.com/swlh/create-your-own-n-body-simulation-with-python-f417234885e9
@@ -99,7 +100,7 @@ class NBody(no.Model):
     self.__calc_a()
     self.__update_v(0.5)
 
-    #_plot(self.bodies)
+    # _plot(self.bodies)
     self.__update_visualisation()
 
   def __init_visualisation(self):
@@ -107,15 +108,15 @@ class NBody(no.Model):
     plt.ion()
     plt.style.use('dark_background')
     # axes instance
-    self.fig = plt.figure(figsize=(8,8))
-    self.fig.suptitle("[q to quit]", y=0.05, x= 0.05)
+    self.fig = plt.figure(figsize=(8, 8))
+    self.fig.suptitle("[q to quit]", y=0.05, x=0.05)
     ax = Axes3D(self.fig)
     self.ax = ax
 
     g = ax.scatter(self.bodies.x, self.bodies.y, self.bodies.z, c=self.bodies.index.values, s=self.bodies.m * 5000 / self.bodies.m.sum())
-    ax.set_xlim(-0.5,0.5)
-    ax.set_ylim(-0.5,0.5)
-    ax.set_zlim(-0.5,0.5)
+    ax.set_xlim(-0.5, 0.5)
+    ax.set_ylim(-0.5, 0.5)
+    ax.set_zlim(-0.5, 0.5)
     ax.xaxis.set_ticklabels([])
     ax.yaxis.set_ticklabels([])
     ax.zaxis.set_ticklabels([])
@@ -130,5 +131,5 @@ class NBody(no.Model):
     self.g._offsets3d = (self.bodies.x, self.bodies.y, self.bodies.z)
     self.fig.canvas.draw()
     self.fig.canvas.flush_events()
-    #plt.savefig("/tmp/n-body%04d.png" % i)
+    # plt.savefig("/tmp/n-body%04d.png" % i)
 

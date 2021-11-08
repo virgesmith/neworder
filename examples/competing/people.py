@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import neworder as no
 
+
 class People(no.Model):
   """ A simple aggregration of Persons each represented as a row in a data frame """
   def __init__(self, dt, fertility_hazard_file, mortality_hazard_file, n):
@@ -31,8 +32,8 @@ class People(no.Model):
 
     # the number of columns is governed by the maximum number of arrivals in the births data
     for i in range(births.shape[1]):
-      col = "time_of_baby_" + str(i+1)
-      self.population[col] = births[:,i]
+      col = "time_of_baby_" + str(i + 1)
+      self.population[col] = births[:, i]
       # remove births that would have occured after death
       self.population.loc[self.population[col] > self.population.time_of_death, col] = no.time.never()
       self.population.parity = self.population.parity + ~no.time.isnever(self.population[col].values)
