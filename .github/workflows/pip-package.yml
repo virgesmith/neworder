@@ -9,6 +9,9 @@ on:
     tags: '**'
   pull_request:
     branches: [ master ]
+  schedule:
+    # 5:00 every saturday
+    - cron:  '0 5 * * SAT'
 
 jobs:
   build:
@@ -31,7 +34,7 @@ jobs:
         python -m pip install pybind11 pytest
     - name: Build
       run: |
-        python -m pip install -e .
+        python -m pip install .
     # - name: Lint with flake8
     #   run: |
     #     # stop the build if there are Python syntax errors or undefined names

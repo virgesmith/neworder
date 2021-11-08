@@ -24,7 +24,7 @@ void no::Model::modify(int)
 
 void no::Model::step()
 {
-  throw no::NotImplementedError("Model.step() method must be overridden");
+  PYBIND11_OVERLOAD_PURE(void, Model, step);
 }
 
 void no::Model::halt()

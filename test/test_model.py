@@ -9,10 +9,10 @@ from utils import assert_throws
 def test_base():
   base = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
 
-  assert_throws(NotImplementedError, no.run, base)
+  assert_throws(RuntimeError, no.run, base) # RuntimeError: Tried to call pure virtual function "Model::step"
 
 def test_multimodel():
-  
+
   class TestModel(no.Model):
     def __init__(self):
       super().__init__(no.LinearTimeline(0,10,10), no.MonteCarlo.deterministic_identical_stream)
