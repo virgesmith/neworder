@@ -11,44 +11,26 @@
 
 using namespace std::string_literals;
 
-template<typename T>
-std::string to_string_impl(T v)
+namespace std
 {
-  return std::to_string(v);
-}
+std::string to_string(const std::string& str);
 
-
-// print pointer
-template<typename T>
-std::string to_string_impl(T* p)
-{
-  char buf[20];
-  std::sprintf(buf, "0x%016zx", reinterpret_cast<size_t>(p));
-  return std::string(buf);
-}
-
-template<>
-std::string to_string_impl(char c);
-
-template<>
-std::string to_string_impl(const char* v);
-
-std::string to_string_impl(const std::string& v);
-
-std::string to_string_impl(const py::object& o);
+std::string to_string(const py::object& o);
 
 template<typename T>
-std::string to_string_impl(const std::vector<T>& v)
+std::string to_string(const std::vector<T>& v)
 {
   if (v.empty())
     return "[]";
-  std::string result = "[" + to_string_impl(v[0]);
+  std::string result = "[" + std::to_string(v[0]);
 
   for (size_t i = 1; i < v.size(); ++i)
-    result += ", " + to_string_impl(v[i]);
+    result += ", " + std::to_string(v[i]);
   result += "]";
 
   return result;
+}
+
 }
 
 
@@ -59,7 +41,7 @@ std::string operator%(std::string&& str, T value)
   size_t s = str.find("%%");
   if (s != std::string::npos)
   {
-    str.replace(s, 2, to_string_impl(value));
+    str.replace(s, 2, std::to_string(value));
   }
   return std::move(str);
 }
