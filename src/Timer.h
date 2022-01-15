@@ -1,14 +1,14 @@
-#pragma once 
+#pragma once
 
 // Simple timer functionality
 
 #include <chrono>
 
-class Timer
+class Timer final
 {
 public:
-  Timer() 
-  { 
+  Timer()
+  {
     reset();
   }
 

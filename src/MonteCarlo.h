@@ -19,30 +19,30 @@ class NEWORDER_EXPORT MonteCarlo
 public:
 
   // some basic seeding strategies
-  static int32_t deterministic_independent_stream(int r);
+  static int32_t deterministic_independent_stream(int r) noexcept;
 
-  static int32_t deterministic_identical_stream(int);
+  static int32_t deterministic_identical_stream(int) noexcept;
 
-  static int32_t nondeterministic_stream(int);
+  static int32_t nondeterministic_stream(int) noexcept;
 
   // constructs given a seed
-  MonteCarlo(int32_t seed);
+  MonteCarlo(int32_t seed) noexcept;
 
-  int32_t seed() const;
+  int32_t seed() const noexcept;
 
-  void reset();
+  void reset() noexcept;
 
   // used by python __repr__
-  std::string repr() const;
+  std::string repr() const noexcept;
 
   // Uniform random [0,1) fed from the environment's PRNG stream
   py::array_t<double> ustream(py::ssize_t n);
 
   // returns a hash of the internal state. (The raw string representation's length varies, making MPI comms trickier)
-  size_t state() const;
+  size_t state() const noexcept;
 
   // raw unsigned 64-bit ints, can be used to (un)deterministically seed another generator (e.g. np.random)
-  uint64_t raw();
+  uint64_t raw() noexcept;
 
   // randomly sample categories with weights
   py::array_t<int64_t> sample(py::ssize_t n, const py::array_t<double>& cat_weights);
@@ -75,7 +75,7 @@ public:
 private:
 
   // Use this over std::uniform_real_distribution as can make C++ and rust implementations produce identical streams
-  double u01();
+  double u01() noexcept;
 
   int32_t m_seed;
   std::mt19937 m_prng;

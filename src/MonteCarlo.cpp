@@ -37,43 +37,43 @@ void validate_lambda(const py::array_t<double>& lambda)
 
 
 // helper functions for basic seeding strategies
-int32_t no::MonteCarlo::deterministic_independent_stream(int r)
+int32_t no::MonteCarlo::deterministic_independent_stream(int r) noexcept
 {
   return 19937 + r;
 }
 
-int32_t no::MonteCarlo::deterministic_identical_stream(int)
+int32_t no::MonteCarlo::deterministic_identical_stream(int) noexcept
 {
   return 19937;
 }
 
-int32_t no::MonteCarlo::nondeterministic_stream(int)
+int32_t no::MonteCarlo::nondeterministic_stream(int) noexcept
 {
   std::random_device rand;
   return rand();
 }
 
 //
-no::MonteCarlo::MonteCarlo(int32_t seed)
+no::MonteCarlo::MonteCarlo(int32_t seed) noexcept
   : m_seed(seed), m_prng(m_seed) { }
 
 
-int32_t no::MonteCarlo::seed() const
+int32_t no::MonteCarlo::seed() const noexcept
 {
   return m_seed;
 }
 
-void no::MonteCarlo::reset()
+void no::MonteCarlo::reset() noexcept
 {
   m_prng.seed(m_seed);
 }
 
-std::string no::MonteCarlo::repr() const
+std::string no::MonteCarlo::repr() const noexcept
 {
   return "<neworder.MonteCarlo seed=%%>"s % seed();
 }
 
-size_t no::MonteCarlo::state() const
+size_t no::MonteCarlo::state() const noexcept
 {
 // disable as causes segfault in mpi tests on travis OSX build
 #ifdef __APPLE__
@@ -86,13 +86,13 @@ size_t no::MonteCarlo::state() const
 }
 
 // raw unsigned 64-bit ints (for enabling numpy to use this generator)
-uint64_t no::MonteCarlo::raw()
+uint64_t no::MonteCarlo::raw() noexcept
 {
   return (static_cast<uint64_t>(m_prng()) << 32) | static_cast<uint64_t>(m_prng());
 }
 
 // uniform [0,1)
-double no::MonteCarlo::u01()
+double no::MonteCarlo::u01() noexcept
 {
   static const double SCALE = 1.0 / (1ull << 32);
   return m_prng() * SCALE;
