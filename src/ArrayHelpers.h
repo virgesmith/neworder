@@ -84,7 +84,7 @@ const T* cend(const py::array_t<T>& a)
 template<typename T, size_t D=1>
 py::array_t<T> make_array(const Index_t<D>& n, const std::function<T()>& f)
 {
-  py::array_t<T> a(n); 
+  py::array_t<T> a(n);
   std::generate(begin(a), end(a), f);
   return a;
 }
@@ -100,7 +100,7 @@ py::array_t<T>& fill(py::array_t<T>& a, T val)
 template<typename R, typename A>
 py::array_t<R> unary_op(const py::array_t<A>& arg, const std::function<R(A)>& f)
 {
-  py::array_t<R> result(std::vector<ssize_t>(arg.shape(), arg.shape() + arg.ndim()));
+  py::array_t<R> result(std::vector<py::ssize_t>(arg.shape(), arg.shape() + arg.ndim()));
 
   const A* p = (const A*)arg.request().ptr;
   R* r = (R*)result.request().ptr;
@@ -128,7 +128,7 @@ py::array_t<R> binary_op(A0 arg0, const py::array_t<A1>& arg1, const std::functi
 template<typename R, typename A0, typename A1>
 py::array_t<R> binary_op(const py::array_t<A0>& arg0, A1 arg1, const std::function<R(A0, A1)>& f)
 {
-  py::array_t<R> result(std::vector<ssize_t>{arg0.shape(), arg0.shape() + arg0.ndim()});
+  py::array_t<R> result(std::vector<py::ssize_t>{arg0.shape(), arg0.shape() + arg0.ndim()});
 
   const A0* p = (const A0*)arg0.request().ptr;
   R* r = (R*)result.request().ptr;
@@ -153,7 +153,7 @@ py::array_t<R> binary_op(const py::array_t<A0>& arg0, const py::array_t<A1>& arg
       throw std::runtime_error("binary_op: argments must have same size");
   }
 
-  py::array_t<R> result(std::vector<ssize_t>(arg0.shape(), arg0.shape() + arg0.ndim()));
+  py::array_t<R> result(std::vector<py::ssize_t>(arg0.shape(), arg0.shape() + arg0.ndim()));
 
   const A0* p0 = (const A0*)arg0.request().ptr;
   const A1* p1 = (const A1*)arg1.request().ptr;
