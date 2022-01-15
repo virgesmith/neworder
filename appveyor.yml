@@ -35,12 +35,12 @@ environment:
 
     - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
       MINICONDA: true
-      PYTHON: "3.8"
+      PYTHON: "3.9"
       APPVEYOR_YML_DISABLE_PS_LINUX: true
 
     - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
       CODECOV_BUILD: true
-      PYTHON: "3.8"
+      PYTHON: "3.9"
       APPVEYOR_YML_DISABLE_PS_LINUX: true
 
     # - APPVEYOR_BUILD_WORKER_IMAGE: macOS
