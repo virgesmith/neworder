@@ -30,5 +30,7 @@ jobs:
         shell: bash -l {0}
         run: |
           conda activate conda-env
+          pwd
+          ls -al
           python -m pip install .
 
