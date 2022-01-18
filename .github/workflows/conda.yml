@@ -25,5 +25,5 @@ jobs:
         run: |
           conda info
           conda list
-          conda create -q -n conda-env python=${{ matrix.python-version }} gxx_linux-64 mpich numpy pandas pybind11 pytest mpi4py
+          conda create -q -n conda-env python=${{ matrix.python-version }} gxx_linux-64 numpy pandas pybind11 pytest mpi4py
 
