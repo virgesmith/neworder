@@ -25,11 +25,11 @@ jobs:
         run: |
           conda info
           conda list
-          conda create -q -n conda-env python=${{ matrix.python-version }} gxx_linux-64 numpy pandas pybind11 pytest # mpich mpi4py
+          conda install python=${{ matrix.python-version }} gxx_linux-64 numpy pandas pybind11 pytest # mpich mpi4py
       - name: Conda build
         shell: bash -l {0}
         run: |
-          conda activate conda-env
+          conda activate test
           pwd
           ls -al
           python -m pip install .
