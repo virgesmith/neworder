@@ -21,17 +21,20 @@ jobs:
         with:
           auto-update-conda: true
           python-version: ${{ matrix.python-version }}
-      - name: Conda setup
+      - name: setup
         shell: bash -l {0}
         run: |
           conda info
           conda list
           conda install python=${{ matrix.python-version }} gxx_linux-64 numpy pandas pybind11 pytest # mpich mpi4py
-      - name: Conda build
+      - name: build
         shell: bash -l {0}
         run: |
           conda activate test
-          pwd
-          ls -al
           python -m pip install .
+      - name: test
+        shell: bash -l {0}
+        run: |
+          conda activate test
+          python -m pytest
 
