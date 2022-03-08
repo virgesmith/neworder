@@ -1,11 +1,12 @@
 import numpy as np
 import neworder as no
 import platform
+from typing import Sized
 
 from utils import assert_throws
 
 
-def test_mc_property():
+def test_mc_property() -> None:
   model = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
 
   #model.mc = model.mc not allowed
@@ -14,7 +15,7 @@ def test_mc_property():
   model.mc.reset()
 
 
-def test_mc():
+def test_mc() -> None:
 
   model = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
 
@@ -28,7 +29,7 @@ def test_mc():
     model_i = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_independent_stream)
     _test_mc_parallel(model, model_i)
 
-def test_seeders():
+def test_seeders() -> None:
 
   # serial tests
   # determinisitc seeders always return the same value
@@ -47,12 +48,14 @@ def test_seeders():
 
   # all seeds equal
   seeds = comm.gather(no.MonteCarlo.deterministic_identical_stream(no.mpi.rank()), 0)
+  assert seeds
   if no.mpi.rank() == 0:
     assert len(seeds) == no.mpi.size()
     assert len(set(seeds)) == 1
 
   # all seeds different but reproducible
   seeds = comm.gather(no.MonteCarlo.deterministic_independent_stream(no.mpi.rank()), 0)
+  assert seeds
   if no.mpi.rank() == 0:
     assert len(seeds) == no.mpi.size()
     assert len(set(seeds)) == len(seeds)
@@ -62,6 +65,7 @@ def test_seeders():
 
   # all seeds different and not reproducible
   seeds = comm.gather(no.MonteCarlo.nondeterministic_stream(no.mpi.rank()), 0)
+  assert seeds
   if no.mpi.rank() == 0:
     assert len(seeds) == no.mpi.size()
     assert len(set(seeds)) == len(seeds)
@@ -76,7 +80,7 @@ def test_seeders():
   assert m.mc.seed() == no.mpi.rank() + 1
 
 
-def test_sample():
+def test_sample() -> None:
   m = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
 
   assert_throws(ValueError, m.mc.sample, 100, [0.9])
@@ -85,7 +89,7 @@ def test_sample():
   assert np.all(m.mc.sample(100, [0.0, 1.0, 0.0, 0.0]) == 1)
   assert np.all(m.mc.sample(100, [0.0, 0.0, 0.0, 1.0]) == 3)
 
-def test_hazard():
+def test_hazard() -> None:
   m = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
 
   assert np.all(m.mc.hazard(0.0,10) == 0.0)
@@ -98,7 +102,7 @@ def test_hazard():
   assert_throws(ValueError, m.mc.hazard, np.nan, 1)
   assert_throws(ValueError, m.mc.hazard, [0.1, np.nan])
 
-def test_stopping():
+def test_stopping() -> None:
   m = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
 
   assert np.all(m.mc.stopping(0.0,10) == no.time.far_future())
@@ -110,7 +114,7 @@ def test_stopping():
   assert_throws(ValueError, m.mc.stopping, np.nan, 1)
   assert_throws(ValueError, m.mc.stopping, [0.1, np.nan])
 
-def test_arrivals_validation():
+def test_arrivals_validation() -> None:
   m = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
   assert np.all(no.time.isnever(m.mc.first_arrival([0.0,0.0], 1.0, 10)))
   assert_throws(ValueError, m.mc.first_arrival, np.array([-1.0,0.0]), 1.0, 10)
@@ -124,14 +128,14 @@ def test_arrivals_validation():
   assert_throws(ValueError, m.mc.arrivals, [1.0,1.0], 1.0, 10, 0.0)
   assert_throws(ValueError, m.mc.arrivals, [np.nan,np.nan], 1.0, 10, 0.0)
 
-def test_mc_counts():
+def test_mc_counts() -> None:
   m = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
   mc = m.mc
   assert mc.seed() == 19937
 
-  def poisson_pdf(x, l):
+  def poisson_pdf(x: range, l: float) -> np.ndarray:
     y = np.exp(-l)
-    return np.array([l**k * y / np.math.factorial(k) for k in x])
+    return np.array([l**k * y / np.math.factorial(k) for k in x]) # type: ignore # Module has no attribute "math"; maybe "emath" or "mat"?
 
 
   tests = [(1.0, 1.0, 10000), (3.0, 0.5, 10000), (0.2, 2.0, 10000), (10.0, 1.0, 1000), (3.0, 1.0, 100000)]
@@ -147,7 +151,7 @@ def test_mc_counts():
     for i in x:
       assert np.fabs(c[i] - p[i]) < 1.0 / np.sqrt(n)
 
-def _test_mc_serial(model):
+def _test_mc_serial(model: no.Model) -> None:
   mc = model.mc
   assert mc.seed() == 19937
 
@@ -276,7 +280,7 @@ def _test_mc_serial(model):
   assert len(nhpp) == 10
 
 
-def _test_mc_parallel(model, model_i):
+def _test_mc_parallel(model: no.Model, model_i: no.Model) -> None:
 
   import mpi4py.MPI as mpi
   comm = mpi.COMM_WORLD
@@ -289,6 +293,7 @@ def _test_mc_parallel(model, model_i):
   a = mc.ustream(5)
   all_a = comm.gather(a, root=0)
   all_states = comm.gather(mc.state(), root=0)
+  assert all_a and all_states
 
   if no.mpi.rank() == 0:
     for r in range(0, no.mpi.size()):
@@ -303,6 +308,7 @@ def _test_mc_parallel(model, model_i):
   a = mc.ustream(5)
   all_a = comm.gather(a, root=0)
   all_states = comm.gather(mc.state(), root=0)
+  assert all_a and all_states
 
   # check all other streams different
   if no.mpi.rank() == 0:

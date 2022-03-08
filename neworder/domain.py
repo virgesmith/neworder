@@ -8,16 +8,6 @@ import numpy as np
 from scipy import signal  # type: ignore
 
 
-
-# def _bounce(point: , min: float, max: float):
-#   for d in range(len(point)):
-#     if point[d] < min[d]:
-#       point[d] = min[d] - point[d]
-#     if point[d] > max[d]:
-#       point[d] = max[d] - point[d]
-#   return point
-
-
 class Domain:
   """
   Base class for spatial domains.

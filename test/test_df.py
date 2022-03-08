@@ -1,17 +1,13 @@
 
 import numpy as np
-import pandas as pd
+import pandas as pd # type: ignore
 import neworder as no
 from math import sqrt
 
 from utils import assert_throws
 
-# def sample(u, t, c):
-#   i = int(np.interp(u, t, range(len(t))))
-#   return c[i]
 
-
-def test_errors():
+def test_errors() -> None:
 
   df = pd.read_csv("./test/df.csv")
 
@@ -33,7 +29,7 @@ def test_errors():
   assert_throws(TypeError, no.df.transition, model, cats, trans, df, "DC2101EW_C_ETHPUK11")
 
 
-def test_basic():
+def test_basic() -> None:
 
   # test unique index generation
   idx = no.df.unique_index(100)
@@ -88,7 +84,7 @@ def test_basic():
   no.df.transition(model, c, t, df, "category")
   assert df.category.value_counts()[1] == N
 
-def test():
+def test() -> None:
 
   df = pd.read_csv("./test/df.csv")
 

@@ -4,7 +4,7 @@ import neworder as no
 
 from utils import assert_throws
 
-def test_logistic_logit():
+def test_logistic_logit() -> None:
 
   n = 100 # wont work if odd!
 

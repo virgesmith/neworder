@@ -9,7 +9,7 @@ from utils import assert_throws
 #no.verbose()
 
 class _TestModel(no.Model):
-  def __init__(self):
+  def __init__(self) -> None:
     # 10 steps of 10
     super().__init__(no.LinearTimeline(0,100,10), no.MonteCarlo.deterministic_identical_stream)
 
@@ -17,14 +17,14 @@ class _TestModel(no.Model):
     self.t_end = 100
     self.i_end = 10
 
-  def step(self):
+  def step(self) -> None:
     self.step_count += 1
 
-  def finalise(self):
+  def finalise(self) -> None:
     assert self.timeline.time() == self.t_end and self.timeline.index() == self.timeline.index()
 
 class _TestModel2(no.Model):
-  def __init__(self, start, end, steps):
+  def __init__(self, start: float, end: float, steps: int) -> None:
     super().__init__(no.LinearTimeline(start, end, steps), no.MonteCarlo.deterministic_identical_stream)
 
     self.i = 0
@@ -32,24 +32,24 @@ class _TestModel2(no.Model):
     self.steps = steps
     self.end = end
 
-  def step(self):
+  def step(self) -> None:
     self.i += 1
     self.t += self.timeline.dt()
 
-  def check(self):
+  def check(self) -> bool:
     return self.timeline.index() == self.i and self.timeline.time() == self.t
 
-  def finalise(self):
+  def finalise(self) -> None:
     assert self.timeline.at_end() and self.timeline.index() == self.steps
 
 class _TestResume(no.Model):
-  def __init__(self, t0, n):
+  def __init__(self, t0: float, n: int) -> None:
     super().__init__(no.LinearTimeline(t0, t0 + n, n), no.MonteCarlo.deterministic_identical_stream)
 
-  def step(self):
+  def step(self) -> None:
     self.halt()
 
-def test_time():
+def test_time() -> None:
   t = -1e10
   assert no.time.distant_past() < t
   assert no.time.far_future() > t
@@ -68,7 +68,7 @@ def test_time():
   # no nay never no more
   assert no.time.isnever(no.time.never())
 
-def test_null_timeline():
+def test_null_timeline() -> None:
   t0 = no.NoTimeline()
   assert t0.nsteps() == 1
   assert t0.dt() == 0.0
@@ -83,7 +83,7 @@ def test_null_timeline():
   assert m.timeline.index() == 1
   assert m.timeline.time() == 1.0
 
-def test_timeline_validation():
+def test_timeline_validation() -> None:
 
   assert_throws(TypeError, no.LinearTimeline, 2020, 2020, [])
   assert_throws(ValueError, no.LinearTimeline, 2020, 0.0)
@@ -106,7 +106,7 @@ def test_timeline_validation():
   assert_throws(TypeError, no.CalendarTimeline, date(2019, 1, 1), date(2020, 1, 1), -1, "m")
 
 
-def test_linear_timeline():
+def test_linear_timeline() -> None:
   # 40 years annual steps
   m = _TestModel2(2011, 2051, 40)
   assert m.timeline.time() == 2011
@@ -118,16 +118,16 @@ def test_linear_timeline():
   assert m.timeline.index() == 40
   assert m.timeline.time() == 2051
 
-def test_numeric_timeline():
+def test_numeric_timeline() -> None:
 
   class NumericTimelineModel(no.Model):
-    def __init__(self, numerictimeline):
+    def __init__(self, numerictimeline: no.Timeline) -> None:
       super().__init__(numerictimeline, no.MonteCarlo.deterministic_identical_stream)
-    def step(self):
+    def step(self) -> None:
       assert self.timeline.dt() == 1/16
       assert self.timeline.time() == self.timeline.index() / 16
 
-    def finalise(self):
+    def finalise(self) -> None:
       assert self.timeline.time() == 1.0
       assert self.timeline.time() == self.timeline.end()
       assert self.timeline.index() == 16
@@ -138,18 +138,18 @@ def test_numeric_timeline():
   no.run(m)
 
 
-def test_calendar_timeline():
+def test_calendar_timeline() -> None:
   # monthly timesteps checking we don't overshoot in shorter months
   dim = [31,29,31,30,31,30]
 
   class CalendarModel(no.Model):
-    def __init__(self, calendartimeline):
+    def __init__(self, calendartimeline: no.Timeline) -> None:
       super().__init__(calendartimeline, no.MonteCarlo.deterministic_identical_stream)
 
-    def step(self):
+    def step(self) -> None:
       assert self.timeline.time().day == min(dim[self.timeline.index()], d)
 
-    def finalise(self):
+    def finalise(self) -> None:
       assert self.timeline.dt() == 0.0
       assert self.timeline.time() == self.timeline.end()
       assert self.timeline.index() == 6
@@ -160,14 +160,14 @@ def test_calendar_timeline():
     m = CalendarModel(t)
     no.run(m)
 
-def test_open_ended_timeline():
+def test_open_ended_timeline() -> None:
 
   class OpenEndedModel(no.Model):
-    def __init__(self, calendartimeline):
-      super().__init__(calendartimeline, no.MonteCarlo.deterministic_identical_stream)
+    def __init__(self, timeline: no.Timeline) -> None:
+      super().__init__(timeline, no.MonteCarlo.deterministic_identical_stream)
       self.i = 0
 
-    def step(self):
+    def step(self) -> None:
       assert self.i == self.timeline.index()
       self.i += 1
       if self.i > 10: self.halt()
@@ -193,20 +193,20 @@ def test_open_ended_timeline():
   no.run(m)
   assert m.i == 11
 
-def test_model():
+def test_model() -> None:
   model = _TestModel()
   no.run(model)
   assert model.step_count == 10
 
 # check the timestepping is consistent across the different timeline implementations
-def test_consistency():
+def test_consistency() -> None:
 
   # need to wrap timeline in a model to do the stepping, which isnt directly accessible from python
   class ConsistencyTest(no.Model):
-    def __init__(self, timeline):
+    def __init__(self, timeline: no.Timeline) -> None:
       super().__init__(timeline, no.MonteCarlo.deterministic_identical_stream)
 
-    def step(self):
+    def step(self) -> None:
       pass
 
   m = ConsistencyTest(no.NoTimeline())
@@ -237,7 +237,7 @@ def test_consistency():
   assert m.timeline.time().date() == e
   assert m.timeline.index() == 12
 
-def test_resume():
+def test_resume() -> None:
   t0 = 0.1
   n = 10
   m = _TestResume(t0, n) # unit timesteps
@@ -251,19 +251,19 @@ def test_resume():
   assert m.timeline.time() == t0 + n
 
 # check that halt/finalise interaction works as expected
-def test_halt_finalise():
+def test_halt_finalise() -> None:
 
   class HCModel(no.Model):
-    def __init__(self, timeline, halt=False):
+    def __init__(self, timeline: no.Timeline, halt: bool=False) -> None:
       super().__init__(timeline, no.MonteCarlo.deterministic_identical_stream)
       self.do_halt = halt
       self.finalise_called = False
 
-    def step(self):
+    def step(self) -> None:
       if self.do_halt:
         self.halt()
 
-    def finalise(self):
+    def finalise(self) -> None:
       self.finalise_called = True
 
   m = HCModel(no.LinearTimeline(0,3,3))

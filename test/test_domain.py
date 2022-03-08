@@ -5,7 +5,7 @@ import pandas as pd
 
 from utils import assert_throws
 
-def test_invalid():
+def test_invalid() -> None:
 
   assert_throws(AssertionError, no.Space, [], [])
 
@@ -13,7 +13,7 @@ def test_invalid():
   assert_throws(AssertionError, no.Space, np.array([0.0, 1.0]), np.array([1.0, -1.0]))
 
 
-def test_space2d():
+def test_space2d() -> None:
 
   # constrained edges
   space2dc = no.Space(np.array([-1.0, -3.0]), np.array([2.0, 5.0]), no.Domain.CONSTRAIN)
@@ -73,7 +73,7 @@ def test_space2d():
   assert np.all(np.abs(deltas[:,1]) == 0.7)
 
 
-def test_space3d():
+def test_space3d() -> None:
   rng = np.random.default_rng(19937)
 
   N = 5
@@ -96,7 +96,7 @@ def test_space3d():
   dt = 1.0
   (bodies.x, bodies.y, bodies.z), (bodies.vx, bodies.vy, bodies.vz) = space.move((bodies.x, bodies.y, bodies.z), (bodies.vx, bodies.vy, bodies.vz), dt, ungroup=True)
 
-def test_grid():
+def test_grid() -> None:
 
   assert_throws(ValueError, no.StateGrid, np.empty(shape=(3,3)), no.Domain.UNBOUNDED)
   assert_throws(ValueError, no.StateGrid, np.empty(shape=(3,3)), no.Domain.BOUNCE)

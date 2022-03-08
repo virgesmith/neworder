@@ -7,7 +7,7 @@ warnings.filterwarnings(action='ignore', category=RuntimeWarning, message=r't=')
 import neworder as no
 
 
-def test_basics():
+def test_basics() -> None:
 
   # just check you can read the attrs/call the functions
   assert hasattr(no, "verbose")
@@ -20,30 +20,30 @@ def test_basics():
   no.log((1,2,3))
   no.log({1:2,3:4})
 
-def test_submodules():
+def test_submodules() -> None:
   assert(hasattr(no, "mpi"))
   assert(hasattr(no, "stats"))
   assert(hasattr(no, "df"))
 
-def test_dummy_model():
+def test_dummy_model() -> None:
   class DummyModel(no.Model):
-    def __init__(self):
+    def __init__(self) -> None:
       super().__init__(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
-    def step(self):
+    def step(self) -> None:
       pass
-    def finalise(self):
+    def finalise(self) -> None:
       pass
 
   assert no.run(DummyModel())
 
 @pytest.mark.filterwarnings("ignore:check()")
-def test_check_flag():
+def test_check_flag() -> None:
   class FailingModel(no.Model):
-    def __init__(self):
+    def __init__(self) -> None:
       super().__init__(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
-    def step(self):
+    def step(self) -> None:
       pass
-    def check(self):
+    def check(self) -> bool:
       return False
 
   # fails
@@ -53,7 +53,7 @@ def test_check_flag():
   # succeeds
   assert no.run(FailingModel())
 
-def test_mpi():
+def test_mpi() -> None:
   # if no mpi4py, assume serial like module does
   try:
     import mpi4py.MPI as mpi

@@ -1,10 +1,11 @@
 
 # test utils
+from typing import Any, Callable, Type
 
-def assert_throws(e, f, *args, **kwargs):
+def assert_throws(e: Type[Exception], f: Callable, *args: Any, **kwargs: Any):
   try:
     f(*args, **kwargs)
   except e:
     pass
   else:
-    assert False, "expected exception %s not thrown" % e
+    assert False, f"expected exception {e} not thrown by {f}"

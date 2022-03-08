@@ -1,7 +1,8 @@
 """ MPI tests """
 
+from typing import Any
 import numpy as np
-import pandas as pd
+import pandas as pd # type: ignore
 import neworder as no
 
 if no.mpi.size() == 1:
@@ -13,7 +14,7 @@ else:
 
   no.log("MPI env detected, running MPI tests")
 
-  def send_recv(x):
+  def send_recv(x: Any) -> bool:
     if no.mpi.rank() == 0:
       comm.send(x, dest=1)
     if no.mpi.rank() == 1:
@@ -23,7 +24,7 @@ else:
         return False
     return True
 
-  def test_scalar():
+  def test_scalar() -> None:
 
     assert send_recv(True)
     assert send_recv(10)
@@ -32,7 +33,7 @@ else:
     assert send_recv([1,2,3])
     assert send_recv({"a": "fghdfkgh"})
 
-  def test_arrays():
+  def test_arrays() -> None:
 
     x = np.array([1,4,9,16])
     if no.mpi.rank() == 0:
