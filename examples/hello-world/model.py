@@ -7,7 +7,7 @@ It subclasses neworder.Model adds implements a toy model which
 """
 
 # !class!
-import pandas as pd
+import pandas as pd # type: ignore
 import neworder
 
 # uncomment for verbose output
@@ -28,7 +28,7 @@ class HelloWorld(neworder.Model):
 # !class!
 
   # !constructor!
-  def __init__(self, n, p):
+  def __init__(self, n: int, p: float) -> None:
     """
     We create a null timeline, corresponding to a single instantaneous
     transition, and initialise the base class with this plus a
@@ -60,7 +60,7 @@ class HelloWorld(neworder.Model):
   #   """
   #   pass
 
-  def __str__(self):
+  def __str__(self) -> str:
     """
     Returns a more readable name for verbose logging output, would
     otherwise be something like
@@ -69,7 +69,7 @@ class HelloWorld(neworder.Model):
     return self.__class__.__name__
 
   # !step!
-  def step(self):
+  def step(self) -> None:
     """
     Transitions to run at each timestep.
     This method must be implemented.
@@ -81,7 +81,7 @@ class HelloWorld(neworder.Model):
   # !step!
 
   # !finalise!
-  def finalise(self):
+  def finalise(self) -> None:
     """
     This method (optional, if defined) is run at the end of the timeline
     Arguments: self
@@ -92,7 +92,7 @@ class HelloWorld(neworder.Model):
         neworder.log("Hello from %d" % i)
   # !finalise!
 
-  # def check(self):
+  # def check(self) -> bool:
   #   """
   #   Custom checks can be made after every timestep during the simulation.
   #   This method is optional

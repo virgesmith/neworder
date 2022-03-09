@@ -4,8 +4,18 @@ Spatial structures for positioning and moving entities and computing distances
 
 from __future__ import annotations
 from typing import Union, Optional, Any, Callable
+from enum import Enum, auto
 import numpy as np
 from scipy import signal  # type: ignore
+
+class Edge(Enum):
+  """
+  Edge behaviour
+  """
+  UNBOUNDED = auto()
+  WRAP = auto()
+  CONSTRAIN = auto()
+  BOUNCE = auto()
 
 
 class Domain:
@@ -13,15 +23,7 @@ class Domain:
   Base class for spatial domains.
   """
 
-  """
-  Edge behaviour
-  """
-  UNBOUNDED: int = 0
-  WRAP: int = 1
-  CONSTRAIN: int = 2
-  BOUNCE: int = 3
-
-  def __init__(self, dim: int, edge: int, continuous: bool):
+  def __init__(self, dim: int, edge: Edge, continuous: bool):
     self.__dim = dim
     self.__edge = edge
     self.__continuous = continuous
@@ -32,7 +34,7 @@ class Domain:
     return self.__dim
 
   @property
-  def edge(self) -> int:
+  def edge(self) -> Edge:
     """ The tyoe of edge constraint """
     return self.__edge
 
@@ -53,14 +55,14 @@ class Space(Domain):
   def unbounded(dim: int) -> Space:
     """ Construct an unbounded Space """
     assert dim > 0
-    return Space(np.full(dim, -np.inf), np.full(dim, +np.inf), edge=Domain.UNBOUNDED)
+    return Space(np.full(dim, -np.inf), np.full(dim, +np.inf), edge=Edge.UNBOUNDED)
 
-  def __init__(self, min: np.ndarray, max: np.ndarray, edge: int=Domain.CONSTRAIN):
+  def __init__(self, min: np.ndarray, max: np.ndarray, edge: Edge=Edge.CONSTRAIN):
     assert len(min) and len(min) == len(max)
     super().__init__(len(min), edge, True)
 
     # Space supports all edge behaviours
-    assert edge in [Domain.UNBOUNDED, Domain.WRAP, Domain.CONSTRAIN, Domain.BOUNCE]
+    assert edge in [Edge.UNBOUNDED, Edge.WRAP, Edge.CONSTRAIN, Edge.BOUNCE]
 
     assert np.all(max > min)
 
@@ -86,10 +88,10 @@ class Space(Domain):
     assert positions.dtype == float
     assert velocities.dtype == float
     assert positions.shape[-1] == self.dim and velocities.shape[-1] == self.dim
-    if self.edge == Domain.UNBOUNDED:
+    if self.edge == Edge.UNBOUNDED:
       p = positions + velocities * delta_t
       v = velocities
-    elif self.edge == Domain.CONSTRAIN:
+    elif self.edge == Edge.CONSTRAIN:
       p = positions + velocities * delta_t
       v = velocities
       hitmin = np.where(p < self.min, 1, 0)
@@ -98,7 +100,7 @@ class Space(Domain):
       hitmax = np.where(p > self.max, 1, 0)
       p = np.where(hitmax, self.max, p)
       v = np.where(hitmax, 0, v)
-    elif self.edge == Domain.BOUNCE:
+    elif self.edge == Edge.BOUNCE:
       p = positions + velocities * delta_t
       v = velocities
       hitmin = np.where(p < self.min, 1, 0)
@@ -116,7 +118,7 @@ class Space(Domain):
       v = np.split(v, self.dim, axis=1)
     return p, v
 
-  def dists2(self, positions: Union[tuple[float], np.ndarray], to_points: Optional[np.ndarray]=None) -> tuple[np.ndarray, Any]:
+  def dists2(self, positions: Union[tuple[np.ndarray, ...], np.ndarray], to_points: Optional[np.ndarray]=None) -> tuple[np.ndarray, Any]:
     """ The squared distance between points and separations along each axis """
     # group tuples into a single array if necessary
     if isinstance(positions, tuple):
@@ -133,7 +135,7 @@ class Space(Domain):
     d = positions.shape[1]
     d2 = np.zeros((m, n))
     separations: tuple[Any, ...] = ()
-    if self.edge != Domain.WRAP:
+    if self.edge != Edge.WRAP:
       for i in range(d):
         delta = np.tile(positions[:, i], m).reshape((m, n)) - np.repeat(to_points[:, i], n).reshape(m, n)
         separations += (delta,)
@@ -149,7 +151,7 @@ class Space(Domain):
 
     return d2, separations
 
-  def dists(self, positions: Any, to_points: Optional[np.ndarray]=None) -> np.ndarray:
+  def dists(self, positions: Union[tuple[np.ndarray, ...], np.ndarray], to_points: Optional[np.ndarray]=None) -> np.ndarray:
     """ Returns distances between the points"""
     return np.sqrt(self.dists2(positions, to_points)[0])
 
@@ -171,18 +173,18 @@ class StateGrid(Domain):
     CONSTRAIN (no neighburs over edge), WRAP (toroidal), BOUNCE (reflect)
   """
 
-  __mode_lookup: dict[int, str] = {
-    Domain.CONSTRAIN: "constant",
-    Domain.WRAP: "wrap",
-    Domain.BOUNCE: "reflect"
+  __mode_lookup: dict[Edge, str] = {
+    Edge.CONSTRAIN: "constant",
+    Edge.WRAP: "wrap",
+    Edge.BOUNCE: "reflect"
   }
 
-  def __init__(self, initial_values: np.ndarray, edge: int=Domain.CONSTRAIN):
+  def __init__(self, initial_values: np.ndarray, edge: Edge=Edge.CONSTRAIN):
     super().__init__(initial_values.ndim, edge, False)
 
     # StateGrid supports two edge behaviours
-    if edge not in [Domain.WRAP, Domain.CONSTRAIN]:
-      raise ValueError("edge policy must be one of Domain.WRAP, Domain.CONSTRAIN")
+    if edge not in [Edge.WRAP, Edge.CONSTRAIN]:
+      raise ValueError("edge policy must be one of Edge.WRAP, Edge.CONSTRAIN")
 
     if initial_values.ndim < 1:
       raise ValueError("state array must have dimension of 1 or above")

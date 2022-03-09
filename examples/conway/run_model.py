@@ -10,7 +10,7 @@ sat = 0.36
 
 n = int(nx * ny * sat)
 
-# edges wrap - try with no.Domain.CONSTRAIN
-m = Conway(nx, ny, n, no.Domain.WRAP)
+# edges wrap - try with no.Edge.CONSTRAIN
+m = Conway(nx, ny, n, no.Edge.WRAP)
 
 no.run(m)

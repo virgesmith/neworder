@@ -16,7 +16,7 @@ class Schelling(neworder.Model):
     self.sat = np.empty(gridsize, dtype=int)
     self.similarity = similarity
 
-    self.domain = neworder.StateGrid(init_pop, neworder.Domain.CONSTRAIN)
+    self.domain = neworder.StateGrid(init_pop, neworder.Edge.CONSTRAIN)
 
     self.fig, self.img = self.__init_visualisation()
 

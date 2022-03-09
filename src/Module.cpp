@@ -162,37 +162,37 @@ PYBIND11_MODULE(_neworder_core, m)
                    "p"_a)
     .def("stopping", py::overload_cast<double, py::ssize_t>(&no::MonteCarlo::stopping),
                      mc_stopping_docstr,
-                     "lambda"_a, "n"_a)
+                     "lambda_"_a, "n"_a)
     .def("stopping", py::overload_cast<const py::array_t<double>&>(&no::MonteCarlo::stopping),
                      mc_stopping_a_docstr,
-                     "lambda"_a)
+                     "lambda_"_a)
     .def("counts", &no::MonteCarlo::counts,
                    mc_counts_docstr,
-                   "lambda"_a, "dt"_a)
+                   "lambda_"_a, "dt"_a)
     .def("arrivals", &no::MonteCarlo::arrivals,
                      mc_arrivals_docstr,
-                     "lambda"_a , "dt"_a, "n"_a, "mingap"_a)
+                     "lambda_"_a , "dt"_a, "n"_a, "mingap"_a)
     .def("first_arrival", &no::MonteCarlo::first_arrival,
                           mc_first_arrival_docstr,
-                          "lambda"_a, "dt"_a, "n"_a, "minval"_a)
+                          "lambda_"_a, "dt"_a, "n"_a, "minval"_a)
     .def("first_arrival", [](no::MonteCarlo& self, const py::array_t<double>& lambda_t, double dt, size_t n) {
                             return self.first_arrival(lambda_t, dt, n, 0.0);
                           },
                           mc_first_arrival3_docstr,
-                          "lambda"_a, "dt"_a, "n"_a)
+                          "lambda_"_a, "dt"_a, "n"_a)
     .def("next_arrival", &no::MonteCarlo::next_arrival,
                          mc_next_arrival_docstr,
-                         "startingpoints"_a, "lambda"_a, "dt"_a, "relative"_a, "minsep"_a)
+                         "startingpoints"_a, "lambda_"_a, "dt"_a, "relative"_a, "minsep"_a)
     .def("next_arrival", [](no::MonteCarlo& self, const py::array_t<double>& startingpoints, const py::array_t<double>& lambda_t, double dt, bool relative) {
                            return self.next_arrival(startingpoints, lambda_t, dt, relative, 0.0);
                          },
                          mc_next_arrival4_docstr,
-                         "startingpoints"_a, "lambda"_a, "dt"_a, "relative"_a)
+                         "startingpoints"_a, "lambda_"_a, "dt"_a, "relative"_a)
     .def("next_arrival", [](no::MonteCarlo& self, const py::array_t<double>& startingpoints, const py::array_t<double>& lambda_t, double dt) {
                            return self.next_arrival(startingpoints, lambda_t, dt, false, 0.0);
                          },
                          mc_next_arrival3_docstr,
-                         "startingpoints"_a, "lambda"_a, "dt"_a)
+                         "startingpoints"_a, "lambda_"_a, "dt"_a)
     .def("__repr__", &no::MonteCarlo::repr, mc_repr_docstr);
 
     // .def("first_arrival", [](no::MonteCarlo& mc, const py::array_t<double>& lambda_t, double dt, size_t n) {

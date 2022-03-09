@@ -1,14 +1,15 @@
+from typing import Any
 import numpy as np
-import pandas as pd
+import pandas as pd # type: ignore
 import neworder as no
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt # type: ignore
 
 TWO_PI = 2 * np.pi
 
 
 class Boids(no.Model):
 
-  def __init__(self, N, range, vision, exclusion, speed):
+  def __init__(self, N: int, range: float, vision: float, exclusion: float, speed: float) -> None:
     super().__init__(no.LinearTimeline(0.0, 0.01), no.MonteCarlo.nondeterministic_stream)
 
     self.N = N
@@ -18,7 +19,7 @@ class Boids(no.Model):
     self.speed = speed
 
     # continuous wraparound 2d space
-    self.domain = no.Space(np.zeros(2), np.full(2, self.range), edge=no.Domain.WRAP)
+    self.domain = no.Space(np.zeros(2), np.full(2, self.range), edge=no.Edge.WRAP)
 
     # maximum turns for each interaction
     self.sep_max_turn = TWO_PI / 240 # 1.5 degrees
@@ -40,7 +41,7 @@ class Boids(no.Model):
     # suppress divsion by zero warnings
     np.seterr(divide='ignore')
 
-  def step(self):
+  def step(self) -> None:
     d2, (dx, dy) = self.domain.dists2((self.boids.x, self.boids.y))
     np.fill_diagonal(d2, np.inf) # no self-influence
 
@@ -67,7 +68,7 @@ class Boids(no.Model):
     # if self.timeline.index() > 300:
     #   self.halt()
 
-  def __align(self, in_range, max_turn):
+  def __align(self, in_range: np.ndarray, max_turn: float) -> None:
 
     weights = 1.0 / np.sum(in_range, axis=0)
     weights[weights == np.inf] = 0.0
@@ -80,7 +81,7 @@ class Boids(no.Model):
     delta = np.clip(np.arctan2(mean_vy, mean_vx) - self.boids.theta, -max_turn, max_turn)
     self.boids.theta = (self.boids.theta + delta) % TWO_PI
 
-  def __cohere(self, in_range, dx, dy, max_turn):
+  def __cohere(self, in_range: np.ndarray, dx: np.ndarray, dy: np.ndarray, max_turn: float) -> None:
     weights = 1.0 / np.sum(in_range, axis=0)
     weights[weights == np.inf] = 0.0
     # compute vectors to cen  tre of gravity of neighbours (if any), relative to boid location
@@ -90,7 +91,7 @@ class Boids(no.Model):
     delta = np.clip(np.arctan2(ybar, xbar) - self.boids.theta, -max_turn, max_turn)
     self.boids.theta = (self.boids.theta + delta) % TWO_PI
 
-  def __separate(self, in_range, dx, dy, max_turn):
+  def __separate(self, in_range: np.ndarray, dx: np.ndarray, dy: np.ndarray, max_turn: float) -> None:
     if np.all(in_range == 0):
       return
     weights = 1.0 / np.sum(in_range, axis=0)
@@ -101,7 +102,7 @@ class Boids(no.Model):
     delta = np.clip(np.arctan2(y, x) - self.boids.theta, -max_turn, max_turn)
     self.boids.theta = (self.boids.theta - delta) % TWO_PI
 
-  def __init_visualisation(self):
+  def __init_visualisation(self) -> tuple[Any, Any]:
     plt.ion()
 
     fig = plt.figure(constrained_layout=True, figsize=(8, 8))
@@ -116,7 +117,7 @@ class Boids(no.Model):
 
     return fig, g
 
-  def __update_visualisation(self):
+  def __update_visualisation(self) -> None:
 
     self.g.set_offsets(np.c_[self.boids.x, self.boids.y])
     self.g.set_UVC(np.cos(self.boids.theta), np.sin(self.boids.theta))

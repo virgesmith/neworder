@@ -16,7 +16,7 @@ def test_invalid() -> None:
 def test_space2d() -> None:
 
   # constrained edges
-  space2dc = no.Space(np.array([-1.0, -3.0]), np.array([2.0, 5.0]), no.Domain.CONSTRAIN)
+  space2dc = no.Space(np.array([-1.0, -3.0]), np.array([2.0, 5.0]), no.Edge.CONSTRAIN)
 
   point = np.zeros(2)
   delta = np.array([0.6, 0.7])
@@ -32,7 +32,7 @@ def test_space2d() -> None:
   assert delta[1] == 0.0
 
   # wrapped edges
-  space2dw = no.Space(np.array([-1.0, -3.0]), np.array([2.0, 5.0]), no.Domain.WRAP)
+  space2dw = no.Space(np.array([-1.0, -3.0]), np.array([2.0, 5.0]), no.Edge.WRAP)
 
   assert space2dw.dim == 2
 
@@ -55,7 +55,7 @@ def test_space2d() -> None:
   assert delta[1] == 0.7
 
   # bounce edges
-  space2db = no.Space(np.array([-1.0, -3.0]), np.array([2.0, 5.0]), no.Domain.BOUNCE)
+  space2db = no.Space(np.array([-1.0, -3.0]), np.array([2.0, 5.0]), no.Edge.BOUNCE)
 
   assert space2db.dim == 2
 
@@ -98,8 +98,8 @@ def test_space3d() -> None:
 
 def test_grid() -> None:
 
-  assert_throws(ValueError, no.StateGrid, np.empty(shape=(3,3)), no.Domain.UNBOUNDED)
-  assert_throws(ValueError, no.StateGrid, np.empty(shape=(3,3)), no.Domain.BOUNCE)
+  assert_throws(ValueError, no.StateGrid, np.empty(shape=(3,3)), no.Edge.UNBOUNDED)
+  assert_throws(ValueError, no.StateGrid, np.empty(shape=(3,3)), no.Edge.BOUNCE)
   assert_throws(ValueError, no.StateGrid, np.empty(shape=()))
   assert_throws(ValueError, no.StateGrid, np.empty(shape=(2,0)))
 
@@ -109,7 +109,7 @@ def test_grid() -> None:
   state[1,-1] = 3
 
   # total neighbours should be 3 in corner, 5 on edge, 8 in middle
-  g = no.StateGrid(state, no.Domain.CONSTRAIN)
+  g = no.StateGrid(state, no.Edge.CONSTRAIN)
   assert np.sum(g.count_neighbours()) == 3
   assert np.sum(g.count_neighbours(lambda x: x==2)) == 8
   assert np.sum(g.count_neighbours(lambda x: x==3)) == 5
@@ -120,7 +120,7 @@ def test_grid() -> None:
   state[-1,1,-1] = -1
 
   # total neighbours should be 26
-  g = no.StateGrid(state, no.Domain.WRAP)
+  g = no.StateGrid(state, no.Edge.WRAP)
   assert np.sum(g.count_neighbours()) == 26
   assert np.sum(g.count_neighbours(lambda x: x==-1)) == 26
   assert np.sum(g.count_neighbours(lambda x: x!=0)) == 52

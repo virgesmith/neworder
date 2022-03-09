@@ -18,7 +18,7 @@ class WolfSheep(no.Model):
     # hard-coded to unit timestep
     self.width = params["grid"]["width"]
     self.height = params["grid"]["height"]
-    self.domain = no.Space(np.array([0,0]), np.array([self.width, self.height]), edge=Domain.WRAP)
+    self.domain = no.Space(np.array([0,0]), np.array([self.width, self.height]), edge=Edge.WRAP)
 
     n_wolves = params["wolves"]["starting_population"]
     n_sheep =params["sheep"]["starting_population"]

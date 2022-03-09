@@ -28,7 +28,7 @@ class DaisyWorld(no.Model):
     p = [pct_white, pct_black, 1 - pct_white - pct_black]
     init_pop = self.mc.sample(np.prod(gridsize), p).reshape(gridsize)
 
-    self.domain = no.StateGrid(init_pop, edge=no.Domain.WRAP)
+    self.domain = no.StateGrid(init_pop, edge=no.Edge.WRAP)
     self.age = (self.mc.ustream(self.domain.state.size) * DaisyWorld.MAX_AGE).astype(int).reshape(self.domain.state.shape)
     self.temperature = np.zeros(self.domain.state.shape)
 
