@@ -1,8 +1,8 @@
 
-from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt  # type: ignore
+from markov_chain import MarkovChain
 
-
-def show(model):
+def show(model: MarkovChain) -> None:
   # this seems to have a bug
   # model.summary.plot(kind='bar', width=1.0, stacked=True)
   dt = model.timeline.dt()

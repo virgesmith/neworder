@@ -1,9 +1,10 @@
 
+from matplotlib.image import AxesImage  # type: ignore
 import neworder as no
 import numpy as np
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt  # type: ignore
 from matplotlib import colors
-from scipy import signal
+from scipy import signal  # type: ignore
 
 solar_luminosity = 0.8
 
@@ -16,13 +17,13 @@ class DaisyWorld(no.Model):
 
   MAX_AGE = 25
 
-  DIFF_KERNEL = [
+  DIFF_KERNEL = np.array([
     [1.0 / 16, 1.0 / 16, 1.0 / 16],
     [1.0 / 16, 1.0 / 2,  1.0 / 16],
     [1.0 / 16, 1.0 / 16, 1.0 / 16]
-  ]
+  ])
 
-  def __init__(self, gridsize, pct_white, pct_black):
+  def __init__(self, gridsize: tuple[int, int], pct_white: float, pct_black: float) -> None:
     super().__init__(no.LinearTimeline(0, 1), no.MonteCarlo.deterministic_independent_stream)
 
     p = [pct_white, pct_black, 1 - pct_white - pct_black]
@@ -43,7 +44,7 @@ class DaisyWorld(no.Model):
 
     self.fig, self.img = self.__init_visualisation()
 
-  def step(self):
+  def step(self) -> None:
     self.age += 1
 
     # update temperature
@@ -85,24 +86,24 @@ class DaisyWorld(no.Model):
     if self.timeline.index() > 3000:
       self.halt()
 
-  def __calc_local_heating(self):
+  def __calc_local_heating(self) -> np.ndarray[np.float64, np.dtype[np.float64]]:
     # local_heating = 0
 
     # get absorbed luminosity from state
-    def fs(state):
+    def fs(state: np.ndarray[np.int64, np.dtype[np.int64]]) -> np.ndarray[np.float64, np.dtype[np.float64]]:
       return (1.0 - self.albedo[state]) * solar_luminosity
     abs_lum = fs(self.domain.state)
 
     # get local heating from absorbed luminosity
-    def fl(lum):
+    def fl(lum: np.ndarray[np.float64, np.dtype[np.float64]]) -> np.ndarray[np.float64, np.dtype[np.float64]]:
       return 72.0 * np.log(lum) + 80.0
     return fl(abs_lum)
 
-  def __diffuse(self):
+  def __diffuse(self) -> None:
     padded = np.pad(self.temperature, pad_width=1, mode="wrap")
     self.temperature = signal.convolve(padded, DaisyWorld.DIFF_KERNEL, mode="same", method="direct")[1:-1, 1:-1]
 
-  def __init_visualisation(self):
+  def __init_visualisation(self) -> tuple[plt.Figure, AxesImage]:
 
     # TODO copy wolf-sheep
     plt.ion()
@@ -117,7 +118,7 @@ class DaisyWorld(no.Model):
 
     return fig, img
 
-  def __update_visualisation(self):
+  def __update_visualisation(self) -> None:
     self.img.set_array(self.domain.state.T)
     # plt.savefig("/tmp/daisyworld%04d.png" % self.timeline.index(), dpi=80)
     self.fig.canvas.flush_events()

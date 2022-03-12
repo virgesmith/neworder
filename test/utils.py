@@ -2,7 +2,7 @@
 # test utils
 from typing import Any, Callable, Type
 
-def assert_throws(e: Type[Exception], f: Callable, *args: Any, **kwargs: Any):
+def assert_throws(e: Type[Exception], f: Callable, *args: Any, **kwargs: Any) -> None:
   try:
     f(*args, **kwargs)
   except e:

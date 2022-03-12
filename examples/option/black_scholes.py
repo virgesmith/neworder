@@ -1,17 +1,18 @@
 """ Black-Scholes model implementations: analytic and MC """
 
-import neworder
+from typing import Any
 import numpy as np
+from mpi4py import MPI
+import neworder
 from helpers import nstream, norm_cdf
 
-from mpi4py import MPI
 comm = MPI.COMM_WORLD
 
 
 # Subclass neworder.Model
 class BlackScholes(neworder.Model):
   # !constructor!
-  def __init__(self, option, market, nsims):
+  def __init__(self, option: dict[str, Any], market: dict[str, float], nsims: int) -> None:
 
     # Using exact MC calc of GBM requires only 1 timestep
     timeline = neworder.LinearTimeline(0.0, option["expiry"], 1)
@@ -23,7 +24,7 @@ class BlackScholes(neworder.Model):
   # !constructor!
 
   # !modifier!
-  def modify(self, rank):
+  def modify(self, rank: int) -> None:
     if rank == 1:
       self.market["spot"] *= 1.01 # delta/gamma up bump
     elif rank == 2:
@@ -33,36 +34,36 @@ class BlackScholes(neworder.Model):
   # !modifier!
 
   # !step!
-  def step(self):
+  def step(self) -> None:
     self.pv = self.simulate()
   # !step!
 
   # !check!
-  def check(self):
+  def check(self) -> bool:
     # check the rng streams are still in sync by sampling from each one,
     # comparing, and broadcasting the result. If one process fails the
     # check and exits without notifying the others, deadlocks can result.
-    # send the state representation to process 0
+    # send the state representation to process 0 (others will get None)
     states = comm.gather(self.mc.state(), 0)
     # process 0 checks the values
-    if neworder.mpi.rank() == 0:
+    if states:
       ok = all(s == states[0] for s in states)
     else:
-      ok = None
+      ok = True
     # broadcast process 0's ok to all processes
     ok = comm.bcast(ok, root=0)
     return ok
   # !check!
 
   # !finalise!
-  def finalise(self):
+  def finalise(self) -> None:
     # check and report accuracy
     self.compare()
     # compute and report some market risk
     self.greeks()
   # !finalise!
 
-  def simulate(self):
+  def simulate(self) -> float:
     # get the single timestep from the timeline
     dt = self.timeline.dt()
     normals = nstream(self.mc.ustream(self.nsims))
@@ -82,7 +83,7 @@ class BlackScholes(neworder.Model):
     # discount back to val date
     return fv * np.exp(-r * dt)
 
-  def analytic(self):
+  def analytic(self) -> float:
     """ Compute Black-Scholes European option price """
     S = self.market["spot"]
     K = self.option["strike"]
@@ -105,7 +106,7 @@ class BlackScholes(neworder.Model):
     else:
       return -S * df * norm_cdf(-d1) + K * df * norm_cdf(-d2)
 
-  def compare(self):
+  def compare(self) -> bool:
     """ Compare MC price to analytic """
     ref = self.analytic()
     err = self.pv / ref - 1.0
@@ -113,12 +114,12 @@ class BlackScholes(neworder.Model):
     # relative error should be within O(1/(sqrt(sims))) of analytic solution
     return True if abs(err) <= 2.0 / np.sqrt(self.nsims) else False
 
-  def greeks(self):
+  def greeks(self) -> None:
     # get all the results
     pvs = comm.gather(self.pv, 0)
     # compute sensitivities on rank 0
-    if neworder.mpi.rank() == 0:
-      neworder.log("PV=%f" % pvs[0])
-      neworder.log("delta=%f" % ((pvs[1] - pvs[2]) / 2))
-      neworder.log("gamma=%f" % ((pvs[1] - 2 * pvs[0] + pvs[2])))
-      neworder.log("vega 10bp=%f" % (pvs[3] - pvs[0]))
+    if pvs:
+      neworder.log(f"PV={pvs[0]:.3f}")
+      neworder.log(f"delta={(pvs[1] - pvs[2]) / 2:.3f}")
+      neworder.log(f"gamma={(pvs[1] - 2 * pvs[0] + pvs[2]):.3f}")
+      neworder.log(f"vega 10bp={pvs[3] - pvs[0]:.3f}")

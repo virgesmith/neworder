@@ -1,10 +1,10 @@
-import pandas as pd
+import pandas as pd  # type: ignore
 import numpy as np
 import neworder as no
 
 
 class MarkovChain(no.Model):
-  def __init__(self, timeline, npeople, states, transition_matrix):
+  def __init__(self, timeline: no.Timeline, npeople: int, states: np.ndarray, transition_matrix: np.ndarray) -> None:
 
     super().__init__(timeline, no.MonteCarlo.deterministic_identical_stream)
     self.npeople = npeople
@@ -19,8 +19,8 @@ class MarkovChain(no.Model):
     self.summary = self.summary.append(self.pop.state.value_counts().transpose())
 
   # pure python equivalent implementation of no.df.transition, to illustrate the performance gain
-  def transition_py(self, colname):
-    def _interp(cumprob, x):
+  def transition_py(self, colname: str) -> None:
+    def _interp(cumprob: np.ndarray, x: float) -> int:
       lbound = 0
       while lbound < len(cumprob) - 1:
         if cumprob[lbound] > x:
@@ -28,7 +28,7 @@ class MarkovChain(no.Model):
         lbound += 1
       return lbound
 
-    def _sample(u, tc, c):
+    def _sample(u: float, tc: np.ndarray, c: np.ndarray) -> float:
       return c[_interp(tc, u)]
 
     # u = m.mc.ustream(len(df))
@@ -43,13 +43,13 @@ class MarkovChain(no.Model):
     # this is a much faster equivalent of the loop in the commented code immediately above
     self.pop[colname] = self.pop[colname].apply(lambda current: _sample(self.mc.ustream(1), tc[lookup[current]], self.states))
 
-  def step(self):
+  def step(self) -> None:
     # self.transition_py("state")
     # comment the above line and uncomment this line to use the faster C++ implementation
     no.df.transition(self, self.states, self.transition_matrix, self.pop, "state")
     self.summary = self.summary.append(self.pop.state.value_counts().transpose())  # , ignore_index=True)
 
-  def finalise(self):
+  def finalise(self) -> None:
     self.summary["t"] = np.linspace(self.timeline.start(), self.timeline.end(), self.timeline.nsteps() + 1)
     # self.summary.set_index(np.linspace(self.timeline.start(), self.timeline.end(), self.timeline.nsteps() + 1), drop=True, inplace=True)
     self.summary.reset_index(drop=True, inplace=True)

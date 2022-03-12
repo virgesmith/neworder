@@ -1,12 +1,12 @@
 
 import numpy as np
-import pandas as pd
+import pandas as pd  # type: ignore
 import neworder as no
 
 
 class People(no.Model):
   """ A simple aggregration of Persons each represented as a row in a data frame """
-  def __init__(self, dt, fertility_hazard_file, mortality_hazard_file, n):
+  def __init__(self, dt: float, fertility_hazard_file: str, mortality_hazard_file: str, n: int) -> None:
 
     super().__init__(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
 
@@ -23,7 +23,7 @@ class People(no.Model):
                                    data={"parity": 0,
                                          "time_of_death": no.time.far_future()})
 
-  def step(self):
+  def step(self) -> None:
     # sample deaths
     self.population["time_of_death"] = self.mc.first_arrival(self.mortality_hazard.Rate.values, self.dt, len(self.population))
 
@@ -38,7 +38,7 @@ class People(no.Model):
       self.population.loc[self.population[col] > self.population.time_of_death, col] = no.time.never()
       self.population.parity = self.population.parity + ~no.time.isnever(self.population[col].values)
 
-  def finalise(self):
+  def finalise(self) -> None:
     # compute means
     no.log("birth rate = %f" % np.mean(self.population.parity))
     no.log("percentage mothers = %f" % (100.0 * np.mean(self.population.parity > 0)))

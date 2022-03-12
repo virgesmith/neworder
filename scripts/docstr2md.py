@@ -25,6 +25,8 @@ def badge(t):
   h = ""
   return "![%s](https://img.shields.io/badge/%s-%s-%s)" % (t, h, t, colour[t])
 
+raise RuntimeError("DEPRECATED")
+
 
 def format_overloads(lines):
   for i, l in enumerate(lines):

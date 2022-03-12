@@ -1,6 +1,7 @@
 # !constructor! this is a tag for inserting code snippets into the documentation
+from typing import cast
 import numpy as np
-import pandas as pd
+import pandas as pd  # type: ignore
 from mpi4py import MPI
 
 comm = MPI.COMM_WORLD
@@ -8,7 +9,7 @@ comm = MPI.COMM_WORLD
 import neworder
 
 class Parallel(neworder.Model):
-  def __init__(self, timeline, p, n):
+  def __init__(self, timeline: neworder.Timeline, p: float, n: int):
     # initialise base model (essential!)
     super().__init__(timeline, neworder.MonteCarlo.nondeterministic_stream)
 
@@ -27,7 +28,7 @@ class Parallel(neworder.Model):
 #!constructor!
 
   # !step!
-  def step(self):
+  def step(self) -> None:
     # generate some movement
     neworder.df.transition(self, self.s, self.p, self.pop, "state")
 
@@ -47,29 +48,28 @@ class Parallel(neworder.Model):
         immigrants = comm.recv(source=s)
         if len(immigrants):
           neworder.log("received %d immigrants from %d" % (len(immigrants), s))
-          self.pop = self.pop.append(immigrants)
+          self.pop = pd.concat((self.pop, immigrants))
   # !step!
 
   # !check!
-  def check(self):
+  def check(self) -> bool:
     # Ensure we haven't lost (or gained) anybody
     totals = comm.gather(len(self.pop), root=0)
-    if neworder.mpi.rank() == 0:
+    if totals:
       if sum(totals) != self.n * neworder.mpi.size():
         return False
     # And check each process only has individuals that it should have
     out_of_place = comm.gather(len(self.pop[self.pop.state != neworder.mpi.rank()]))
-    if neworder.mpi.rank() == 0:
-      if any(out_of_place):
-        return False
+    if out_of_place and any(out_of_place):
+      return False
     return True
   # !check!
 
   # !finalise!
-  def finalise(self):
+  def finalise(self) -> None:
     # process 0 assembles all the data and prints a summary
     pops = comm.gather(self.pop, root=0)
-    if neworder.mpi.rank() == 0:
-      pops = pd.concat(pops)
-      neworder.log("State counts (total %d):\n%s" % (len(pops), pops["state"].value_counts().to_string()))
+    if pops:
+      pop = pd.concat(pops)
+      neworder.log("State counts (total %d):\n%s" % (len(pop), pop["state"].value_counts().to_string()))
   # !finalise!

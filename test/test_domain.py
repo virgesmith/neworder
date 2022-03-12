@@ -1,7 +1,7 @@
 
 import numpy as np
 import neworder as no
-import pandas as pd
+import pandas as pd  # type: ignore
 
 from utils import assert_throws
 

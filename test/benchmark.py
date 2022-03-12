@@ -1,9 +1,8 @@
 import time
 import numpy as np
-import pandas as pd
+import pandas as pd  # type: ignore
 import neworder as no
 
-from math import sqrt
 
 no.verbose()
 
@@ -18,16 +17,16 @@ t = np.array([
   [0.1,  0.1,  0.1,  0.1,  0.5,  0.1 ],
   [0.,   0.,   0.,   0.,   0.2,  0.8 ]])
 
-c = [-1, 1, 2, 3, 4, 5]
+c = np.array([-1, 1, 2, 3, 4, 5])
 
-def get_data():
+def get_data() -> pd.DataFrame:
   hh = pd.read_csv(INITIAL_POPULATION)#, nrows=100)
   for i in range(8):
     hh = hh.append(hh, ignore_index=True)
   return hh
 
 
-def interp(cumprob, x):
+def interp(cumprob: np.ndarray[np.float64, np.dtype[np.float64]], x: float) -> int:
   lbound = 0
   while lbound < len(cumprob) - 1:
     if cumprob[lbound] > x:
@@ -35,10 +34,10 @@ def interp(cumprob, x):
     lbound += 1
   return lbound
 
-def sample(u, tc, c):
+def sample(u: float, tc: np.ndarray[np.float64, np.dtype[np.float64]], c: np.ndarray[np.float64, np.dtype[np.float64]]) -> float:
   return c[interp(tc, u)]
 
-def transition(model, c, t, df, colname):
+def transition(c: np.ndarray[np.float64, np.dtype[np.float64]], t: np.ndarray[np.float64, np.dtype[np.float64]], df: pd.DataFrame, colname: str) -> None:
   #u = m.mc.ustream(len(df))
   tc = np.cumsum(t, axis=1)
 
@@ -51,13 +50,13 @@ def transition(model, c, t, df, colname):
 
   df[colname] = df[colname].apply(lambda current: sample(m.mc.ustream(1), tc[lookup[current]], c))
 
-def python_impl(m, df):
+def python_impl(m: no.Model, df: pd.DataFrame) -> tuple[int, float, pd.Series]:
 
   start = time.time()
-  transition(m, c, t, df, "LC4408_C_AHTHUK11")
+  transition(c, t, df, "LC4408_C_AHTHUK11")
   return len(df), time.time() - start, df.LC4408_C_AHTHUK11.values
 
-def cpp_impl(m, df):
+def cpp_impl(m: no.Model, df: pd.DataFrame) -> tuple[int, float, pd.Series]:
 
   start = time.time()
   no.df.transition(m, c, t, df, "LC4408_C_AHTHUK11")

@@ -3,14 +3,20 @@
 """
 
 import os
-import pandas as pd
+import pandas as pd  # type: ignore
 import numpy as np
 import neworder
 
 import pyramid
 
 class Population(neworder.Model):
-  def __init__(self, timeline, population_file, fertility_file, mortality_file, in_migration_file, out_migration_file):
+  def __init__(self,
+               timeline: neworder.Timeline,
+               population_file: str,
+               fertility_file: str,
+               mortality_file: str,
+               in_migration_file: str,
+               out_migration_file: str):
 
     super().__init__(timeline, neworder.MonteCarlo.deterministic_identical_stream)
 
@@ -38,23 +44,23 @@ class Population(neworder.Model):
     self.fig = None
     self.plot_pyramid()
 
-  def step(self):
+  def step(self) -> None:
     self.births()
     self.deaths()
     self.migrations()
     self.age()
 
-  def finalise(self):
+  def finalise(self) -> None:
     pass
 
-  def age(self):
+  def age(self) -> None:
     # Increment age by timestep and update census age category (used for ASFR/ASMR lookup)
     # NB census age category max value is 86 (=85 or over)
     self.population.Age = self.population.Age + 1 # NB self.timeline.dt() wont be exactly 1 as based on an average length year of 365.2475 days
     # reconstruct census age group
     self.population.DC1117EW_C_AGE = np.clip(np.ceil(self.population.Age), 1, 86).astype(int)
 
-  def births(self):
+  def births(self) -> None:
     # First consider only females
     females = self.population[self.population.DC1117EW_C_SEX == 2].copy()
 
@@ -71,9 +77,9 @@ class Population(neworder.Model):
     newborns.DC1117EW_C_AGE = 1 # this is 0-1 in census category
     newborns.DC1117EW_C_SEX = 1 + self.mc.hazard(0.5, len(newborns)).astype(int) # 1=M, 2=F
 
-    self.population = self.population.append(newborns)
+    self.population = pd.concat((self.population, newborns))
 
-  def deaths(self):
+  def deaths(self) -> None:
     # Map the appropriate mortality rate to each person
     # might be a more efficient way of generating this array
     rates = self.population.join(self.mortality, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"]
@@ -84,7 +90,7 @@ class Population(neworder.Model):
     # Finally remove deceased from table
     self.population = self.population[h!=1]
 
-  def migrations(self):
+  def migrations(self) -> None:
 
     # immigration:
     # - sample counts of migrants according to intensity
@@ -101,25 +107,22 @@ class Population(neworder.Model):
     out_rates = self.population.join(self.out_migration, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].values
     h_out = self.mc.hazard(out_rates * self.timeline.dt())
     # add incoming & remove outgoing migrants
-    self.population = self.population[h_out!=1].append(h_in)
+    self.population = pd.concat((self.population[h_out!=1], h_in))
 
     # record net migration
     self.in_out = (len(h_in), h_out.sum())
 
-  def mean_age(self):
+  def mean_age(self) -> float:
     return self.population.Age.mean()
 
-  def gender_split(self):
+  def gender_split(self) -> float:
     # this is % female
     return self.population.DC1117EW_C_SEX.mean() - 1.0
 
-  def net_migration():
-    return self.inout[0] - self.in_out[1] + self.in_out[2] - self.in_out[3]
-
-  def size(self):
+  def size(self) -> int:
     return len(self.population)
 
-  def check(self):
+  def check(self) -> bool:
     """ State of the nation """
     # check no duplicated unique indices
     if len(self.population[self.population.index.duplicated(keep=False)]):
@@ -147,8 +150,8 @@ class Population(neworder.Model):
 
     return True # Faith
 
-  def plot_pyramid(self):
-    a = range(86)
+  def plot_pyramid(self) -> None:
+    a = np.arange(86)
     s = self.population.groupby(by=["DC1117EW_C_SEX", "DC1117EW_C_AGE"])["DC1117EW_C_SEX"].count()
     m = s[s.index.isin([1], level="DC1117EW_C_SEX")].values
     f = s[s.index.isin([2], level="DC1117EW_C_SEX")].values

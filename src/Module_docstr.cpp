@@ -283,7 +283,7 @@ const char* time_far_future_docstr = R"docstr(
 )docstr";
 
 const char* time_never_docstr = R"docstr(
-    Returns a value that compares unequal to any value, including but itself.
+    Returns a value that compares unequal to any value, including itself.
 )docstr";
 
 const char* time_isnever_docstr = R"docstr(

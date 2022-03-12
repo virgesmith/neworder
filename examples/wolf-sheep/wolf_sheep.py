@@ -1,10 +1,10 @@
 
-from neworder.domain import Domain
+from typing import Any, Tuple
 import numpy as np
-import pandas as pd
+import pandas as pd  # type: ignore
 import neworder as no
 
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt  # type: ignore
 
 WOLF_COLOUR = "black"
 SHEEP_COLOUR = "red"
@@ -12,13 +12,13 @@ GRASS_COLOUR = "green"
 
 class WolfSheep(no.Model):
 
-  def __init__(self, params):
+  def __init__(self, params: dict[str, Any]) -> None:
 
     super().__init__(no.LinearTimeline(0.0, 1.0), no.MonteCarlo.deterministic_independent_stream)
     # hard-coded to unit timestep
     self.width = params["grid"]["width"]
     self.height = params["grid"]["height"]
-    self.domain = no.Space(np.array([0,0]), np.array([self.width, self.height]), edge=Edge.WRAP)
+    self.domain = no.Space(np.array([0,0]), np.array([self.width, self.height]), edge=no.Edge.WRAP)
 
     n_wolves = params["wolves"]["starting_population"]
     n_sheep =params["sheep"]["starting_population"]
@@ -90,14 +90,14 @@ class WolfSheep(no.Model):
     # seed numpy random generator using our generator (for reproducible normal samples)
     self.npgen = np.random.default_rng(self.mc.raw())
 
-  def step(self):
+  def step(self) -> None:
 
     # step each population
     self.__step_grass()
     self.__step_wolves()
     self.__step_sheep()
 
-  def check(self):
+  def check(self) -> bool:
     # record data
     self.t.append(self.timeline.index())
     self.wolf_pop.append(len(self.wolves))
@@ -115,11 +115,11 @@ class WolfSheep(no.Model):
       self.halt()
     return True
 
-  def __step_grass(self):
+  def __step_grass(self) -> None:
     # grow grass
     self.grass.countdown = np.clip(self.grass.countdown-1, 0, None)
 
-  def __step_wolves(self):
+  def __step_wolves(self) -> None:
     # move wolves (wrapped) and update cell
     vx = (2 * self.mc.ustream(len(self.wolves)) - 1.0) * self.wolves.speed
     vy = (2 * self.mc.ustream(len(self.wolves)) - 1.0) * self.wolves.speed
@@ -144,9 +144,9 @@ class WolfSheep(no.Model):
     cubs = self.wolves[m == 1].copy().set_index(no.df.unique_index(int(sum(m))))
     # evolve speed/burn rate from mother + random factor (don't allow to go <=0) should probably be lognormal
     cubs.speed = np.maximum(cubs.speed + self.npgen.normal(0.0, self.wolf_speed_stddev, len(cubs)), 0.1)
-    self.wolves = self.wolves.append(cubs)
+    self.wolves = pd.concat((self.wolves, cubs))
 
-  def __step_sheep(self):
+  def __step_sheep(self) -> None:
     # move sheep randomly (wrapped)
     vx = (2 * self.mc.ustream(len(self.sheep)) - 1.0) * self.sheep.speed
     vy = (2 * self.mc.ustream(len(self.sheep)) - 1.0) * self.sheep.speed
@@ -168,13 +168,13 @@ class WolfSheep(no.Model):
     lambs = self.sheep[m == 1].copy().set_index(no.df.unique_index(int(sum(m))))
     # evolve speed from mother + random factor
     lambs.speed = np.maximum(lambs.speed + self.npgen.normal(0.0, self.sheep_speed_stddev, len(lambs)), 0.1)
-    self.sheep = self.sheep.append(lambs)
+    self.sheep = pd.concat((self.sheep, lambs))
 
-  def __assign_cell(self, agents):
+  def __assign_cell(self, agents: pd.DataFrame) -> None:
     # not ints for some reason
     agents["cell"] = (agents.x.astype(int) + self.width * agents.y.astype(int)).astype(int)
 
-  def __init_plot(self):
+  def __init_plot(self) -> Tuple[Any, ...]:
 
     plt.ion()
 
@@ -238,7 +238,7 @@ class WolfSheep(no.Model):
            ax4, ax_ss, b_ss
 
 
-  def __update_plot(self):
+  def __update_plot(self) -> None:
     self.ax_g.set_data(np.flip(self.grass.countdown.values.reshape(self.height, self.width), axis=0))
     self.ax_w.set_offsets(np.c_[self.wolves.x, self.wolves.y])
     self.ax_s.set_offsets(np.c_[self.sheep.x, self.sheep.y])

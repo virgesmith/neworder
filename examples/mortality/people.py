@@ -1,13 +1,13 @@
 
 import numpy as np
-import pandas as pd
+import pandas as pd  # type: ignore
 import neworder
 
 
 # !disc_ctor!
 class PeopleDiscrete(neworder.Model):
   """ Persons sampled each represented as a row in a data frame """
-  def __init__(self, mortality_hazard_file, n, max_age):
+  def __init__(self, mortality_hazard_file: str, n: int, max_age: float) -> None:
     # This is case-based model the timeline refers to the age of the cohort
     timeline = neworder.LinearTimeline(0.0, max_age, int(max_age))
     super().__init__(timeline, neworder.MonteCarlo.deterministic_identical_stream)
@@ -28,7 +28,7 @@ class PeopleDiscrete(neworder.Model):
 # !disc_ctor!
 
   # !disc_step!
-  def step(self):
+  def step(self) -> None:
     # kill off some people
     self.die()
     # age the living only
@@ -36,12 +36,12 @@ class PeopleDiscrete(neworder.Model):
     self.population.loc[alive, "age"] = self.population.loc[alive, "age"] + self.timeline.dt()
   # !disc_step!
 
-  def check(self):
+  def check(self) -> bool:
     neworder.log("pct alive = %f" % (100.0 * np.mean(self.population.alive)))
     return True
 
   # !disc_finalise!
-  def finalise(self):
+  def finalise(self) -> None:
     # kill off any survivors
     self.die()
     assert np.sum(self.population.alive) == 0
@@ -49,7 +49,7 @@ class PeopleDiscrete(neworder.Model):
     self.life_expectancy = np.mean(self.population.age_at_death)
   # !disc_finalise!
 
-  def die(self):
+  def die(self) -> None:
     # using indexes to subset data as cannot store a reference to a subset of the dataframe (it just copies)
 
     # first filter out the already dead
@@ -72,7 +72,7 @@ class PeopleDiscrete(neworder.Model):
 # !cont_ctor!
 class PeopleContinuous(neworder.Model):
   """ Persons sampled each represented as a row in a data frame """
-  def __init__(self, mortality_hazard_file, n, dt):
+  def __init__(self, mortality_hazard_file: str, n: int, dt: float) -> None:
     # Direct sampling doesnt require a timeline
     super().__init__(neworder.NoTimeline(), neworder.MonteCarlo.deterministic_identical_stream)
     # initialise cohort
@@ -90,17 +90,17 @@ class PeopleContinuous(neworder.Model):
 # !cont_ctor!
 
   # !cont_step!
-  def step(self):
+  def step(self) -> None:
     self.population.age_at_death = self.mc.first_arrival(self.mortality_hazard.Rate.values, self.dt, len(self.population))
   # !cont_step!
 
   # !cont_check!
-  def check(self):
+  def check(self) -> bool:
     # ensure all times of death are finite
     return self.population.age_at_death.isnull().sum() == 0
   # !cont_check!
 
   # !cont_finalise!
-  def finalise(self):
+  def finalise(self) -> None:
     self.life_expectancy = np.mean(self.population.age_at_death)
   # !cont_finalise!

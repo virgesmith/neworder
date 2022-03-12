@@ -1,11 +1,16 @@
 import numpy as np
 import neworder
 
-import matplotlib.pyplot as plt
-from matplotlib import colors
+import matplotlib.pyplot as plt  # type: ignore
+from matplotlib.image import AxesImage # type: ignore
+from matplotlib import colors  # type: ignore
 
 class Schelling(neworder.Model):
-  def __init__(self, timeline, gridsize, categories, similarity):
+  def __init__(self,
+               timeline: neworder.Timeline,
+               gridsize: tuple[int, int],
+               categories: np.ndarray[np.float64, np.dtype[np.float64]],
+               similarity: float) -> None:
     # NB missing this line can cause memory corruption
     super().__init__(timeline, neworder.MonteCarlo.deterministic_identical_stream)
 
@@ -20,7 +25,7 @@ class Schelling(neworder.Model):
 
     self.fig, self.img = self.__init_visualisation()
 
-  def step(self):
+  def step(self) -> None:
 
     # start with empty cells being satisfied
     self.sat = (self.domain.state == 0)
@@ -63,10 +68,10 @@ class Schelling(neworder.Model):
       self.finalise()
     # !halt!
 
-  def finalise(self):
+  def finalise(self) -> None:
     plt.pause(5.0)
 
-  def __init_visualisation(self):
+  def __init_visualisation(self) -> tuple[plt.Figure, AxesImage]:
     plt.ion()
 
     cmap = colors.ListedColormap(['white', 'red', 'blue', 'green', 'yellow'][:self.ncategories])
@@ -79,7 +84,7 @@ class Schelling(neworder.Model):
 
     return fig, img
 
-  def __update_visualisation(self):
+  def __update_visualisation(self) -> None:
     self.img.set_array(self.domain.state.T)
     # plt.savefig("/tmp/schelling%04d.png" % self.timeline.index(), dpi=80)
     self.fig.canvas.flush_events()

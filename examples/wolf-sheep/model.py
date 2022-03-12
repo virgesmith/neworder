@@ -1,7 +1,6 @@
 
 import neworder as no
 from wolf_sheep import WolfSheep
-import matplotlib.pyplot as plt
 
 #no.verbose()
 

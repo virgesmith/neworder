@@ -1,15 +1,16 @@
 import numpy as np
-from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt # type: ignore
 
+from people import People
 
-def plot(model):
+def plot(model: People) -> None:
   plot_age(model)
   plt.show()
   plot_parity(model)
   plt.show()
 
 
-def plot_age(model):
+def plot_age(model: People) -> None:
   bins = np.arange(model.max_rate_age)
 
   b = [model.population.time_of_baby_1,
@@ -26,7 +27,7 @@ def plot_age(model):
   # plt.savefig("./docs/examples/img/competing_hist_100k.png", dpi=80)
 
 
-def plot_parity(model):
+def plot_parity(model: People) -> None:
   bins = np.arange(model.population.parity.max()) - 0.25
   plt.hist(model.population.parity, bins, width=0.5)
   plt.title("Births during lifetime")

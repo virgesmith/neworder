@@ -16,12 +16,12 @@ class Parity(Enum):
   PREGNANT = 1
 
 
-def partition(start, finish, step=1):
+def partition(start: float, finish: float, step: float=1.) -> np.ndarray[np.float64, np.dtype[np.float64]]:
   """ Helper function to return an inclusive equal-spaced range, i.e. finish will be the last element """
   # ensure finish is always included
-  return np.append(np .arange(start, finish, step), finish)
+  return np.append(np.arange(start, finish, step), finish)
 
-# Dynamics parameters 
+# Dynamics parameters
 
 # Age of Consent at which the fertility rates begin
 min_age = 15.0
@@ -43,7 +43,7 @@ mortality_delta_t = 1.0
 
 # fertility rates given in 2.5y chunks from 15 to 40 incl
 fertility_delta_t = 2.5
-AgeintState = partition(min_age, 40, fertility_delta_t)
+AgeintState = partition(min_age, 40.0, fertility_delta_t)
 
 # 	 // Age baseline for first pregnancy
 # 	double	AgeBaselinePreg1[AGEINT_STATE] = {

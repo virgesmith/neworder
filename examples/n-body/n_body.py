@@ -1,15 +1,16 @@
 
 import numpy as np
-import pandas as pd
+import pandas as pd  # type: ignore
 import neworder as no
 from neworder.domain import Space
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
+import matplotlib.pyplot as plt  # type: ignore
+from mpl_toolkits.mplot3d import Axes3D  # type: ignore
+from matplotlib.collections import PathCollection  # type: ignore
 
 
 class NBody(no.Model):
 
-  def __init__(self, N, G, dt):
+  def __init__(self, N: int, G: float, dt: float):
     super().__init__(no.LinearTimeline(0, dt), no.MonteCarlo.deterministic_identical_stream)
 
     # unbounded domain
@@ -53,7 +54,7 @@ class NBody(no.Model):
     self.g = self.__init_visualisation()
 
   # also calc energy of system
-  def __calc_a(self):
+  def __calc_a(self) -> None:
     dist2s, _ = self.domain.dists2((self.bodies.x, self.bodies.y, self.bodies.z))
 
     dist2s = np.where(dist2s == 0.0, np.inf, dist2s)
@@ -69,19 +70,19 @@ class NBody(no.Model):
       b.ke = b.m * (b.vx ** 2 + b.vy ** 2 + b.vz ** 2)
       b.pe = -self.G * b.m * np.sum(self.bodies.m / dists[i])
 
-  def __update_pos(self):
+  def __update_pos(self) -> None:
     # ignore returned v (will not be altered in an unconstrained domain)
     (self.bodies.x, self.bodies.y, self.bodies.z), _ = self.domain.move((self.bodies.x, self.bodies.y, self.bodies.z),
                                                                         (self.bodies.vx, self.bodies.vy, self.bodies.vz),
                                                                         self.dt, ungroup=True)
 
-  def __update_v(self, frac=1):
+  def __update_v(self, frac: float=1.0) -> None:
     dt = self.dt * frac
     self.bodies.vx += self.bodies.ax * dt
     self.bodies.vy += self.bodies.ay * dt
     self.bodies.vz += self.bodies.az * dt
 
-  def check(self):
+  def check(self) -> bool:
     # check momentum and energy conservation
     px = np.sum(self.bodies.m * self.bodies.vx)
     py = np.sum(self.bodies.m * self.bodies.vy)
@@ -93,7 +94,7 @@ class NBody(no.Model):
 
     return np.fabs(ke + pe - self.E0) < 20.2
 
-  def step(self):
+  def step(self) -> None:
     # 2nd order accurate, see https://medium.com/swlh/create-your-own-n-body-simulation-with-python-f417234885e9
     self.__update_v(0.5)
     self.__update_pos()
@@ -103,7 +104,7 @@ class NBody(no.Model):
     # _plot(self.bodies)
     self.__update_visualisation()
 
-  def __init_visualisation(self):
+  def __init_visualisation(self) -> PathCollection:
     # https://stackoverflow.com/questions/41602588/matplotlib-3d-scatter-animations
     plt.ion()
     plt.style.use('dark_background')
@@ -127,7 +128,7 @@ class NBody(no.Model):
 
     return g
 
-  def __update_visualisation(self):
+  def __update_visualisation(self) -> None:
     self.g._offsets3d = (self.bodies.x, self.bodies.y, self.bodies.z)
     self.fig.canvas.draw()
     self.fig.canvas.flush_events()

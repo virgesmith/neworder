@@ -1,9 +1,8 @@
-
-from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt  # type: ignore
 import neworder
 from data import min_age, max_age
 
-def plot(model):
+def plot(model: neworder.Model) -> None:
 
   bins=range(int(min_age),int(max_age)+1)
 

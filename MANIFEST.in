@@ -1,4 +1,4 @@
 include LICENCE.md
 include README.md
-include test/*.csv
+recursive-exclude test *
 include src/*.h

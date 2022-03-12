@@ -1,7 +1,7 @@
 """ RiskPaths model """
 
 import numpy as np
-import pandas as pd
+import pandas as pd  # type: ignore
 import neworder
 
 # dynamics data
@@ -10,7 +10,7 @@ import data
 
 # !ctor!
 class RiskPaths(neworder.Model):
-  def __init__(self, n):
+  def __init__(self, n: int):
 
     super().__init__(neworder.NoTimeline(), neworder.MonteCarlo.deterministic_identical_stream)
 
@@ -24,7 +24,7 @@ class RiskPaths(neworder.Model):
 # !ctor!
 
   # !step!
-  def step(self):
+  def step(self) -> None:
 
     # first sample union state transitions, which influence pregnancy
     self.__union()
@@ -32,7 +32,7 @@ class RiskPaths(neworder.Model):
     self.__pregnancy()
   # !step!
 
-  def __union(self):
+  def __union(self) -> None:
 
     dt_u = data.union_delta_t
 
@@ -57,12 +57,12 @@ class RiskPaths(neworder.Model):
                            + (~neworder.time.isnever(self.population["T_Union2Start"].values)).astype(int)
 
   # !finalise!
-  def finalise(self):
+  def finalise(self) -> None:
     neworder.log("mean unions = %f" % np.mean(self.population.Unions))
     neworder.log("pregnancy ratio = %f" % np.mean(self.population.Parity == Parity.PREGNANT))
   # !finalise!
 
-  def __pregnancy(self):
+  def __pregnancy(self) -> None:
     # We're interested in the first pregnancy that occurs for each individual
     # fmin ignores nan (np.minimum is a problem as it doesnt deal with nan well)
 
