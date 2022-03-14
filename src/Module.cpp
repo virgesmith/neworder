@@ -226,8 +226,8 @@ PYBIND11_MODULE(_neworder_core, m)
     .def("rank", []() { return no::env::rank.load(std::memory_order_relaxed); }, mpi_rank_docstr)
     .def("size", []() { return no::env::size.load(std::memory_order_relaxed); }, mpi_size_docstr);
 
-  // Map custom C++ exceptions to python ones
-  py::register_exception_translator(no::exception_translator);
+  // Map custom C++ exceptions to python ones - wrap in a lambda as its an rvalue reference
+  py::register_exception_translator(std::move(no::exception_translator));
 
   init_env();
 }
