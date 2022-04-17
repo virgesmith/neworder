@@ -1,3 +1,4 @@
+from __future__ import annotations
 import numpy as np
 import neworder as no
 import matplotlib.pyplot as plt  # type: ignore

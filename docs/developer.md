@@ -138,7 +138,7 @@ The script from [codecov.io](https://codecov.io/gh/virgesmith/neworder/) uses `g
 
 ## Release Checklist
 
-Merge branches/PRs into master and fix any CI issues (builds, tests, major code standards) before commencing.
+Merge branches/PRs into **main** and fix any CI issues (builds, tests, major code standards) before commencing.
 
 If necessary, use `test.pypi.org` to upload a release candidate, which can then be installed to a model implementation for testing "in the wild".
 
@@ -147,7 +147,7 @@ If necessary, use `test.pypi.org` to upload a release candidate, which can then 
 3. Clean, rebuild, test, regenerate examples and code docs: `scripts/code_doc.sh`
 4. Commit changes
 5. Tag, e.g.: `git tag -a 0.3.0 -m"release v0.3.0"`
-6. Push, including tag e.g.: `git push --atomic origin master 0.3.0`
+6. Push, including tag e.g.: `git push --atomic origin main 0.3.0`
 7. Check tagged CI builds and docker image are ok
 8. Package and upload to PyPI: `scripts/package.sh`
 9. Update and check conda feedstock (if this doesn't happen automatically, see instructions [here](https://github.com/conda-forge/neworder-feedstock))

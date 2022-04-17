@@ -6,10 +6,10 @@ from typing import overload, TypeVar
 import datetime
 import numpy as np
 
-import df
-import mpi
+import df  # type: ignore
+import mpi # type: ignore
 from .time import *
-import stats
+import stats # type: ignore
 from .domain import *
 
 T = TypeVar("T")
