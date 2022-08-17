@@ -1,36 +1,21 @@
 import numpy as np
 import neworder as no
 import platform
-from typing import Sized
-
-from utils import assert_throws
+import pytest
 
 
-def test_mc_property() -> None:
-  model = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
-
-  #model.mc = model.mc not allowed
-
-  model.mc.ustream(1)
-  model.mc.reset()
+def test_mc_property(base_model) -> None:
+  base_model.mc.ustream(1)
+  base_model.mc.reset()
 
 
-def test_mc() -> None:
+def test_mc(base_model) -> None:
+  x = base_model.mc.ustream(1)
+  base_model.mc.reset()
+  assert x == base_model.mc.ustream(1)
 
-  model = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
-
-  x = model.mc.ustream(1)
-  model.mc.reset()
-  assert x == model.mc.ustream(1)
-
-  if no.mpi.size() == 1:
-    _test_mc_serial(model)
-  else:
-    model_i = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_independent_stream)
-    _test_mc_parallel(model, model_i)
 
 def test_seeders() -> None:
-
   # serial tests
   # determinisitc seeders always return the same value
   assert no.MonteCarlo.deterministic_identical_stream(no.mpi.rank()) == no.MonteCarlo.deterministic_identical_stream(no.mpi.rank())
@@ -45,18 +30,17 @@ def test_seeders() -> None:
     return
 
   # parallel tests
-
   # all seeds equal
   seeds = comm.gather(no.MonteCarlo.deterministic_identical_stream(no.mpi.rank()), 0)
-  assert seeds
   if no.mpi.rank() == 0:
+    assert seeds
     assert len(seeds) == no.mpi.size()
     assert len(set(seeds)) == 1
 
   # all seeds different but reproducible
   seeds = comm.gather(no.MonteCarlo.deterministic_independent_stream(no.mpi.rank()), 0)
-  assert seeds
   if no.mpi.rank() == 0:
+    assert seeds
     assert len(seeds) == no.mpi.size()
     assert len(set(seeds)) == len(seeds)
   seeds2 = comm.gather(no.MonteCarlo.deterministic_independent_stream(no.mpi.rank()), 0)
@@ -65,8 +49,8 @@ def test_seeders() -> None:
 
   # all seeds different and not reproducible
   seeds = comm.gather(no.MonteCarlo.nondeterministic_stream(no.mpi.rank()), 0)
-  assert seeds
   if no.mpi.rank() == 0:
+    assert seeds
     assert len(seeds) == no.mpi.size()
     assert len(set(seeds)) == len(seeds)
   # TODO need higher time resolution on seeder
@@ -80,79 +64,99 @@ def test_seeders() -> None:
   assert m.mc.seed() == no.mpi.rank() + 1
 
 
-def test_sample() -> None:
-  m = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
+def test_sample(base_model) -> None:
+  with pytest.raises(ValueError):
+    base_model.mc.sample(100, [0.9])
+  with pytest.raises(ValueError):
+    base_model.mc.sample(100, [-0.1, 1.1])
+  assert np.all(base_model.mc.sample(100, [1.0, 0.0, 0.0, 0.0]) == 0)
+  assert np.all(base_model.mc.sample(100, [0.0, 1.0, 0.0, 0.0]) == 1)
+  assert np.all(base_model.mc.sample(100, [0.0, 0.0, 0.0, 1.0]) == 3)
 
-  assert_throws(ValueError, m.mc.sample, 100, [0.9])
-  assert_throws(ValueError, m.mc.sample, 100, [-0.1, 1.1])
-  assert np.all(m.mc.sample(100, [1.0, 0.0, 0.0, 0.0]) == 0)
-  assert np.all(m.mc.sample(100, [0.0, 1.0, 0.0, 0.0]) == 1)
-  assert np.all(m.mc.sample(100, [0.0, 0.0, 0.0, 1.0]) == 3)
 
-def test_hazard() -> None:
-  m = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
+def test_hazard(base_model) -> None:
+  assert np.all(base_model.mc.hazard(0.0,10) == 0.0)
+  assert np.all(base_model.mc.hazard(1.0,10) == 1.0)
 
-  assert np.all(m.mc.hazard(0.0,10) == 0.0)
-  assert np.all(m.mc.hazard(1.0,10) == 1.0)
+  with pytest.raises(ValueError):
+    base_model.mc.hazard(-0.1, 10)
+  with pytest.raises(ValueError):
+    base_model.mc.hazard(1.1, 10)
+  with pytest.raises(ValueError):
+    base_model.mc.hazard([-0.1, 0.5])
+  with pytest.raises(ValueError):
+    base_model.mc.hazard([0.1, 1.2])
+  with pytest.raises(ValueError):
+    base_model.mc.hazard(np.nan, 1)
+  with pytest.raises(ValueError):
+    base_model.mc.hazard([0.1, np.nan])
 
-  assert_throws(ValueError, m.mc.hazard, -0.1, 10)
-  assert_throws(ValueError, m.mc.hazard, 1.1, 10)
-  assert_throws(ValueError, m.mc.hazard, [-0.1, 0.5])
-  assert_throws(ValueError, m.mc.hazard, [0.1, 1.2])
-  assert_throws(ValueError, m.mc.hazard, np.nan, 1)
-  assert_throws(ValueError, m.mc.hazard, [0.1, np.nan])
 
-def test_stopping() -> None:
-  m = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
+def test_stopping(base_model) -> None:
+  assert np.all(base_model.mc.stopping(0.0, 10) == no.time.far_future())
 
-  assert np.all(m.mc.stopping(0.0,10) == no.time.far_future())
+  with pytest.raises(ValueError):
+    base_model.mc.stopping(-0.1, 10)
+  with pytest.raises(ValueError):
+    base_model.mc.stopping(1.1, 10)
+  with pytest.raises(ValueError):
+    base_model.mc.stopping([-0.1, 0.5])
+  with pytest.raises(ValueError):
+    base_model.mc.stopping([0.1, 1.2])
+  with pytest.raises(ValueError):
+    base_model.mc.stopping(np.nan, 1)
+  with pytest.raises(ValueError):
+    base_model.mc.stopping([0.1, np.nan])
 
-  assert_throws(ValueError, m.mc.stopping, -0.1, 10)
-  assert_throws(ValueError, m.mc.stopping,  1.1, 10)
-  assert_throws(ValueError, m.mc.stopping, [-0.1, 0.5])
-  assert_throws(ValueError, m.mc.stopping, [0.1, 1.2])
-  assert_throws(ValueError, m.mc.stopping, np.nan, 1)
-  assert_throws(ValueError, m.mc.stopping, [0.1, np.nan])
+def test_arrivals_validation(base_model) -> None:
+  assert np.all(no.time.isnever(base_model.mc.first_arrival([0.0,0.0], 1.0, 10)))
+  with pytest.raises(ValueError):
+    base_model.mc.first_arrival(np.array([-1.0, 0.0]), 1.0, 10)
+  with pytest.raises(ValueError):
+    base_model.mc.first_arrival([1.0, np.nan], 1.0, 10)
 
-def test_arrivals_validation() -> None:
-  m = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
-  assert np.all(no.time.isnever(m.mc.first_arrival([0.0,0.0], 1.0, 10)))
-  assert_throws(ValueError, m.mc.first_arrival, np.array([-1.0,0.0]), 1.0, 10)
-  assert_throws(ValueError, m.mc.first_arrival, [1.0,np.nan], 1.0, 10)
+  assert np.all(no.time.isnever(base_model.mc.next_arrival(np.zeros(10), [0.0, 0.0], 1.0)))
+  with pytest.raises(ValueError):
+    base_model.mc.next_arrival(np.zeros(10), [-1.0, 0.0], 1.0)
+  with pytest.raises(ValueError):
+    base_model.mc.next_arrival(np.zeros(10), [np.nan, np.nan], 1.0)
 
-  assert np.all(no.time.isnever(m.mc.next_arrival(np.zeros(10), [0.0,0.0], 1.0)))
-  assert_throws(ValueError, m.mc.next_arrival, np.zeros(10), [-1.0,0.0], 1.0)
-  assert_throws(ValueError, m.mc.next_arrival, np.zeros(10), [np.nan,np.nan], 1.0)
+  with pytest.raises(ValueError):
+    base_model.mc.arrivals([-1.0, 0.0], 1.0, 10, 0.0)
+  with pytest.raises(ValueError):
+    base_model.mc.arrivals([1.0, 1.0], 1.0, 10, 0.0)
+  with pytest.raises(ValueError):
+    base_model.mc.arrivals([np.nan, np.nan], 1.0, 10, 0.0)
 
-  assert_throws(ValueError, m.mc.arrivals, [-1.0,0.0], 1.0, 10, 0.0)
-  assert_throws(ValueError, m.mc.arrivals, [1.0,1.0], 1.0, 10, 0.0)
-  assert_throws(ValueError, m.mc.arrivals, [np.nan,np.nan], 1.0, 10, 0.0)
 
-def test_mc_counts() -> None:
-  m = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
-  mc = m.mc
+def test_mc_counts(base_model) -> None:
+  mc = base_model.mc
   assert mc.seed() == 19937
 
   def poisson_pdf(x: range, l: float) -> np.ndarray:
     y = np.exp(-l)
     return np.array([l**k * y / np.math.factorial(k) for k in x]) # type: ignore # Module has no attribute "math"; maybe "emath" or "mat"?
 
-
   tests = [(1.0, 1.0, 10000), (3.0, 0.5, 10000), (0.2, 2.0, 10000), (10.0, 1.0, 1000), (3.0, 1.0, 100000)]
 
   for lam, dt, n in tests:
 
     c = mc.counts([lam] * n, dt)
-    x = range(0,max(c))
+    x = range(0, max(c))
     # convert to counts
     c = [(c == k).sum() / n for k in x]
-    p = poisson_pdf(x, lam*dt)
+    p = poisson_pdf(x, lam * dt)
 
     for i in x:
       assert np.fabs(c[i] - p[i]) < 1.0 / np.sqrt(n)
 
-def _test_mc_serial(model: no.Model) -> None:
-  mc = model.mc
+
+def test_mc_serial(base_model) -> None:
+
+  if no.mpi.size != 1:
+    return
+
+  mc = base_model.mc
   assert mc.seed() == 19937
 
   mc.reset()
@@ -173,7 +177,6 @@ def _test_mc_serial(model: no.Model) -> None:
   assert abs(a[2] - 0.8131122114136815) < 1e-8
   assert abs(a[3] - 0.24954832065850496) < 1e-8
   assert abs(a[4] - 0.3385562978219241) < 1e-8
-
 
   mc.reset()
   assert s == mc.state()
@@ -255,66 +258,87 @@ def _test_mc_serial(model: no.Model) -> None:
   mc.reset()
 
   # Exp.value = p +/- 1/sqrt(N)
-  h = model.mc.hazard(0.2, 10000)
+  h = base_model.mc.hazard(0.2, 10000)
   assert isinstance(h, np.ndarray)
   assert len(h) == 10000
   assert abs(np.mean(h) - 0.2) < 0.01
 
-  hv = model.mc.hazard(np.array([0.1, 0.2, 0.3, 0.4, 0.5]))
+  hv = base_model.mc.hazard(np.array([0.1, 0.2, 0.3, 0.4, 0.5]))
   assert isinstance(hv, np.ndarray)
   assert len(hv) == 5
 
   # Exp.value = 1/p +/- 1/sqrt(N)
-  s = model.mc.stopping(0.1, 10000)
+  s = base_model.mc.stopping(0.1, 10000)
   assert isinstance(s, np.ndarray)
   assert len(s) == 10000
   assert abs(np.mean(s)/10 - 1.0) < 0.03
 
-  sv = model.mc.stopping(np.array([0.1, 0.2, 0.3, 0.4, 0.5]))
+  sv = base_model.mc.stopping(np.array([0.1, 0.2, 0.3, 0.4, 0.5]))
   assert isinstance(sv, np.ndarray)
   assert len(sv) == 5
 
   # Non-homogeneous Poisson process (time-dependent hazard)
-  nhpp = model.mc.first_arrival(np.array([0.1, 0.2, 0.3, 0.4, 0.5]), 1.0, 10, 0.0)
+  nhpp = base_model.mc.first_arrival(np.array([0.1, 0.2, 0.3, 0.4, 0.5]), 1.0, 10, 0.0)
   assert isinstance(nhpp, np.ndarray)
   assert len(nhpp) == 10
 
 
-def _test_mc_parallel(model: no.Model, model_i: no.Model) -> None:
+def test_mc_parallel(base_model, base_indep_model) -> None:
+
+  if no.mpi.size() == 1:
+    return
 
   import mpi4py.MPI as mpi
   comm = mpi.COMM_WORLD
 
   # test model has identical streams
-  mc = model.mc
+  mc = base_model.mc
   mc.reset()
   assert mc.seed() == 19937
 
   a = mc.ustream(5)
   all_a = comm.gather(a, root=0)
   all_states = comm.gather(mc.state(), root=0)
-  assert all_a and all_states
 
   if no.mpi.rank() == 0:
+    assert all_a and all_states
     for r in range(0, no.mpi.size()):
       assert np.all(all_states[0] == all_states[r])
       assert np.all(a - all_a[r] == 0.0)
 
   # test model_i has independent streams
-  mc = model_i.mc
+  mc = base_indep_model.mc
   mc.reset()
   assert mc.seed() == 19937 + no.mpi.rank()
 
   a = mc.ustream(5)
   all_a = comm.gather(a, root=0)
   all_states = comm.gather(mc.state(), root=0)
-  assert all_a and all_states
 
   # check all other streams different
   if no.mpi.rank() == 0:
+    assert all_a and all_states
     for r in range(1, no.mpi.size()):
       if platform.system() != "Darwin":
         # mc.state() just returns 0 on OSX due to an apparent bug in MT19937 that intermittently segfaults
         assert all_states[r] != all_states[0]
       assert not np.all(a - all_a[r] == 0.0)
 
+
+def test_bitgen(base_model):
+  base_model2 = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
+  gen = no.as_np(base_model.mc)
+
+  n = gen.bit_generator.random_raw()
+  assert n == base_model2.mc.raw()
+  assert (gen.uniform(size=100) == base_model2.mc.ustream(100)).all()
+
+  # check the np gen gets the reset
+  base_model.mc.reset()
+  assert n == gen.bit_generator.random_raw()
+
+  base_model.mc.reset()
+  base_model_different_seed = no.Model(no.NoTimeline(), lambda _: 1234)
+  gen2 = no.as_np(base_model_different_seed.mc)
+  assert gen2.bit_generator.random_raw() != base_model.mc.raw()
+  assert (gen2.uniform(size=100) != base_model.mc.ustream(100)).all()

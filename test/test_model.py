@@ -1,24 +1,22 @@
 import neworder as no
 
-from utils import assert_throws
+import pytest
 
-#no.verbose()
 
-def test_base() -> None:
-  base = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
+def test_base(base_model) -> None:
+  with pytest.raises(RuntimeError):
+    no.run(base_model)  # RuntimeError: Tried to call pure virtual function "Model::step"
 
-  assert_throws(RuntimeError, no.run, base) # RuntimeError: Tried to call pure virtual function "Model::step"
 
 def test_multimodel() -> None:
 
   class TestModel(no.Model):
     def __init__(self) -> None:
-      super().__init__(no.LinearTimeline(0,10,10), no.MonteCarlo.deterministic_identical_stream)
+      super().__init__(no.LinearTimeline(0, 10, 10), no.MonteCarlo.deterministic_identical_stream)
 
       self.x = 0.0
 
     def step(self) -> None:
-      #no.log(self.mc.ustream(1))
       self.x += self.mc.ustream(1)
 
     def finalise(self) -> None:
@@ -29,6 +27,3 @@ def test_multimodel() -> None:
   [no.run(m) for m in models]
 
   assert models[0].x == models[1].x
-
-if __name__ == "__main__":
-  test_multimodel()

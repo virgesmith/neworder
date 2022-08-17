@@ -1,12 +1,8 @@
+from datetime import date
 import pytest
 import numpy as np
 import neworder as no
 
-from datetime import date
-
-from utils import assert_throws
-
-#no.verbose()
 
 class _TestModel(no.Model):
   def __init__(self) -> None:
@@ -22,6 +18,7 @@ class _TestModel(no.Model):
 
   def finalise(self) -> None:
     assert self.timeline.time() == self.t_end and self.timeline.index() == self.timeline.index()
+
 
 class _TestModel2(no.Model):
   def __init__(self, start: float, end: float, steps: int) -> None:
@@ -49,6 +46,7 @@ class _TestResume(no.Model):
   def step(self) -> None:
     self.halt()
 
+
 def test_time() -> None:
   t = -1e10
   assert no.time.distant_past() < t
@@ -68,6 +66,7 @@ def test_time() -> None:
   # no nay never no more
   assert no.time.isnever(no.time.never())
 
+
 def test_null_timeline() -> None:
   t0 = no.NoTimeline()
   assert t0.nsteps() == 1
@@ -83,27 +82,39 @@ def test_null_timeline() -> None:
   assert m.timeline.index() == 1
   assert m.timeline.time() == 1.0
 
+
 def test_timeline_validation() -> None:
 
-  assert_throws(TypeError, no.LinearTimeline, 2020, 2020, [])
-  assert_throws(ValueError, no.LinearTimeline, 2020, 0.0)
-  assert_throws(ValueError, no.LinearTimeline, 2020, -1.0)
-  assert_throws(ValueError, no.LinearTimeline, 2020, 2019, 1)
-  assert_throws(ValueError, no.LinearTimeline, 2020, 2021, 0)
+  with pytest.raises(TypeError):
+    no.LinearTimeline(2020, 2020, [])
+  with pytest.raises(ValueError):
+    no.LinearTimeline(2020, 0.0)
+  with pytest.raises(ValueError):
+    no.LinearTimeline(2020, -1.0)
+  with pytest.raises(ValueError):
+    no.LinearTimeline(2020, 2019, 1)
+  with pytest.raises(ValueError):
+    no.LinearTimeline(2020, 2021, 0)
+  with pytest.raises(ValueError):
+    no.NumericTimeline([2021, 2020])
+  with pytest.raises(ValueError):
+    no.NumericTimeline([2020])
+  with pytest.raises(ValueError):
+    no.CalendarTimeline(date(2021, 1, 1), 0, "y")
+  with pytest.raises(ValueError):
+    no.CalendarTimeline(date(2021, 1, 1), 12, "n")
+  with pytest.raises(ValueError):
+    no.CalendarTimeline(date(2021, 1, 1), date(2020, 1, 1), 1, "m")
+  with pytest.raises(ValueError):
+    no.CalendarTimeline(date(2019, 1, 1), date(2020, 1, 1), 1, "w")
+  with pytest.raises(ValueError):
+    no.CalendarTimeline(date(2019, 1, 1), date(2020, 1, 1), 1, "q")
+  with pytest.raises(ValueError):
+    no.CalendarTimeline(date(2019, 1, 1), date(2020, 1, 1), 0, "m")#
 
-  assert_throws(ValueError, no.NumericTimeline, [2021, 2020])
-  assert_throws(ValueError, no.NumericTimeline, [2020])
-
-  assert_throws(ValueError, no.CalendarTimeline, date(2021, 1, 1), 0, "y")
-  assert_throws(ValueError, no.CalendarTimeline, date(2021, 1, 1), 12, "n")
-
-  assert_throws(ValueError, no.CalendarTimeline, date(2021, 1, 1), date(2020, 1, 1), 1, "m")
-  assert_throws(ValueError, no.CalendarTimeline, date(2019, 1, 1), date(2020, 1, 1), 1, "w")
-
-  assert_throws(ValueError, no.CalendarTimeline, date(2019, 1, 1), date(2020, 1, 1), 1, "q")
-  assert_throws(ValueError, no.CalendarTimeline, date(2019, 1, 1), date(2020, 1, 1), 0, "m")#
   # NOTE: passing a -ve int leads to a *TypeError* (when casting to size_t is attempted)
-  assert_throws(TypeError, no.CalendarTimeline, date(2019, 1, 1), date(2020, 1, 1), -1, "m")
+  with pytest.raises(TypeError):
+    no.CalendarTimeline(date(2019, 1, 1), date(2020, 1, 1), -1, "m")
 
 
 def test_linear_timeline() -> None:

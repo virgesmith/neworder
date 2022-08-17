@@ -28,6 +28,8 @@ public:
   // constructs given a seed
   MonteCarlo(int32_t seed) noexcept;
 
+  void init_bitgen(py::capsule capsule);
+
   int32_t seed() const noexcept;
 
   void reset() noexcept;

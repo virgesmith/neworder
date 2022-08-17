@@ -52,7 +52,7 @@ ext_modules = [
     '_neworder_core',
     sources=list_files(['src'], ["cpp"]),
     depends=["setup.py", "neworder/__init__.py"] + list_files(["src"], ["h"]),
-    cxx_std=17
+    cxx_std=20
   ),
 ]
 

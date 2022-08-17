@@ -1,14 +1,13 @@
 
 import numpy as np
 import neworder as no
-
-from utils import assert_throws
+import pytest
 
 def test_logistic_logit() -> None:
 
   n = 100 # wont work if odd!
 
-  x = np.linspace(-10.0,10.0,n+1)
+  x = np.linspace(-10.0, 10.0, n+1)
   y = no.stats.logistic(x)
   assert np.all(y >= -1)
   assert np.all(y <= 1)
