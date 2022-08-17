@@ -2,15 +2,16 @@
 import numpy as np
 import neworder as no
 import pandas as pd  # type: ignore
+import pytest
 
-from utils import assert_throws
 
 def test_invalid() -> None:
-
-  assert_throws(AssertionError, no.Space, [], [])
-
-  assert_throws(AssertionError, no.Space, np.array([0.0]), np.array([0.0]))
-  assert_throws(AssertionError, no.Space, np.array([0.0, 1.0]), np.array([1.0, -1.0]))
+  with pytest.raises(AssertionError):
+    no.Space([], [])
+  with pytest.raises(AssertionError):
+    no.Space(np.array([0.0]), np.array([0.0]))
+  with pytest.raises(AssertionError):
+    no.Space(np.array([0.0, 1.0]), np.array([1.0, -1.0]))
 
 
 def test_space2d() -> None:
@@ -96,24 +97,29 @@ def test_space3d() -> None:
   dt = 1.0
   (bodies.x, bodies.y, bodies.z), (bodies.vx, bodies.vy, bodies.vz) = space.move((bodies.x, bodies.y, bodies.z), (bodies.vx, bodies.vy, bodies.vz), dt, ungroup=True)
 
+
 def test_grid() -> None:
 
-  assert_throws(ValueError, no.StateGrid, np.empty(shape=(3,3)), no.Edge.UNBOUNDED)
-  assert_throws(ValueError, no.StateGrid, np.empty(shape=(3,3)), no.Edge.BOUNCE)
-  assert_throws(ValueError, no.StateGrid, np.empty(shape=()))
-  assert_throws(ValueError, no.StateGrid, np.empty(shape=(2,0)))
+  with pytest.raises(ValueError):
+    no.StateGrid(np.empty(shape=(3,3)), no.Edge.UNBOUNDED)
+  with pytest.raises(ValueError):
+    no.StateGrid(np.empty(shape=(3,3)), no.Edge.BOUNCE)
+  with pytest.raises(ValueError):
+    no.StateGrid(np.empty(shape=()))
+  with pytest.raises(ValueError):
+    no.StateGrid(np.empty(shape=(2, 0)))
 
   state = np.zeros((5,5))
-  state[0,0] = 1
-  state[1,1] = 2
-  state[1,-1] = 3
+  state[0, 0] = 1
+  state[1, 1] = 2
+  state[1, -1] = 3
 
   # total neighbours should be 3 in corner, 5 on edge, 8 in middle
   g = no.StateGrid(state, no.Edge.CONSTRAIN)
   assert np.sum(g.count_neighbours()) == 3
-  assert np.sum(g.count_neighbours(lambda x: x==2)) == 8
-  assert np.sum(g.count_neighbours(lambda x: x==3)) == 5
-  assert np.sum(g.count_neighbours(lambda x: x!=0)) == 16
+  assert np.sum(g.count_neighbours(lambda x: x == 2)) == 8
+  assert np.sum(g.count_neighbours(lambda x: x == 3)) == 5
+  assert np.sum(g.count_neighbours(lambda x: x != 0)) == 16
 
   state = np.zeros((4,4,4))
   state[0,0,0] = 1
@@ -122,8 +128,6 @@ def test_grid() -> None:
   # total neighbours should be 26
   g = no.StateGrid(state, no.Edge.WRAP)
   assert np.sum(g.count_neighbours()) == 26
-  assert np.sum(g.count_neighbours(lambda x: x==-1)) == 26
-  assert np.sum(g.count_neighbours(lambda x: x!=0)) == 52
+  assert np.sum(g.count_neighbours(lambda x: x == -1)) == 26
+  assert np.sum(g.count_neighbours(lambda x: x != 0)) == 52
 
-if __name__ == "__main__":
-  test_space3d()

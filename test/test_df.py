@@ -1,14 +1,12 @@
 
 import numpy as np
-import pandas as pd # type: ignore
+import pandas as pd  # type: ignore[import]
 import neworder as no
 from math import sqrt
-
-from utils import assert_throws
+import pytest
 
 
 def test_errors() -> None:
-
   df = pd.read_csv("./test/df.csv")
 
   # base model for MC engine
@@ -19,14 +17,18 @@ def test_errors() -> None:
   trans = np.identity(len(cats))
 
   # invalid transition matrices
-  assert_throws(ValueError, no.df.transition, model, cats, np.ones((1, 2)), df, "DC2101EW_C_ETHPUK11")
-  assert_throws(ValueError, no.df.transition, model, cats, np.ones((1, 1)), df, "DC2101EW_C_ETHPUK11")
-  assert_throws(ValueError, no.df.transition, model, cats, trans+0.1, df, "DC2101EW_C_ETHPUK11")
+  with pytest.raises(ValueError):
+    no.df.transition(model, cats, np.ones((1, 2)), df, "DC2101EW_C_ETHPUK11")
+  with pytest.raises(ValueError):
+    no.df.transition(model, cats, np.ones((1, 1)), df, "DC2101EW_C_ETHPUK11")
+  with pytest.raises(ValueError):
+    no.df.transition(model, cats, trans + 0.1, df, "DC2101EW_C_ETHPUK11")
 
   # category data MUST be 64bit integer. This will almost certainly be the default on linux/OSX (LP64) but maybe not on windows (LLP64)
   df["DC2101EW_C_ETHPUK11"]= df["DC2101EW_C_ETHPUK11"].astype(np.int32)
 
-  assert_throws(TypeError, no.df.transition, model, cats, trans, df, "DC2101EW_C_ETHPUK11")
+  with pytest.raises(TypeError):
+    no.df.transition(model, cats, trans, df, "DC2101EW_C_ETHPUK11")
 
 
 def test_basic() -> None:
@@ -84,35 +86,31 @@ def test_basic() -> None:
   no.df.transition(model, c, t, df, "category")
   assert df.category.value_counts()[1] == N
 
-def test() -> None:
 
+def test(base_model) -> None:
   df = pd.read_csv("./test/df.csv")
-
-  # base model for MC engine
-  model = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
 
   cats = np.array(range(4))
   # identity matrix means no transitions
   trans = np.identity(len(cats))
 
-  no.df.transition(model, cats, trans, df, "DC2101EW_C_ETHPUK11")
+  no.df.transition(base_model, cats, trans, df, "DC2101EW_C_ETHPUK11")
 
   assert len(df["DC2101EW_C_ETHPUK11"].unique()) == 1 and df["DC2101EW_C_ETHPUK11"].unique()[0] == 2
 
   # NOTE transition matrix interpreted as being COLUMN MAJOR due to pandas DataFrame storing data in column-major order
 
   # force 2->3
-  trans[2,2] = 0.0
-  trans[2,3] = 1.0
-  no.df.transition(model, cats, trans, df, "DC2101EW_C_ETHPUK11")
+  trans[2, 2] = 0.0
+  trans[2, 3] = 1.0
+  no.df.transition(base_model, cats, trans, df, "DC2101EW_C_ETHPUK11")
   no.log(df["DC2101EW_C_ETHPUK11"].unique())
   assert len(df["DC2101EW_C_ETHPUK11"].unique()) == 1 and df["DC2101EW_C_ETHPUK11"].unique()[0] == 3
 
 
   # ~half of 3->0
-  trans[3,0] = 0.5
-  trans[3,3] = 0.5
-  no.df.transition(model, cats, trans, df, "DC2101EW_C_ETHPUK11")
+  trans[3, 0] = 0.5
+  trans[3, 3] = 0.5
+  no.df.transition(base_model, cats, trans, df, "DC2101EW_C_ETHPUK11")
   assert np.array_equal(np.sort(df["DC2101EW_C_ETHPUK11"].unique()), np.array([0, 3]))
-
 

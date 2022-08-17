@@ -8,14 +8,13 @@ on:
     branches: [ '**' ]
     tags: '**'
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
   schedule:
     # 5:00 every saturday
     - cron:  '0 5 * * SAT'
 
 jobs:
   build:
-
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false

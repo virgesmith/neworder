@@ -1,14 +1,12 @@
 import pytest
-import numpy as np
 
 import warnings
-warnings.filterwarnings(action='ignore', category=RuntimeWarning, message=r't=')
-#no.verbose()
 import neworder as no
+
+warnings.filterwarnings(action='ignore', category=RuntimeWarning, message=r't=')
 
 
 def test_basics() -> None:
-
   # just check you can read the attrs/call the functions
   assert hasattr(no, "verbose")
   assert hasattr(no, "checked")
@@ -16,21 +14,25 @@ def test_basics() -> None:
   no.log("testing")
   no.log(1)
   no.log(no)
-  no.log([1,2,3])
-  no.log((1,2,3))
-  no.log({1:2,3:4})
+  no.log([1, 2, 3])
+  no.log((1, 2, 3))
+  no.log({1: 2, 3:4})
+
 
 def test_submodules() -> None:
   assert(hasattr(no, "mpi"))
   assert(hasattr(no, "stats"))
   assert(hasattr(no, "df"))
 
+
 def test_dummy_model() -> None:
   class DummyModel(no.Model):
     def __init__(self) -> None:
       super().__init__(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
+
     def step(self) -> None:
       pass
+
     def finalise(self) -> None:
       pass
 
@@ -41,8 +43,10 @@ def test_check_flag() -> None:
   class FailingModel(no.Model):
     def __init__(self) -> None:
       super().__init__(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
+
     def step(self) -> None:
       pass
+
     def check(self) -> bool:
       return False
 
@@ -52,6 +56,7 @@ def test_check_flag() -> None:
   no.checked(False)
   # succeeds
   assert no.run(FailingModel())
+
 
 def test_mpi() -> None:
   # if no mpi4py, assume serial like module does
