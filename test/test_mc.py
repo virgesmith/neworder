@@ -153,7 +153,7 @@ def test_mc_counts(base_model) -> None:
 
 def test_mc_serial(base_model) -> None:
 
-  if no.mpi.size != 1:
+  if no.mpi.size() != 1:
     return
 
   mc = base_model.mc
