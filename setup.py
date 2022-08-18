@@ -51,7 +51,7 @@ ext_modules = [
   Pybind11Extension(
     '_neworder_core',
     sources=list_files(['src'], ["cpp"]),
-    include_paths=[numpy.get_include()],
+    include_dirs=[numpy.get_include()],
     depends=["setup.py", "neworder/__init__.py"] + list_files(["src"], ["h"]),
     cxx_std=17
   ),
