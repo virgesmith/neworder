@@ -3,7 +3,7 @@
 #include "Log.h"
 #include "ArrayHelpers.h"
 #include "Timeline.h"
-#include <vector>
+#include <numpy/random/bitgen.h>
 #include <random>
 #include <algorithm>
 #include <cmath>
@@ -65,22 +65,12 @@ int32_t no::MonteCarlo::seed() const noexcept
 
 void no::MonteCarlo::init_bitgen(py::capsule capsule)
 {
-  struct bitgen_t
-  {
-    void *state;
-    uint64_t (*next_uint64)(void *st);
-    uint32_t (*next_uint32)(void *st);
-    double (*next_double)(void *st);
-    uint64_t (*next_raw)(void *st);
-  };
-
   bitgen_t* bitgen(capsule);
   bitgen->state = this;
   bitgen->next_uint64 = [](void* p) { return static_cast<no::MonteCarlo*>(p)->raw(); };
   bitgen->next_uint32 = [](void* p) { return static_cast<uint32_t>(static_cast<no::MonteCarlo*>(p)->raw()); };
   bitgen->next_double = [](void* p) { return static_cast<no::MonteCarlo*>(p)->u01(); };
   bitgen->next_raw = [](void* p) { return static_cast<no::MonteCarlo*>(p)->raw(); };
-
 }
 
 void no::MonteCarlo::reset() noexcept

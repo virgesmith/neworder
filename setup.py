@@ -3,6 +3,7 @@
 import os
 import glob
 from setuptools import setup
+import numpy
 from pybind11.setup_helpers import Pybind11Extension, ParallelCompile
 
 # see https://github.com/pybind/python_example
@@ -46,11 +47,11 @@ def list_files(dirs, exts, exclude=[]):
 # def ldflags(_platform):
 #   return []
 
-
 ext_modules = [
   Pybind11Extension(
     '_neworder_core',
     sources=list_files(['src'], ["cpp"]),
+    include_paths=[numpy.get_include()],
     depends=["setup.py", "neworder/__init__.py"] + list_files(["src"], ["h"]),
     cxx_std=17
   ),
@@ -70,8 +71,8 @@ setup(
   packages=["neworder"],
   package_data={"neworder": ["py.typed", "*.pyi"]},
   ext_modules=ext_modules,
-  install_requires=['numpy>=1.19.1', 'pandas>=1.0.5', 'scipy'],
-  setup_requires=['pybind11>=2.5.0', 'pytest-runner'],
+  install_requires=['pandas>=1.0.5', 'scipy'],
+  setup_requires=['pybind11>=2.5.0', 'pytest-runner', 'numpy>=1.19.1'],
   tests_require=['pytest', 'mpi4py>=3.0.3'],
   classifiers=[
     "Programming Language :: Python :: 3",
