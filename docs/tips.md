@@ -78,14 +78,26 @@ In your model constructor, you can seed the *numpy* generator like so
 ```python
 ext_seed = self.mc.raw()
 self.nprand = np.random.Generator(np.random.MT19937(ext_seed))
-# get some values
-x = self.nprand.normal(5)
+# ...get some values
+x = self.nprand.normal(size=5)
 ```
 
 If you've chosen a deterministic seedng strategy, then `ext_seed` will be reproducible, and if you've chosen an independent strategy, then `ext_seed` will be different for each process, thus propagating your chosen seeding strategy to the external generator.
 
 !!! note "Seeding external generators"
     Wherever possible, explicitly seed any external random generators using *neworder*'s MonteCarlo engine. This will effectively propagate your seeding strategy to the external generator.
+
+### Using neworder's random generator with numpy
+
+It is now possible to use the RNG from the neworder model's Monte-Carlo engine as a `numpy` generator. In this way all of numpy's functionality is available with neworder's RNG. To achieve this use the adapter function `as_np`. Similarly to the example above, in your model constructor create the numpy generator:
+
+```py
+self.nprand = no.as_np(self.mc)
+# ...get some values
+x = self.nprand.normal(size=5)
+```
+
+NB there is only one RNG state, so you can safely get independent variates when calling both the RNG directly and via numpy.
 
 ## Conditional Halting
 

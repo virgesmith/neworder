@@ -54,8 +54,8 @@ nav:
     - N-body: examples/n-body.md
     - Boids: examples/boids.md
   - API:
-    - API Reference: api.md
     - Tips and Tricks: tips.md
+    - API Reference: api.md
   - References: references.md
   - About:
     - Citing: citing.md
