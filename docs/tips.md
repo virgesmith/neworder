@@ -9,7 +9,7 @@ Use this initialisation pattern:
 
 ```python
 class MyModel(neworder.Model):
-  def __init__(self, timeline, seeder, args...):
+  def __init__(self, timeline: neworder.Timeline, seeder: Callable[[int], int], args...) -> None:
     # this line is essential:
     super().__init__(timeline, seeder)
     # now initialise the subclass...
@@ -28,21 +28,21 @@ If necessary, you can supply your own seeding strategy, for instance if you requ
     The seeder function must accept an `int` (even if unused) and return an `int`
 
 ```python
-def hybrid_seeder(rank):
+def hybrid_seeder(rank: int) -> int:
   return (rank % 2) + 12345
 ```
 
 or, as a lambda:
 
 ```python
-hybrid_seeder = lambda r: (r % 2) + 12345
+hybrid_seeder: Callable[[int], int] = lambda r: (r % 2) + 12345
 ```
 
 which returns the same seed for all odd-ranked processes and a different seed for the even-ranked ones. The use your seeder when you instantiate the `Model`, e.g.
 
 ```python
 class MyModel(neworder.Model):
-  def __init__(self, timeline, args...):
+  def __init__(self, timeline: neworder.Timeline) -> None:
     super().__init__(timeline, lambda r: (r % 2) + 12345)
     ...
 ```
@@ -53,7 +53,7 @@ If there was a requirement for multiple processes to all have the same nondeterm
 from mpi4py import MPI
 comm = MPI.COMM_WORLD
 
-def nondeterministic_identical_stream(_r):
+def nondeterministic_identical_stream(_: int) -> int:
   # only process 0 gets a seed
   seed = neworder.MonteCarlo.nondeterministic_stream(0) if neworder.mpi.rank() == 0 else None
   # then broadcasts it to the other processes
@@ -97,7 +97,7 @@ self.nprand = no.as_np(self.mc)
 x = self.nprand.normal(size=5)
 ```
 
-NB there is only one RNG state, so you can safely get independent variates when calling both the RNG directly and via numpy.
+NB as there is only one RNG state, you can safely get independent variates when calling both the RNG directly and via numpy.
 
 ## Conditional Halting
 
@@ -106,7 +106,7 @@ In some models, rather than (or as well as) evolving the population over a fixed
 In these situations, the model developer can (conditionally) call the `Model.halt()` method from inside the model's `step()` method, which will end the model run. Currently, the `LinearTimeline` and `CalendarTimeline` classes support both fixed and open-ended timelines.
 
 !!! note "`Model.halt()`"
-    This function *does not* end execution immediatedly, it signals to the *neworder* runtime not to iterate any further timesteps. This means that the entire body of the `step` method (and the `check` method, if implemented) will still be executed. Overriding the `halt` method is not recommended.
+    This function *does not* end execution immediately, it signals to the *neworder* runtime not to iterate any further timesteps. This means that the entire body of the `step` method (and the `check` method, if implemented) will still be executed. Overriding the `halt` method is not recommended.
 
 
 !!! Note "Finalisation"
@@ -128,7 +128,7 @@ The key here is that there is only one result, shared between all processes. In 
 
 ## Time Comparison
 
-*neworder* uses 64-bit floating-point numbers to represent time, and the values -inf, +inf and nan respectively to represent the concepts of the distant past, the far future and never. This allows users to define, or compare against, values that are:
+*neworder* uses 64-bit floating-point numbers to represent time, and the values `-inf`, `+inf` and `nan` respectively to represent the concepts of the distant past, the far future and never. This allows users to define, or compare against, values that are:
 
 - before any other time value,
 - after any other time value, or
@@ -149,7 +149,7 @@ neworder.log(neworder.time.isnever(n)) # True
 ## Data Types
 
 !!! warning "Static typing"
-    Unlike python, C++ is a *statically typed* language and so *neworder* is strict about types.
+    Unlike python, C++ is a *statically typed* language and so *neworder* is strict about types. We strongly encourage the use of type annotations and a type checker (mypy) in python.
 
 If an argument to a *neworder* method or function is not the correct type, it will fail immediately (as opposed to python, which will fail only if an invalid operation for the given type is attempted (a.k.a. "duck typing")). This applies to contained types (numpy's `dtype`) too. In the example below, the function is expecting an integer, and will complain if you pass it a floating-point argument:
 

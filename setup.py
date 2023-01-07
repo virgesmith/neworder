@@ -24,28 +24,6 @@ def list_files(dirs, exts, exclude=[]):
   [f in files and files.remove(f) for f in exclude]
   return files
 
-# def cxxflags(platform):
-#   if platform == "unix":
-#     return [
-#       "-Wall",
-#       "-pedantic",
-#       "-pthread",
-#       "-Wsign-compare",
-#       "-fstack-protector-strong",
-#       "-Wformat",
-#       "-Werror=format-security",
-#       "-Wdate-time",
-#       "-fPIC",
-#       "-std=c++17",
-#       "-fvisibility=hidden"
-#     ]
-#   elif platform == "msvc":
-#     return ['/EHsc']
-#   else:
-#     return []
-
-# def ldflags(_platform):
-#   return []
 
 ext_modules = [
   Pybind11Extension(
@@ -53,7 +31,7 @@ ext_modules = [
     sources=list_files(['src'], ["cpp"]),
     include_dirs=[numpy.get_include()],
     depends=["setup.py", "neworder/__init__.py"] + list_files(["src"], ["h"]),
-    cxx_std=17
+    cxx_std=20,
   ),
 ]
 
@@ -63,7 +41,7 @@ setup(
   name='neworder',
   # version set from __init__.py via setup.cfg,
   author='Andrew P Smith',
-  author_email='a.p.smith@leeds.ac.uk',
+  author_email='andrew@friarswood.net',
   url='https://neworder.readthedocs.io',
   description='A dynamic microsimulation framework',
   long_description=readme(),

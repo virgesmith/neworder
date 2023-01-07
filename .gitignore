@@ -1,35 +1,22 @@
 
 
-src/**/*.o
-src/**/*.d
-src/**/*.so
-
+*.so
 **/__pycache__
-
 .vscode*/
 build/
-
 # data
 dm*.csv
 #**/data/
-
 # MODGEN example code
 **/Chapter*/ModgenExample
 # bulk data
 examples/people_multi/data
-
 .venv*/
 **/ipch/**
-
 .eggs/
 *.egg-info/
 junk
-
 dist/*
 
-*.so
-
-*_old*
-
 test-coverage/
-
+.env
