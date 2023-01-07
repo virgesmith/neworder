@@ -169,9 +169,7 @@ def test_mc_serial(base_model) -> None:
   mc.reset()
   s = mc.state()
   a = mc.ustream(5)
-  if platform.system() != "Darwin":
-    # mc.state() just returns 0 on OSX due to an apparent bug in MT19937 that intermittently segfaults
-    assert s != mc.state()
+  assert s != mc.state()
   assert abs(a[0] - 0.33778882725164294) < 1e-8
   assert abs(a[1] - 0.04767065867781639) < 1e-8
   assert abs(a[2] - 0.8131122114136815) < 1e-8

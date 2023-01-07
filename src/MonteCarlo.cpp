@@ -85,14 +85,9 @@ std::string no::MonteCarlo::repr() const noexcept
 
 size_t no::MonteCarlo::state() const noexcept
 {
-// disable as causes segfault in mpi tests on travis OSX build
-#ifdef __APPLE__
-  return 0;
-#else
   std::ostringstream s;
   s << m_prng;
   return std::hash<std::string>{}(s.str());
-#endif
 }
 
 // raw unsigned 64-bit ints (for enabling numpy to use this generator)
