@@ -23,12 +23,11 @@ If you use `neworder` in any published work, please cite it. You can use either 
 
 ```bibtex
 @software{neworder,
-   doi = { {{ insert_doi() }} },
+   doi = { {{ insert_zenodo_field("doi") }} },
    author = { Andrew P Smith },
-   year = { 2021 },
-   version = { {{ insert_version() }} },
-   url = { https://github.com/virgesmith/neworder },
+   year = { {{ insert_zenodo_field("metadata", "publication_date")[:4] }} },
+   version = { {{ insert_zenodo_field("metadata", "version") }} },
+   url = { https://neworder.readthedocs.io/en/stable/ },
    title = { neworder: a dynamic microsimulation framework for Python }
 }
 ```
-

@@ -68,28 +68,9 @@ which should result in something like
 [py 0/1]  Hello from 6
 ```
 
-## Output
+## Understanding the workflow and the output
 
-To get a better idea of what's going on, uncomment the line containing `neworder.verbose()` and rerun the model. You'll get something like
-
-```text
-[no 0/1]  neworder 0.0.8 model init: timeline=<NoTimeline stepped=False> mc=<neworder.MonteCarlo seed=874991939>
-[no 0/1]  starting model run. start time=nan
-[no 0/1]  t=nan(0) HelloWorld.modify(0)
-[no 0/1]  defaulted to no-op Model::modify()
-[no 0/1]  t=nan(1) HelloWorld.step()
-[no 0/1]  defaulted to no-op Model::check()
-[no 0/1]  t=nan(1) HelloWorld.check(): ok
-[no 0/1]  t=nan(1) HelloWorld.finalise()
-[py 0/1]  Hello from 0
-[py 0/1]  Hello from 1
-[py 0/1]  Hello from 4
-[py 0/1]  Hello from 7
-[py 0/1]  Hello from 8
-[no 0/1]  SUCCESS exec time=0.000996s
-```
-
-this output is explained line-by-line below.
+To get a better idea of what's going on, uncomment the line containing `neworder.verbose()` and rerun the model. The output is explained line-by-line below.
 
 !!! note "Annotated Output"
     The `neworder.log` output is prefixed with a source identifier in square brackets, containing the following information for debugging purposes:
@@ -97,30 +78,30 @@ this output is explained line-by-line below.
       - Source of message: `no` if logged from the framework itself, `py` if logged from python code (via the `neworder.log()` function). The former are only displayed in verbose mode.
       - the process id ('rank' in MPI parlance) and the total number of processes ('size' in MPI parlance) - in serial mode these default to 0/1.
 
-## Understanding the workflow and the output
 
-When using `NoTimeline()` the start time, end time are undefined and the timestep is zero - i.e. a single arbitrary step in which all computation is done.
-
-First we get some information about the package and the model initialisation parameters:
+First we get some information about the model initialisation parameters:
 
 ```text
-[no 0/1]  neworder 0.0.8 model init: timeline=<NoTimeline stepped=False> mc=<neworder.MonteCarlo seed=874991939>
+[no 0/1]  model init: timeline=<NoTimeline stepped=False> mc=<neworder.MonteCarlo seed=874991939>
 [no 0/1]  starting model run. start time=nan
 ```
 
-the next output concerns the modify method which is explained in the [Option](./option.md) example.
+When using `NoTimeline()` the start time, end time are undefined and the timestep is zero - i.e. a single arbitrary step in which all computation is done.
+
+The RNG seed is displayed for reproducibility, although in this configuration we explicitly requested a random seed using the `neworder.MonteCarlo.nondeterministic_stream` parameter, so each time you run the model you will get a different seed, and different results. The next output concerns the modify method which is explained in the [Option](./option.md) example.
 
 ```text
 [no 0/1]  t=nan(0) HelloWorld.modify(0)
 [no 0/1]  defaulted to no-op Model::modify()
 ```
-Note that the time value is NaN (not-a-number) (since absolute time is not important in this implementation), but the index is zero. Now the `step` method is called, which applies a random transition:
+
+Note that the time value is NaN (not-a-number) since absolute time is not important in this implementation, but the index is zero. Now the `step` method is called, which applies our single random transition - making some individuals "talkative":
 
 ```text
 [no 0/1]  t=nan(1) HelloWorld.step()
 ```
 
-followed by the `check` method, which is optional and we haven't implemented:
+and this is followed by the `check` method, which is optional and we haven't implemented:
 
 ```text
 [no 0/1]  defaulted to no-op Model::check()
@@ -137,23 +118,24 @@ We've now reached the end of our single step "timeline" so the `finalise` method
 [no 0/1]  t=nan(1) HelloWorld.finalise()
 ```
 
-which prints the results:
+which in this case just prints the results:
 
 ```text
-[py 0/1]  Hello from 0
-[py 0/1]  Hello from 3
-[py 0/1]  Hello from 4
-[py 0/1]  Hello from 6
+[py 0/1] Hello from 0
+[py 0/1] Hello from 1
+[py 0/1] Hello from 4
+[py 0/1] Hello from 7
+[py 0/1] Hello from 8
 ```
 
 and finally the model reports its status and execution time:
 
 ```text
-[no 0/1]  SUCCESS exec time=0.001141s
+[no 0/1] SUCCESS exec time=0.000914s
 ```
 
 ## Next steps
 
-Try re-running the model with different input parameters, or changing the seeding strategy (to e.g. `neworder.MonteCarlo.deterministic_independent_stream`) for reproducible results.
+Try re-running the model with different input parameters, or changing the seeding strategy for reproducible results. To reproduce the exact results above replace `neworder.MonteCarlo.nondeterministic_stream` with `lambda _: 874991939` in the model initialiser, or just use `neworder.MonteCarlo.deterministic_independent_stream` to get consistent results for every run.
 
 Then, check out some or all of the other examples...

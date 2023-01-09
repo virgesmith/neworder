@@ -17,41 +17,20 @@ _inline_code_styles = {
 
 def define_env(env):
 
-  # @env.macro
-  # def test(s):
-  #   return "```some python code here: %s```\n" % s
-
   @env.macro
-  def insert_doi():
-    response = requests.get('https://zenodo.org/api/records', params={'q': '4031821'})
-
-    if response.status_code == 200:
-      result = response.json()
-      if "hits" in result and \
-         "hits" in result["hits"] and \
-         len(result["hits"]["hits"]) > 0 and \
-         "doi" in result["hits"]["hits"][0]:
-        return result["hits"]["hits"][0]["doi"]
-      else:
-        return "[json error retrieving doi]"
-    return "[http error %d retrieving doi]" % response.status_code
-
-  @env.macro
-  def insert_version():
+  def insert_zenodo_field(*keys: str):
     """ This is the *released* version not the dev one """
-    response = requests.get('https://zenodo.org/api/records', params={'q': '4031821'})
+    try:
+      response = requests.get('https://zenodo.org/api/record', params={'q': '4031821'})
+      response.raise_for_status()
+      result = response.json()["hits"]["hit"][0]
+      for k in keys:
+        result = result[k]
+      return result
 
-    if response.status_code == 200:
-      result = response.json()
-      if "hits" in result and \
-         "hits" in result["hits"] and \
-         len(result["hits"]["hits"]) > 0 and \
-         "metadata" in result["hits"]["hits"][0] and \
-         "version" in result["hits"]["hits"][0]["metadata"]:
-        return result["hits"]["hits"][0]["metadata"]["version"]
-      else:
-        return "[json error retrieving doi]"
-    return "[http error %d retrieving doi]" % response.status_code
+    except Exception as e:
+      return f"{e.__class__.__name__}:{e} while retrieving {keys}"
+
 
   @env.macro
   def include_snippet(filename, tag=None, show_filename=True):
@@ -66,24 +45,21 @@ def define_env(env):
       lines = f.readlines()
 
     if tag:
-      tag = "!%s!" % tag
+      tag = f"!{tag}!"
       span = []
       for i, l in enumerate(lines):
         if tag in l:
           span.append(i)
       if len(span) != 2:
-        return "```ERROR %s (%s) too few/many tags (%s) for '%s'```" % (filename, code_style, len(span), tag)
+        return f"```ERROR {filename} ({code_style}) too few/many tags ({len(span)}) for '{tag}'```"
       lines = lines[span[0] + 1: span[1]]
 
     if show_filename:
-      footer = "\n[file: **%s**]\n" % filename
+      footer = f"\n[file: **{filename}**]\n"
     else:
       footer = ""
-    # line_range = lines[start_line+1:end_line]
     if code_style is not None:
-      return "```%s\n" % code_style + "".join(lines) + "```" + footer
+      return f"```{code_style}\n{''.join(lines)}```{footer}"
     else:
       return "".join(lines) + footer
 
-# if __name__ == "__main__":
-#   print(_include_snippet("examples/chapter1/model.py", "tag"))

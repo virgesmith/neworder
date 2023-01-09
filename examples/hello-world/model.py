@@ -37,8 +37,8 @@ class HelloWorld(neworder.Model):
     NB it is *essential* to initialise the base class.
     Failure to do so will result in UNDEFINED BEHAVIOUR
     """
-    super().__init__(neworder.NoTimeline(),
-                     neworder.MonteCarlo.nondeterministic_stream)
+    super().__init__(neworder.NoTimeline(), lambda _: 874991939)
+                     # neworder.MonteCarlo.nondeterministic_stream)
 
     # create a silent population of size n
     self.population = pd.DataFrame(index=neworder.df.unique_index(n),
@@ -103,7 +103,7 @@ class HelloWorld(neworder.Model):
 
 # !script!
 # uncomment for verbose output
-# neworder.verbose()
+neworder.verbose()
 # uncomment to disable checks entirely
 # neworder.checked(False)
 
