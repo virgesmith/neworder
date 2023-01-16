@@ -17,16 +17,16 @@ class Status(Enum):
   DEAD = 3
 
   @property
-  def rgba(self):
+  def rgba(self) -> tuple[float, float, float, float]:
     match self:
       case Status.SUSCEPTIBLE:
-        return [1.0, 1.0, 1.0, 1.0]
+        return (1.0, 1.0, 1.0, 1.0)
       case Status.INFECTED:
-        return [1.0, 0.0, 0.0, 1.0]
+        return (1.0, 0.0, 0.0, 1.0)
       case Status.IMMUNE:
-        return [0.0, 1.0, 0.0, 1.0]
+        return (0.0, 1.0, 0.0, 1.0)
       case Status.DEAD:
-        return [0.0, 0.0, 0.0, 1.0]
+        return (0.0, 0.0, 0.0, 1.0)
 
 
 class Infection(no.Model):
@@ -38,13 +38,14 @@ class Infection(no.Model):
     self.nodes, self.edges = ox.graph_to_gdfs(self.G)
     self.infection_radius = infection_radius
     self.recovery_time = recovery_time
-    self.marginal_mortality = 1 - (1 - mortality) ** (1/recovery_time)
+    self.marginal_mortality = 1.0 - (1.0 - mortality) ** (1.0 / recovery_time)
 
     start_positions = self.nodes.sample(n=n_agents, random_state=self.nprand, replace=True).index.values
-    agents = gpd.GeoDataFrame(data={"node": start_positions, "speed": speed, "status": Status.SUSCEPTIBLE, "t_infect": no.time.never()})
+    speeds = self.nprand.lognormal(np.log(speed), 0.2, n_agents)
+    agents = gpd.GeoDataFrame(data={"node": start_positions, "speed": speeds, "status": Status.SUSCEPTIBLE, "t_infect": no.time.never()})
     agents["dest"] = agents["node"].apply(self.__random_next_dest)
     agents["dist"] = agents[["node", "dest"]].apply(lambda r: self.edges.loc[(r["node"], r["dest"], 0), "length"], axis=1)
-    agents["offset"] = 0
+    agents["offset"] = 0.0
     agents["path"] = agents[["node", "dest"]].apply(lambda r: self.edges.loc[(r["node"], r["dest"], 0), "geometry"], axis=1)
     agents["geometry"] = agents["path"].apply(lambda linestr: line_interpolate_point(linestr, 0))
     infected = self.nprand.choice(agents.index, n_infected, replace=False)
@@ -87,7 +88,7 @@ class Infection(no.Model):
 
   def __update_position(self) -> None:
     self.agents.offset += self.agents.speed
-    self.agents["geometry"] = self.agents[["path", "offset", "speed"]].apply(lambda r: line_interpolate_point(r["path"], r["offset"]), axis=1)
+    self.agents["geometry"] = self.agents[["path", "offset"]].apply(lambda r: line_interpolate_point(r["path"], r["offset"]), axis=1)
     overshoots = self.agents.offset >= self.agents.dist
     if not overshoots.empty:
       # offset <- offset - dist
@@ -97,12 +98,12 @@ class Infection(no.Model):
       # dest <- random
       self.agents.loc[overshoots, "dest"] = self.agents.loc[overshoots, "node"].apply(self.__random_next_dest)
       # path <- (node, dest), dist <- new_dist
-      self.agents.loc[overshoots, "path"] = self.agents[["node", "dest"]].apply(lambda r: self.edges.loc[(r["node"], r["dest"], 0), "geometry"], axis=1)
-      self.agents.loc[overshoots, "dist"] = self.agents[["node", "dest"]].apply(lambda r: self.edges.loc[(r["node"], r["dest"], 0), "length"], axis=1)
+      self.agents.loc[overshoots, "path"] = self.agents.loc[overshoots, ["node", "dest"]].apply(lambda r: self.edges.loc[(r["node"], r["dest"], 0), "geometry"], axis=1)
+      self.agents.loc[overshoots, "dist"] = self.agents.loc[overshoots, ["node", "dest"]].apply(lambda r: self.edges.loc[(r["node"], r["dest"], 0), "length"], axis=1)
       # position <- update(path, offset)
       self.agents.loc[overshoots, "geometry"] = self.agents.loc[overshoots, ["path", "offset", "speed"]].apply(lambda r: line_interpolate_point(r["path"], r["offset"]), axis=1)
 
-  def __infect_nearby(self):
+  def __infect_nearby(self) -> None:
     infected = self.agents[self.agents.status == Status.INFECTED].geometry
     susceptible = self.agents[self.agents.status == Status.SUSCEPTIBLE].geometry
     new_infections = []
@@ -127,12 +128,8 @@ class Infection(no.Model):
   def __succumb(self) -> None:
     infected = self.agents[self.agents.status == Status.INFECTED]
     death = self.mc.hazard(self.marginal_mortality, len(infected)).astype(bool)
-    # if death.sum():
-    #   print(infected[death].index.values)
-    #   print(self.agents.loc[623])
     self.agents.loc[infected[death].index.values, "status"] = Status.DEAD
     self.agents.loc[infected[death].index.values, "speed"] = 0.0
-
 
   def __init_visualisation(self) -> tuple[Any, Any]:
     plt.ion()
