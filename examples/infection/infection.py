@@ -6,7 +6,7 @@ import osmnx as ox
 import numpy as np
 from shapely import line_interpolate_point
 import geopandas as gpd
-# import contextily as ctx
+import contextily as ctx
 
 import neworder as no
 
@@ -33,20 +33,18 @@ class Infection(no.Model):
   def __init__(self, n_agents: int, n_infected: int, speed: float, infection_radius: float, recovery_time: int, mortality: float) -> None:
     super().__init__(no.LinearTimeline(0.0, 1.0), no.MonteCarlo.deterministic_independent_stream)
     self.nprand = no.as_np(self.mc)
-    G = ox.graph_from_point((53.925, -1.822), dist=2000, network_type="drive")
-    self.G = ox.project_graph(G, to_crs='epsg:27700')
-    self.nodes, self.edges = ox.graph_to_gdfs(self.G)
+    self.domain = no.GeospatialGraph((53.925, -1.822), dist=2000, network_type="drive", crs='epsg:27700')
     self.infection_radius = infection_radius
     self.recovery_time = recovery_time
     self.marginal_mortality = 1.0 - (1.0 - mortality) ** (1.0 / recovery_time)
 
-    start_positions = self.nodes.sample(n=n_agents, random_state=self.nprand, replace=True).index.values
+    start_positions = self.domain.all_nodes.sample(n=n_agents, random_state=self.nprand, replace=True).index.values
     speeds = self.nprand.lognormal(np.log(speed), 0.2, n_agents)
     agents = gpd.GeoDataFrame(data={"node": start_positions, "speed": speeds, "status": Status.SUSCEPTIBLE, "t_infect": no.time.never()})
     agents["dest"] = agents["node"].apply(self.__random_next_dest)
-    agents["dist"] = agents[["node", "dest"]].apply(lambda r: self.edges.loc[(r["node"], r["dest"], 0), "length"], axis=1)
+    agents["path"] = agents[["node", "dest"]].apply(lambda r: self.domain.shortest_path(r["node"], r["dest"], weight="length"), axis=1)
+    agents["dist"] = agents.path.apply(lambda p: p.length)
     agents["offset"] = 0.0
-    agents["path"] = agents[["node", "dest"]].apply(lambda r: self.edges.loc[(r["node"], r["dest"], 0), "geometry"], axis=1)
     agents["geometry"] = agents["path"].apply(lambda linestr: line_interpolate_point(linestr, 0))
     infected = self.nprand.choice(agents.index, n_infected, replace=False)
     agents.loc[infected, "status"] = Status.INFECTED
@@ -80,11 +78,11 @@ class Infection(no.Model):
     no.log(f"unaffected: {(self.agents.status == Status.SUSCEPTIBLE).sum()}")
 
   def __random_next_dest(self, node: int) -> int:
-    candidates = [edge for edge in self.G.out_edges(node)] # if edge not in path and (edge[1], edge[0]) not in path]
-    if candidates:
-        return candidates[self.nprand.choice(len(candidates))][1]
-    else:
-        return node
+    # ensure dest is different from origin
+    dest = node
+    while dest == node:
+      dest = self.domain.all_nodes.sample(n=1, random_state=self.nprand).index.values[0]
+    return dest
 
   def __update_position(self) -> None:
     self.agents.offset += self.agents.speed
@@ -98,10 +96,11 @@ class Infection(no.Model):
       # dest <- random
       self.agents.loc[overshoots, "dest"] = self.agents.loc[overshoots, "node"].apply(self.__random_next_dest)
       # path <- (node, dest), dist <- new_dist
-      self.agents.loc[overshoots, "path"] = self.agents.loc[overshoots, ["node", "dest"]].apply(lambda r: self.edges.loc[(r["node"], r["dest"], 0), "geometry"], axis=1)
-      self.agents.loc[overshoots, "dist"] = self.agents.loc[overshoots, ["node", "dest"]].apply(lambda r: self.edges.loc[(r["node"], r["dest"], 0), "length"], axis=1)
-      # position <- update(path, offset)
-      self.agents.loc[overshoots, "geometry"] = self.agents.loc[overshoots, ["path", "offset", "speed"]].apply(lambda r: line_interpolate_point(r["path"], r["offset"]), axis=1)
+      self.agents.loc[overshoots, "path"] = self.agents.loc[overshoots, ["node", "dest"]] \
+        .apply(lambda r: self.domain.shortest_path(r["node"], r["dest"], weight="length"), axis=1)
+      self.agents.loc[overshoots, "dist"] = self.agents.loc[overshoots, "path"].apply(lambda p: p.length)
+      # finally update position
+      self.agents.loc[overshoots, "geometry"] = self.agents.loc[overshoots, "path"].apply(lambda linestr: line_interpolate_point(linestr, 0))
 
   def __infect_nearby(self) -> None:
     infected = self.agents[self.agents.status == Status.INFECTED].geometry
@@ -133,9 +132,9 @@ class Infection(no.Model):
 
   def __init_visualisation(self) -> tuple[Any, Any]:
     plt.ion()
-    fig, ax = ox.plot_graph(self.G, bgcolor="w", node_size=5, edge_linewidth=2, edge_color="#777777", figsize=(12,9))
+    fig, ax = ox.plot_graph(self.domain.graph, bgcolor="w", node_size=5, edge_linewidth=2, edge_color="#777777", figsize=(12,9))
     plt.tight_layout()
-    # ctx.add_basemap(ax, crs=self.nodes.crs, url=ctx.providers.OpenTopoMap)
+    # ctx.add_basemap(ax, crs=self.domain.all_nodes.crs, url=ctx.providers.OpenTopoMap)
     g = ax.scatter(self.agents.geometry.x, self.agents.geometry.y, color=self.agents.status.apply(lambda c: c.rgba), edgecolor='k')
     fig.suptitle("[q to quit]")
     fig.canvas.mpl_connect('key_press_event', lambda event: self.halt() if event.key == "q" else None)

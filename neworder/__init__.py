@@ -11,4 +11,5 @@ from _neworder_core import (
   time, df, mpi, log, run, stats, checked, verbose
 ) # type: ignore
 from .domain import Edge, Domain, Space, StateGrid
+from .graph import GeospatialGraph
 from .mc import as_np
