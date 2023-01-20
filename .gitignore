@@ -20,3 +20,5 @@ dist/*
 
 test-coverage/
 .env
+# osmnx cache
+cache/
