@@ -14,7 +14,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest"]
-        python-version: ["3.9"]
+        python-version: ["3.10"]
     steps:
       - uses: actions/checkout@v3
       - uses: conda-incubator/setup-miniconda@v2
@@ -24,6 +24,7 @@ jobs:
       - name: setup
         shell: bash -l {0}
         run: |
+          apt update && sudo apt install -y mpich libmpich-dev
           conda info
           conda list
           conda install python=${{ matrix.python-version }} gxx_linux-64 numpy pandas pybind11 pytest # mpich mpi4py
@@ -36,5 +37,5 @@ jobs:
         shell: bash -l {0}
         run: |
           conda activate test
-          python -m pytest
+          mpiexec -n 2 python -m pytest
 
