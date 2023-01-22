@@ -11,6 +11,7 @@ import mpi # type: ignore
 from .time import *
 import stats # type: ignore
 from .domain import *
+from .graph import *
 
 T = TypeVar("T")
 nparray = np.ndarray[T, np.dtype[T]]

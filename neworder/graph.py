@@ -18,8 +18,8 @@ class GeospatialGraph:
     self.__nodes, self.__edges = ox.graph_to_gdfs(self.__graph)
 
   @classmethod
-  def from_point(cls, *args: Any, crs: str | None = None,  **kwargs: Any) -> GeospatialGraph:
-    G = ox.graph_from_point(*args, **kwargs)
+  def from_point(cls, point: tuple[float, float], *args: Any, crs: str | None = None,  **kwargs: Any) -> GeospatialGraph:
+    G = ox.graph_from_point(point, *args, **kwargs)
     return cls(G, crs)
 
   @property
