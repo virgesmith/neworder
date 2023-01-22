@@ -49,7 +49,7 @@ setup(
   packages=["neworder"],
   package_data={"neworder": ["py.typed", "*.pyi"]},
   ext_modules=ext_modules,
-  install_requires=['pandas>=1.0.5', 'scipy'],
+  install_requires=['pandas>=1.0.5', 'scipy', 'networkx', 'osmnx', 'geopandas'],
   setup_requires=['pybind11>=2.5.0', 'pytest-runner', 'numpy>=1.19.1'],
   tests_require=['pytest', 'mpi4py>=3.0.3'],
   classifiers=[

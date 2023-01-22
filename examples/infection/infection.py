@@ -6,7 +6,6 @@ import osmnx as ox
 import numpy as np
 from shapely import line_interpolate_point
 import geopandas as gpd
-import contextily as ctx
 
 import neworder as no
 
@@ -30,14 +29,27 @@ class Status(Enum):
 
 
 class Infection(no.Model):
-  def __init__(self, n_agents: int, n_infected: int, speed: float, infection_radius: float, recovery_time: int, mortality: float) -> None:
+  def __init__(self,
+               point: tuple[float, float],
+               dist: float,
+               n_agents: int,
+               n_infected: int,
+               speed: float,
+               infection_radius: float,
+               recovery_time: int,
+               mortality: float) -> None:
     super().__init__(no.LinearTimeline(0.0, 1.0), no.MonteCarlo.deterministic_independent_stream)
+    # expose the model's MC engine to numpy
     self.nprand = no.as_np(self.mc)
-    self.domain = no.GeospatialGraph((53.925, -1.822), dist=2000, network_type="drive", crs='epsg:27700')
+    # create the spatial domain
+    self.domain = no.GeospatialGraph.from_point(point, dist, network_type="drive", crs='epsg:27700')
+
+    # set the parameters
     self.infection_radius = infection_radius
     self.recovery_time = recovery_time
     self.marginal_mortality = 1.0 - (1.0 - mortality) ** (1.0 / recovery_time)
 
+    # create the agent data, which is stored in a geopandas geodataframe
     start_positions = self.domain.all_nodes.sample(n=n_agents, random_state=self.nprand, replace=True).index.values
     speeds = self.nprand.lognormal(np.log(speed), 0.2, n_agents)
     agents = gpd.GeoDataFrame(data={"node": start_positions, "speed": speeds, "status": Status.SUSCEPTIBLE, "t_infect": no.time.never()})
@@ -61,10 +73,7 @@ class Infection(no.Model):
     num_infected = (self.agents.status == Status.INFECTED).sum()
     num_immune = (self.agents.status == Status.IMMUNE).sum()
     num_dead = (self.agents.status == Status.DEAD).sum()
-    i = self.timeline.index()
-    if i % 10 == 0:
-        no.log(f"step {i}: inf:{num_infected} imm:{num_immune} dead:{num_dead} / {len(self.agents)}")
-    self.__update_visualisation()
+    self.__update_visualisation(num_infected, num_immune, num_dead)
     if num_infected == 0:
         sleep(5)
         self.halt()
@@ -86,7 +95,9 @@ class Infection(no.Model):
 
   def __update_position(self) -> None:
     self.agents.offset += self.agents.speed
+    # move agent along its route
     self.agents["geometry"] = self.agents[["path", "offset"]].apply(lambda r: line_interpolate_point(r["path"], r["offset"]), axis=1)
+    # check if arrived at destination and set a new destination if necessary
     overshoots = self.agents.offset >= self.agents.dist
     if not overshoots.empty:
       # offset <- offset - dist
@@ -106,7 +117,7 @@ class Infection(no.Model):
     infected = self.agents[self.agents.status == Status.INFECTED].geometry
     susceptible = self.agents[self.agents.status == Status.SUSCEPTIBLE].geometry
     new_infections = []
-    # loop over smallest group
+    # loop over smallest group for efficiency
     if len(infected) < len(susceptible):
       for i in infected:
         new = susceptible.geometry.distance(i) < self.infection_radius
@@ -134,17 +145,21 @@ class Infection(no.Model):
     plt.ion()
     fig, ax = ox.plot_graph(self.domain.graph, bgcolor="w", node_size=5, edge_linewidth=2, edge_color="#777777", figsize=(12,9))
     plt.tight_layout()
-    # ctx.add_basemap(ax, crs=self.domain.all_nodes.crs, url=ctx.providers.OpenTopoMap)
+    # optionally add a basemap:
+    # import contextily as ctx
+    # ctx.add_basemap(ax, crs=self.domain.crs, url=ctx.providers.OpenTopoMap)
     g = ax.scatter(self.agents.geometry.x, self.agents.geometry.y, color=self.agents.status.apply(lambda c: c.rgba), edgecolor='k')
     fig.suptitle("[q to quit]")
     fig.canvas.mpl_connect('key_press_event', lambda event: self.halt() if event.key == "q" else None)
     fig.canvas.flush_events()
     return fig, g
 
-  def __update_visualisation(self) -> None:
+  def __update_visualisation(self, num_infected, num_immune, num_dead) -> None:
     offsets = np.array(list(zip(self.agents.geometry.x, self.agents.geometry.y)))
     colours = self.agents.status.apply(lambda c: c.rgba)
     self.g.set_offsets(offsets)
     self.g.set_facecolors(colours)
+    self.fig.suptitle(f"step {self.timeline.index()}: inf={num_infected} imm={num_immune} dead={num_dead} / {len(self.agents)} [q to quit]")
+
     self.fig.canvas.flush_events()
 

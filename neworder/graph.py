@@ -1,20 +1,30 @@
+from __future__ import annotations
 from typing import Any, Generator
 import networkx as nx  # type: ignore[import]
 import osmnx as ox  # type: ignore[import]
 from shapely.ops import linemerge  # type: ignore[import]
-from shapely.geometry import LineString, MultiLineString  # type: ignore[import]
+from shapely.geometry import LineString, MultiLineString, Polygon  # type: ignore[import]
 import geopandas as gpd  # type: ignore[import]
 
 
 """Spatial domains that are defined by graphs/networks"""
 class GeospatialGraph:
-  def __init__(self, *args: Any, crs: str | None,  **kwargs: Any) -> None:
-    G = ox.graph_from_point(*args, **kwargs)
+
+  def __init__(self, G: nx.Graph, crs: str | None = None) -> None:
     if crs:
-      self.__graph = ox.project_graph(G, to_crs='epsg:27700')
+      self.__graph = ox.project_graph(G, to_crs=crs)
     else:
       self.__graph = G
     self.__nodes, self.__edges = ox.graph_to_gdfs(self.__graph)
+
+  @classmethod
+  def from_point(cls, *args: Any, crs: str | None = None,  **kwargs: Any) -> GeospatialGraph:
+    G = ox.graph_from_point(*args, **kwargs)
+    return cls(G, crs)
+
+  @property
+  def crs(self) -> str:
+    return self.__graph.graph["crs"]
 
   @property
   def graph(self) -> gpd.GeoDataFrame:
@@ -39,7 +49,30 @@ class GeospatialGraph:
     route_segments = [self.__edges.loc[(nodes[i], nodes[i+1], 0), "geometry"] for i in range(len(nodes) - 1)]
     return linemerge(MultiLineString(route_segments))
 
-  # TODO
-  # def isochrone(self, origin, distance: float)
+  def subgraph(self, origin: int, **kwargs: Any) -> nx.Graph:
+    return nx.ego_graph(self.__graph, origin, **kwargs)
+
+  def isochrone(self, origin: int, **kwargs: Any) -> Polygon:
+    subgraph = nx.ego_graph(self.__graph, origin, **kwargs)
+    nodes, _ = ox.graph_to_gdfs(subgraph)
+    return nodes.geometry.unary_union.convex_hull
+
+  # # intersection
+  # def __or__(self, other: GeospatialGraph | nx.Graph) -> GeospatialGraph:
+  #   if isinstance(other, GeospatialGraph):
+  #     other = other.__graph
+  #   print(self.__graph.graph["crs"])
+  #   self.__graph = nx.intersection(self.__graph, other)
+  #   print(self.__graph.graph["crs"])
+  #   self.__nodes, self.__edges = ox.graph_to_gdfs(other) # self.__graph)
+  #   return self
+
+  # # union
+  # def __and__(self, other: GeospatialGraph | nx.Graph) -> GeospatialGraph:
+  #   if isinstance(other, GeospatialGraph):
+  #     other = other.__graph
+  #   self.__graph = nx.union(self.__graph, other)
+  #   self.__nodes, self.__edges = ox.graph_to_gdfs(self.__graph)
+  #   return self
 
 
