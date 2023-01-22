@@ -24,7 +24,7 @@ jobs:
       - name: setup
         shell: bash -l {0}
         run: |
-          apt update && sudo apt install -y mpich libmpich-dev
+          sudo apt-get update && sudo apt-get install -y mpich libmpich-dev
           conda info
           conda list
           conda install python=${{ matrix.python-version }} gxx_linux-64 numpy pandas pybind11 pytest # mpich mpi4py
