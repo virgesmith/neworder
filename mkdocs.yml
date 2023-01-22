@@ -35,6 +35,8 @@ plugins:
   - macros:
       module_name: docs/macros
       # include_dir: examples
+  - mkdocs-video
+
 #  - mkpdfs
 
 nav:
@@ -55,6 +57,7 @@ nav:
     - Wolf-Sheep: examples/wolf-sheep.md
     - N-body: examples/n-body.md
     - Boids: examples/boids.md
+    - Infection: examples/infection.md
   - API:
     - Tips and Tricks: tips.md
     - API Reference: api.md
