@@ -1,4 +1,4 @@
-name: Conda builds
+name: Conda
 
 on:
   push:
