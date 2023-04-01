@@ -4,7 +4,6 @@ import pandas as pd  # type: ignore
 import neworder as no
 from neworder.domain import Space
 import matplotlib.pyplot as plt  # type: ignore
-from mpl_toolkits.mplot3d import Axes3D  # type: ignore
 from matplotlib.collections import PathCollection  # type: ignore
 
 
@@ -111,7 +110,7 @@ class NBody(no.Model):
     # axes instance
     self.fig = plt.figure(figsize=(8, 8))
     self.fig.suptitle("[q to quit]", y=0.05, x=0.05)
-    ax = Axes3D(self.fig)
+    ax = plt.axes(projection="3d")
     self.ax = ax
 
     g = ax.scatter(self.bodies.x, self.bodies.y, self.bodies.z, c=self.bodies.index.values, s=self.bodies.m * 5000 / self.bodies.m.sum())

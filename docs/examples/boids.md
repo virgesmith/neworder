@@ -2,21 +2,20 @@
 
 Example of how simple interaction rules can give rise to collective behaviours, based on the [Netlogo model](https://ccl.northwestern.edu/netlogo/models/Flocking).
 
-![n-body](./img/boids2d.gif)
+![type:video](./img/boids3d.webm)
+3-d simulation
 
 {{ include_snippet("./docs/examples/src.md", show_filename=False) }}
 
 ## Implementation
 
-Each entity travels at a fixed speed in a 2 dimensional wrap-around universe, and interacts with the other entities in three ways:
+Each entity travels at a fixed speed in a 3-dimensional constrained universe, and interacts with the other entities in three ways:
 
 - separation: turns to avoid contact with other entities in close range, or
 - alignment: turns towards the mean heading of nearby entities, and
 - cohesion: turns towards the centre of gravity of nearby entities
 
 (if a separation turn is required, the boid will not attempt to align or cohere)
-
-Turns are constrained to a maximum angle per timestep (1.5&deg; for separation, 5&deg; for alignment, 3&deg; for cohesion).
 
 The entities are stored in a pandas `DataFrame` and use `neworder.Space` to update positions. Computations are "vectorised"<sup>&ast;</sup> using numpy functionality for efficiency.
 
@@ -34,8 +33,9 @@ which runs
 
 and this is the implementation:
 
-{{ include_snippet("examples/boids/boids2d.py") }}
+{{ include_snippet("examples/boids/boids3d.py") }}
 
+A 2-d implementation is also provided in `examples/boids/boids2d.py`.
 
 ## Outputs
 
