@@ -16,14 +16,15 @@ This is provided by:
 
 - a **Model** base class: providing the skeleton on which users implement their models
 - a **Timeline**: the time horizon over which to run the model
+- an optional spatial domain, which can be continuous (`Space`), discrete (`StateGrid`), or a graph (`GeospatialGraph`).
 - a **MonteCarlo** engine: a dedicated random number stream for each model instance, with specific configurations for parallel streams
-- a library of Monte-Carlo methods and statistical functions
+- a library of Monte-Carlo methods and statistical functions, plus compatibility with `numpy`'s statistical functionality through an adapter
 - data manipulation functions optimised for *pandas* DataFrames
 - support for a parallel execution using MPI (via the `mpi4py` package).
 
 *neworder* explicitly does not provide any tools for things like visualisation, and users can thus use whatever packages they are most comfortable with. The examples, however, do provide various visualisations using `matplotlib`.
 
-## Requirements
+## Model Requirements
 
 ### Timeline
 
@@ -41,6 +42,29 @@ The framework provides four types of timeline:
     - Monthly increments preserve the day of the month (where possible)
     - Daylight savings time adjustments are made which affect time intervals where the interval crosses a DST change
     - Time intervals are computed in years, on the basis of a year being 365.2475 days
+
+
+### Spatial Domain
+
+*neworder* models do not require a spatial domain, but the following functionality is provided for cases where there is a spatial element to the problem being modelled.
+
+#### Continuous
+
+The `Space` class to encapsulate a continuous space with arbirtrary dimensionality. The edges of the space can be unbounded, wrap-around, contrained, or "bounce". The `move` method will ensure that entities in the space are assigned the appropriate position and velocity to conform with the edge behaviour. Additionally the methods `dist2` and `dist` and compute distances in the space taking into account the edge behaviour (i.e. wrap-around). `dist2` returns the squared distance and, if appropriate, is a more efficient alternative.
+
+See the n-body and boids examples for implementations.
+
+#### Discrete
+
+The `StateGrid` class provides a discrete grid of arbitrary states. Wrapped and contrained edges (only) are supported.
+
+See the Conway example for implementations.
+
+#### Graph
+
+The `GeospatialGraph` class provides a wrapper around the `networkx` and `osmnx` packages, and provides methods for computing shortes paths, isochrones, and subgraphs as well as identifying edges connected to nodes and vice versa.
+
+See the "infection" example for implementation details.
 
 ### Model
 
