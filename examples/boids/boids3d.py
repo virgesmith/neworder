@@ -5,20 +5,15 @@ import numpy as np
 import pandas as pd # type: ignore
 import neworder as no
 import matplotlib.pyplot as plt # type: ignore
+from matplotlib.colors import ListedColormap
 
-
-def _get_nearest(d: np.ndarray) -> np.ndarray:
-  nearest = np.full(d.shape, False)
-  idx = list(zip(d.argmin(axis=0), range(d.shape[0])))
-  for i in idx:
-    nearest[i] = True
-  return nearest
 
 class Boids3d(no.Model):
 
-  ALIGN_COEFF = 0.1 # 0.000001# -2.0
-  COHERE_COEFF = 2 #01#.1# 1
-  SEPARATE_COEFF = .001 #.1 #.1#1.1
+  ALIGN_COEFF = 0.1
+  COHERE_COEFF = 2
+  SEPARATE_COEFF = .002
+  AVOID_COEFF = 0.1
 
   def __init__(self, N: int, range: float, vision: float, exclusion: float, speed: float) -> None:
     super().__init__(no.LinearTimeline(0.0, 0.01), no.MonteCarlo.nondeterministic_stream)
@@ -29,8 +24,8 @@ class Boids3d(no.Model):
     self.exclusion = exclusion
     self.speed = speed
 
-    # constrained 3d space
-    self.domain = no.Space(np.zeros(3), np.full(3, self.range), edge=no.Edge.WRAP)
+    # unconstrained 3d space
+    self.domain = no.Space(np.zeros(3), np.full(3, self.range), edge=no.Edge.UNBOUNDED)
 
     # initially in [0,1]^dim
     self.boids = pd.DataFrame(
@@ -45,6 +40,8 @@ class Boids3d(no.Model):
         "c": 0
       }
     )
+
+    self.N_predators = 1
 
     self.__normalise()
 
@@ -64,22 +61,29 @@ class Boids3d(no.Model):
     d2, (dx, dy, dz) = self.domain.dists2((self.boids.x, self.boids.y, self.boids.z))
     np.fill_diagonal(d2, np.inf) # no self-influence
 
-    # mark boids that need to separate
-    too_close = d2 < self.exclusion ** 2
-    # self.__separate(too_close.astype(float), dx, dy, dz)
+    # separate
+    too_close = d2 < self.exclusion**2
+    self.__separate(too_close, d2, dx, dy, dz)
 
-    # nearest_too_close = np.logical_and(_get_nearest(d2), d2 < self.exclusion**2)
-    self.__separate(too_close, d2, dx, dy, dx)
+    # avoid predator
+    in_range = d2 < self.vision ** 2
+    self.__avoid(in_range, d2, dx, dy, dz)
 
-    # mark boids that interact
-    in_range = np.logical_and(d2 < self.vision ** 2, ~too_close).astype(float)
+    # mask those that needed to separate
+    in_range = np.logical_and(in_range, ~too_close).astype(float)
+
     self.__cohere(in_range, dx, dy, dz)
     self.__align(in_range)
 
+    # favour returning to the origin
+    self.__attract()
+
+    self.__normalise()
+
     self.boids.c = 0
-    self.boids.loc[too_close[0], "c"] = 1
-    self.boids.loc[in_range[0] == 1, "c"] = 2
-    self.boids.loc[0, "c"] = 3
+    self.boids.loc[too_close[0], "c"] = 1/3
+    self.boids.loc[in_range[0] == 1, "c"] = 2/3
+    self.boids.loc[0, "c"] = 1
 
     self.__normalise()
 
@@ -94,7 +98,6 @@ class Boids3d(no.Model):
     self.__update_visualisation()
 
   def __align(self, in_range: np.ndarray) -> None:
-
     weights = 1.0 / np.sum(in_range, axis=0)
     weights[weights == np.inf] = 0.0
 
@@ -119,24 +122,38 @@ class Boids3d(no.Model):
     self.boids.vz += z * Boids3d.COHERE_COEFF
 
   def __separate(self, in_range: np.ndarray, d2: np.ndarray, dx: np.ndarray, dy: np.ndarray, dz: np.ndarray) -> None:
-    # TODO clip d2
-
+    # TODO clip d2?
     # impact on v is proportional to 1/f
     f = Boids3d.SEPARATE_COEFF / d2 * in_range
-    self.boids.vx -= (f * dx).sum(axis=1)
-    self.boids.vy -= (f * dy).sum(axis=1)
-    self.boids.vz -= (f * dz).sum(axis=1)
+    self.boids.vx += (f * dx).sum(axis=0)
+    self.boids.vy += (f * dy).sum(axis=0)
+    self.boids.vz += (f * dz).sum(axis=0)
+
+  def __avoid(self, in_range: np.ndarray, d2: np.ndarray, dx: np.ndarray, dy: np.ndarray, dz: np.ndarray) -> None:
+    f = Boids3d.AVOID_COEFF / d2[0:self.N_predators, :] * in_range[0:self.N_predators, :]
+    self.boids.vx += (f * dx[0:self.N_predators, :]).sum(axis=0)
+    self.boids.vy += (f * dy[0:self.N_predators, :]).sum(axis=0)
+    self.boids.vz += (f * dz[0:self.N_predators, :]).sum(axis=0)
+
+  def __attract(self) -> None:
+    """Return to the origin"""
+    factor = .1
+    self.boids.vx -= (self.boids.x - self.range / 2) * factor
+    self.boids.vy -= (self.boids.y - self.range / 2) * factor
+    self.boids.vz -= (self.boids.z - self.range / 2) * factor
 
   def __normalise(self) -> None:
-    # # recentre
-    # self.boids.x -= (self.boids.x.mean() - 0.5)
-    # self.boids.y -= (self.boids.y.mean() - 0.5)
-    # self.boids.z -= (self.boids.z.mean() - 0.5)
     # normalise speed
     norm = np.clip(np.sqrt(self.boids.vx ** 2 + self.boids.vy ** 2 + self.boids.vz ** 2), a_min = 0.00001, a_max=None)
     self.boids.vx *= self.speed / norm
     self.boids.vy *= self.speed / norm
     self.boids.vz *= self.speed / norm
+
+    # predators are faster
+    self.boids.loc[0:self.N_predators - 1, "vx"] *= 2.0
+    self.boids.loc[0:self.N_predators - 1, "vy"] *= 2.0
+    self.boids.loc[0:self.N_predators - 1, "vz"] *= 2.0
+
 
   def __init_visualisation(self) -> tuple[Any, Any]:
     plt.ion()
@@ -145,7 +162,9 @@ class Boids3d(no.Model):
     fig.suptitle("[q to quit]", y=0.05, x=0.05)
     ax = plt.axes(projection="3d")
 
-    g = ax.scatter(self.boids.x, self.boids.y, self.boids.z, s=5, c=self.boids.c)
+    g = ax.scatter(self.boids.x, self.boids.y, self.boids.z, s=5, c=self.boids.c,
+      cmap=ListedColormap(["k", "green", "orange", "r"]))
+
     ax.set_xlim(0.0, self.range)
     ax.set_ylim(0.0, self.range)
     ax.set_zlim(0.0, self.range)
@@ -165,6 +184,6 @@ class Boids3d(no.Model):
 
   def __update_visualisation(self) -> None:
     self.g._offsets3d = (self.boids.x, self.boids.y, self.boids.z)
-    self.g._facecolors = self.boids.c
+    # self.g._facecolors = self.boids.c
     self.fig.canvas.draw()
     self.fig.canvas.flush_events()
