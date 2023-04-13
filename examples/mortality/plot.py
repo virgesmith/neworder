@@ -5,9 +5,8 @@ import matplotlib.pyplot as plt  # type: ignore
 import matplotlib.animation as animation  # type: ignore
 
 
-
 class Hist:
-  def __init__(self, data: pd.DataFRame, numbins: int) -> None:
+  def __init__(self, data: pd.DataFrame, numbins: int) -> None:
 
     fig, ax = plt.subplots()
     # see https://matplotlib.org/api/_as_gen/matplotlib.pyplot.hist.html

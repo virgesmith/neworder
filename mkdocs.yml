@@ -55,7 +55,6 @@ nav:
     - Conway: examples/conway.md
     - Schelling: examples/schelling.md
     - Wolf-Sheep: examples/wolf-sheep.md
-    - N-body: examples/n-body.md
     - Boids: examples/boids.md
     - Infection: examples/infection.md
   - API:

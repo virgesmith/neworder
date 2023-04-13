@@ -16,7 +16,7 @@ class MarkovChain(no.Model):
     self.states = states
     self.transition_matrix = transition_matrix
     self.summary = pd.DataFrame(columns=states)
-    self.summary = self.summary.append(self.pop.state.value_counts().transpose())
+    self.summary.loc[0] = self.pop.state.value_counts().transpose()
 
   # pure python equivalent implementation of no.df.transition, to illustrate the performance gain
   def transition_py(self, colname: str) -> None:
@@ -47,7 +47,7 @@ class MarkovChain(no.Model):
     # self.transition_py("state")
     # comment the above line and uncomment this line to use the faster C++ implementation
     no.df.transition(self, self.states, self.transition_matrix, self.pop, "state")
-    self.summary = self.summary.append(self.pop.state.value_counts().transpose())  # , ignore_index=True)
+    self.summary.loc[len(self.summary)] = self.pop.state.value_counts().transpose()
 
   def finalise(self) -> None:
     self.summary["t"] = np.linspace(self.timeline.start(), self.timeline.end(), self.timeline.nsteps() + 1)
