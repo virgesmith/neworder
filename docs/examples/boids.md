@@ -37,7 +37,7 @@ The 2d version utilises a wrap-around domain and does not implement the reversio
 or
 
 ```sh
-python examples/boids/run.py 2d
+python examples/boids/run.py 3d
 ```
 
 which runs
