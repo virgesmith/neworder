@@ -5,7 +5,6 @@ import numpy as np
 import pandas as pd # type: ignore
 import neworder as no
 import matplotlib.pyplot as plt # type: ignore
-from matplotlib.colors import ListedColormap
 
 
 class Boids3d(no.Model):
@@ -14,6 +13,7 @@ class Boids3d(no.Model):
   COHERE_COEFF = 2
   SEPARATE_COEFF = .002
   AVOID_COEFF = 0.1
+  REVERT_COEFF = 0.1
 
   def __init__(self, N: int, range: float, vision: float, exclusion: float, speed: float) -> None:
     super().__init__(no.LinearTimeline(0.0, 0.01), no.MonteCarlo.nondeterministic_stream)
@@ -37,7 +37,6 @@ class Boids3d(no.Model):
         "vx": self.mc.ustream(N) - 0.5,
         "vy": self.mc.ustream(N) - 0.5,
         "vz": self.mc.ustream(N) - 0.5,
-        "c": 0
       }
     )
 
@@ -76,14 +75,7 @@ class Boids3d(no.Model):
     self.__align(in_range)
 
     # favour returning to the origin
-    self.__attract()
-
-    self.__normalise()
-
-    self.boids.c = 0
-    self.boids.loc[too_close[0], "c"] = 1/3
-    self.boids.loc[in_range[0] == 1, "c"] = 2/3
-    self.boids.loc[0, "c"] = 1
+    self.__revert()
 
     self.__normalise()
 
@@ -135,12 +127,11 @@ class Boids3d(no.Model):
     self.boids.vy += (f * dy[0:self.N_predators, :]).sum(axis=0)
     self.boids.vz += (f * dz[0:self.N_predators, :]).sum(axis=0)
 
-  def __attract(self) -> None:
+  def __revert(self) -> None:
     """Return to the origin"""
-    factor = .1
-    self.boids.vx -= (self.boids.x - self.range / 2) * factor
-    self.boids.vy -= (self.boids.y - self.range / 2) * factor
-    self.boids.vz -= (self.boids.z - self.range / 2) * factor
+    self.boids.vx -= (self.boids.x - self.range / 2) * Boids3d.REVERT_COEFF
+    self.boids.vy -= (self.boids.y - self.range / 2) * Boids3d.REVERT_COEFF
+    self.boids.vz -= (self.boids.z - self.range / 2) * Boids3d.REVERT_COEFF
 
   def __normalise(self) -> None:
     # normalise speed
@@ -159,11 +150,10 @@ class Boids3d(no.Model):
     plt.ion()
 
     fig = plt.figure(figsize=(10, 10))
-    fig.suptitle("[q to quit]", y=0.05, x=0.05)
+    fig.suptitle("[p to pause, q to quit]", y=0.05, x=0.1)
     ax = plt.axes(projection="3d")
 
-    g = ax.scatter(self.boids.x, self.boids.y, self.boids.z, s=5, c=self.boids.c,
-      cmap=ListedColormap(["k", "green", "orange", "r"]))
+    g = ax.scatter(self.boids.x, self.boids.y, self.boids.z, s=5, c='k')
 
     ax.set_xlim(0.0, self.range)
     ax.set_ylim(0.0, self.range)
@@ -184,6 +174,5 @@ class Boids3d(no.Model):
 
   def __update_visualisation(self) -> None:
     self.g._offsets3d = (self.boids.x, self.boids.y, self.boids.z)
-    # self.g._facecolors = self.boids.c
     self.fig.canvas.draw()
     self.fig.canvas.flush_events()

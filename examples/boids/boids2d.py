@@ -121,9 +121,6 @@ class Boids2d(no.Model):
     self.boids.vy += (f * dy[0:self.N_predators, :]).sum(axis=0)
 
   def __normalise(self) -> None:
-    # # recentre
-    # self.boids.x -= (self.boids.x.mean() - 0.5)
-    # self.boids.y -= (self.boids.y.mean() - 0.5)
 
     norm = np.clip(np.sqrt(self.boids.vx ** 2 + self.boids.vy ** 2), a_min = 0.00001, a_max=None)
     self.boids.vx *= self.speed / norm
@@ -132,10 +129,6 @@ class Boids2d(no.Model):
     # predators are faster
     self.boids.loc[0:self.N_predators - 1, "vx"] *= 1.3
     self.boids.loc[0:self.N_predators - 1, "vy"] *= 1.3
-
-    # # perturb
-    # self.boids.vx += (self.mc.ustream(len(self.boids)) - 0.5) / 10
-    # self.boids.vy += (self.mc.ustream(len(self.boids)) - 0.5) / 10
 
   def __init_visualisation(self) -> tuple[Any, Any]:
     plt.ion()
@@ -151,7 +144,7 @@ class Boids2d(no.Model):
     plt.axis("off")
 
     fig.canvas.flush_events()
-    def on_keypress(event):
+    def on_keypress(event: Any) -> None:
       if event.key == "p":
         self.paused = not self.paused
       elif event.key == "q":

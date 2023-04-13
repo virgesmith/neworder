@@ -7,8 +7,11 @@ from shapely.geometry import LineString, MultiLineString, Polygon  # type: ignor
 import geopandas as gpd  # type: ignore[import]
 
 
-"""Spatial domains that are defined by graphs/networks"""
 class GeospatialGraph:
+  """
+  Spatial domains on Earth's surface that are defined by graphs/networks.
+  This implementation is not provided in the main package due to the large number of dependencies it would introduce.
+  """
 
   def __init__(self, G: nx.Graph, crs: str | None = None) -> None:
     if crs:
@@ -56,23 +59,4 @@ class GeospatialGraph:
     subgraph = nx.ego_graph(self.__graph, origin, **kwargs)
     nodes, _ = ox.graph_to_gdfs(subgraph)
     return nodes.geometry.unary_union.convex_hull
-
-  # # intersection
-  # def __or__(self, other: GeospatialGraph | nx.Graph) -> GeospatialGraph:
-  #   if isinstance(other, GeospatialGraph):
-  #     other = other.__graph
-  #   print(self.__graph.graph["crs"])
-  #   self.__graph = nx.intersection(self.__graph, other)
-  #   print(self.__graph.graph["crs"])
-  #   self.__nodes, self.__edges = ox.graph_to_gdfs(other) # self.__graph)
-  #   return self
-
-  # # union
-  # def __and__(self, other: GeospatialGraph | nx.Graph) -> GeospatialGraph:
-  #   if isinstance(other, GeospatialGraph):
-  #     other = other.__graph
-  #   self.__graph = nx.union(self.__graph, other)
-  #   self.__nodes, self.__edges = ox.graph_to_gdfs(self.__graph)
-  #   return self
-
 

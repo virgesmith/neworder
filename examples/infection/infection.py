@@ -2,8 +2,10 @@ from typing import Any
 from enum import Enum
 from time import sleep
 import matplotlib.pyplot as plt
-import osmnx as ox
 import numpy as np
+
+from graph import GeospatialGraph
+import osmnx as ox
 from shapely import line_interpolate_point
 import geopandas as gpd
 
@@ -42,7 +44,7 @@ class Infection(no.Model):
     # expose the model's MC engine to numpy
     self.nprand = no.as_np(self.mc)
     # create the spatial domain
-    self.domain = no.GeospatialGraph.from_point(point, dist, network_type="drive", crs='epsg:27700')
+    self.domain = GeospatialGraph.from_point(point, dist, network_type="drive", crs='epsg:27700')
 
     # set the parameters
     self.infection_radius = infection_radius

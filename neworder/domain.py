@@ -165,6 +165,10 @@ class Space(Domain):
   def __repr__(self) -> str:
     return "%s dim=%d min=%s max=%s edge=%s" % (self.__class__.__name__, self.dim, self.min, self.max, self.edge)
 
+def _bounce(i: int, N: int) -> int:
+  s = (i // N) % 2
+  k = i % N
+  return N * s + (-1) ** s * k
 
 class StateGrid(Domain):
   """
@@ -183,8 +187,8 @@ class StateGrid(Domain):
     super().__init__(initial_values.ndim, edge, False)
 
     # StateGrid supports two edge behaviours
-    if edge not in [Edge.WRAP, Edge.CONSTRAIN]:
-      raise ValueError("edge policy must be one of Edge.WRAP, Edge.CONSTRAIN")
+    if edge not in [Edge.WRAP, Edge.CONSTRAIN, Edge.BOUNCE]:
+      raise ValueError("edge policy must be one of Edge.WRAP, Edge.CONSTRAIN, Edge.BOUNCE")
 
     if initial_values.ndim < 1:
       raise ValueError("state array must have dimension of 1 or above")
@@ -196,6 +200,29 @@ class StateGrid(Domain):
     # int neighbour kernel (not including self)
     self.kernel = np.ones([3] * self.dim)
     self.kernel[(1,) * self.dim] = 0
+
+  def __get_point(self, p: tuple[int, ...]) -> tuple[int, ...]:
+    assert len(p) == self.state.ndim, f"dimensionality mismatch: {len(p)} but grid has {self.state.ndim}"
+    match self.edge:
+      case Edge.WRAP:
+        p = tuple(p[i] % self.state.shape[i] for i in range(len(p)))
+      case Edge.CONSTRAIN:
+        p = tuple(np.clip(p[i], 0, self.state.shape[i] - 1) for i in range(len(p)))
+      case Edge.BOUNCE:
+        p = tuple(_bounce(p[i], self.state.shape[i] - 1) for i in range(len(p)))
+    return p
+
+  def __getitem__(self, p: tuple[int, ...]) -> Any:
+    return self.state[self.__get_point(p)]
+
+  def __setitem__(self, p: tuple[int, ...], value: Any) -> None:
+    self.state[self.__get_point(p)] = value
+
+  def shift(self, position: tuple[int, ...], delta: tuple[int, ...]) -> tuple[int, ...]:
+    """This translates a point according to the grid's edge behaviour. It does *not* change any state"""
+    point = self.__get_point(position)
+    p = tuple(point[i] + delta[i] for i in range(self.dim))
+    return self.__get_point(p)
 
   @property
   def extent(self) -> Any:

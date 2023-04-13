@@ -103,8 +103,6 @@ def test_grid() -> None:
   with pytest.raises(ValueError):
     no.StateGrid(np.empty(shape=(3,3)), no.Edge.UNBOUNDED)
   with pytest.raises(ValueError):
-    no.StateGrid(np.empty(shape=(3,3)), no.Edge.BOUNCE)
-  with pytest.raises(ValueError):
     no.StateGrid(np.empty(shape=()))
   with pytest.raises(ValueError):
     no.StateGrid(np.empty(shape=(2, 0)))
@@ -120,6 +118,7 @@ def test_grid() -> None:
   assert np.sum(g.count_neighbours(lambda x: x == 2)) == 8
   assert np.sum(g.count_neighbours(lambda x: x == 3)) == 5
   assert np.sum(g.count_neighbours(lambda x: x != 0)) == 16
+  assert g.shift((0, 0), (-1, -1)) == (0, 0)
 
   state = np.zeros((4,4,4))
   state[0,0,0] = 1
@@ -130,4 +129,7 @@ def test_grid() -> None:
   assert np.sum(g.count_neighbours()) == 26
   assert np.sum(g.count_neighbours(lambda x: x == -1)) == 26
   assert np.sum(g.count_neighbours(lambda x: x != 0)) == 52
+  assert g.shift((0, 0, 0), (-1, -1, -1)) == (3, 3, 3)
 
+  g = no.StateGrid(state, no.Edge.BOUNCE)
+  assert g.shift((0, 0, 0), (-1, -1, -1)) == (1, 1, 1)
