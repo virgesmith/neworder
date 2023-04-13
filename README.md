@@ -32,12 +32,12 @@
 
 ## System Requirements
 
-*neworder* requires python 3.6 or above and runs on 64-bit linux, OSX and Windows platforms. In order to take advantage of the parallel execution functionality, the following are also required:
+*neworder* requires python 3.10 or above and runs on 64-bit linux, OSX and Windows platforms. To take advantage of the  parallel execution functionality, you may also need to install:
 
 - an MPI implementation, such as [mpich](https://www.mpich.org/), [open-mpi](https://www.open-mpi.org/) or [ms-mpi](https://docs.microsoft.com/en-us/message-passing-interface/microsoft-mpi)
 - the [mpi4py](https://mpi4py.readthedocs.io/en/stable/) package that provides python MPI bindings
 
-but the module will work perfectly well in serial mode without these.
+but the package works perfectly well in serial mode.
 
 ## Installation
 

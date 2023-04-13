@@ -69,10 +69,10 @@ python -c "import neworder"
 
 ### Conda
 
-Using python 3.9 (adjust as necessary)
+Using python 3.10 (adjust as necessary)
 
 ```bash
-conda create -q -n neworder-env python=3.9
+conda create -q -n neworder-env python=3.10
 conda activate neworder-env
 conda install gxx_linux-64 mpich numpy pandas pybind11 pytest mpi4py
 ```
