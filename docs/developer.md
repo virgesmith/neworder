@@ -88,10 +88,10 @@ conda install --file requirements-developer.txt
 
 ```bash
 docker build -t <image-name> .
-docker run -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=$DISPLAY -it <image-name>
+docker run --net=host -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=$DISPLAY -it virgesmith/neworder
 ```
 
-which may require `xhost +` on the host to enable docker to connect to the display manager. See `scripts/run_container.sh`.
+Running the graphical examples will almost certainly require setting `xhost +local:` on the host to enable docker to connect to the display manager.
 
 ## Test
 

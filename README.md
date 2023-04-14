@@ -59,8 +59,8 @@ The docker image contains all the examples, and should be run interactively. Som
 
 ```bash
 docker pull virgesmith/neworder
-xhost +
-docker run -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=$DISPLAY -it virgesmith/neworder
+xhost +local:
+docker run --net=host -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=$DISPLAY -it virgesmith/neworder
 ```
 
 NB The above works on ubuntu but may require modification on other OSs.
