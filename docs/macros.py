@@ -1,5 +1,4 @@
 # macros for mkdocs-macros-plugin
-
 import os
 import requests
 
@@ -21,9 +20,9 @@ def define_env(env):
   def insert_zenodo_field(*keys: str):
     """ This is the *released* version not the dev one """
     try:
-      response = requests.get('https://zenodo.org/api/record', params={'q': '4031821'})
+      response = requests.get('https://zenodo.org/api/deposit/depositions/7838395', params={'access_token': os.getenv("ZENODO_PAT")})
       response.raise_for_status()
-      result = response.json()["hits"]["hit"][0]
+      result = response.json()
       for k in keys:
         result = result[k]
       return result
