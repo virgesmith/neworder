@@ -5,7 +5,14 @@ import numpy as np
 import pandas as pd # type: ignore
 import neworder as no
 import matplotlib.pyplot as plt # type: ignore
+from matplotlib.colors import ListedColormap
 
+_cmap = {
+  0: (0.2, 0.2, 0.2, 1.0),
+  1: (0.0, 1.0, 0.0, 1.0),
+  2: (1.0, 0.6, 0.0, 1.0),
+  3: (1.0, 0.0, 0.0, 1.0)
+}
 
 class Boids3d(no.Model):
 
@@ -13,7 +20,7 @@ class Boids3d(no.Model):
   COHERE_COEFF = 2
   SEPARATE_COEFF = .002
   AVOID_COEFF = 0.1
-  REVERT_COEFF = 0.1
+  REVERT_COEFF = 0.05
 
   def __init__(self, N: int, range: float, vision: float, exclusion: float, speed: float) -> None:
     super().__init__(no.LinearTimeline(0.0, 0.01), no.MonteCarlo.nondeterministic_stream)
@@ -27,6 +34,8 @@ class Boids3d(no.Model):
     # unconstrained 3d space
     self.domain = no.Space(np.zeros(3), np.full(3, self.range), edge=no.Edge.UNBOUNDED)
 
+    self.N_predators = 1
+
     # initially in [0,1]^dim
     self.boids = pd.DataFrame(
       index=pd.Index(name="id", data=no.df.unique_index(self.N)),
@@ -37,19 +46,19 @@ class Boids3d(no.Model):
         "vx": self.mc.ustream(N) - 0.5,
         "vy": self.mc.ustream(N) - 0.5,
         "vz": self.mc.ustream(N) - 0.5,
+        "c": 0
       }
     )
-
-    self.N_predators = 1
 
     self.__normalise()
 
     self.fig, self.g = self.__init_visualisation()
 
+    self.paused = False
+
     # suppress divsion by zero warnings
     np.seterr(divide='ignore')
 
-    self.paused = False
 
   def step(self) -> None:
     if self.paused:
@@ -79,6 +88,12 @@ class Boids3d(no.Model):
 
     self.__normalise()
 
+    # set colours
+    self.boids.c = 0
+    self.boids.loc[in_range[0:self.N_predators].sum(axis=0) != 0, "c"] = 1
+    self.boids.loc[too_close[0:self.N_predators].sum(axis=0) != 0, "c"] = 2
+    self.boids.loc[0:self.N_predators - 1, "c"] = 3
+
     (self.boids.x, self.boids.y, self.boids.z), (self.boids.vx, self.boids.vy, self.boids.vz) = self.domain.move(
       (self.boids.x, self.boids.y, self.boids.z),
       (self.boids.vx, self.boids.vy, self.boids.vz),
@@ -100,7 +115,6 @@ class Boids3d(no.Model):
     self.boids.vx += mean_vx * Boids3d.ALIGN_COEFF
     self.boids.vy += mean_vy * Boids3d.ALIGN_COEFF
     self.boids.vz += mean_vz * Boids3d.ALIGN_COEFF
-
 
   def __cohere(self, in_range: np.ndarray, dx: np.ndarray, dy: np.ndarray, dz: np.ndarray) -> None:
     weights = 1.0 / np.sum(in_range, axis=0)
@@ -141,24 +155,25 @@ class Boids3d(no.Model):
     self.boids.vz *= self.speed / norm
 
     # predators are faster
-    self.boids.loc[0:self.N_predators - 1, "vx"] *= 2.0
-    self.boids.loc[0:self.N_predators - 1, "vy"] *= 2.0
-    self.boids.loc[0:self.N_predators - 1, "vz"] *= 2.0
-
+    self.boids.loc[0:self.N_predators - 1, "vx"] *= 1.5
+    self.boids.loc[0:self.N_predators - 1, "vy"] *= 1.5
+    self.boids.loc[0:self.N_predators - 1, "vz"] *= 1.5
 
   def __init_visualisation(self) -> tuple[Any, Any]:
     plt.ion()
 
     fig = plt.figure(figsize=(10, 10))
     fig.suptitle("[p to pause, q to quit]", y=0.05, x=0.1)
-    ax = plt.axes(projection="3d")
+    ax = plt.axes() # projection="3d")
 
-    g = ax.scatter(self.boids.x, self.boids.y, self.boids.z, s=5, c='k')
+    g = ax.scatter(_project(self.boids.x, self.boids.z, self.range / 2),
+                   _project(self.boids.y, self.boids.z, self.range / 2),
+                   c=self.boids.c, s=_size(self.boids.z))
 
     ax.set_xlim(0.0, self.range)
     ax.set_ylim(0.0, self.range)
-    ax.set_zlim(0.0, self.range)
     plt.axis("off")
+    plt.tight_layout()
     fig.canvas.flush_events()
 
     def on_keypress(event):
@@ -173,6 +188,17 @@ class Boids3d(no.Model):
     return fig, g
 
   def __update_visualisation(self) -> None:
-    self.g._offsets3d = (self.boids.x, self.boids.y, self.boids.z)
+    self.g.set_offsets(np.c_[_project(self.boids.x, self.boids.z, self.range / 2),
+                             _project(self.boids.y, self.boids.z, self.range / 2)])
+    self.g.set_sizes(_size(self.boids.z))
+    self.g.set_color(self.boids.c.map(_cmap))
     self.fig.canvas.draw()
     self.fig.canvas.flush_events()
+
+def _project(a: np.ndarray, z: np.ndarray, c: float) -> np.ndarray:
+  d = 1.0
+  # centre, adjust, recentre
+  return (a - c) * d / (1 + z) + c
+
+def _size(z: np.ndarray) -> np.ndarray:
+  return  5.0 / (0.5 + z) # np.clip(.5 + z, a_min=0.1, a_max=None)
