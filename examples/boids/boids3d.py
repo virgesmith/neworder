@@ -9,7 +9,7 @@ from matplotlib.colors import ListedColormap
 
 _cmap = {
   0: (0.2, 0.2, 0.2, 1.0),
-  1: (0.0, 1.0, 0.0, 1.0),
+  1: (0.0, 0.7, 0.0, 1.0),
   2: (1.0, 0.6, 0.0, 1.0),
   3: (1.0, 0.0, 0.0, 1.0)
 }
@@ -58,7 +58,6 @@ class Boids3d(no.Model):
 
     # suppress divsion by zero warnings
     np.seterr(divide='ignore')
-
 
   def step(self) -> None:
     if self.paused:
@@ -168,7 +167,7 @@ class Boids3d(no.Model):
 
     g = ax.scatter(_project(self.boids.x, self.boids.z, self.range / 2),
                    _project(self.boids.y, self.boids.z, self.range / 2),
-                   c=self.boids.c, s=_size(self.boids.z))
+                   c=self.boids.c.map(_cmap), s=_size(self.boids.z))
 
     ax.set_xlim(0.0, self.range)
     ax.set_ylim(0.0, self.range)
@@ -191,7 +190,7 @@ class Boids3d(no.Model):
     self.g.set_offsets(np.c_[_project(self.boids.x, self.boids.z, self.range / 2),
                              _project(self.boids.y, self.boids.z, self.range / 2)])
     self.g.set_sizes(_size(self.boids.z))
-    self.g.set_color(self.boids.c.map(_cmap))
+    self.g.set_facecolor(self.boids.c.map(_cmap))
     self.fig.canvas.draw()
     self.fig.canvas.flush_events()
 
