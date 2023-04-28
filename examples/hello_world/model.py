@@ -7,7 +7,7 @@ It subclasses neworder.Model adds implements a toy model which
 """
 
 # !class!
-import pandas as pd # type: ignore
+import pandas as pd
 import neworder
 
 # uncomment for verbose output
