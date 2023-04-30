@@ -73,8 +73,8 @@ def test_null_timeline() -> None:
   assert t0.dt() == 0.0
   assert not t0.at_end()
   assert t0.index() == 0
-  assert no.time.isnever(t0.time())
-  assert no.time.isnever(t0.end())
+  assert no.time.isnever(t0.time())  # type: ignore[call-overload]
+  assert no.time.isnever(t0.end())  # type: ignore[call-overload]
 
   m = _TestModel2(0, 1, 1)
   no.run(m)
@@ -86,7 +86,7 @@ def test_null_timeline() -> None:
 def test_timeline_validation() -> None:
 
   with pytest.raises(TypeError):
-    no.LinearTimeline(2020, 2020, [])
+    no.LinearTimeline(2020, 2020, [])  # type: ignore[call-overload]
   with pytest.raises(ValueError):
     no.LinearTimeline(2020, 0.0)
   with pytest.raises(ValueError):
@@ -143,7 +143,7 @@ def test_numeric_timeline() -> None:
       assert self.timeline.time() == self.timeline.end()
       assert self.timeline.index() == 16
   # 16 steps to avoid rounding errors
-  m = NumericTimelineModel(no.NumericTimeline(np.linspace(0.0, 1.0, 17)))
+  m = NumericTimelineModel(no.NumericTimeline(np.linspace(0.0, 1.0, 17).tolist()))
   assert m.timeline.time() == 0.0
   assert m.timeline.index() == 0
   no.run(m)

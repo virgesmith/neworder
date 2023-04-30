@@ -136,6 +136,21 @@ The C++ module needs to be built with instrumentation (the `--coverage` flag) an
 
 The script from [codecov.io](https://codecov.io/gh/virgesmith/neworder/) uses `gcov` to process the output and upload it. NB it's important to ensure that the `gcc` and `gcov` versions are consistent otherwise it will crash (the ubuntu 20.04 appveyor image defaults to gcc-7 and gcov-9).
 
+## Generating type stubs
+
+Type stubs can be generated for the C++ module using `pybind11-stubgen`, although manual modifications are needed for the output (e.g. docstrings for overloaded functions are misplaced, numpy types need to be fixed).
+
+```sh
+pybind11-stubgen _neworder_core
+```
+
+It may also be necessary to regenerate type stubs for the submodules, e.g.
+
+```sh
+pybind11-stubgen _neworder_core.time
+mv stubs/_neworder_core/time-stubs/__init__.pyi neworder/time.pyi
+```
+
 ## Release Checklist
 
 Merge branches/PRs into **main** and fix any CI issues (builds, tests, major code standards) before commencing.

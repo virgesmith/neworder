@@ -1,6 +1,6 @@
 
 import numpy as np
-import pandas as pd  # type: ignore[import]
+import pandas as pd
 import neworder as no
 from math import sqrt
 import pytest
@@ -87,7 +87,7 @@ def test_basic() -> None:
   assert df.category.value_counts()[1] == N
 
 
-def test(base_model) -> None:
+def test(base_model: no.Model) -> None:
   df = pd.read_csv("./test/df.csv")
 
   cats = np.array(range(4))

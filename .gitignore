@@ -17,8 +17,10 @@ examples/people_multi/data
 *.egg-info/
 junk
 dist/*
+stubs/
 
 test-coverage/
 .env
 # osmnx cache
 cache/
+

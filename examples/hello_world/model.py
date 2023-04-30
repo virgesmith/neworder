@@ -89,7 +89,7 @@ class HelloWorld(neworder.Model):
     """
     for i, r in self.population.iterrows():
       if r.talkative:
-        neworder.log("Hello from %d" % i)
+        neworder.log(f"Hello from {i}")
   # !finalise!
 
   # def check(self) -> bool:

@@ -2,7 +2,7 @@
 
 from typing import Any
 import numpy as np
-import pandas as pd # type: ignore
+import pandas as pd
 import neworder as no
 
 if no.mpi.size() == 1:

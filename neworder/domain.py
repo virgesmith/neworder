@@ -3,10 +3,13 @@ Spatial structures for positioning and moving entities and computing distances
 """
 
 from __future__ import annotations
-from typing import Union, Optional, Any, Callable
+from typing import Union, Optional, Any, Callable, TypeVar
 from enum import Enum, auto
 import numpy as np
+import numpy.typing as npt
 from scipy import signal  # type: ignore
+
+NPFloatArray = npt.NDArray[np.float64]
 
 class Edge(Enum):
   """
@@ -57,7 +60,7 @@ class Space(Domain):
     assert dim > 0
     return Space(np.full(dim, -np.inf), np.full(dim, +np.inf), edge=Edge.UNBOUNDED)
 
-  def __init__(self, min: np.ndarray, max: np.ndarray, edge: Edge=Edge.CONSTRAIN):
+  def __init__(self, min: NPFloatArray, max: NPFloatArray, edge: Edge=Edge.CONSTRAIN):
     assert len(min) and len(min) == len(max)
     super().__init__(len(min), edge, True)
 
@@ -70,14 +73,14 @@ class Space(Domain):
     self.max = max
 
   @property
-  def extent(self) -> tuple[np.ndarray, np.ndarray]:
+  def extent(self) -> tuple[NPFloatArray, NPFloatArray]:
     """ The extent of the space in terms of two opposing points """
     return self.min, self.max
 
   def move(self, positions: Any,
                  velocities: Any,
                  delta_t: float,
-                 ungroup: bool=False) -> tuple[np.ndarray, np.ndarray]:
+                 ungroup: bool=False) -> tuple[NPFloatArray, NPFloatArray]:
     """ Returns translated positions AND velocities """
     # group tuples into a single array if necessary
     if isinstance(positions, tuple):
@@ -118,7 +121,7 @@ class Space(Domain):
       v = np.split(v, self.dim, axis=1)
     return p, v
 
-  def dists2(self, positions: Union[tuple[np.ndarray, ...], np.ndarray], to_points: Optional[np.ndarray]=None) -> tuple[np.ndarray, Any]:
+  def dists2(self, positions: Union[tuple[NPFloatArray, ...], NPFloatArray], to_points: Optional[NPFloatArray]=None) -> tuple[NPFloatArray, Any]:
     """ The squared distance between points and separations along each axis """
     # group tuples into a single array if necessary
     if isinstance(positions, tuple):
@@ -151,11 +154,11 @@ class Space(Domain):
 
     return d2, separations
 
-  def dists(self, positions: Union[tuple[np.ndarray, ...], np.ndarray], to_points: Optional[np.ndarray]=None) -> np.ndarray:
+  def dists(self, positions: Union[tuple[NPFloatArray, ...], NPFloatArray], to_points: Optional[NPFloatArray]=None) -> NPFloatArray:
     """ Returns distances between the points"""
     return np.sqrt(self.dists2(positions, to_points)[0])
 
-  def in_range(self, distance: Any, positions: Any, count: Optional[bool]=False) -> np.ndarray:
+  def in_range(self, distance: Any, positions: Any, count: Optional[bool]=False) -> NPFloatArray:
     """ Returns either indices or counts of points within the specified distance from each point """
     ind = np.where(self.dists2(positions)[0] < distance * distance, 1, 0)
     # fill diagonal so as not to include self - TODO how does this work if to_points!=positions
@@ -183,7 +186,7 @@ class StateGrid(Domain):
     Edge.BOUNCE: "reflect"
   }
 
-  def __init__(self, initial_values: np.ndarray, edge: Edge=Edge.CONSTRAIN):
+  def __init__(self, initial_values: NPFloatArray, edge: Edge=Edge.CONSTRAIN):
     super().__init__(initial_values.ndim, edge, False)
 
     # StateGrid supports two edge behaviours
@@ -229,10 +232,10 @@ class StateGrid(Domain):
     """ The extent of the space in terms of two opposing points """
     return self.state.shape
 
-  def count_neighbours(self, indicator: Callable[[float], bool]=lambda x: x == 1) -> np.ndarray:
+  def count_neighbours(self, indicator: Callable[[float], bool]=lambda x: x == 1) -> NPFloatArray:
     """ Counts neighbouring cells with a state indicated by supplied indicator function """
 
-    ind: np.ndarray = np.array([indicator(x) for x in self.state]).astype(int)  # automagically preserves shape
+    ind: NPFloatArray = np.array([indicator(x) for x in self.state]).astype(int)  # automagically preserves shape
     # pad with boundary according to edge policy
     bounded = np.pad(ind, pad_width=1, mode=self.__mode_lookup[self.edge])  # type: ignore # bug?
 

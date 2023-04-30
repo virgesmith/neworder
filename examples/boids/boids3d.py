@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import Any
 from time import sleep
 import numpy as np
-import pandas as pd # type: ignore
+import pandas as pd
 import neworder as no
 import matplotlib.pyplot as plt # type: ignore
 from matplotlib.colors import ListedColormap
