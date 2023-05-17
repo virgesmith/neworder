@@ -14,11 +14,11 @@ An extension to the original model adds natural selection: new agents inherit th
 
 Here's the implementation:
 
-{{ include_snippet("./examples/wolf-sheep/wolf_sheep.py") }}
+{{ include_snippet("./examples/wolf_sheep/wolf_sheep.py") }}
 
 Which is run like so:
 
-{{ include_snippet("./examples/wolf-sheep/model.py") }}
+{{ include_snippet("./examples/wolf_sheep/model.py") }}
 
 ## Outputs
 

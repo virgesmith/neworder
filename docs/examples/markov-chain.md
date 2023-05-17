@@ -26,11 +26,11 @@ The model takes about 45s to run (depending on platform). Changing `MarkovChain.
 
 ## Input
 
-{{ include_snippet("./examples/markov-chain/model.py") }}
+{{ include_snippet("./examples/markov_chain/model.py") }}
 
 ## Implementation
 
-{{ include_snippet("./examples/markov-chain/markov_chain.py") }}
+{{ include_snippet("./examples/markov_chain/markov_chain.py") }}
 
 ## Output
 

@@ -8,6 +8,14 @@ def test_base(base_model: no.Model) -> None:
     no.run(base_model)  # RuntimeError: Tried to call pure virtual function "Model::step"
 
 
+def test_base_not_initialised() -> None:
+  class TestModel(no.Model):
+    def __init__(self) -> None:
+      pass
+  with pytest.raises(TypeError):
+    m = TestModel()
+
+
 def test_multimodel() -> None:
 
   class TestModel(no.Model):
