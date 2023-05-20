@@ -1,5 +1,5 @@
 
-name: Python coverage
+name: Code coverage
 
 on:
   push:

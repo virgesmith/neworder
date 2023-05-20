@@ -1,4 +1,4 @@
-__version__ = "1.2.2"
+__version__ = "1.2.1"
 
 from _neworder_core import (
   Model,

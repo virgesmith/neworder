@@ -28,7 +28,7 @@ jobs:
         # part: minor
     - name: Create dist
       run: |
-        pip install pybind11
+        pip install pybind11 numpy
         python setup.py sdist
     - name: Publish
       uses: pypa/gh-action-pypi-publish@release/v1
