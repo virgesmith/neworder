@@ -2,7 +2,7 @@ name: PyPI release
 
 on:
   push:
-    branches: [main, post1.2.1]
+    branches: main
 
 jobs:
   bump-version:
