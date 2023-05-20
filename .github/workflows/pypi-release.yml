@@ -1,0 +1,37 @@
+name: PyPI release
+
+on:
+  push:
+    branches: [main, post1.2.1]
+
+jobs:
+  bump-version:
+    name: Bump package version
+    if: "!contains(github.event.head_commit.message, 'Bump version')"
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        persist-credentials: false
+    - name: current_version
+      run: echo "current_version=$(grep __version__ neworder/__init__.py | cut -d ' ' -f3 | sed 's/"//g')" >> $GITHUB_ENV
+    - name: bump2version-action
+      uses: FragileTech/bump-version@v1.0.4
+      with:
+        current_version: "${{ env.current_version }}"
+        files: neworder/__init__.py
+        commit_name: Version autobump
+        commit_email: andrew@friarswood.net
+        login: virgesmith
+        token: "${{ secrets.REPO_PAT }}"
+        # part defaults to patch
+        # part: minor
+    - name: Create dist
+      run: |
+        pip install pybind11
+        python setup.py sdist
+    - name: Publish
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+        repository-url: https://test.pypi.org/legacy/
