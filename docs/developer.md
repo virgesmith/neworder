@@ -153,19 +153,13 @@ mv stubs/_neworder_core/time-stubs/__init__.pyi neworder/time.pyi
 
 ## Release Checklist
 
-Merge branches/PRs into **main** and fix any CI issues (builds, tests, major code standards) before commencing.
-
-If necessary, use `test.pypi.org` to upload a release candidate, which can then be installed to a model implementation for testing "in the wild".
+Development should happen on a release branch (NOT on main). When merged to main, a workflow will automatically bump the version, tag the code, build a package and publish it to PyPI. By default the patch version is bumped but this can be changed in `.github/workflows/pypi-release.yml`. If necessary, this file can be modified to upload a release candidate to `test.pypi.org`.
 
 1. Create some release notes based on commit comments since previous release, e.g.: `git log 0.2.1..HEAD --oneline`
-2. Bump `__version__` in `neworder/__init__.py`
-3. Clean, rebuild, test, regenerate examples and code docs: `scripts/code_doc.sh`
-4. Commit changes
-5. Tag, e.g.: `git tag -a 0.3.0 -m"release v0.3.0"`
-6. Push, including tag e.g.: `git push --atomic origin main 0.3.0`
-7. Check tagged CI builds and docker image are ok
-8. Package and upload to PyPI: `scripts/package.sh`
-9. Update and check conda feedstock (if this doesn't happen automatically, see instructions [here](https://github.com/conda-forge/neworder-feedstock))
-10. Install pypi/conda-forge/docker releases in a fresh environment and ensure all is well. If not, fix and go back to 2.
-11. Create release on github, using the tag and the release notes from above
-12. Check zenodo for new DOI and ensure documentation references it.
+1. Clean, rebuild, test, regenerate examples and code docs: `scripts/code_doc.sh`
+1. Commit changes to release branch
+1. Ensure all checks passing and merge to `main`
+1. Update and check conda feedstock (if this doesn't happen automatically, see instructions [here](https://github.com/conda-forge/neworder-feedstock))
+1. Install pypi/conda-forge/docker releases in a fresh environment and ensure all is well. If not, fix in a patch release.
+1. Create release on github, using the tag and the release notes from above
+1. Check zenodo for new DOI and ensure documentation references it.

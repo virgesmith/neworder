@@ -129,7 +129,7 @@ PYBIND11_MODULE(_neworder_core, m)
     .def("__repr__", &no::CalendarTimeline::repr, timeline_repr_docstr);
 
   // Microsimulation (or ABM) model class
-  py::class_<no::Model>(m, "Model", model_docstr)
+  py::class_<no::Model, no::PyModel>(m, "Model", model_docstr)
     .def(py::init<no::Timeline&, const py::function&>(), model_init_docstr,"timeline"_a, "seeder"_a)
     // properties are readonly only in the sense you can't assign to them; you CAN call their mutable methods
     .def_property_readonly("timeline", &no::Model::timeline, model_timeline_docstr)
