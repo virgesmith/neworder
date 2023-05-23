@@ -62,7 +62,7 @@ class Infection(no.Model):
     agents["geometry"] = agents["path"].apply(lambda linestr: line_interpolate_point(linestr, 0))
     infected = self.nprand.choice(agents.index, n_infected, replace=False)
     agents.loc[infected, "status"] = Status.INFECTED
-    agents.loc[infected, "t_infect"] = self.timeline.index()
+    agents.loc[infected, "t_infect"] = self.timeline.index
 
     self.agents = agents
     self.fig, self.g = self.__init_visualisation()
@@ -82,7 +82,7 @@ class Infection(no.Model):
         self.finalise()
 
   def finalise(self) -> None:
-    no.log(f"total steps: {self.timeline.index()}")
+    no.log(f"total steps: {self.timeline.index}")
     no.log(f"infections: {len(self.agents.t_infect.dropna())}")
     no.log(f"recoveries: {(self.agents.status == Status.IMMUNE).sum()}")
     no.log(f"deaths: {(self.agents.status == Status.DEAD).sum()}")
@@ -131,10 +131,10 @@ class Infection(no.Model):
         if new.any():
           new_infections.append(i)
     self.agents.loc[new_infections, "status"] = Status.INFECTED
-    self.agents.loc[new_infections, "t_infect"] = self.timeline.index()
+    self.agents.loc[new_infections, "t_infect"] = self.timeline.index
 
   def __recover(self) -> None:
-    t = self.timeline.index()
+    t = self.timeline.index
     self.agents.loc[(t - self.agents.t_infect >= self.recovery_time) & (self.agents.status == Status.INFECTED), "status"] = Status.IMMUNE
 
   def __succumb(self) -> None:
@@ -161,7 +161,7 @@ class Infection(no.Model):
     colours = self.agents.status.apply(lambda c: c.rgba)
     self.g.set_offsets(offsets)
     self.g.set_facecolors(colours)
-    self.fig.suptitle(f"step {self.timeline.index()}: inf={num_infected} imm={num_immune} dead={num_dead} / {len(self.agents)} [q to quit]")
+    self.fig.suptitle(f"step {self.timeline.index}: inf={num_infected} imm={num_immune} dead={num_dead} / {len(self.agents)} [q to quit]")
 
     self.fig.canvas.flush_events()
 

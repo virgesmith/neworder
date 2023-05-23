@@ -65,7 +65,7 @@ class BlackScholes(neworder.Model):
 
   def simulate(self) -> float:
     # get the single timestep from the timeline
-    dt = self.timeline.dt()
+    dt = self.timeline.dt
     normals = nstream(self.mc.ustream(self.nsims))
 
     # compute underlying prices at t=dt

@@ -37,7 +37,7 @@ class Model:
 
     propcontagious = len(self.pop[self.pop.State.isin(INFECTIOUS)])/len(self.pop)
     pinfect = contagiousness * propcontagious
-    self.pinfect[neworder.timeline.index()] = pinfect
+    self.pinfect[neworder.timeline.index] = pinfect
 
     # new infections
     self.pop.infected = self.pop.infected | neworder.mc.hazard(pinfect, self.npeople) #[bool(s) for s in neworder.mc.hazard(pinfect, self.npeople)]

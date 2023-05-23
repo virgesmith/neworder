@@ -50,8 +50,7 @@ class MarkovChain(no.Model):
     self.summary.loc[len(self.summary)] = self.pop.state.value_counts().transpose()
 
   def finalise(self) -> None:
-    self.summary["t"] = np.linspace(self.timeline.start(), self.timeline.end(), self.timeline.nsteps() + 1)
-    # self.summary.set_index(np.linspace(self.timeline.start(), self.timeline.end(), self.timeline.nsteps() + 1), drop=True, inplace=True)
+    self.summary["t"] = np.linspace(self.timeline.start, self.timeline.end, self.timeline.nsteps + 1)
     self.summary.reset_index(drop=True, inplace=True)
     self.summary.fillna(0, inplace=True)
 

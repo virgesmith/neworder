@@ -33,7 +33,7 @@ class PeopleDiscrete(neworder.Model):
     self.die()
     # age the living only
     alive = self.population.loc[self.population.alive].index
-    self.population.loc[alive, "age"] = self.population.loc[alive, "age"] + self.timeline.dt()
+    self.population.loc[alive, "age"] = self.population.loc[alive, "age"] + self.timeline.dt
   # !disc_step!
 
   def check(self) -> bool:
@@ -55,11 +55,11 @@ class PeopleDiscrete(neworder.Model):
     # first filter out the already dead
     alive = self.population.loc[self.population.alive].index
     # sample time of death
-    r = self.mc.stopping(self.mortality_hazard.Rate.values[min(self.timeline.index(), self.max_rate_age)], len(alive))
+    r = self.mc.stopping(self.mortality_hazard.Rate.values[min(self.timeline.index, self.max_rate_age)], len(alive))
     # select if death happens before next timestep...
-    dt = self.timeline.dt()
+    dt = self.timeline.dt
     # at final timestep everybody dies (at some later time) so dt is infinite
-    if self.timeline.time() == self.max_age:
+    if self.timeline.time == self.max_age:
       dt = neworder.time.far_future()
     newly_dead = alive[r < dt]
 

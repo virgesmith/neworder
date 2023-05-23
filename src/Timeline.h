@@ -35,8 +35,10 @@ public:
 
   virtual bool at_end() const = 0;
 
-  // used by python __repr__
-  virtual std::string repr() const = 0;
+  // used by python __repr__, default implementation
+  virtual std::string repr() const {
+    return "<%%>"s % py::cast(this).attr("__class__").attr("__name__").cast<std::string>();
+  }
 
 };
 
@@ -57,7 +59,7 @@ class PyTimeline: public Timeline
   void next() override { PYBIND11_OVERRIDE_PURE(void, Timeline, next); }
 
   bool at_end() const override { PYBIND11_OVERRIDE_PURE(bool, Timeline, at_end); }
-  std::string repr() const override { PYBIND11_OVERRIDE_PURE_NAME(std::string, Timeline, "__repr__", repr); }
+  std::string repr() const override { PYBIND11_OVERRIDE_NAME(std::string, Timeline, "__repr__", repr); }
 };
 
 

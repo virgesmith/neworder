@@ -96,7 +96,7 @@ class Boids3d(no.Model):
     (self.boids.x, self.boids.y, self.boids.z), (self.boids.vx, self.boids.vy, self.boids.vz) = self.domain.move(
       (self.boids.x, self.boids.y, self.boids.z),
       (self.boids.vx, self.boids.vy, self.boids.vz),
-      self.timeline.dt(),
+      self.timeline.dt,
       ungroup=True
     )
 

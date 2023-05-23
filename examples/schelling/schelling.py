@@ -56,7 +56,7 @@ class Schelling(neworder.Model):
 
     self.domain.state = pop
 
-    neworder.log("step %d %.4f%% unsatisfied" % (self.timeline.index(), 100.0 * n_unsat / pop.size))
+    neworder.log("step %d %.4f%% unsatisfied" % (self.timeline.index, 100.0 * n_unsat / pop.size))
 
     self.__update_visualisation()
 
@@ -87,5 +87,5 @@ class Schelling(neworder.Model):
 
   def __update_visualisation(self) -> None:
     self.img.set_array(self.domain.state.T)
-    # plt.savefig("/tmp/schelling%04d.png" % self.timeline.index(), dpi=80)
+    # plt.savefig("/tmp/schelling%04d.png" % self.timeline.index, dpi=80)
     self.fig.canvas.flush_events()

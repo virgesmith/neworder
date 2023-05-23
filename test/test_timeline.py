@@ -17,7 +17,7 @@ class _TestModel(no.Model):
     self.step_count += 1
 
   def finalise(self) -> None:
-    assert self.timeline.time() == self.t_end and self.timeline.index() == self.timeline.index()
+    assert self.timeline.time == self.t_end and self.timeline.index == self.timeline.index
 
 
 class _TestModel2(no.Model):
@@ -31,13 +31,13 @@ class _TestModel2(no.Model):
 
   def step(self) -> None:
     self.i += 1
-    self.t += self.timeline.dt()
+    self.t += self.timeline.dt
 
   def check(self) -> bool:
-    return self.timeline.index() == self.i and self.timeline.time() == self.t
+    return self.timeline.index == self.i and self.timeline.time == self.t
 
   def finalise(self) -> None:
-    assert self.timeline.at_end() and self.timeline.index() == self.steps
+    assert self.timeline.at_end and self.timeline.index == self.steps
 
 class _TestResume(no.Model):
   def __init__(self, t0: float, n: int) -> None:
@@ -53,25 +53,41 @@ class CustomTimeline(no.Timeline):
     self.t = 1.0
     self.i = 0
 
+  @property
   def start(self) -> float:
+    return 1.0
+
+  @property
+  def end(self) -> float:
     return 0.0
+
+  @property
+  def nsteps(self) -> int:
+    return -1
 
   @property
   def index(self) -> int:
     return self.i
 
+  @property
+  def time(self) -> float:
+    return 1.0 - self.t
+
+  @property
+  def dt(self) -> float:
+    return self.t / 2
+
   def next(self) -> None:
     self.i += 1
     self.t /= 2
 
-  def time(self) -> float:
-    return 1.0 - self.t
-
+  @property
   def at_end(self) -> bool:
     return False
 
+  # TODO default to this
   def __repr__(self) -> str:
-    return "CustomTimeline"
+    return f"<{self.__class__.__name__}>"
 
 class CustomTimelineModel(no.Model):
   def __init__(self) -> None:
@@ -81,6 +97,21 @@ class CustomTimelineModel(no.Model):
 
   def step(self) -> None:
     self.halt()
+
+
+def test_timeline_properties() -> None:
+  n = no.NoTimeline()
+  with pytest.raises(AttributeError):
+    n.index = 3
+  with pytest.raises(AttributeError):
+    n.next()
+  c = CustomTimeline()
+  with pytest.raises(AttributeError):
+    c.index = 3
+  # for python implementations next must be exposed
+  # with pytest.raises(AttributeError):
+  #   c.next()
+
 
 def test_custom_timeline() -> None:
   assert no.run(CustomTimelineModel())
@@ -108,18 +139,18 @@ def test_time() -> None:
 
 def test_null_timeline() -> None:
   t0 = no.NoTimeline()
-  assert t0.nsteps() == 1
-  assert t0.dt() == 0.0
-  assert not t0.at_end()
-  assert t0.index() == 0
-  assert no.time.isnever(t0.time())  # type: ignore[call-overload]
-  assert no.time.isnever(t0.end())  # type: ignore[call-overload]
+  assert t0.nsteps == 1
+  assert t0.dt == 0.0
+  assert not t0.at_end
+  assert t0.index == 0
+  assert no.time.isnever(t0.time)  # type: ignore[call-overload]
+  assert no.time.isnever(t0.end)  # type: ignore[call-overload]
 
   m = _TestModel2(0, 1, 1)
   no.run(m)
-  assert m.timeline.at_end()
-  assert m.timeline.index() == 1
-  assert m.timeline.time() == 1.0
+  assert m.timeline.at_end
+  assert m.timeline.index == 1
+  assert m.timeline.time == 1.0
 
 
 def test_timeline_validation() -> None:
@@ -159,33 +190,32 @@ def test_timeline_validation() -> None:
 def test_linear_timeline() -> None:
   # 40 years annual steps
   m = _TestModel2(2011, 2051, 40)
-  assert m.timeline.time() == 2011
-  assert m.timeline.dt() == 1.0
-  assert m.timeline.index() == 0
-  assert m.timeline.end() == 2051
+  assert m.timeline.time == 2011
+  assert m.timeline.dt == 1.0
+  assert m.timeline.index == 0
+  assert m.timeline.end == 2051
 
   no.run(m)
-  assert m.timeline.index() == 40
-  assert m.timeline.time() == 2051
+  assert m.timeline.index == 40
+  assert m.timeline.time == 2051
 
 
 def test_numeric_timeline() -> None:
-
   class NumericTimelineModel(no.Model):
     def __init__(self, numerictimeline: no.Timeline) -> None:
       super().__init__(numerictimeline, no.MonteCarlo.deterministic_identical_stream)
     def step(self) -> None:
-      assert self.timeline.dt() == 1/16
-      assert self.timeline.time() == self.timeline.index() / 16
+      assert self.timeline.dt == 1/16
+      assert self.timeline.time == self.timeline.index / 16
 
     def finalise(self) -> None:
-      assert self.timeline.time() == 1.0
-      assert self.timeline.time() == self.timeline.end()
-      assert self.timeline.index() == 16
+      assert self.timeline.time == 1.0
+      assert self.timeline.time == self.timeline.end
+      assert self.timeline.index == 16
   # 16 steps to avoid rounding errors
   m = NumericTimelineModel(no.NumericTimeline(np.linspace(0.0, 1.0, 17).tolist()))
-  assert m.timeline.time() == 0.0
-  assert m.timeline.index() == 0
+  assert m.timeline.time == 0.0
+  assert m.timeline.index == 0
   no.run(m)
 
 
@@ -198,12 +228,12 @@ def test_calendar_timeline() -> None:
       super().__init__(calendartimeline, no.MonteCarlo.deterministic_identical_stream)
 
     def step(self) -> None:
-      assert self.timeline.time().day == min(dim[self.timeline.index()], d)
+      assert self.timeline.time.day == min(dim[self.timeline.index], d)
 
     def finalise(self) -> None:
-      assert self.timeline.dt() == 0.0
-      assert self.timeline.time() == self.timeline.end()
-      assert self.timeline.index() == 6
+      assert self.timeline.dt == 0.0
+      assert self.timeline.time == self.timeline.end
+      assert self.timeline.index == 6
 
   for d in range(1,32):
     t = no.CalendarTimeline(date(2020, 1, d), date(2020, 7, d), 1, "m")
@@ -219,28 +249,28 @@ def test_open_ended_timeline() -> None:
       self.i = 0
 
     def step(self) -> None:
-      assert self.i == self.timeline.index()
+      assert self.i == self.timeline.index
       self.i += 1
       if self.i > 10: self.halt()
 
   m = OpenEndedModel(no.LinearTimeline(0, 1))
-  assert m.timeline.end() == no.time.far_future()
-  assert m.timeline.nsteps() == -1
-  assert m.timeline.dt() == 1.0
+  assert m.timeline.end == no.time.far_future()
+  assert m.timeline.nsteps == -1
+  assert m.timeline.dt == 1.0
   no.run(m)
   assert m.i == 11
 
   m = OpenEndedModel(no.CalendarTimeline(date(2020,12,17), 1, "d"))
-  assert m.timeline.end() == no.time.far_future()
-  assert m.timeline.nsteps() == -1
-  assert np.fabs(m.timeline.dt() - 1.0/365.2475) < 1e-8
+  assert m.timeline.end == no.time.far_future()
+  assert m.timeline.nsteps == -1
+  assert np.fabs(m.timeline.dt - 1.0/365.2475) < 1e-8
   no.run(m)
   assert m.i == 11
 
   m = OpenEndedModel(no.CalendarTimeline(date(2020,12,17), 1, "m"))
-  assert m.timeline.end() == no.time.far_future()
-  assert m.timeline.nsteps() == -1
-  assert np.fabs(m.timeline.dt() - 31.0/365.2475) < 1e-8
+  assert m.timeline.end == no.time.far_future()
+  assert m.timeline.nsteps == -1
+  assert np.fabs(m.timeline.dt - 31.0/365.2475) < 1e-8
   no.run(m)
   assert m.i == 11
 
@@ -261,32 +291,32 @@ def test_consistency() -> None:
       pass
 
   m = ConsistencyTest(no.NoTimeline())
-  assert m.timeline.nsteps() == 1
+  assert m.timeline.nsteps == 1
   no.run(m)
-  assert m.timeline.index() == 1
+  assert m.timeline.index == 1
 
   m = ConsistencyTest(no.LinearTimeline(2020, 2021, 12))
 
-  assert m.timeline.nsteps() == 12
+  assert m.timeline.nsteps == 12
   no.run(m)
-  assert m.timeline.index() == 12
-  assert m.timeline.time() == 2021
+  assert m.timeline.index == 12
+  assert m.timeline.time == 2021
 
   m = ConsistencyTest(no.NumericTimeline([2020 + i/12 for i in range(13)]))
-  assert m.timeline.nsteps() == 12
+  assert m.timeline.nsteps == 12
   no.run(m)
-  assert m.timeline.index() == 12
-  assert m.timeline.time() == 2021
+  assert m.timeline.index == 12
+  assert m.timeline.time == 2021
 
   s = date(2019,10,31)
   e = date(2020,10,31)
 
   m = ConsistencyTest(no.CalendarTimeline(s, e, 1, "m"))
-  assert m.timeline.time().date() == s
-  assert m.timeline.nsteps() == 12
+  assert m.timeline.time.date() == s
+  assert m.timeline.nsteps == 12
   no.run(m)
-  assert m.timeline.time().date() == e
-  assert m.timeline.index() == 12
+  assert m.timeline.time.date() == e
+  assert m.timeline.index == 12
 
 def test_resume() -> None:
   t0 = 0.1
@@ -294,12 +324,12 @@ def test_resume() -> None:
   m = _TestResume(t0, n) # unit timesteps
 
   t = t0
-  while not m.timeline.at_end():
+  while not m.timeline.at_end:
     no.run(m)
     t += 1
-    assert m.timeline.time() == t
+    assert m.timeline.time == t
 
-  assert m.timeline.time() == t0 + n
+  assert m.timeline.time == t0 + n
 
 # check that halt/finalise interaction works as expected
 def test_halt_finalise() -> None:
@@ -324,14 +354,14 @@ def test_halt_finalise() -> None:
   m = HCModel(no.LinearTimeline(0,3,3), True)
   no.run(m)
   assert not m.finalise_called
-  assert not m.timeline.at_end()
-  assert m.timeline.index() == 1
+  assert not m.timeline.at_end
+  assert m.timeline.index == 1
   no.run(m)
   assert not m.finalise_called
-  assert not m.timeline.at_end()
-  assert m.timeline.index() == 2
+  assert not m.timeline.at_end
+  assert m.timeline.index == 2
   no.run(m)
   assert m.finalise_called
-  assert m.timeline.at_end()
-  assert m.timeline.index() == 3
+  assert m.timeline.at_end
+  assert m.timeline.index == 3
 

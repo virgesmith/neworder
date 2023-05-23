@@ -82,7 +82,7 @@ class Boids2d(no.Model):
     (self.boids.x, self.boids.y), (self.boids.vx, self.boids.vy) = self.domain.move(
       (self.boids.x, self.boids.y),
       (self.boids.vx, self.boids.vy),
-      self.timeline.dt(),
+      self.timeline.dt,
       ungroup=True
     )
 

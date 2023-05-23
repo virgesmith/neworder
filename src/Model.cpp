@@ -43,13 +43,25 @@ void no::Model::finalise()
 
 
 template<typename T>
-class PropertyAccessor final
+class PyAccessor final
 {
 public:
   typedef T cpp_type;
-  PropertyAccessor(cpp_type& object) {}
+  PyAccessor(cpp_type& object) : ref(py::cast(&object)) { }
+
+  py::object get(const char* name)
+  {
+    return ref.attr(name);
+  }
+
+  template<typename U>
+  U get_as(const char* name)
+  {
+    return ref.attr(name).cast<U>();
+  }
 
 private:
+  py::object ref;
 };
 
 bool no::Model::run(Model& model)
@@ -63,23 +75,23 @@ bool no::Model::run(Model& model)
 
   // access the timeline properties via the python object for consistency
   // (we can use the methods for C++ implementations, but not for python implementations)
-  py::object pytimeline = py::cast(&model.timeline());
+  auto pytimeline = PyAccessor(model.timeline());
 
   // get the Model class name
   const std::string& model_name = py::cast(&model).attr("__class__").attr("__name__").cast<std::string>();
 
-  no::log("starting %% model run. start time=%%"s % model_name % model.timeline().start());
+  no::log("starting %% model run. start time=%%"s % model_name % pytimeline.get("start"));
 
   // apply the modifier, if implemented in the derived class
-  no::log("t=%%(%%) %%.modify(%%)"s % model.timeline().time() % pytimeline.attr("index") % model_name % rank);
+  no::log("t=%%(%%) %%.modify(%%)"s % pytimeline.get("time") % pytimeline.get("index") % model_name % rank);
   model.modify(rank);
 
   // Loop over timeline
   bool ok = true;
-  while (!model.timeline().at_end())
+  while (!pytimeline.get_as<bool>("at_end"))
   {
-    py::object t = model.timeline().time();
-    size_t timeindex = pytimeline.attr("index").cast<size_t>();
+    py::object t = pytimeline.get("time");
+    int64_t timeindex = pytimeline.get_as<int64_t>("index");
 
     // call the step method, then increment the timeline
     no::log("t=%%(%%) %%.step()"s % t % timeindex % model_name);
@@ -110,9 +122,9 @@ bool no::Model::run(Model& model)
     }
   }
   // call the finalise method (if not explicitly halted mid-timeline)
-  if (model.timeline().at_end())
+  if (pytimeline.get_as<bool>("at_end"))
   {
-    no::log("t=%%(%%) %%.finalise()"s % model.timeline().time() % pytimeline.attr("index") % model_name );
+    no::log("t=%%(%%) %%.finalise()"s % pytimeline.get("time") % pytimeline.get("index") % model_name );
     model.finalise();
   }
   no::log("%% exec time=%%s"s % (ok ? "SUCCESS": "ERRORED") % timer.elapsed_s());

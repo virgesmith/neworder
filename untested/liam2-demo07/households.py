@@ -20,11 +20,11 @@ class Households():
     nsteps = neworder.ntimesteps + 1
     self.output = pd.DataFrame({'period': np.empty(nsteps), 'N_persons': np.empty(nsteps), 'N_children': np.empty(nsteps)})
 
-    # 
-    self.output.period[neworder.timeline.index()] = neworder.timeline.time()
+    #
+    self.output.period[neworder.timeline.index] = neworder.timeline.time()
     # TODO...
-    self.output.N_persons[neworder.timeline.index()] = 0
-    self.output.N_children[neworder.timeline.index()] = 0
+    self.output.N_persons[neworder.timeline.index] = 0
+    self.output.N_children[neworder.timeline.index] = 0
 
   def new(self, n):
     assert n > 0
@@ -39,10 +39,10 @@ class Households():
     #       avg(persons.count()),
     #       avg(persons.count(age < 18)),
     #       fname='hh_size.csv', mode='a')
-    self.output.period[neworder.timeline.index()] = neworder.timeline.time()
+    self.output.period[neworder.timeline.index] = neworder.timeline.time()
     # TODO...
-    self.output.N_persons[neworder.timeline.index()] = 0
-    self.output.N_children[neworder.timeline.index()] = 0
+    self.output.N_persons[neworder.timeline.index] = 0
+    self.output.N_children[neworder.timeline.index] = 0
 
   def init_reports(self):
     # done in constructor

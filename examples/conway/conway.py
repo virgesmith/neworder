@@ -38,7 +38,7 @@ class Conway(no.Model):
 
   def check(self) -> bool:
     # randomly place a glider (not across edge)
-    if self.timeline.index() == 0:
+    if self.timeline.index == 0:
       x = self.mc.raw() % (self.domain.state.shape[0] - 2)
       y = self.mc.raw() % (self.domain.state.shape[1] - 2)
       self.domain.state[x:x+3, y:y+3] = np.rot90(Conway.__glider, self.mc.raw() % 4)
@@ -58,8 +58,8 @@ class Conway(no.Model):
 
   def __update_visualisation(self) -> None:
     self.g.set_data(self.domain.state)
-    # plt.savefig("/tmp/conway%04d.png" % self.timeline.index(), dpi=80)
-    # if self.timeline.index() > 100:
+    # plt.savefig("/tmp/conway%04d.png" % self.timeline.index, dpi=80)
+    # if self.timeline.index > 100:
     #   self.halt()
 
     self.fig.canvas.flush_events()
