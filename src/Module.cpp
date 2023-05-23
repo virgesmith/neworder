@@ -52,6 +52,7 @@ void init_env()
 }
 
 
+
 // python-visible log function defined above
 PYBIND11_MODULE(_neworder_core, m)
 {
@@ -81,10 +82,10 @@ PYBIND11_MODULE(_neworder_core, m)
     .def("time", &no::Timeline::time, timeline_time_docstr)
     .def("start", &no::Timeline::start, timeline_start_docstr)
     .def("end", &no::Timeline::end, timeline_end_docstr)
-    .def("index", &no::Timeline::index, timeline_index_docstr)
+    .def_property_readonly("index", &no::Timeline::index, timeline_index_docstr)
     .def("nsteps", &no::Timeline::nsteps, timeline_nsteps_docstr)
     .def("dt", &no::Timeline::dt, timeline_dt_docstr)
-    .def("next", &no::Timeline::next, timeline_next_docstr)
+    //.def("next", &no::Timeline::next, timeline_next_docstr)
     .def("at_end", &no::Timeline::at_end, timeline_at_end_docstr)
     .def("__repr__", &no::Timeline::repr, timeline_repr_docstr)
     ;

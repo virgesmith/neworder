@@ -56,6 +56,7 @@ class CustomTimeline(no.Timeline):
   def start(self) -> float:
     return 0.0
 
+  @property
   def index(self) -> int:
     return self.i
 

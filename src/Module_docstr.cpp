@@ -98,9 +98,9 @@ const char* timeline_at_end_docstr = R"docstr(
     Returns True if the current step is the end of the timeline
 )docstr";
 
-const char* timeline_next_docstr = R"docstr(
-    Advance the timeline by one step. Used internally, it is not normally necessary to explicitly call this method in a model.
-)docstr";
+// const char* timeline_next_docstr = R"docstr(
+//     Advance the timeline by one step. Used internally, it is not normally necessary to explicitly call this method in a model.
+// )docstr";
 
 const char* timeline_repr_docstr = R"docstr(
     Prints a human-readable representation of the timeline object

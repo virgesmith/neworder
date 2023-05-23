@@ -42,6 +42,16 @@ void no::Model::finalise()
 }
 
 
+template<typename T>
+class PropertyAccessor final
+{
+public:
+  typedef T cpp_type;
+  PropertyAccessor(cpp_type& object) {}
+
+private:
+};
+
 bool no::Model::run(Model& model)
 {
   Timer timer;
@@ -51,13 +61,17 @@ bool no::Model::run(Model& model)
     throw std::runtime_error("environment is not correctly initialised, model will not be run");
   }
 
+  // access the timeline properties via the python object for consistency
+  // (we can use the methods for C++ implementations, but not for python implementations)
+  py::object pytimeline = py::cast(&model.timeline());
+
   // get the Model class name
   const std::string& model_name = py::cast(&model).attr("__class__").attr("__name__").cast<std::string>();
 
   no::log("starting %% model run. start time=%%"s % model_name % model.timeline().start());
 
   // apply the modifier, if implemented in the derived class
-  no::log("t=%%(%%) %%.modify(%%)"s % model.timeline().time() % model.timeline().index() % model_name % rank);
+  no::log("t=%%(%%) %%.modify(%%)"s % model.timeline().time() % pytimeline.attr("index") % model_name % rank);
   model.modify(rank);
 
   // Loop over timeline
@@ -65,7 +79,7 @@ bool no::Model::run(Model& model)
   while (!model.timeline().at_end())
   {
     py::object t = model.timeline().time();
-    size_t timeindex = model.timeline().index();
+    size_t timeindex = pytimeline.attr("index").cast<size_t>();
 
     // call the step method, then increment the timeline
     no::log("t=%%(%%) %%.step()"s % t % timeindex % model_name);
@@ -98,7 +112,7 @@ bool no::Model::run(Model& model)
   // call the finalise method (if not explicitly halted mid-timeline)
   if (model.timeline().at_end())
   {
-    no::log("t=%%(%%) %%.finalise()"s % model.timeline().time() % model.timeline().index() % model_name );
+    no::log("t=%%(%%) %%.finalise()"s % model.timeline().time() % pytimeline.attr("index") % model_name );
     model.finalise();
   }
   no::log("%% exec time=%%s"s % (ok ? "SUCCESS": "ERRORED") % timer.elapsed_s());
