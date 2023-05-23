@@ -28,9 +28,9 @@ This is provided by:
 
 ### Timeline
 
-*neworder*'s timeline is conceptually a sequence of steps that are iterated over (calling the Model's `step` and (optionally) `check` methods at each iteration, plus the `finalise` method at the last time point, which is commonly used to post-process the raw model data at the end of the model run.
+*neworder*'s timeline is conceptually a sequence of steps that are iterated over (calling the Model's `step` and (optionally) `check` methods at each iteration, plus the `finalise` method at the last time point, which is commonly used to post-process the raw model data at the end of the model run. Timelines should not be incremented in client code, this happens automatically within the model.
 
-The framework provides four types of timeline:
+The framework provides four types of timeline, and is extensible:
 
 - `NoTimeline`: an arbitrary one-step timeline which is designed for continuous-time models in which the model evolution is computed in a single step
 - `LinearTimeline`: a set of equally-spaced intervals in non-calendar time
@@ -43,6 +43,25 @@ The framework provides four types of timeline:
     - Daylight savings time adjustments are made which affect time intervals where the interval crosses a DST change
     - Time intervals are computed in years, on the basis of a year being 365.2475 days
 
+#### Custom timelines
+
+If none of the supplied timelines are suitable, users can implement their own, inheriting from the abstract `neworder.Timeline` base class. The following must be implemented:
+
+symbol     | type              | description
+-----------|-------------------|---
+`at_end`   | `bool` property   | whether the timeline has reached it's end point
+`dt`       | `float` property  | the size of the current timestep
+`end`      | `Any` property    | the end time of the timeline
+`index`    | `int` property    | the index of the current timestep
+`next`     | method            | move to the next timestep (for internal use by model, should not normally be called in client code)
+`nsteps`   |`int` property     | the total number of timesteps
+`start`    | `Any` property    | the start time of the timeline
+`time`     | `Any` property    | the current time of the timeline
+`__repr__` | `str` method      | (optional) a string representation of the object, defaults to the name of the class
+
+As an example, this open-ended numeric timeline starts at zero and asymptotically converges to 1.0:
+
+{{ include_snippet("./docs/custom_timeline.py") }}
 
 ### Spatial Domain
 
