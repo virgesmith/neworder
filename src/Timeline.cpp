@@ -23,7 +23,7 @@ void no::NoTimeline::next() { m_stepped = true; }
 bool no::NoTimeline::at_end() const { return m_stepped; }
 
 // used by python __repr__
-//std::string no::NoTimeline::repr() const { return "<NoTimeline stepped=%%>"s % (m_stepped ? "True": "False"); }
+std::string no::NoTimeline::repr() const { return "<neworder.NoTimeline stepped=%%>"s % (m_stepped ? "True": "False"); }
 
 
 no::LinearTimeline::LinearTimeline(double start, double end, size_t steps)
@@ -89,12 +89,12 @@ py::object no::LinearTimeline::start() const { return py::float_(m_start); }
 py::object no::LinearTimeline::end() const { return py::float_(m_end); }
 
 
-// std::string no::LinearTimeline::repr() const
-// {
-//   return m_end == no::time::far_future()
-//     ? "<neworder.LinearTimeline start=%% end=never dt=%% steps=inf time=%% index=%%>"s % m_start % m_dt % time() % m_index
-//     : "<neworder.LinearTimeline start=%% end=%% dt=%% steps=%% time=%% index=%%>"s % m_start % m_end % m_dt % m_steps % time() % m_index;
-// }
+std::string no::LinearTimeline::repr() const
+{
+  return m_end == no::time::far_future()
+    ? "<neworder.LinearTimeline start=%% end=never dt=%% steps=inf time=%% index=%%>"s % m_start % m_dt % time() % m_index
+    : "<neworder.LinearTimeline start=%% end=%% dt=%% steps=%% time=%% index=%%>"s % m_start % m_end % m_dt % m_steps % time() % m_index;
+}
 
 
 no::NumericTimeline::NumericTimeline(const std::vector<double>& times)
@@ -161,11 +161,11 @@ bool no::NumericTimeline::at_end() const
 }
 
 
-// std::string no::NumericTimeline::repr() const
-// {
-//   return "<neworder.NumericTimeline times=%% steps=%% time=%% index=%%>"s
-//           % m_times % (m_times.size() - 1) % m_times[m_index] % m_index;
-// }
+std::string no::NumericTimeline::repr() const
+{
+  return "<neworder.NumericTimeline times=%% steps=%% time=%% index=%%>"s
+          % m_times % (m_times.size() - 1) % m_times[m_index] % m_index;
+}
 
 
 
@@ -294,12 +294,6 @@ no::CalendarTimeline::CalendarTimeline(time_point start, time_point end, size_t 
     m_times.push_back(time);
   }
   m_times.push_back(end);
-
-  // for (const auto& t: m_m_endTimestimes)
-  // {
-  //   std::time_t tt = std::chrono::system_clock::to_time_t(t);
-  //   no::log(std::ctime(&tt));
-  // }
 }
 
 // open-ended timeline
@@ -396,20 +390,19 @@ py::object no::CalendarTimeline::end() const
 }
 
 
-// std::string no::CalendarTimeline::repr() const
-// {
-//   if (m_times.size() < 2)
-//   {
-//     return "<neworder.CalendarTimeline start=%% end=never step=%%%% nsteps=inf time=%% index=%%>"s
-//             % start() % m_step % m_unit % time() % m_index;
-//   }
-//   else
-//   {
-//     return "<neworder.CalendarTimeline start=%% end=%% step=%%%% nsteps=%% time=%% index=%%>"s
-//             % start() % end() % m_step % m_unit % (m_times.size() - 1) % time() % m_index;
-//   }
-
-// }
+std::string no::CalendarTimeline::repr() const
+{
+  if (m_times.size() < 2)
+  {
+    return "<neworder.CalendarTimeline start=%% end=never step=%%%% nsteps=inf time=%% index=%%>"s
+            % start() % m_step % m_unit % time() % m_index;
+  }
+  else
+  {
+    return "<neworder.CalendarTimeline start=%% end=%% step=%%%% nsteps=%% time=%% index=%%>"s
+            % start() % end() % m_step % m_unit % (m_times.size() - 1) % time() % m_index;
+  }
+}
 
 
 // returns a floating point number that compares less than any other number

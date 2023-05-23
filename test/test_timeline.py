@@ -167,6 +167,7 @@ def test_linear_timeline() -> None:
   assert m.timeline.index() == 40
   assert m.timeline.time() == 2051
 
+
 def test_numeric_timeline() -> None:
 
   class NumericTimelineModel(no.Model):
@@ -189,7 +190,7 @@ def test_numeric_timeline() -> None:
 
 def test_calendar_timeline() -> None:
   # monthly timesteps checking we don't overshoot in shorter months
-  dim = [31,29,31,30,31,30]
+  dim = [31, 29, 31, 30, 31, 30]
 
   class CalendarModel(no.Model):
     def __init__(self, calendartimeline: no.Timeline) -> None:

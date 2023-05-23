@@ -36,7 +36,7 @@ public:
   virtual bool at_end() const = 0;
 
   // used by python __repr__
-  // virtual std::string repr() const = 0;
+  virtual std::string repr() const = 0;
 
 };
 
@@ -57,7 +57,7 @@ class PyTimeline: public Timeline
   void next() override { PYBIND11_OVERRIDE_PURE(void, Timeline, next); }
 
   bool at_end() const override { PYBIND11_OVERRIDE_PURE(bool, Timeline, at_end); }
-  //std::string repr() const override { PYBIND11_OVERRIDE_PURE(std::string, Timeline, repr); }
+  std::string repr() const override { PYBIND11_OVERRIDE_PURE_NAME(std::string, Timeline, "__repr__", repr); }
 };
 
 
@@ -86,8 +86,7 @@ public:
 
   bool at_end() const override;
 
-  // used by python __repr__
-  // std::string repr() const override;
+  std::string repr() const override;
 
 private:
   // flag whether we've done the arbitrary step
@@ -124,8 +123,7 @@ public:
 
   bool at_end() const override;
 
-  // used by python __repr__
-  // std::string repr() const override;
+  std::string repr() const override;
 
 private:
   size_t m_index;
@@ -161,7 +159,7 @@ public:
 
   bool at_end() const override;
 
-  // std::string repr() const override;
+  std::string repr() const override;
 
 private:
   size_t m_index;
@@ -199,7 +197,7 @@ public:
 
   bool at_end() const override;
 
-  // std::string repr() const override;
+  std::string repr() const override;
 
 private:
 

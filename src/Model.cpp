@@ -12,7 +12,7 @@ no::Model::Model(no::Timeline& timeline, const py::function& seeder)
   : m_timeline(timeline), m_timeline_handle(py::cast(&timeline)),
   m_monteCarlo(seeder(no::env::rank.load(std::memory_order_relaxed)).cast<int32_t>())
 {
-  no::log("model init: timeline=%% mc=%%"s % "m_timeline.repr()" % m_monteCarlo.repr());
+  no::log("model init: timeline=%% mc=%%"s % m_timeline.repr() % m_monteCarlo.repr());
 }
 
 
@@ -45,9 +45,7 @@ void no::Model::finalise()
 bool no::Model::run(Model& model)
 {
   Timer timer;
-
   int rank = no::env::rank.load(std::memory_order_relaxed);
-
   if (rank < 0)
   {
     throw std::runtime_error("environment is not correctly initialised, model will not be run");
@@ -102,8 +100,8 @@ bool no::Model::run(Model& model)
   {
     no::log("t=%%(%%) %%.finalise()"s % model.timeline().time() % model.timeline().index() % model_name );
     model.finalise();
-    no::log("%% exec time=%%s"s % (ok ? "SUCCESS": "ERRORED") % timer.elapsed_s());
   }
+  no::log("%% exec time=%%s"s % (ok ? "SUCCESS": "ERRORED") % timer.elapsed_s());
   return ok;
 }
 

@@ -86,7 +86,7 @@ PYBIND11_MODULE(_neworder_core, m)
     .def("dt", &no::Timeline::dt, timeline_dt_docstr)
     .def("next", &no::Timeline::next, timeline_next_docstr)
     .def("at_end", &no::Timeline::at_end, timeline_at_end_docstr)
-    //.def("__repr__", &no::Timeline::repr, timeline_repr_docstr)
+    .def("__repr__", &no::Timeline::repr, timeline_repr_docstr)
     ;
 
   py::class_<no::NoTimeline, no::Timeline>(m, "NoTimeline", notimeline_docstr)
@@ -94,43 +94,16 @@ PYBIND11_MODULE(_neworder_core, m)
 
   py::class_<no::LinearTimeline, no::Timeline>(m, "LinearTimeline", lineartimeline_docstr)
     .def(py::init<double, double, size_t>(), lineartimeline_init_docstr, "start"_a, "end"_a, "nsteps"_a)
-    .def(py::init<double, double>(), lineartimeline_init_open_docstr, "start"_a, "step"_a)
-    // .def("start", &no::LinearTimeline::start, timeline_start_docstr)
-    // .def("end", &no::LinearTimeline::end, timeline_end_docstr)
-    // .def("index", &no::LinearTimeline::index, timeline_index_docstr)
-    // .def("time", &no::LinearTimeline::time, timeline_time_docstr)
-    // .def("dt", &no::LinearTimeline::dt, timeline_dt_docstr)
-    // .def("nsteps", &no::LinearTimeline::nsteps, timeline_nsteps_docstr)
-    // .def("at_end", &no::LinearTimeline::at_end, timeline_at_end_docstr)
-    // .def("__repr__", &no::LinearTimeline::repr, timeline_repr_docstr)
-    ;
+    .def(py::init<double, double>(), lineartimeline_init_open_docstr, "start"_a, "step"_a);
 
   py::class_<no::NumericTimeline, no::Timeline>(m, "NumericTimeline", numerictimeline_docstr)
-    .def(py::init<const std::vector<double>&>(), numerictimeline_init_docstr, "times"_a)
-    // .def("start", &no::NumericTimeline::start, timeline_start_docstr)
-    // .def("end", &no::NumericTimeline::end, timeline_end_docstr)
-    // .def("index", &no::NumericTimeline::index, timeline_index_docstr)
-    // .def("time", &no::NumericTimeline::time, timeline_time_docstr)
-    // .def("dt", &no::NumericTimeline::dt, timeline_dt_docstr)
-    // .def("nsteps", &no::NumericTimeline::nsteps, timeline_nsteps_docstr)
-    // .def("at_end", &no::NumericTimeline::at_end, timeline_at_end_docstr)
-    // .def("__repr__", &no::NumericTimeline::repr, timeline_repr_docstr)
-    ;
+    .def(py::init<const std::vector<double>&>(), numerictimeline_init_docstr, "times"_a);
 
   py::class_<no::CalendarTimeline, no::Timeline>(m, "CalendarTimeline", calendartimeline_docstr)
     .def(py::init<std::chrono::system_clock::time_point, std::chrono::system_clock::time_point, size_t, char>(),
       calendartimeline_init_docstr, "start"_a, "end"_a, "step"_a, "unit"_a)
     .def(py::init<std::chrono::system_clock::time_point, size_t, char>(),
-      calendartimeline_init_open_docstr, "start"_a, "step"_a, "unit"_a)
-    // .def("start", &no::CalendarTimeline::start, timeline_start_docstr)
-    // .def("end", &no::CalendarTimeline::end, timeline_end_docstr)
-    // .def("index", &no::CalendarTimeline::index, timeline_index_docstr)
-    // .def("time", &no::CalendarTimeline::time, timeline_time_docstr)
-    // .def("dt", &no::CalendarTimeline::dt, timeline_dt_docstr)
-    // .def("nsteps", &no::CalendarTimeline::nsteps, timeline_nsteps_docstr)
-    // .def("at_end", &no::CalendarTimeline::at_end, timeline_at_end_docstr)
-    // .def("__repr__", &no::CalendarTimeline::repr, timeline_repr_docstr)
-    ;
+      calendartimeline_init_open_docstr, "start"_a, "step"_a, "unit"_a);
 
   // Microsimulation (or ABM) model class
   py::class_<no::Model, no::PyModel>(m, "Model", model_docstr)
