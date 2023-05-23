@@ -24,7 +24,7 @@ public:
   static bool run(Model& model);
 
   // getters
-  Timeline& timeline() { return *m_timeline; }
+  Timeline& timeline() { return m_timeline; }
   MonteCarlo& mc() { return m_monteCarlo; }
 
   // functions to override
@@ -37,7 +37,8 @@ public:
   void halt();
 
 private:
-  std::unique_ptr<Timeline> m_timeline;
+  Timeline& m_timeline;
+  py::object m_timeline_handle; // ensures above ref isnt deleted during the lifetime of this object
   MonteCarlo m_monteCarlo;
 };
 

@@ -47,6 +47,44 @@ class _TestResume(no.Model):
     self.halt()
 
 
+class CustomTimeline(no.Timeline):
+  def __init__(self) -> None:
+    super().__init__()
+    self.t = 1.0
+    self.i = 0
+
+  def start(self) -> float:
+    return 0.0
+
+  def index(self) -> int:
+    return self.i
+
+  def next(self) -> None:
+    self.i += 1
+    self.t /= 2
+
+  def time(self) -> float:
+    return 1.0 - self.t
+
+  def at_end(self) -> bool:
+    return False
+
+  def __repr__(self) -> str:
+    return "CustomTimeline"
+
+class CustomTimelineModel(no.Model):
+  def __init__(self) -> None:
+    super().__init__(CustomTimeline(), no.MonteCarlo.deterministic_identical_stream)
+    # super().__init__(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
+    # super().__init__(tl, no.MonteCarlo.deterministic_identical_stream)
+
+  def step(self) -> None:
+    self.halt()
+
+def test_custom_timeline() -> None:
+  assert no.run(CustomTimelineModel())
+
+
 def test_time() -> None:
   t = -1e10
   assert no.time.distant_past() < t

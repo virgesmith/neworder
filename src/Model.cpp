@@ -8,10 +8,11 @@
 
 #include <pybind11/pybind11.h>
 
-no::Model::Model(Timeline& timeline, const py::function& seeder)
-  : m_timeline(timeline.clone()), m_monteCarlo(seeder(no::env::rank.load(std::memory_order_relaxed)).cast<int32_t>())
+no::Model::Model(no::Timeline& timeline, const py::function& seeder)
+  : m_timeline(timeline), m_timeline_handle(py::cast(&timeline)),
+  m_monteCarlo(seeder(no::env::rank.load(std::memory_order_relaxed)).cast<int32_t>())
 {
-  no::log("model init: timeline=%% mc=%%"s % m_timeline->repr() % m_monteCarlo.repr());
+  no::log("model init: timeline=%% mc=%%"s % "m_timeline.repr()" % m_monteCarlo.repr());
 }
 
 

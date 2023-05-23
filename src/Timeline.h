@@ -35,12 +35,31 @@ public:
 
   virtual bool at_end() const = 0;
 
-  virtual std::unique_ptr<Timeline> clone() const = 0;
-
   // used by python __repr__
-  virtual std::string repr() const = 0;
+  // virtual std::string repr() const = 0;
 
 };
+
+class PyTimeline: public Timeline
+{
+  using Timeline::Timeline;
+  using Timeline::operator=;
+
+  // trampoline methods
+  py::object time() const override { PYBIND11_OVERRIDE_PURE(py::object, Timeline, time); }
+  py::object start() const override { PYBIND11_OVERRIDE_PURE(py::object, Timeline, start); }
+  py::object end() const override { PYBIND11_OVERRIDE_PURE(py::object, Timeline, end); }
+
+  int64_t index() const override { PYBIND11_OVERRIDE_PURE(int64_t, Timeline, index); }
+  int64_t nsteps() const override { PYBIND11_OVERRIDE_PURE(int64_t, Timeline, nsteps); }
+  double dt() const override { PYBIND11_OVERRIDE_PURE(double, Timeline, dt); }
+
+  void next() override { PYBIND11_OVERRIDE_PURE(void, Timeline, next); }
+
+  bool at_end() const override { PYBIND11_OVERRIDE_PURE(bool, Timeline, at_end); }
+  //std::string repr() const override { PYBIND11_OVERRIDE_PURE(std::string, Timeline, repr); }
+};
+
 
 // An empty (one arbitrary step) timeline. The model's step method will each be called once only
 class NEWORDER_EXPORT NoTimeline final : public Timeline
@@ -67,10 +86,8 @@ public:
 
   bool at_end() const override;
 
-  virtual std::unique_ptr<Timeline> clone() const override;
-
   // used by python __repr__
-  std::string repr() const override;
+  // std::string repr() const override;
 
 private:
   // flag whether we've done the arbitrary step
@@ -107,10 +124,8 @@ public:
 
   bool at_end() const override;
 
-  virtual std::unique_ptr<Timeline> clone() const override;
-
   // used by python __repr__
-  std::string repr() const override;
+  // std::string repr() const override;
 
 private:
   size_t m_index;
@@ -146,9 +161,7 @@ public:
 
   bool at_end() const override;
 
-  virtual std::unique_ptr<Timeline> clone() const override;
-
-  std::string repr() const override;
+  // std::string repr() const override;
 
 private:
   size_t m_index;
@@ -186,9 +199,7 @@ public:
 
   bool at_end() const override;
 
-  virtual std::unique_ptr<Timeline> clone() const override;
-
-  std::string repr() const override;
+  // std::string repr() const override;
 
 private:
 

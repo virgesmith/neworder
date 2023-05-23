@@ -1,6 +1,6 @@
+import pytest
 import neworder as no
 
-import pytest
 
 
 def test_base(base_model: no.Model) -> None:
