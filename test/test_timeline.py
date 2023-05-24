@@ -85,15 +85,10 @@ class CustomTimeline(no.Timeline):
   def at_end(self) -> bool:
     return False
 
-  # TODO default to this
-  def __repr__(self) -> str:
-    return f"<{self.__class__.__name__}>"
 
 class CustomTimelineModel(no.Model):
   def __init__(self) -> None:
     super().__init__(CustomTimeline(), no.MonteCarlo.deterministic_identical_stream)
-    # super().__init__(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
-    # super().__init__(tl, no.MonteCarlo.deterministic_identical_stream)
 
   def step(self) -> None:
     self.halt()
@@ -101,6 +96,14 @@ class CustomTimelineModel(no.Model):
 
 def test_timeline_properties() -> None:
   n = no.NoTimeline()
+  assert n.index == 0
+  assert np.isnan(n.start)
+  assert np.isnan(n.time)
+  assert np.isnan(n.end)
+  assert n.dt == 0.0
+  assert n.nsteps == 1
+
+
   with pytest.raises(AttributeError):
     n.index = 3
   with pytest.raises(AttributeError):
@@ -114,6 +117,10 @@ def test_timeline_properties() -> None:
 
 
 def test_custom_timeline() -> None:
+  ct = CustomTimeline()
+  # default __repr__
+  assert str(ct) == "<CustomTimeline>"
+
   assert no.run(CustomTimelineModel())
 
 
