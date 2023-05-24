@@ -1,4 +1,5 @@
-from datetime import date
+from typing import cast
+from datetime import datetime, date
 import pytest
 import numpy as np
 import neworder as no
@@ -97,20 +98,20 @@ class CustomTimelineModel(no.Model):
 def test_timeline_properties() -> None:
   n = no.NoTimeline()
   assert n.index == 0
-  assert np.isnan(n.start)
-  assert np.isnan(n.time)
-  assert np.isnan(n.end)
+  assert np.isnan(n.start)  # type: ignore[call-overload]
+  assert np.isnan(n.time)  # type: ignore[call-overload]
+  assert np.isnan(n.end)  # type: ignore[call-overload]
   assert n.dt == 0.0
   assert n.nsteps == 1
 
 
   with pytest.raises(AttributeError):
-    n.index = 3
+    n.index = 3  # type: ignore[misc]
   with pytest.raises(AttributeError):
-    n.next()
+    n.next()  # type: ignore[attr-defined]
   c = CustomTimeline()
   with pytest.raises(AttributeError):
-    c.index = 3
+    c.index = 3  # type: ignore[misc]
   # for python implementations next must be exposed
   # with pytest.raises(AttributeError):
   #   c.next()
@@ -235,7 +236,7 @@ def test_calendar_timeline() -> None:
       super().__init__(calendartimeline, no.MonteCarlo.deterministic_identical_stream)
 
     def step(self) -> None:
-      assert self.timeline.time.day == min(dim[self.timeline.index], d)
+      assert cast(date, self.timeline.time).day == min(dim[self.timeline.index], d)
 
     def finalise(self) -> None:
       assert self.timeline.dt == 0.0
@@ -267,17 +268,17 @@ def test_open_ended_timeline() -> None:
   no.run(m)
   assert m.i == 11
 
-  m = OpenEndedModel(no.CalendarTimeline(date(2020,12,17), 1, "d"))
+  m = OpenEndedModel(no.CalendarTimeline(date(2020, 12, 17), 1, "d"))
   assert m.timeline.end == no.time.far_future()
   assert m.timeline.nsteps == -1
   assert np.fabs(m.timeline.dt - 1.0/365.2475) < 1e-8
   no.run(m)
   assert m.i == 11
 
-  m = OpenEndedModel(no.CalendarTimeline(date(2020,12,17), 1, "m"))
+  m = OpenEndedModel(no.CalendarTimeline(date(2020, 12, 17), 1, "m"))
   assert m.timeline.end == no.time.far_future()
   assert m.timeline.nsteps == -1
-  assert np.fabs(m.timeline.dt - 31.0/365.2475) < 1e-8
+  assert np.fabs(m.timeline.dt - 31.0 / 365.2475) < 1e-8
   no.run(m)
   assert m.i == 11
 
@@ -315,14 +316,14 @@ def test_consistency() -> None:
   assert m.timeline.index == 12
   assert m.timeline.time == 2021
 
-  s = date(2019,10,31)
-  e = date(2020,10,31)
+  s = date(2019, 10, 31)
+  e = date(2020, 10, 31)
 
   m = ConsistencyTest(no.CalendarTimeline(s, e, 1, "m"))
-  assert m.timeline.time.date() == s
+  assert cast(datetime, m.timeline.time).date() == s
   assert m.timeline.nsteps == 12
   no.run(m)
-  assert m.timeline.time.date() == e
+  assert cast(datetime, m.timeline.time).date() == e
   assert m.timeline.index == 12
 
 def test_resume() -> None:

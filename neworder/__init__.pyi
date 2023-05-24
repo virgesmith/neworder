@@ -13,6 +13,7 @@ from . import time
 import stats # type: ignore
 from .domain import *
 
+date_t = datetime.datetime | datetime.date
 FloatArray1d = NPFloatArray | list[float]
 NPIntArray = npt.NDArray[np.int64]
 IntArray1d = NPIntArray | list[int]
@@ -38,34 +39,61 @@ __all__ = [
 
 
 class Timeline():
+    def __init__(self) -> None: ...
+    def __repr__(self) -> str:
+        """
+        Prints a human-readable representation of the timeline object
+        """
+    @property
     def at_end(self) -> bool:
         """
-        Returns True if the current step is the end of the timeline
+            Returns True if the current step is the end of the timeline
+
+        :type: bool
         """
+    @property
     def dt(self) -> float:
         """
-        Returns the step size size of the timeline
+            Returns the step size size of the timeline
+
+        :type: float
         """
-    def end(self) -> Any:
+    @property
+    def end(self) -> object:
         """
-        Returns the time of the end of the timeline
+            Returns the time of the end of the timeline
+
+        :type: object
         """
+    @property
     def index(self) -> int:
         """
-        Returns the index of the current step in the timeline
+            Returns the index of the current step in the timeline
+
+        :type: int
         """
+    @property
     def nsteps(self) -> int:
         """
-        Returns the number of steps in the timeline (or -1 if open-ended)
+            Returns the number of steps in the timeline (or -1 if open-ended)
+
+        :type: int
         """
-    def start(self) -> Any:
+    @property
+    def start(self) -> object:
         """
-        Returns the time of the start of the timeline
+            Returns the time of the start of the timeline
+
+        :type: object
         """
-    def time(self) -> Any:
+    @property
+    def time(self) -> object:
         """
-        Returns the time of the current step in the timeline
+            Returns the time of the current step in the timeline
+
+        :type: object
         """
+    pass
 class LinearTimeline(Timeline):
     """
     An equally-spaced non-calendar timeline .
@@ -81,39 +109,7 @@ class LinearTimeline(Timeline):
         Constructs an open-ended timeline give a start value and a step size. NB the model will run until the Model.halt() method is explicitly called
         (from inside the step() method). Note also that nsteps() will return -1 for timelines constructed this way
         """
-    def __repr__(self) -> str:
-        """
-        Prints a human-readable representation of the timeline
-        """
-    def at_end(self) -> bool:
-        """
-        Returns True if the current step is the end of the timeline
-        """
-    def dt(self) -> float:
-        """
-        Returns the step size size of the timeline
-        """
-    def end(self) -> object:
-        """
-        Returns the time of the end of the timeline
-        """
-    def index(self) -> int:
-        """
-        Returns the index of the current step in the timeline
-        """
-    def nsteps(self) -> int:
-        """
-        Returns the number of steps in the timeline (or -1 if open-ended)
-        """
-    def start(self) -> object:
-        """
-        Returns the time of the start of the timeline
-        """
-    def time(self) -> object:
-        """
-        Returns the time of the current step in the timeline
-        """
-    pass
+        pass
 class Model():
     """
     The base model class from which all neworder models should be subclassed
@@ -160,7 +156,7 @@ class Model():
         """
             The model's Monte-Carlo engine
 
-        :type: no::MonteCarlo
+        :type: MonteCarlo
         """
     @property
     def timeline(self) -> Timeline:
@@ -201,31 +197,31 @@ class MonteCarlo():
         The model uses the MPI rank as the input argument, allowing for differently seeded streams in each process
         """
     @typing.overload
-    def first_arrival(self, lambda_: FloatArray1d, dt: float, n: int) -> FloatArray1d:
+    def first_arrival(self, lambda_: FloatArray1d, dt: float, n: int) -> NPFloatArray:
         """
         Returns an array of length n of first arrival times from a nonhomogeneous Poisson process (with hazard rate lambda[i], time interval dt),
         with a minimum start time of minval. Sampling uses the Lewis-Shedler "thinning" algorithm
         If the final value of lambda is zero, no arrival is indicated by a value of neworder.time.never()
         """
     @typing.overload
-    def first_arrival(self, lambda_: FloatArray1d, dt: float, n: int, minval: float) -> FloatArray1d:
+    def first_arrival(self, lambda_: FloatArray1d, dt: float, n: int, minval: float) -> NPFloatArray:
         """
         Returns an array of length n of first arrival times from a nonhomogeneous Poisson process (with hazard rate lambda[i], time interval dt),
         with no minimum start time. Sampling uses the Lewis-Shedler "thinning" algorithm
         If the final value of lambda is zero, no arrival is indicated by a value of neworder.time.never()
         """
     @typing.overload
-    def hazard(self, p: float, n: int) -> NPIntArray:
+    def hazard(self, p: float, n: int) -> NPFloatArray:
         """
         Returns an array of ones (with hazard rate lambda) or zeros of length n
         """
     @typing.overload
-    def hazard(self, p: FloatArray1d) -> NPIntArray:
+    def hazard(self, p: NPFloatArray) -> NPFloatArray:
         """
         Returns an array of ones (with hazard rate lambda[i]) or zeros for each element in p
         """
     @typing.overload
-    def next_arrival(self, startingpoints: FloatArray1d, lambda_: FloatArray1d, dt: float) -> FloatArray1d:
+    def next_arrival(self, startingpoints: FloatArray1d, lambda_: FloatArray1d, dt: float) -> NPFloatArray:
         """
         Returns an array of length n of subsequent arrival times from a nonhomogeneous Poisson process (with hazard rate lambda[i], time interval dt),
         with start times given by startingpoints with a minimum offset of mingap. Sampling uses the Lewis-Shedler "thinning" algorithm.
@@ -233,7 +229,7 @@ class MonteCarlo():
         If the final value of lambda is zero, no arrival is indicated by a value of neworder.time.never()
         """
     @typing.overload
-    def next_arrival(self, startingpoints: FloatArray1d, lambda_: FloatArray1d, dt: float, relative: bool) -> FloatArray1d:
+    def next_arrival(self, startingpoints: FloatArray1d, lambda_: FloatArray1d, dt: float, relative: bool) -> NPFloatArray:
         """
         Returns an array of length n of subsequent arrival times from a nonhomogeneous Poisson process (with hazard rate lambda[i], time interval dt),
         with start times given by startingpoints. Sampling uses the Lewis-Shedler "thinning" algorithm.
@@ -241,7 +237,7 @@ class MonteCarlo():
         If the final value of lambda is zero, no arrival is indicated by a value of neworder.time.never()
         """
     @typing.overload
-    def next_arrival(self, startingpoints: FloatArray1d, lambda_: FloatArray1d, dt: float, relative: bool, minsep: float) -> FloatArray1d:
+    def next_arrival(self, startingpoints: FloatArray1d, lambda_: FloatArray1d, dt: float, relative: bool, minsep: float) -> NPFloatArray:
         """
         Returns an array of length n of subsequent arrival times from a nonhomogeneous Poisson process (with hazard rate lambda[i], time interval dt),
         with start times given by startingpoints. Sampling uses the Lewis-Shedler "thinning" algorithm.
@@ -296,38 +292,6 @@ class NoTimeline(Timeline):
         """
         Constructs an arbitrary one step timeline, where the start and end times are undefined and there is a single step of size zero. Useful for continuous-time models
         """
-    def __repr__(self) -> str:
-        """
-        Prints a human-readable representation of the timeline
-        """
-    def at_end(self) -> bool:
-        """
-        Returns True if the current step is the end of the timeline
-        """
-    def dt(self) -> float:
-        """
-        Returns the step size size of the timeline
-        """
-    def end(self) -> object:
-        """
-        Returns the time of the end of the timeline
-        """
-    def index(self) -> int:
-        """
-        Returns the index of the current step in the timeline
-        """
-    def nsteps(self) -> int:
-        """
-        Returns the number of steps in the timeline (or -1 if open-ended)
-        """
-    def start(self) -> object:
-        """
-        Returns the time of the start of the timeline
-        """
-    def time(self) -> object:
-        """
-        Returns the time of the current step in the timeline
-        """
     pass
 class NumericTimeline(Timeline):
     """
@@ -337,86 +301,22 @@ class NumericTimeline(Timeline):
         """
         Constructs a timeline from an array of time points.
         """
-    def __repr__(self) -> str:
-        """
-        Prints a human-readable representation of the timeline
-        """
-    def at_end(self) -> bool:
-        """
-        Returns True if the current step is the end of the timeline
-        """
-    def dt(self) -> float:
-        """
-        Returns the step size size of the timeline
-        """
-    def end(self) -> object:
-        """
-        Returns the time of the end of the timeline
-        """
-    def index(self) -> int:
-        """
-        Returns the index of the current step in the timeline
-        """
-    def nsteps(self) -> int:
-        """
-        Returns the number of steps in the timeline (or -1 if open-ended)
-        """
-    def start(self) -> object:
-        """
-        Returns the time of the start of the timeline
-        """
-    def time(self) -> object:
-        """
-        Returns the time of the current step in the timeline
-        """
     pass
 class CalendarTimeline(Timeline):
     """
     A calendar-based timeline
     """
     @typing.overload
-    def __init__(self, start: datetime.date | datetime.datetime, end: datetime.date | datetime.datetime, step: int, unit: str) -> None:
+    def __init__(self, start: date_t, end: date_t, step: int, unit: str) -> None:
         """
         Constructs a calendar-based timeline, given start and end dates, an increment specified as a multiple of days, months or years
         """
     @typing.overload
-    def __init__(self, start: datetime.date | datetime.datetime, step: int, unit: str) -> None:
+    def __init__(self, start: date_t, step: int, unit: str) -> None:
         """
         Constructs an open-ended calendar-based timeline, given a start date and an increment specified as a multiple of days, months or years.
          NB the model will run until the Model.halt() method is explicitly called (from inside the step() method). Note also that nsteps() will
          return -1 for timelines constructed this way
-        """
-    def __repr__(self) -> str:
-        """
-        Prints a human-readable representation of the timeline
-        """
-    def at_end(self) -> bool:
-        """
-        Returns True if the current step is the end of the timeline
-        """
-    def dt(self) -> float:
-        """
-        Returns the step size size of the timeline
-        """
-    def end(self) -> object:
-        """
-        Returns the time of the end of the timeline
-        """
-    def index(self) -> int:
-        """
-        Returns the index of the current step in the timeline
-        """
-    def nsteps(self) -> int:
-        """
-        Returns the number of steps in the timeline (or -1 if open-ended)
-        """
-    def start(self) -> object:
-        """
-        Returns the time of the start of the timeline
-        """
-    def time(self) -> object:
-        """
-        Returns the time of the current step in the timeline
         """
     pass
 def checked(checked: bool = True) -> None:
@@ -427,7 +327,7 @@ def log(obj: object) -> None:
     """
     The logging function. Prints obj to the console, annotated with process information
     """
-def run(model: object) -> bool:
+def run(model: Model) -> bool:
     """
     Runs the model. If the model has previously run it will resume from the point at which it was given the "halt" instruction. This is useful
     for external processing of model data, and/or feedback from external sources. If the model has already reached the end of the timeline, this

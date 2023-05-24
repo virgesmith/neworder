@@ -24,7 +24,7 @@ def test_seeders() -> None:
   assert no.MonteCarlo.nondeterministic_stream(no.mpi.rank()) != no.MonteCarlo.nondeterministic_stream(no.mpi.rank())
 
   try:
-    import mpi4py.MPI as mpi
+    import mpi4py.MPI as mpi  # type: ignore[import]
     comm = mpi.COMM_WORLD
   except Exception:
     return

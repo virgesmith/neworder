@@ -62,12 +62,6 @@ PYBIND11_MODULE(_neworder_core, m)
 
   m.doc() = module_docstr;
 
-  // model control plus utility/diagnostics
-  m.def("log", log_obj, log_docstr, "obj"_a)
-   .def("run", no::Model::run, run_docstr, "model"_a)
-   .def("verbose", [](bool v = true) { no::env::verbose.store(v, std::memory_order_relaxed); }, verbose_docstr, "verbose"_a = true)
-   .def("checked", [](bool c = true) { no::env::checked.store(c, std::memory_order_relaxed); }, checked_docstr, "checked"_a = true);
-
   // time-related module
   m.def_submodule("time", time_docstr)
     .def("distant_past", no::time::distant_past, time_distant_past_docstr)
@@ -104,19 +98,6 @@ PYBIND11_MODULE(_neworder_core, m)
       calendartimeline_init_docstr, "start"_a, "end"_a, "step"_a, "unit"_a)
     .def(py::init<std::chrono::system_clock::time_point, size_t, char>(),
       calendartimeline_init_open_docstr, "start"_a, "step"_a, "unit"_a);
-
-  // Microsimulation (or ABM) model class
-  py::class_<no::Model, no::PyModel>(m, "Model", model_docstr)
-    .def(py::init<no::Timeline&, const py::function&>(), model_init_docstr,"timeline"_a, "seeder"_a)
-    // properties are readonly only in the sense you can't assign to them; you CAN call their mutable methods
-    .def_property_readonly("timeline", &no::Model::timeline, model_timeline_docstr)
-    .def_property_readonly("mc", &no::Model::mc, model_mc_docstr)
-    .def("modify", &no::Model::modify, model_modify_docstr, "r"_a)
-    .def("step", &no::Model::step, model_step_docstr)
-    .def("check", &no::Model::check, model_check_docstr)
-    .def("finalise", &no::Model::finalise, model_finalise_docstr)
-    .def("halt", &no::Model::halt, model_halt_docstr);
-    // NB the all-important run function is not exposed to python, it can only be executed via the `neworder.run` function
 
   // MC
   py::class_<no::MonteCarlo>(m, "MonteCarlo", mc_docstr)
@@ -173,6 +154,19 @@ PYBIND11_MODULE(_neworder_core, m)
                          "startingpoints"_a, "lambda_"_a, "dt"_a)
     .def("__repr__", &no::MonteCarlo::repr, mc_repr_docstr);
 
+  // Microsimulation (or ABM) model class
+  py::class_<no::Model, no::PyModel>(m, "Model", model_docstr)
+    .def(py::init<no::Timeline&, const py::function&>(), model_init_docstr,"timeline"_a, "seeder"_a)
+    // properties are readonly only in the sense you can't assign to them; you CAN call their mutable methods
+    .def_property_readonly("timeline", &no::Model::timeline, model_timeline_docstr)
+    .def_property_readonly("mc", &no::Model::mc, model_mc_docstr)
+    .def("modify", &no::Model::modify, model_modify_docstr, "r"_a)
+    .def("step", &no::Model::step, model_step_docstr)
+    .def("check", &no::Model::check, model_check_docstr)
+    .def("finalise", &no::Model::finalise, model_finalise_docstr)
+    .def("halt", &no::Model::halt, model_halt_docstr);
+    // NB the all-important run function is not exposed to python, it can only be executed via the `neworder.run` function
+
   // statistical utils
   m.def_submodule("stats", stats_docstr)
     .def("logistic", no::logistic,
@@ -199,6 +193,12 @@ PYBIND11_MODULE(_neworder_core, m)
   m.def_submodule("mpi", mpi_docstr)
     .def("rank", []() { return no::env::rank.load(std::memory_order_relaxed); }, mpi_rank_docstr)
     .def("size", []() { return no::env::size.load(std::memory_order_relaxed); }, mpi_size_docstr);
+
+  // model control plus utility/diagnostics
+  m.def("log", log_obj, log_docstr, "obj"_a)
+   .def("run", no::Model::run, run_docstr, "model"_a)
+   .def("verbose", [](bool v = true) { no::env::verbose.store(v, std::memory_order_relaxed); }, verbose_docstr, "verbose"_a = true)
+   .def("checked", [](bool c = true) { no::env::checked.store(c, std::memory_order_relaxed); }, checked_docstr, "checked"_a = true);
 
   // Map custom C++ exceptions to python ones - wrap in a lambda as its an rvalue reference
   py::register_exception_translator(std::move(no::exception_translator));

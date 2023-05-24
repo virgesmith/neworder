@@ -9,7 +9,7 @@ if no.mpi.size() == 1:
   no.log("No MPI env detected, skipping MPI tests")
 
 else:
-  from mpi4py import MPI
+  from mpi4py import MPI  # type: ignore[import]
   comm = MPI.COMM_WORLD
 
   no.log("MPI env detected, running MPI tests")

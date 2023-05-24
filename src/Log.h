@@ -13,6 +13,9 @@ using namespace std::string_literals;
 
 namespace std
 {
+// forces char to be printed (rather than number)
+std::string to_string(char c);
+
 std::string to_string(const std::string& str);
 
 std::string to_string(const py::object& o);
