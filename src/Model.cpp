@@ -5,6 +5,7 @@
 #include "Timer.h"
 #include "Log.h"
 #include "Error.h"
+#include "Helpers.h"
 
 #include <pybind11/pybind11.h>
 
@@ -41,28 +42,6 @@ void no::Model::finalise()
   no::log("defaulted to no-op Model::finalise()");
 }
 
-
-template<typename T>
-class PyAccessor final
-{
-public:
-  typedef T cpp_type;
-  PyAccessor(cpp_type& object) : ref(py::cast(&object)) { }
-
-  py::object get(const char* name)
-  {
-    return ref.attr(name);
-  }
-
-  template<typename U>
-  U get_as(const char* name)
-  {
-    return ref.attr(name).cast<U>();
-  }
-
-private:
-  py::object ref;
-};
 
 bool no::Model::run(Model& model)
 {

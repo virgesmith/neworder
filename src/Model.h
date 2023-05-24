@@ -18,8 +18,8 @@ public:
 
   Model(const Model&) = delete;
   Model& operator=(const Model&) = delete;
-  Model(Model&&) = default;
-  Model& operator=(Model&&) = default;
+  Model(Model&&) = delete;
+  Model& operator=(Model&&) = delete;
 
   static bool run(Model& model);
 
