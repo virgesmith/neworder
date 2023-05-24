@@ -157,6 +157,7 @@ Development should happen on a release branch (NOT on main). When merged to main
 
 1. Create some release notes based on commit comments since previous release, e.g.: `git log 0.2.1..HEAD --oneline`
 1. Clean, rebuild, test, regenerate examples and code docs: `scripts/code_doc.sh`
+1. Regenerate type stubs (see above) as necessary
 1. Commit changes to release branch
 1. Ensure all checks passing and merge to `main`
 1. Update and check conda feedstock (if this doesn't happen automatically, see instructions [here](https://github.com/conda-forge/neworder-feedstock))
