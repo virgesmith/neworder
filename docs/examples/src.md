@@ -1,9 +1,10 @@
 !!! note "Examples Source Code"
-    Source code for all the examples can be downloaded using one of the the links below:
+    The code for all the examples can be obtained by either:
 
-    **[neworder-1.2.1-examples-src.tgz](./neworder-1.2.1-examples-src.tgz)** | **[neworder-1.2.1-examples-src.zip](./neworder-1.2.1-examples-src.zip)**
+    - downloading the source code from the `neworder` [releases](https://github.com/virgesmith/neworder/releases) page
+    - pulling the docker image `virgesmith/neworder:latest`. More [here](/#docker)
 
-    The contained file `requirements.txt` lists the package dependencies of the examples, which can be installed using e.g.: 
+    The `examples` subdirectory in the archive contains a `requirements.txt` that lists the package dependencies of all the examples, which can be installed using e.g.:
 
     ```sh
     pip install -r requirements.txt
