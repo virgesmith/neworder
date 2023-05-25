@@ -2,7 +2,7 @@ name: PyPI release
 
 on:
   push:
-    branches: post1.2.1
+    branches: main
 
 jobs:
   bump-version:
@@ -30,11 +30,11 @@ jobs:
       run: |
         pip install pybind11 numpy
         python setup.py sdist
-    # - name: Publish
-    #   uses: pypa/gh-action-pypi-publish@release/v1
-    #   with:
-    #     password: ${{ secrets.TEST_PYPI_API_TOKEN }}
-    #     repository-url: https://test.pypi.org/legacy/
+    - name: Publish
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        password: ${{ secrets.PYPI_API_TOKEN }}
+        repository-url: https://upload.pypi.org/legacy/
     - name: new_version
       run: echo "new_version=$(grep __version__ neworder/__init__.py | cut -d ' ' -d'"' -f2)" >> $GITHUB_ENV
 
