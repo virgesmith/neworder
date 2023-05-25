@@ -153,7 +153,10 @@ mv stubs/_neworder_core/time-stubs/__init__.pyi neworder/time.pyi
 
 ## Release Checklist
 
-Development should happen on a release branch (NOT on main). When merged to main, a workflow will automatically bump the version, tag the code, build a package and publish it to PyPI. By default the patch version is bumped but this can be changed in `.github/workflows/pypi-release.yml`. If necessary, this file can be modified to upload a release candidate to `test.pypi.org`.
+Development should happen on a release branch (NOT on main). Any commit to main triggers a workflow that automatically bumps the version, tags the code, builds a package, publishes it to PyPI, then builds a docker image containing the examples and pushes this to docker hub.
+
+!!! warning "Automatic version bumping"
+    By default the patch version is bumped but this can be changed to minor or major as necessary in `.github/workflows/pypi-release.yml`. Once a specific version has been published, it cannot be modified (only deleted), so if in doubt modify the action to publish a release candidate to `test.pypi.org`.
 
 1. Create some release notes based on commit comments since previous release, e.g.: `git log 0.2.1..HEAD --oneline`
 1. Regenerate type stubs (see above) as necessary
@@ -162,7 +165,7 @@ Development should happen on a release branch (NOT on main). When merged to main
 1. Ensure all checks passing and merge to `main`
 1. Update and/or check:
     - conda feedstock (if this doesn't happen automatically, see instructions [here](https://github.com/conda-forge/neworder-feedstock))
-    - docker image (this may need a new workflow to automate it)
+    - docker image
 1. Install pypi/conda-forge/docker releases in a fresh environment and ensure all is well. If not, fix in a patch release.
 1. Create release on github, using the tag and the release notes from above
 1. Check zenodo for new DOI and ensure documentation references it.
