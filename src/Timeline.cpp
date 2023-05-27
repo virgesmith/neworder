@@ -1,33 +1,28 @@
-
 #include "Timeline.h"
 #include "Log.h"
 #include "Error.h"
-
-//#include "NewOrder.h"
 
 #include <pybind11/chrono.h>
 
 #include <algorithm>
 
-
 py::object no::NoTimeline::time() const { return py::float_(time::never()); }
 py::object no::NoTimeline::start() const { return py::float_(time::never()); }
 py::object no::NoTimeline::end() const { return py::float_(time::never()); }
 
-int64_t no::NoTimeline::index() const { return static_cast<size_t>(m_stepped); }
 int64_t no::NoTimeline::nsteps() const { return 1; }
 double no::NoTimeline::dt() const { return 0.0; }
 
-void no::NoTimeline::next() { m_stepped = true; }
+void no::NoTimeline::next() { /* nothing to do, base class increments index */ }
 
-bool no::NoTimeline::at_end() const { return m_stepped; }
+bool no::NoTimeline::at_end() const { return m_index > 0; }
 
 // used by python __repr__
-std::string no::NoTimeline::repr() const { return "<neworder.NoTimeline stepped=%%>"s % (m_stepped ? "True": "False"); }
+std::string no::NoTimeline::repr() const { return "<neworder.NoTimeline stepped=%%>"s % (m_index > 0 ? "True": "False"); }
 
 
 no::LinearTimeline::LinearTimeline(double start, double end, size_t steps)
-  : m_index(0), m_start(start), m_end(end), m_steps(steps)
+  : m_start(start), m_end(end), m_steps(steps)
 {
   // validate
   // negative timesteps are disallowed as MC functions will misbehave with dt<0
@@ -47,18 +42,13 @@ no::LinearTimeline::LinearTimeline(double start, double end, size_t steps)
 }
 
 no::LinearTimeline::LinearTimeline(double start, double step)
-  : m_index(0), m_start(start), m_end(no::time::far_future()), m_dt(step), m_steps(-1)
+  : m_start(start), m_end(no::time::far_future()), m_dt(step), m_steps(-1)
 {
   // validate
   if (m_dt <= 0.0)
   {
     throw py::value_error("timeline must have a positive step size, got %%"s % m_dt);
   }
-}
-
-int64_t no::LinearTimeline::index() const
-{
-  return m_index;
 }
 
 double no::LinearTimeline::dt() const
@@ -73,10 +63,6 @@ int64_t no::LinearTimeline::nsteps() const
 
 void no::LinearTimeline::next()
 {
-  if (m_steps == 0 || (m_steps > 0 && m_index < m_steps))
-  {
-    ++m_index;
-  }
 }
 
 bool no::LinearTimeline::at_end() const
@@ -98,7 +84,7 @@ std::string no::LinearTimeline::repr() const
 
 
 no::NumericTimeline::NumericTimeline(const std::vector<double>& times)
-  : m_index(0), m_times(times)
+  : m_times(times)
 {
   if (m_times.size() < 2)
   {
@@ -117,7 +103,7 @@ no::NumericTimeline::NumericTimeline(const std::vector<double>& times)
 
 py::object no::NumericTimeline::time() const
 {
-  return py::float_(m_times[m_index]);
+  return at_end() ? end() : py::float_(m_times[m_index]);
 }
 
 py::object no::NumericTimeline::start() const
@@ -130,11 +116,6 @@ py::object no::NumericTimeline::end() const
   return py::float_(m_times.back());
 }
 
-int64_t no::NumericTimeline::index() const
-{
-  return m_index;
-}
-
 int64_t no::NumericTimeline::nsteps() const
 {
   return m_times.size() - 1;
@@ -142,17 +123,13 @@ int64_t no::NumericTimeline::nsteps() const
 
 double no::NumericTimeline::dt() const
 {
-  if (m_index == m_times.size() - 1)
+  if (m_index >= m_times.size() - 1)
     return 0.0;
   return m_times[m_index+1] - m_times[m_index];
 }
 
 void no::NumericTimeline::next()
 {
-  if (m_index < m_times.size())
-  {
-    ++m_index;
-  }
 }
 
 bool no::NumericTimeline::at_end() const
@@ -164,7 +141,7 @@ bool no::NumericTimeline::at_end() const
 std::string no::NumericTimeline::repr() const
 {
   return "<neworder.NumericTimeline times=%% steps=%% time=%% index=%%>"s
-          % m_times % (m_times.size() - 1) % m_times[m_index] % m_index;
+          % m_times % (m_times.size() - 1) % time() % m_index;
 }
 
 
@@ -264,7 +241,7 @@ no::CalendarTimeline::time_point no::CalendarTimeline::advance(const no::Calenda
 
 
 no::CalendarTimeline::CalendarTimeline(time_point start, time_point end, size_t step, char unit)
-  : m_index(0), m_step(step), m_unit(tolower(unit)), m_times(1, start)
+  : m_step(step), m_unit(tolower(unit)), m_times(1, start)
 {
   if (m_times[0] >= end)
   {
@@ -298,7 +275,7 @@ no::CalendarTimeline::CalendarTimeline(time_point start, time_point end, size_t 
 
 // open-ended timeline
 no::CalendarTimeline::CalendarTimeline(time_point start, size_t step, char unit)
-  : m_index(0), m_step(step), m_unit(tolower(unit)), m_times(1, start)
+  : m_step(step), m_unit(tolower(unit)), m_times(1, start)
 {
   if (m_step < 1)
   {
@@ -318,12 +295,6 @@ no::CalendarTimeline::CalendarTimeline(time_point start, size_t step, char unit)
 
 }
 
-
-int64_t no::CalendarTimeline::index() const
-{
-  return m_index;
-}
-
 bool no::CalendarTimeline::at_end() const
 {
   return m_times.size() > 1 && m_index >= m_times.size() - 1;
@@ -334,14 +305,6 @@ void no::CalendarTimeline::next()
   if (m_times.size() < 2)
   {
     m_currentStep = { std::get<1>(m_currentStep), advance(std::get<1>(m_currentStep)) };
-    ++m_index;
-  }
-  else
-  {
-    if (m_index < m_times.size())
-    {
-      ++m_index;
-    }
   }
 }
 
@@ -372,7 +335,7 @@ py::object no::CalendarTimeline::time() const
   {
     return py::cast(std::get<0>(m_currentStep));
   }
-  return py::cast(m_times[m_index]);
+  return at_end() ? end() : py::cast(m_times[m_index]);
 }
 
 py::object no::CalendarTimeline::start() const

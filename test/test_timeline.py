@@ -50,9 +50,9 @@ class _TestResume(no.Model):
 
 class CustomTimeline(no.Timeline):
   def __init__(self) -> None:
+    # NB base class takes care of index
     super().__init__()
     self.t = 1.0
-    self.i = 0
 
   @property
   def start(self) -> float:
@@ -67,10 +67,6 @@ class CustomTimeline(no.Timeline):
     return -1
 
   @property
-  def index(self) -> int:
-    return self.i
-
-  @property
   def time(self) -> float:
     return 1.0 - self.t
 
@@ -79,7 +75,6 @@ class CustomTimeline(no.Timeline):
     return self.t / 2
 
   def next(self) -> None:
-    self.i += 1
     self.t /= 2
 
   @property
@@ -120,9 +115,10 @@ def test_timeline_properties() -> None:
 def test_custom_timeline() -> None:
   ct = CustomTimeline()
   # default __repr__
-  assert str(ct) == "<CustomTimeline>"
-
-  assert no.run(CustomTimelineModel())
+  assert str(ct) == "<CustomTimeline index=0>"
+  m = CustomTimelineModel()
+  assert no.run(m)
+  assert str(m.timeline) == "<CustomTimeline index=1>"
 
 
 def test_time() -> None:

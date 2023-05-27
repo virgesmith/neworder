@@ -45,7 +45,7 @@ The framework provides four types of timeline, and is extensible:
 
 #### Custom timelines
 
-If none of the supplied timelines are suitable, users can implement their own, inheriting from the abstract `neworder.Timeline` base class. The following must be implemented:
+If none of the supplied timelines are suitable, users can implement their own, inheriting from the abstract `neworder.Timeline` base class, which also provides an `index` property. The following must be implemented in the subclass:
 
 symbol     | type              | description
 -----------|-------------------|---
@@ -53,7 +53,7 @@ symbol     | type              | description
 `dt`       | `float` property  | the size of the current timestep
 `end`      | `Any` property    | the end time of the timeline
 `index`    | `int` property    | the index of the current timestep
-`next`     | method            | move to the next timestep (for internal use by model, should not normally be called in client code)
+`next`     | `None` method     | move to the next timestep (for internal use by model, should not normally be called in client code)
 `nsteps`   |`int` property     | the total number of timesteps
 `start`    | `Any` property    | the start time of the timeline
 `time`     | `Any` property    | the current time of the timeline
@@ -61,7 +61,7 @@ symbol     | type              | description
 
 As an example, this open-ended numeric timeline starts at zero and asymptotically converges to 1.0:
 
-{{ include_snippet("./docs/custom_timeline.py") }}
+{{ include_snippet("./docs/custom_timeline.py", show_filename=False) }}
 
 ### Spatial Domain
 
@@ -81,9 +81,7 @@ See the Conway example for implementations.
 
 #### Graph
 
-The `GeospatialGraph` class provides a wrapper around the `networkx` and `osmnx` packages, and provides methods for computing shortes paths, isochrones, and subgraphs as well as identifying edges connected to nodes and vice versa.
-
-See the "infection" example for implementation details.
+The `GeospatialGraph` class provides a wrapper around the `networkx` and `osmnx` packages, and provides methods for computing shortes paths, isochrones, and subgraphs as well as identifying edges connected to nodes and vice versa. Due to its heavy dependencies, it is not part of the core `neworder` package - the implementation is in the [infection](examples/infection.md) example.
 
 ### Model
 

@@ -76,7 +76,7 @@ bool no::Model::run(Model& model)
     no::log("t=%%(%%) %%.step()"s % t % timeindex % model_name);
     model.step();
 
-    model.timeline().next();
+    model.timeline().step();
 
     // call the check method and stop if necessary
     if (no::env::checked)

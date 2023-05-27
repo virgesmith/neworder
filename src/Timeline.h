@@ -18,7 +18,7 @@ class Timeline
 {
 public:
 
-  Timeline() { }
+  Timeline() : m_index(0) { }
 
   virtual ~Timeline() = default;
 
@@ -27,7 +27,7 @@ public:
   virtual py::object start() const = 0;
   virtual py::object end() const = 0;
 
-  virtual int64_t index() const = 0;
+  int64_t index() { return m_index; };
   virtual int64_t nsteps() const = 0;
   virtual double dt() const = 0;
 
@@ -37,9 +37,20 @@ public:
 
   // used by python __repr__, default implementation
   virtual std::string repr() const {
-    return "<%%>"s % py::cast(this).attr("__class__").attr("__name__").cast<std::string>();
+    return "<%% index=%%>"s % py::cast(this).attr("__class__").attr("__name__").cast<std::string>() % m_index;
   }
 
+protected:
+  size_t m_index;
+
+private:
+  friend class Model;
+  // this is called internally to ensure index is incremented
+  void step()
+  {
+    ++m_index;
+    next();
+  }
 };
 
 class PyTimeline: public Timeline
@@ -52,7 +63,6 @@ class PyTimeline: public Timeline
   py::object start() const override { PYBIND11_OVERRIDE_PURE(py::object, Timeline, start); }
   py::object end() const override { PYBIND11_OVERRIDE_PURE(py::object, Timeline, end); }
 
-  int64_t index() const override { PYBIND11_OVERRIDE_PURE(int64_t, Timeline, index); }
   int64_t nsteps() const override { PYBIND11_OVERRIDE_PURE(int64_t, Timeline, nsteps); }
   double dt() const override { PYBIND11_OVERRIDE_PURE(double, Timeline, dt); }
 
@@ -67,7 +77,7 @@ class PyTimeline: public Timeline
 class NEWORDER_EXPORT NoTimeline final : public Timeline
 {
 public:
-  NoTimeline() : m_stepped(false) { }
+  NoTimeline() { }
 
   ~NoTimeline() override = default;
   NoTimeline(const NoTimeline&) = default;
@@ -80,7 +90,6 @@ public:
   py::object start() const override;
   py::object end() const override;
 
-  int64_t index() const override;
   int64_t nsteps() const override;
   double dt() const override;
 
@@ -89,10 +98,6 @@ public:
   bool at_end() const override;
 
   std::string repr() const override;
-
-private:
-  // flag whether we've done the arbitrary step
-  bool m_stepped;
 };
 
 // An equally-spaced timeline between 2 numeric time points
@@ -117,7 +122,6 @@ public:
   py::object start() const override;
   py::object end() const override;
 
-  int64_t index() const override;
   int64_t nsteps() const override;
   double dt() const override;
 
@@ -128,7 +132,6 @@ public:
   std::string repr() const override;
 
 private:
-  size_t m_index;
   double m_start;
   double m_end;
   double m_dt; // store both dt and steps as (re)computing steps from dt is prone to rounding errors
@@ -153,7 +156,6 @@ public:
   py::object start() const override;
   py::object end() const override;
 
-  int64_t index() const override;
   int64_t nsteps() const override;
   double dt() const override;
 
@@ -164,7 +166,6 @@ public:
   std::string repr() const override;
 
 private:
-  size_t m_index;
   std::vector<double> m_times;
 };
 
@@ -191,7 +192,6 @@ public:
   py::object start() const override;
   py::object end() const override;
 
-  int64_t index() const override;
   int64_t nsteps() const override;
   double dt() const override;
 
@@ -206,7 +206,6 @@ private:
   // advance to next point
   time_point advance(const time_point& time) const;
 
-  size_t m_index;
   size_t m_step;
   char m_unit;
   int m_refDay;
