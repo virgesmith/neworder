@@ -53,8 +53,8 @@ symbol     | type              | description
 `dt`       | `float` property  | the size of the current timestep
 `end`      | `Any` property    | the end time of the timeline
 `index`    | `int` property    | the index of the current timestep
-`next`     | `None` method     | move to the next timestep (for internal use by model, should not normally be called in client code)
-`nsteps`   |`int` property     | the total number of timesteps
+`_next`    | `None` method     | move to the next timestep (for internal use by model, should not normally be called in client code)
+`nsteps`   | `int` property    | the total number of timesteps
 `start`    | `Any` property    | the start time of the timeline
 `time`     | `Any` property    | the current time of the timeline
 `__repr__` | `str` method      | (optional) a string representation of the object, defaults to the name of the class
@@ -71,13 +71,13 @@ As an example, this open-ended numeric timeline starts at zero and asymptoticall
 
 The `Space` class to encapsulate a continuous space with arbirtrary dimensionality. The edges of the space can be unbounded, wrap-around, contrained, or "bounce". The `move` method will ensure that entities in the space are assigned the appropriate position and velocity to conform with the edge behaviour. Additionally the methods `dist2` and `dist` and compute distances in the space taking into account the edge behaviour (i.e. wrap-around). `dist2` returns the squared distance and, if appropriate, is a more efficient alternative.
 
-See the n-body and boids examples for implementations.
+See the [boids](examples/boids.md) examples for implementations.
 
 #### Discrete
 
 The `StateGrid` class provides a discrete grid of arbitrary states. Wrapped and contrained edges (only) are supported.
 
-See the Conway example for implementations.
+See the [Conway](examples/conway.md) example for implementations.
 
 #### Graph
 

@@ -13,7 +13,7 @@ py::object no::NoTimeline::end() const { return py::float_(time::never()); }
 int64_t no::NoTimeline::nsteps() const { return 1; }
 double no::NoTimeline::dt() const { return 0.0; }
 
-void no::NoTimeline::next() { /* nothing to do, base class increments index */ }
+void no::NoTimeline::_next() { /* nothing to do, base class increments index */ }
 
 bool no::NoTimeline::at_end() const { return m_index > 0; }
 
@@ -61,7 +61,7 @@ int64_t no::LinearTimeline::nsteps() const
   return m_steps;
 }
 
-void no::LinearTimeline::next()
+void no::LinearTimeline::_next()
 {
 }
 
@@ -128,7 +128,7 @@ double no::NumericTimeline::dt() const
   return m_times[m_index+1] - m_times[m_index];
 }
 
-void no::NumericTimeline::next()
+void no::NumericTimeline::_next()
 {
 }
 
@@ -300,7 +300,7 @@ bool no::CalendarTimeline::at_end() const
   return m_times.size() > 1 && m_index >= m_times.size() - 1;
 }
 
-void no::CalendarTimeline::next()
+void no::CalendarTimeline::_next()
 {
   if (m_times.size() < 2)
   {

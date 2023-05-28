@@ -26,7 +26,7 @@ class AsymptoticTimeline(neworder.Timeline):
   def dt(self) -> float:
     return self.t / 2
 
-  def next(self) -> None:
+  def _next(self) -> None:
     self.t /= 2
 
   @property

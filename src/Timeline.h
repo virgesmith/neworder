@@ -31,7 +31,7 @@ public:
   virtual int64_t nsteps() const = 0;
   virtual double dt() const = 0;
 
-  virtual void next() = 0;
+  virtual void _next() = 0;
 
   virtual bool at_end() const = 0;
 
@@ -46,10 +46,10 @@ protected:
 private:
   friend class Model;
   // this is called internally to ensure index is incremented
-  void step()
+  void next()
   {
     ++m_index;
-    next();
+    _next();
   }
 };
 
@@ -66,7 +66,7 @@ class PyTimeline: public Timeline
   int64_t nsteps() const override { PYBIND11_OVERRIDE_PURE(int64_t, Timeline, nsteps); }
   double dt() const override { PYBIND11_OVERRIDE_PURE(double, Timeline, dt); }
 
-  void next() override { PYBIND11_OVERRIDE_PURE(void, Timeline, next); }
+  void _next() override { PYBIND11_OVERRIDE_PURE(void, Timeline, _next); }
 
   bool at_end() const override { PYBIND11_OVERRIDE_PURE(bool, Timeline, at_end); }
   std::string repr() const override { PYBIND11_OVERRIDE_NAME(std::string, Timeline, "__repr__", repr); }
@@ -93,7 +93,7 @@ public:
   int64_t nsteps() const override;
   double dt() const override;
 
-  void next() override;
+  void _next() override;
 
   bool at_end() const override;
 
@@ -125,7 +125,7 @@ public:
   int64_t nsteps() const override;
   double dt() const override;
 
-  void next() override;
+  void _next() override;
 
   bool at_end() const override;
 
@@ -159,7 +159,7 @@ public:
   int64_t nsteps() const override;
   double dt() const override;
 
-  void next() override;
+  void _next() override;
 
   bool at_end() const override;
 
@@ -195,7 +195,7 @@ public:
   int64_t nsteps() const override;
   double dt() const override;
 
-  void next() override;
+  void _next() override;
 
   bool at_end() const override;
 
