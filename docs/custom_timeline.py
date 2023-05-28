@@ -36,7 +36,7 @@ class AsymptoticTimeline(neworder.Timeline):
 
 class Model(neworder.Model):
   def __init__(self) -> None:
-    super().__init__(AsymptoticTimeline(), neworder.MonteCarlo.deterministic_identical_stream)
+    super().__init__(AsymptoticTimeline())
 
   def step(self) -> None:
     neworder.log(f"{self.timeline.index}: {self.timeline.time}")

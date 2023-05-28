@@ -16,6 +16,26 @@ def test_base_not_initialised() -> None:
     m = TestModel()
 
 
+def test_default_seeder() -> None:
+  class DefaultModel(no.Model):
+    def __init__(self) -> None:
+      super().__init__(no.NoTimeline())
+      self.x = self.mc.raw()
+
+  class ExplicitModel(no.Model):
+    def __init__(self) -> None:
+      super().__init__(no.NoTimeline(), no.MonteCarlo.deterministic_independent_stream)
+      self.x = self.mc.raw()
+
+  class DifferentModel(no.Model):
+    def __init__(self) -> None:
+      super().__init__(no.NoTimeline(), lambda _: 42)
+      self.x = self.mc.raw()
+
+  assert DefaultModel().x == ExplicitModel().x
+  assert DefaultModel().x != DifferentModel().x
+
+
 def test_multimodel() -> None:
 
   class TestModel(no.Model):

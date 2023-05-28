@@ -114,9 +114,9 @@ class Model():
     """
     The base model class from which all neworder models should be subclassed
     """
-    def __init__(self, timeline: Timeline, seeder: function) -> None:
+    def __init__(self, timeline: Timeline, seeder: typing.Callable[[int], int] = MonteCarlo.deterministic_independent_stream) -> None:
         """
-        Constructs a model object with a timeline and a seeder function
+        Constructs a model object with a timeline and (optionally) a seeder function for the random stream(s)
         """
     def check(self) -> bool:
         """
