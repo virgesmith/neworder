@@ -3,7 +3,7 @@
 ## Model Initialisation
 
 !!! warning "Base Model Initialisation"
-    When instantiating the model subclass, it is essential that the `neworder.Model` base class is explicitly initialised. It must be supplied with a `Timeline` object and a seeding function for the Monte-Carlo engine. Failure to do this will result in a runtime error.
+    When instantiating the model subclass, it is essential that the `neworder.Model` base class is explicitly initialised. It must be supplied with a `Timeline` object and (optionally) a seeding function for the Monte-Carlo engine. Failure to do this will result in a runtime error.
 
 For example, use this initialisation pattern:
 
@@ -11,7 +11,7 @@ For example, use this initialisation pattern:
 class MyModel(neworder.Model):
   def __init__(self, args...) -> None:
     timeline = ... # initialise an appropriate timeline
-    seeder = ... # set an appropriate seeding function
+    seeder = ... # (optional) set an appropriate seeding function
     # this line is essential:
     super().__init__(timeline, seeder)
     # now initialise the subclass...

@@ -12,7 +12,7 @@ class Environment;
 class NEWORDER_EXPORT Model
 {
 public:
-  explicit Model(no::Timeline& timeline, const py::function& seeder = py::cpp_function(MonteCarlo::deterministic_independent_stream));
+  Model(no::Timeline& timeline, const py::function& seeder);
 
   virtual ~Model() = default;
 

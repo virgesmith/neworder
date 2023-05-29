@@ -201,8 +201,8 @@ PYBIND11_MODULE(_neworder_core, m)
    .def("verbose", [](bool v = true) { no::env::verbose.store(v, std::memory_order_relaxed); }, verbose_docstr, "verbose"_a = true)
    .def("checked", [](bool c = true) { no::env::checked.store(c, std::memory_order_relaxed); }, checked_docstr, "checked"_a = true);
 
-  // Map custom C++ exceptions to python ones - wrap in a lambda as its an rvalue reference
-  py::register_exception_translator(std::move(no::exception_translator));
+  // Map custom C++ exceptions to python ones
+  py::register_exception_translator(no::exception_translator);
 
   init_env();
 }
