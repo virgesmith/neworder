@@ -7,7 +7,7 @@ import pytest
 
 def test_invalid() -> None:
   with pytest.raises(AssertionError):
-    no.Space([], [])
+    no.Space(np.array([]), np.array([]))
   with pytest.raises(AssertionError):
     no.Space(np.array([0.0]), np.array([0.0]))
   with pytest.raises(AssertionError):

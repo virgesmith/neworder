@@ -1,0 +1,9 @@
+coverage:
+  status:
+    project:
+      default:
+        target: 90%
+        threshold: 1%  # leeway
+    patch:
+      default:
+        target: 80%

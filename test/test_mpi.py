@@ -2,14 +2,14 @@
 
 from typing import Any
 import numpy as np
-import pandas as pd # type: ignore
+import pandas as pd
 import neworder as no
 
 if no.mpi.size() == 1:
   no.log("No MPI env detected, skipping MPI tests")
 
 else:
-  from mpi4py import MPI
+  from mpi4py import MPI  # type: ignore[import]
   comm = MPI.COMM_WORLD
 
   no.log("MPI env detected, running MPI tests")

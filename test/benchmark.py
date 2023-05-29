@@ -21,8 +21,7 @@ c = np.array([-1, 1, 2, 3, 4, 5])
 
 def get_data() -> pd.DataFrame:
   hh = pd.read_csv(INITIAL_POPULATION)#, nrows=100)
-  for i in range(8):
-    hh = hh.append(hh, ignore_index=True)
+  hh = pd.concat([hh] * 8, ignore_index=True)
   return hh
 
 
@@ -48,19 +47,19 @@ def transition(c: np.ndarray[np.float64, np.dtype[np.float64]], t: np.ndarray[np
   #   current = df.loc[i, colname]
   #   df.loc[i, colname] = sample(u[i], tc[lookup[current]], c)
 
-  df[colname] = df[colname].apply(lambda current: sample(m.mc.ustream(1), tc[lookup[current]], c))
+  df[colname] = df[colname].apply(lambda current: sample(m.mc.ustream(1)[0], tc[lookup[current]], c))
 
 def python_impl(m: no.Model, df: pd.DataFrame) -> tuple[int, float, pd.Series]:
 
   start = time.time()
   transition(c, t, df, "LC4408_C_AHTHUK11")
-  return len(df), time.time() - start, df.LC4408_C_AHTHUK11.values
+  return len(df), time.time() - start, df.LC4408_C_AHTHUK11
 
 def cpp_impl(m: no.Model, df: pd.DataFrame) -> tuple[int, float, pd.Series]:
 
   start = time.time()
   no.df.transition(m, c, t, df, "LC4408_C_AHTHUK11")
-  return len(df), time.time() - start, df.LC4408_C_AHTHUK11.values
+  return len(df), time.time() - start, df.LC4408_C_AHTHUK11
 
 
 #def f(m):

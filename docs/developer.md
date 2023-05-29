@@ -136,21 +136,36 @@ The C++ module needs to be built with instrumentation (the `--coverage` flag) an
 
 The script from [codecov.io](https://codecov.io/gh/virgesmith/neworder/) uses `gcov` to process the output and upload it. NB it's important to ensure that the `gcc` and `gcov` versions are consistent otherwise it will crash (the ubuntu 20.04 appveyor image defaults to gcc-7 and gcov-9).
 
+## Generating type stubs
+
+Type stubs can be generated for the C++ module using `pybind11-stubgen`, although manual modifications are needed for the output (e.g. docstrings for overloaded functions are misplaced, numpy types need to be fixed).
+
+```sh
+pybind11-stubgen _neworder_core
+```
+
+It may also be necessary to regenerate type stubs for the submodules, e.g.
+
+```sh
+pybind11-stubgen _neworder_core.time
+mv stubs/_neworder_core/time-stubs/__init__.pyi neworder/time.pyi
+```
+
 ## Release Checklist
 
-Merge branches/PRs into **main** and fix any CI issues (builds, tests, major code standards) before commencing.
+Development should happen on a release branch (NOT on main). Any commit to main triggers a workflow that automatically bumps the version, tags the code, builds a package, publishes it to PyPI, then builds a docker image containing the examples and pushes this to docker hub.
 
-If necessary, use `test.pypi.org` to upload a release candidate, which can then be installed to a model implementation for testing "in the wild".
+!!! warning "Automatic version bumping"
+    By default the patch version is bumped but this can be changed to minor or major as necessary in `.github/workflows/pypi-release.yml`. Once a specific version has been published, it cannot be modified (only deleted), so if in doubt modify the action to publish a release candidate to `test.pypi.org`.
 
 1. Create some release notes based on commit comments since previous release, e.g.: `git log 0.2.1..HEAD --oneline`
-2. Bump `__version__` in `neworder/__init__.py`
-3. Clean, rebuild, test, regenerate examples and code docs: `scripts/code_doc.sh`
-4. Commit changes
-5. Tag, e.g.: `git tag -a 0.3.0 -m"release v0.3.0"`
-6. Push, including tag e.g.: `git push --atomic origin main 0.3.0`
-7. Check tagged CI builds and docker image are ok
-8. Package and upload to PyPI: `scripts/package.sh`
-9. Update and check conda feedstock (if this doesn't happen automatically, see instructions [here](https://github.com/conda-forge/neworder-feedstock))
-10. Install pypi/conda-forge/docker releases in a fresh environment and ensure all is well. If not, fix and go back to 2.
-11. Create release on github, using the tag and the release notes from above
-12. Check zenodo for new DOI and ensure documentation references it.
+1. Regenerate type stubs (see above) as necessary
+1. Clean, rebuild, run tests, check type annotations.
+1. Commit changes to release branch
+1. Ensure all checks passing and merge to `main`
+1. Update and/or check:
+    - conda feedstock (if this doesn't happen automatically, see instructions [here](https://github.com/conda-forge/neworder-feedstock))
+    - docker image
+1. Install pypi/conda-forge/docker releases in a fresh environment and ensure all is well. If not, fix in a patch release.
+1. Create release on github, using the tag and the release notes from above
+1. Check zenodo for new DOI and ensure documentation references it.

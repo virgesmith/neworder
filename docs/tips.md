@@ -2,14 +2,16 @@
 
 ## Model Initialisation
 
-!!! danger "Memory Corruption"
-    When instantiating the model class, it is imperative that the base class is explicitly initialised. Python does not enforce this, and memory corruption will occur if this is not done.
+!!! warning "Base Model Initialisation"
+    When instantiating the model subclass, it is essential that the `neworder.Model` base class is explicitly initialised. It must be supplied with a `Timeline` object and (optionally) a seeding function for the Monte-Carlo engine. Failure to do this will result in a runtime error.
 
-Use this initialisation pattern:
+For example, use this initialisation pattern:
 
 ```python
 class MyModel(neworder.Model):
-  def __init__(self, timeline: neworder.Timeline, seeder: Callable[[int], int], args...) -> None:
+  def __init__(self, args...) -> None:
+    timeline = ... # initialise an appropriate timeline
+    seeder = ... # (optional) set an appropriate seeding function
     # this line is essential:
     super().__init__(timeline, seeder)
     # now initialise the subclass...
@@ -20,12 +22,12 @@ class MyModel(neworder.Model):
 !!! note "Note"
     *neworder* random streams use the Mersenne Twister pseudorandom generator, as implemented in the C++ standard library.
 
-*neworder* provides three seeding strategy functions which initialise the model's random stream so that they are either non-reproducible, or reproducible and either identical or independent across parallel runs. Typically, a user would select identical streams (and perturbed inputs) for sensitivity analysis, and independent streams (with indentical inputs) for convergence analysis.
+*neworder* provides three basic seeding functions which initialise the model's random stream so that they are either non-reproducible (`neworder.MonteCarlo.nondeterministic_stream`), or reproducible and either identical (`neworder.MonteCarlo.deterministic_identical_stream`) or independent across parallel runs (`neworder.MonteCarlo.deterministic_independent_stream`). Typically, a user would select identical streams (and perturbed inputs) for sensitivity analysis, and independent streams (with indentical inputs) for convergence analysis.
 
-If necessary, you can supply your own seeding strategy, for instance if you required some processes to have independent streams, and some identical streams.
+If necessary, you can supply your own seeding strategy, for instance if you required half the processes to have identical streams:
 
 !!! note "Seeder function signature"
-    The seeder function must accept an `int` (even if unused) and return an `int`
+    The seeder function must accept an `int` (even if unused) and return an `int`. When the seeding function is called by the neworder runtime, the "rank" (in MPI parlance) of each process is passed to it. For serial execution, the rank will always be zero.
 
 ```python
 def hybrid_seeder(rank: int) -> int:
@@ -38,7 +40,7 @@ or, as a lambda:
 hybrid_seeder: Callable[[int], int] = lambda r: (r % 2) + 12345
 ```
 
-which returns the same seed for all odd-ranked processes and a different seed for the even-ranked ones. The use your seeder when you instantiate the `Model`, e.g.
+which returns the same seed for all odd-ranked processes and a different seed for the even-ranked ones. You can define your seeder inline when you instantiate the `Model`, e.g.
 
 ```python
 class MyModel(neworder.Model):
@@ -71,7 +73,7 @@ The "option" example relies on parallel processes with identical streams to redu
 
 ## External Sources of Randomness
 
-Other libraries, such as *numpy*, contain a much broader selection of Monte-Carlo functionality than *neworder* does, and it makes no sense to reimplement such functionality. If you are using a specific seeding strategy within neworder, and are also using an external random generator, it is important to ensure they are also following the same strategy, otherwise reproducibility may be compromised.
+Other libraries, such as *numpy*, contain a much broader selection of random number functionality than *neworder* does, and it makes no sense to reimplement such functionality. If you are using a specific seeding strategy within neworder, and are also using an external random generator, it is important to ensure they are also following the same strategy, otherwise reproducibility may be compromised.
 
 In your model constructor, you can seed the *numpy* generator like so
 

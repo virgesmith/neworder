@@ -30,33 +30,33 @@ The input data for this model are just:
 
 Firstly we create our model class, subclassing `neworder.Model`:
 
-{{ include_snippet("./examples/hello-world/model.py", "class") }}
+{{ include_snippet("./examples/hello_world/model.py", "class") }}
 
 and provide a constructor that initialises the base class and a DataFrame containing the population:
 
-{{ include_snippet("./examples/hello-world/model.py", "constructor") }}
+{{ include_snippet("./examples/hello_world/model.py", "constructor") }}
 
 !!! note "Unique Indexing"
     The `neworder.df.unique_index()` provides a mechanism to guarantee unique indices for DataFrames, even for parallel runs. This allows individuals to be exchanged and tracked between processes without conflicting indices.
 
 The `step` method randomly samples new values for the "talkative" attribute, using the `neworder.MonteCarlo.hazard` method
 
-{{ include_snippet("./examples/hello-world/model.py", "step") }}
+{{ include_snippet("./examples/hello_world/model.py", "step") }}
 
 and at the end of the timeline the `finalise` method prints greetings from the talkative individuals using the `neworder.log` function, which is preferred to plain `print` statements as the output is annotated with useful context for debugging.
 
-{{ include_snippet("./examples/hello-world/model.py", "finalise") }}
+{{ include_snippet("./examples/hello_world/model.py", "finalise") }}
 
 ## Execution
 
 The model is run by simply constructing an instance of our model and passing it to the `run` method:
 
-{{ include_snippet("./examples/hello-world/model.py", "script") }}
+{{ include_snippet("./examples/hello_world/model.py", "script") }}
 
 From the command line, run the model:
 
 ```bash
-python examples/hello-world/model.py
+python examples/hello_world/model.py
 ```
 
 which should result in something like

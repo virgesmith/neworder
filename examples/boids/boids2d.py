@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import Any
 from time import sleep
 import numpy as np
-import pandas as pd # type: ignore
+import pandas as pd
 import neworder as no
 import matplotlib.pyplot as plt # type: ignore
 from matplotlib.colors import ListedColormap
@@ -82,7 +82,7 @@ class Boids2d(no.Model):
     (self.boids.x, self.boids.y), (self.boids.vx, self.boids.vy) = self.domain.move(
       (self.boids.x, self.boids.y),
       (self.boids.vx, self.boids.vy),
-      self.timeline.dt(),
+      self.timeline.dt,
       ungroup=True
     )
 

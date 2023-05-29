@@ -18,7 +18,7 @@ class Timeline
 {
 public:
 
-  Timeline() { }
+  Timeline() : m_index(0) { }
 
   virtual ~Timeline() = default;
 
@@ -27,26 +27,57 @@ public:
   virtual py::object start() const = 0;
   virtual py::object end() const = 0;
 
-  virtual int64_t index() const = 0;
+  int64_t index() { return m_index; };
   virtual int64_t nsteps() const = 0;
   virtual double dt() const = 0;
 
-  virtual void next() = 0;
+  virtual void _next() = 0;
 
   virtual bool at_end() const = 0;
 
-  virtual std::unique_ptr<Timeline> clone() const = 0;
+  // used by python __repr__, default implementation
+  virtual std::string repr() const {
+    return "<%% index=%%>"s % py::cast(this).attr("__class__").attr("__name__").cast<std::string>() % m_index;
+  }
 
-  // used by python __repr__
-  virtual std::string repr() const = 0;
+protected:
+  size_t m_index;
 
+private:
+  friend class Model;
+  // this is called internally to ensure index is incremented
+  void next()
+  {
+    ++m_index;
+    _next();
+  }
 };
+
+class PyTimeline: public Timeline
+{
+  using Timeline::Timeline;
+  using Timeline::operator=;
+
+  // trampoline methods
+  py::object time() const override { PYBIND11_OVERRIDE_PURE(py::object, Timeline, time); }
+  py::object start() const override { PYBIND11_OVERRIDE_PURE(py::object, Timeline, start); }
+  py::object end() const override { PYBIND11_OVERRIDE_PURE(py::object, Timeline, end); }
+
+  int64_t nsteps() const override { PYBIND11_OVERRIDE_PURE(int64_t, Timeline, nsteps); }
+  double dt() const override { PYBIND11_OVERRIDE_PURE(double, Timeline, dt); }
+
+  void _next() override { PYBIND11_OVERRIDE_PURE(void, Timeline, _next); }
+
+  bool at_end() const override { PYBIND11_OVERRIDE_PURE(bool, Timeline, at_end); }
+  std::string repr() const override { PYBIND11_OVERRIDE_NAME(std::string, Timeline, "__repr__", repr); }
+};
+
 
 // An empty (one arbitrary step) timeline. The model's step method will each be called once only
 class NEWORDER_EXPORT NoTimeline final : public Timeline
 {
 public:
-  NoTimeline() : m_stepped(false) { }
+  NoTimeline() { }
 
   ~NoTimeline() override = default;
   NoTimeline(const NoTimeline&) = default;
@@ -59,22 +90,14 @@ public:
   py::object start() const override;
   py::object end() const override;
 
-  int64_t index() const override;
   int64_t nsteps() const override;
   double dt() const override;
 
-  void next() override;
+  void _next() override;
 
   bool at_end() const override;
 
-  virtual std::unique_ptr<Timeline> clone() const override;
-
-  // used by python __repr__
   std::string repr() const override;
-
-private:
-  // flag whether we've done the arbitrary step
-  bool m_stepped;
 };
 
 // An equally-spaced timeline between 2 numeric time points
@@ -99,21 +122,16 @@ public:
   py::object start() const override;
   py::object end() const override;
 
-  int64_t index() const override;
   int64_t nsteps() const override;
   double dt() const override;
 
-  void next() override;
+  void _next() override;
 
   bool at_end() const override;
 
-  virtual std::unique_ptr<Timeline> clone() const override;
-
-  // used by python __repr__
   std::string repr() const override;
 
 private:
-  size_t m_index;
   double m_start;
   double m_end;
   double m_dt; // store both dt and steps as (re)computing steps from dt is prone to rounding errors
@@ -138,20 +156,16 @@ public:
   py::object start() const override;
   py::object end() const override;
 
-  int64_t index() const override;
   int64_t nsteps() const override;
   double dt() const override;
 
-  void next() override;
+  void _next() override;
 
   bool at_end() const override;
-
-  virtual std::unique_ptr<Timeline> clone() const override;
 
   std::string repr() const override;
 
 private:
-  size_t m_index;
   std::vector<double> m_times;
 };
 
@@ -178,15 +192,12 @@ public:
   py::object start() const override;
   py::object end() const override;
 
-  int64_t index() const override;
   int64_t nsteps() const override;
   double dt() const override;
 
-  void next() override;
+  void _next() override;
 
   bool at_end() const override;
-
-  virtual std::unique_ptr<Timeline> clone() const override;
 
   std::string repr() const override;
 
@@ -195,7 +206,6 @@ private:
   // advance to next point
   time_point advance(const time_point& time) const;
 
-  size_t m_index;
   size_t m_step;
   char m_unit;
   int m_refDay;

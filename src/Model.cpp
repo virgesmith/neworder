@@ -5,14 +5,15 @@
 #include "Timer.h"
 #include "Log.h"
 #include "Error.h"
+#include "Helpers.h"
 
 #include <pybind11/pybind11.h>
 
-// take a copy of the (const) timeline and clone it (original object may get deleted)
-no::Model::Model(const Timeline& timeline, const py::function& seeder)
-  : m_timeline(timeline.clone()), m_monteCarlo(seeder(no::env::rank.load(std::memory_order_relaxed)).cast<int32_t>())
+no::Model::Model(no::Timeline& timeline, const py::function& seeder)
+  : m_timeline(timeline), m_timeline_handle(py::cast(&timeline)),
+  m_monteCarlo(seeder(no::env::rank.load(std::memory_order_relaxed)).cast<int32_t>())
 {
-  no::log("model init: timeline=%% mc=%%"s % m_timeline->repr() % m_monteCarlo.repr());
+  no::log("model init: timeline=%% mc=%%"s % m_timeline.repr() % m_monteCarlo.repr());
 }
 
 
@@ -20,11 +21,6 @@ void no::Model::modify(int)
 {
   // verbose only
   no::log("defaulted to no-op Model::modify()");
-}
-
-void no::Model::step()
-{
-  PYBIND11_OVERLOAD_PURE(void, Model, step);
 }
 
 void no::Model::halt()
@@ -47,49 +43,50 @@ void no::Model::finalise()
 }
 
 
-bool no::Model::run(py::object& model_subclass)
+bool no::Model::run(Model& model)
 {
-  // extract the base class
-  no::Model& base = model_subclass.cast<no::Model&>();
   Timer timer;
-
   int rank = no::env::rank.load(std::memory_order_relaxed);
-
   if (rank < 0)
   {
     throw std::runtime_error("environment is not correctly initialised, model will not be run");
   }
 
-  const std::string& subclass_name = py::str(model_subclass).cast<std::string>();
+  // access the timeline properties via the python object for consistency
+  // (we can use the methods for C++ implementations, but not for python implementations)
+  auto pytimeline = PyAccessor(model.timeline());
 
-  no::log("starting model run. start time=%%"s % base.timeline().start());
+  // get the Model class name
+  const std::string& model_name = py::cast(&model).attr("__class__").attr("__name__").cast<std::string>();
+
+  no::log("starting %% model run. start time=%%"s % model_name % pytimeline.get("start"));
 
   // apply the modifier, if implemented in the derived class
-  no::log("t=%%(%%) %%.modify(%%)"s % base.timeline().time() % base.timeline().index() % subclass_name % rank);
-  model_subclass.attr("modify")(rank);
+  no::log("t=%%(%%) %%.modify(%%)"s % pytimeline.get("time") % pytimeline.get("index") % model_name % rank);
+  model.modify(rank);
 
   // Loop over timeline
   bool ok = true;
-  while (!base.timeline().at_end())
+  while (!pytimeline.get_as<bool>("at_end"))
   {
-    py::object t = base.timeline().time();
-    size_t timeindex = base.timeline().index();
+    py::object t = pytimeline.get("time");
+    int64_t timeindex = pytimeline.get_as<int64_t>("index");
 
-    // call the step method, then incement the timeline
-    no::log("t=%%(%%) %%.step()"s % t % timeindex % subclass_name);
-    model_subclass.attr("step")();
+    // call the step method, then increment the timeline
+    no::log("t=%%(%%) %%.step()"s % t % timeindex % model_name);
+    model.step();
 
-    base.timeline().next();
+    model.timeline().next();
 
     // call the check method and stop if necessary
     if (no::env::checked)
     {
-      ok = model_subclass.attr("check")().cast<bool>();
-      no::log("t=%%(%%) %%.check(): %%"s % t % timeindex % subclass_name % (ok? "ok": "FAILED"));
+      ok = model.check();
+      no::log("t=%%(%%) %%.check(): %%"s % t % timeindex % model_name % (ok? "ok": "FAILED"));
       if (!ok)
       {
         // emit warning as well on failure (since the above message only appears when verbose mode is on)
-        no::warn("check() FAILED in %%, halting model run at t=%%(%%)"s % subclass_name % t % timeindex);
+        no::warn("check() FAILED in %%, halting model run at t=%%(%%)"s % model_name % t % timeindex);
         break;
       }
     }
@@ -104,13 +101,12 @@ bool no::Model::run(py::object& model_subclass)
     }
   }
   // call the finalise method (if not explicitly halted mid-timeline)
-  if (base.timeline().at_end())
+  if (pytimeline.get_as<bool>("at_end"))
   {
-    no::log("t=%%(%%) %%.finalise()"s % base.timeline().time() % base.timeline().index() % subclass_name );
-    model_subclass.attr("finalise")();
-    no::log("%% exec time=%%s"s % (ok ? "SUCCESS": "ERRORED") % timer.elapsed_s());
+    no::log("t=%%(%%) %%.finalise()"s % pytimeline.get("time") % pytimeline.get("index") % model_name );
+    model.finalise();
   }
+  no::log("%% exec time=%%s"s % (ok ? "SUCCESS": "ERRORED") % timer.elapsed_s());
   return ok;
 }
-
 

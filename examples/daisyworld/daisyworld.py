@@ -66,7 +66,7 @@ class DaisyWorld(no.Model):
     p_seed_white = np.where(self.domain.state == DaisyWorld.WHITE_DAISY, p_seed, 0)
     p_seed_black = np.where(self.domain.state == DaisyWorld.BLACK_DAISY, p_seed, 0)
 
-    d = [self.timeline.index() % 3 - 1, self.timeline.index() // 3 % 3 - 1]
+    d = [self.timeline.index % 3 - 1, self.timeline.index // 3 % 3 - 1]
 
     new_white = np.logical_and(np.roll(self.mc.hazard(p_seed_white), d, axis=[0, 1]), self.domain.state == DaisyWorld.EMPTY)
     self.domain.state = np.where(new_white, DaisyWorld.WHITE_DAISY, self.domain.state)
@@ -83,7 +83,7 @@ class DaisyWorld(no.Model):
 
     # sleep(0.1)
 
-    if self.timeline.index() > 3000:
+    if self.timeline.index > 3000:
       self.halt()
 
   def __calc_local_heating(self) -> np.ndarray[np.float64, np.dtype[np.float64]]:
@@ -120,7 +120,7 @@ class DaisyWorld(no.Model):
 
   def __update_visualisation(self) -> None:
     self.img.set_array(self.domain.state.T)
-    # plt.savefig("/tmp/daisyworld%04d.png" % self.timeline.index(), dpi=80)
+    # plt.savefig("/tmp/daisyworld%04d.png" % self.timeline.index, dpi=80)
     self.fig.canvas.flush_events()
 
 

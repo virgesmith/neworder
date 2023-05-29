@@ -2,7 +2,7 @@
 
 ## The Framework
 
-The aim of the framework is to be as unrestrictive and flexible as possible, whilst still providing a skeleton on which to implement a model and a suite of useful tools. Being data agnostic means that this framework can be run standalone or easily integrated with other models and/or, and into workflows with specific demands on input and output data formats.
+The aim of the framework is to be as unrestrictive and flexible as possible, whilst still providing a skeleton on which to implement a model, and a suite of useful tools. Being data agnostic means that this framework can be run standalone or easily integrated with other models and/or into workflows with specific demands on input and output data formats.
 
 It is designed to support both serial and parallel execution modes, with the latter being used to tackle large populations or to perform sensitivity or convergence analysis. *neworder* runs as happily on a desktop PC as it does on a HPC cluster.
 
@@ -28,9 +28,9 @@ This is provided by:
 
 ### Timeline
 
-*neworder*'s timeline is conceptually a sequence of steps that are iterated over (calling the Model's `step` and (optionally) `check` methods at each iteration, plus the `finalise` method at the last time point, which is commonly used to post-process the raw model data at the end of the model run.
+*neworder*'s timeline is conceptually a sequence of steps that are iterated over (calling the Model's `step` and (optionally) `check` methods at each iteration, plus the `finalise` method at the last time point, which is commonly used to post-process the raw model data at the end of the model run. Timelines should not be incremented in client code, this happens automatically within the model.
 
-The framework provides four types of timeline:
+The framework provides four types of timeline, and is extensible:
 
 - `NoTimeline`: an arbitrary one-step timeline which is designed for continuous-time models in which the model evolution is computed in a single step
 - `LinearTimeline`: a set of equally-spaced intervals in non-calendar time
@@ -43,6 +43,25 @@ The framework provides four types of timeline:
     - Daylight savings time adjustments are made which affect time intervals where the interval crosses a DST change
     - Time intervals are computed in years, on the basis of a year being 365.2475 days
 
+#### Custom timelines
+
+If none of the supplied timelines are suitable, users can implement their own, inheriting from the abstract `neworder.Timeline` base class, which also provides an `index` property. The following must be implemented in the subclass:
+
+symbol     | type              | description
+-----------|-------------------|---
+`at_end`   | `bool` property   | whether the timeline has reached it's end point
+`dt`       | `float` property  | the size of the current timestep
+`end`      | `Any` property    | the end time of the timeline
+`index`    | `int` property    | the index of the current timestep
+`_next`    | `None` method     | move to the next timestep (for internal use by model, should not normally be called in client code)
+`nsteps`   | `int` property    | the total number of timesteps
+`start`    | `Any` property    | the start time of the timeline
+`time`     | `Any` property    | the current time of the timeline
+`__repr__` | `str` method      | (optional) a string representation of the object, defaults to the name of the class
+
+As an example, this open-ended numeric timeline starts at zero and asymptotically converges to 1.0:
+
+{{ include_snippet("./docs/custom_timeline.py", show_filename=False) }}
 
 ### Spatial Domain
 
@@ -52,19 +71,17 @@ The framework provides four types of timeline:
 
 The `Space` class to encapsulate a continuous space with arbirtrary dimensionality. The edges of the space can be unbounded, wrap-around, contrained, or "bounce". The `move` method will ensure that entities in the space are assigned the appropriate position and velocity to conform with the edge behaviour. Additionally the methods `dist2` and `dist` and compute distances in the space taking into account the edge behaviour (i.e. wrap-around). `dist2` returns the squared distance and, if appropriate, is a more efficient alternative.
 
-See the n-body and boids examples for implementations.
+See the [boids](examples/boids.md) examples for implementations.
 
 #### Discrete
 
 The `StateGrid` class provides a discrete grid of arbitrary states. Wrapped and contrained edges (only) are supported.
 
-See the Conway example for implementations.
+See the [Conway](examples/conway.md) example for implementations.
 
 #### Graph
 
-The `GeospatialGraph` class provides a wrapper around the `networkx` and `osmnx` packages, and provides methods for computing shortes paths, isochrones, and subgraphs as well as identifying edges connected to nodes and vice versa.
-
-See the "infection" example for implementation details.
+The `GeospatialGraph` class provides a wrapper around the `networkx` and `osmnx` packages, and provides methods for computing shortes paths, isochrones, and subgraphs as well as identifying edges connected to nodes and vice versa. Due to its heavy dependencies, it is not part of the core `neworder` package - the implementation is in the [infection](examples/infection.md) example.
 
 ### Model
 
@@ -98,8 +115,8 @@ New users should take a look at the examples, which cover a range of application
 *neworder* is written in C++ with the python bindings provided by the *pybind11* package. As python and C++ have very different memory models, it's generally not advisable to directly share data, i.e. to safely have a python object and a C++ object both referencing (and potentially modifying) the same memory location. Thus *neworder* class member variables are accessible only via member functions and results are returned by value (i.e. copied). However, there is a crucial exception to this: the *numpy* `ndarray` type. This is fundamental to the operation of the framework, as it enables the C++ module to directly access (and modify) both *numpy* arrays and *pandas* data frames, facilitiating very fast implementation of algorithms operating directly on *pandas* DataFrames.<sup>*</sup>
 
 !!! note "Explicit Loops"
-    To get the best performance, avoid using explicit loops in python code where "vectorised" *neworder* functions can be used instead.
+    To get the best performance, avoid using explicit loops in python code where "vectorised" *neworder* (or e.g. numpy) functions can be used instead.
 
-You should also bear in mind that while python is a *dynamically typed* language, C++ is *statically typed*. If an argument to a *neworder* method is not the correct type, it will fail immediately (as opposed to python, which will fail only if an invalid operation for the given type is attempted).
+You should also bear in mind that while python is a *dynamically typed* language, C++ is *statically typed*. If an argument to a *neworder* method is not the correct type, it will fail immediately (as opposed to python, which will fail only if an invalid operation for the given type is attempted). Note also that `neworder`'s python code has type annotations.
 
 &ast; the `neworder.df.transition` function is *over 2 or 3 orders of magnitude faster* than an equivalent python implementation depending on the length of the dataset, and still an order of magnitude faster that an optimised python implementation.

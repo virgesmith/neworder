@@ -1,0 +1,59 @@
+name: PyPI release
+
+on:
+  push:
+    branches: main
+
+jobs:
+  bump-version:
+    name: Bump package version
+    if: "!contains(github.event.head_commit.message, 'Bump version')"
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        persist-credentials: false
+    - name: current_version
+      run: echo "current_version=$(grep __version__ neworder/__init__.py | cut -d ' ' -d'"' -f2)" >> $GITHUB_ENV
+    - name: bump2version-action
+      uses: FragileTech/bump-version@v1.0.4
+      with:
+        current_version: "${{ env.current_version }}"
+        files: neworder/__init__.py
+        commit_name: Version autobump
+        commit_email: andrew@friarswood.net
+        login: virgesmith
+        token: "${{ secrets.REPO_PAT }}"
+        # part defaults to patch
+        part: minor
+    - name: Create dist
+      run: |
+        pip install pybind11 numpy
+        python setup.py sdist
+    - name: Publish
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        password: ${{ secrets.PYPI_API_TOKEN }}
+        repository-url: https://upload.pypi.org/legacy/
+    - name: new_version
+      run: echo "new_version=$(grep __version__ neworder/__init__.py | cut -d ' ' -d'"' -f2)" >> $GITHUB_ENV
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
+      with:
+        username: ${{ secrets.DOCKER_USER }}
+        password: ${{ secrets.DOCKER_PAT }}
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Build and push Docker images
+      uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
+      with:
+        context: .
+        file: ./Dockerfile
+        push: true
+        tags: |
+          ${{ secrets.DOCKER_USER }}/neworder:${{ env.new_version }}
+          ${{ secrets.DOCKER_USER }}/neworder:latest
+

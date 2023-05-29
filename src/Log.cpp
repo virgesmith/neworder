@@ -2,6 +2,10 @@
 #include "Log.h"
 #include "Module.h"
 
+std::string std::to_string(char c)
+{
+  return std::string(1, c);
+}
 
 std::string std::to_string(const std::string& v)
 {

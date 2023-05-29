@@ -99,7 +99,7 @@ const char* timeline_at_end_docstr = R"docstr(
 )docstr";
 
 const char* timeline_repr_docstr = R"docstr(
-    Prints a human-readable representation of the timeline
+    Prints a human-readable representation of the timeline object
 )docstr";
 
 // MonteCarlo
@@ -216,7 +216,7 @@ const char* model_docstr = R"docstr(
 )docstr";
 
 const char* model_init_docstr = R"docstr(
-    Constructs a model object with a timeline and a seeder function
+    Constructs a model object with a timeline and (optionally) a seeder function for the random stream(s)
 )docstr";
 
 const char* model_timeline_docstr = R"docstr(

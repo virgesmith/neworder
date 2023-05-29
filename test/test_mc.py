@@ -1,15 +1,15 @@
 import numpy as np
+import numpy.typing as npt
 import neworder as no
-import platform
 import pytest
 
 
-def test_mc_property(base_model) -> None:
+def test_mc_property(base_model: no.Model) -> None:
   base_model.mc.ustream(1)
   base_model.mc.reset()
 
 
-def test_mc(base_model) -> None:
+def test_mc(base_model: no.Model) -> None:
   x = base_model.mc.ustream(1)
   base_model.mc.reset()
   assert x == base_model.mc.ustream(1)
@@ -24,7 +24,7 @@ def test_seeders() -> None:
   assert no.MonteCarlo.nondeterministic_stream(no.mpi.rank()) != no.MonteCarlo.nondeterministic_stream(no.mpi.rank())
 
   try:
-    import mpi4py.MPI as mpi
+    import mpi4py.MPI as mpi  # type: ignore[import]
     comm = mpi.COMM_WORLD
   except Exception:
     return
@@ -64,17 +64,17 @@ def test_seeders() -> None:
   assert m.mc.seed() == no.mpi.rank() + 1
 
 
-def test_sample(base_model) -> None:
+def test_sample(base_model: no.Model) -> None:
   with pytest.raises(ValueError):
-    base_model.mc.sample(100, [0.9])
+    base_model.mc.sample(100, np.array([0.9]))
   with pytest.raises(ValueError):
-    base_model.mc.sample(100, [-0.1, 1.1])
-  assert np.all(base_model.mc.sample(100, [1.0, 0.0, 0.0, 0.0]) == 0)
-  assert np.all(base_model.mc.sample(100, [0.0, 1.0, 0.0, 0.0]) == 1)
-  assert np.all(base_model.mc.sample(100, [0.0, 0.0, 0.0, 1.0]) == 3)
+    base_model.mc.sample(100, np.array([-0.1, 1.1]))
+  assert np.all(base_model.mc.sample(100, np.array([1.0, 0.0, 0.0, 0.0])) == 0)
+  assert np.all(base_model.mc.sample(100, np.array([0.0, 1.0, 0.0, 0.0])) == 1)
+  assert np.all(base_model.mc.sample(100, np.array([0.0, 0.0, 0.0, 1.0])) == 3)
 
 
-def test_hazard(base_model) -> None:
+def test_hazard(base_model: no.Model) -> None:
   assert np.all(base_model.mc.hazard(0.0,10) == 0.0)
   assert np.all(base_model.mc.hazard(1.0,10) == 1.0)
 
@@ -83,16 +83,16 @@ def test_hazard(base_model) -> None:
   with pytest.raises(ValueError):
     base_model.mc.hazard(1.1, 10)
   with pytest.raises(ValueError):
-    base_model.mc.hazard([-0.1, 0.5])
+    base_model.mc.hazard(np.array([-0.1, 0.5]))
   with pytest.raises(ValueError):
-    base_model.mc.hazard([0.1, 1.2])
+    base_model.mc.hazard(np.array([0.1, 1.2]))
   with pytest.raises(ValueError):
     base_model.mc.hazard(np.nan, 1)
   with pytest.raises(ValueError):
-    base_model.mc.hazard([0.1, np.nan])
+    base_model.mc.hazard(np.array([0.1, np.nan]))
 
 
-def test_stopping(base_model) -> None:
+def test_stopping(base_model: no.Model) -> None:
   assert np.all(base_model.mc.stopping(0.0, 10) == no.time.far_future())
 
   with pytest.raises(ValueError):
@@ -100,15 +100,15 @@ def test_stopping(base_model) -> None:
   with pytest.raises(ValueError):
     base_model.mc.stopping(1.1, 10)
   with pytest.raises(ValueError):
-    base_model.mc.stopping([-0.1, 0.5])
+    base_model.mc.stopping(np.array([-0.1, 0.5]))
   with pytest.raises(ValueError):
-    base_model.mc.stopping([0.1, 1.2])
+    base_model.mc.stopping(np.array([0.1, 1.2]))
   with pytest.raises(ValueError):
     base_model.mc.stopping(np.nan, 1)
   with pytest.raises(ValueError):
-    base_model.mc.stopping([0.1, np.nan])
+    base_model.mc.stopping(np.array([0.1, np.nan]))
 
-def test_arrivals_validation(base_model) -> None:
+def test_arrivals_validation(base_model: no.Model) -> None:
   assert np.all(no.time.isnever(base_model.mc.first_arrival([0.0,0.0], 1.0, 10)))
   with pytest.raises(ValueError):
     base_model.mc.first_arrival(np.array([-1.0, 0.0]), 1.0, 10)
@@ -129,7 +129,7 @@ def test_arrivals_validation(base_model) -> None:
     base_model.mc.arrivals([np.nan, np.nan], 1.0, 10, 0.0)
 
 
-def test_mc_counts(base_model) -> None:
+def test_mc_counts(base_model: no.Model) -> None:
   mc = base_model.mc
   assert mc.seed() == 19937
 
@@ -144,14 +144,14 @@ def test_mc_counts(base_model) -> None:
     c = mc.counts([lam] * n, dt)
     x = range(0, max(c))
     # convert to counts
-    c = [(c == k).sum() / n for k in x]
+    c1 = [(c == k).sum() / n for k in x]
     p = poisson_pdf(x, lam * dt)
 
     for i in x:
-      assert np.fabs(c[i] - p[i]) < 1.0 / np.sqrt(n)
+      assert np.fabs(c1[i] - p[i]) < 1.0 / np.sqrt(n)
 
 
-def test_mc_serial(base_model) -> None:
+def test_mc_serial(base_model: no.Model) -> None:
 
   if no.mpi.size() != 1:
     return
@@ -186,7 +186,7 @@ def test_mc_serial(base_model) -> None:
   dt = 1.0
   p = np.full(11, 0.1)
   p[-1] = 0
-  a = mc.first_arrival(p, dt, n)
+  a = mc.first_arrival(p, dt, n)  # type: ignore[assignment]
   assert np.nanmin(a) > 0.0
   assert np.nanmax(a) < 10.0
   no.log("%f - %f" % (np.nanmin(a), np.nanmax(a)))
@@ -214,7 +214,7 @@ def test_mc_serial(base_model) -> None:
   assert np.nanmax(b) < 19.0
 
   # now set a back to random arrivals
-  a = mc.first_arrival(p, dt, n)
+  a = mc.first_arrival(p, dt, n)  # type: ignore[assignment]
   # next arrivals (absolute) only in range (min(a), 10), if they happen
   b = mc.next_arrival(a, p, dt)
   assert np.nanmin(b) > np.nanmin(a)
@@ -236,7 +236,7 @@ def test_mc_serial(base_model) -> None:
   assert np.nanmax(b) < np.nanmax(a) + dt + 10.0
 
   mc.reset()
-  a = mc.first_arrival(np.array([0.1, 0.2, 0.3]), 1.0, 6, 0.0)
+  a = mc.first_arrival(np.array([0.1, 0.2, 0.3]), 1.0, 6, 0.0)  # type: ignore[assignment]
   assert len(a) == 6
   # only works for single-process
   assert a[0] == 3.6177811673165667
@@ -266,10 +266,10 @@ def test_mc_serial(base_model) -> None:
   assert len(hv) == 5
 
   # Exp.value = 1/p +/- 1/sqrt(N)
-  s = base_model.mc.stopping(0.1, 10000)
-  assert isinstance(s, np.ndarray)
-  assert len(s) == 10000
-  assert abs(np.mean(s)/10 - 1.0) < 0.03
+  st = base_model.mc.stopping(0.1, 10000)
+  assert isinstance(st, np.ndarray)
+  assert len(st) == 10000
+  assert abs(np.mean(st)/10 - 1.0) < 0.03
 
   sv = base_model.mc.stopping(np.array([0.1, 0.2, 0.3, 0.4, 0.5]))
   assert isinstance(sv, np.ndarray)
@@ -281,7 +281,7 @@ def test_mc_serial(base_model) -> None:
   assert len(nhpp) == 10
 
 
-def test_mc_parallel(base_model, base_indep_model) -> None:
+def test_mc_parallel(base_model: no.Model, base_indep_model: no.Model) -> None:
 
   if no.mpi.size() == 1:
     return
@@ -317,13 +317,10 @@ def test_mc_parallel(base_model, base_indep_model) -> None:
   if no.mpi.rank() == 0:
     assert all_a and all_states
     for r in range(1, no.mpi.size()):
-      if platform.system() != "Darwin":
-        # mc.state() just returns 0 on OSX due to an apparent bug in MT19937 that intermittently segfaults
-        assert all_states[r] != all_states[0]
       assert not np.all(a - all_a[r] == 0.0)
 
 
-def test_bitgen(base_model):
+def test_bitgen(base_model: no.Model) -> None:
   base_model2 = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
   gen = no.as_np(base_model.mc)
 

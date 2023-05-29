@@ -74,7 +74,7 @@ class WolfSheep(no.Model):
     self.sheep_speed = [self.sheep.speed.mean()]
     self.wolf_speed_var = [self.wolves.speed.var()]
     self.sheep_speed_var = [self.sheep.speed.var()]
-    self.t = [self.timeline.index()]
+    self.t = [self.timeline.index]
 
     (self.ax_g, self.ax_w, self.ax_s,
      self.ax_t1, self.ax_wt, self.ax_st,
@@ -99,7 +99,7 @@ class WolfSheep(no.Model):
 
   def check(self) -> bool:
     # record data
-    self.t.append(self.timeline.index())
+    self.t.append(self.timeline.index)
     self.wolf_pop.append(len(self.wolves))
     self.sheep_pop.append(len(self.sheep))
     self.grass_prop.append(100.0 * len(self.grass[self.grass.countdown==0])/len(self.grass))
@@ -263,6 +263,6 @@ class WolfSheep(no.Model):
         rect.set_height(h)
       self.ax_t4.set_ylim([0, max(n/len(self.sheep))])
 
-    #plt.savefig("/tmp/wolf-sheep%04d.png" % self.timeline.index(), dpi=80)
+    #plt.savefig("/tmp/wolf-sheep%04d.png" % self.timeline.index, dpi=80)
     self.figs.canvas.flush_events()
 
