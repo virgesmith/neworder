@@ -25,7 +25,7 @@ jobs:
         login: virgesmith
         token: "${{ secrets.REPO_PAT }}"
         # part defaults to patch
-        part: minor
+        # part: minor
     - name: Create dist
       run: |
         pip install pybind11 numpy
