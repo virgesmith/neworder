@@ -14,22 +14,22 @@ jobs:
       with:
         persist-credentials: false
     - name: current_version
-      run: echo "current_version=$(grep __version__ neworder/__init__.py | cut -d ' ' -d'"' -f2)" >> $GITHUB_ENV
+      run: echo "current_version=$(grep -e '^version' pyproject.toml | cut  -d' ' -d'=' -d'"' - -f2)" >> $GITHUB_ENV
     - name: bump2version-action
       uses: FragileTech/bump-version@v1.0.4
       with:
         current_version: "${{ env.current_version }}"
-        files: neworder/__init__.py
+        files: neworder/pyproject.toml
         commit_name: Version autobump
-        commit_email: andrew@friarswood.net
-        login: virgesmith
+        commit_email: devops@friarswood.net
+        login: "${{ vars.REPO_LOGIN }}"
         token: "${{ secrets.REPO_PAT }}"
         # part defaults to patch
         # part: minor
     - name: Create dist
       run: |
-        pip install pybind11 numpy
-        python setup.py sdist
+        pip install pybind11 numpy build
+        python -m build . --sdist
     - name: Publish
       uses: pypa/gh-action-pypi-publish@release/v1
       with:

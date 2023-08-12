@@ -9,6 +9,54 @@ requires = [
 
 build-backend = "setuptools.build_meta"
 
+[project]
+name = "neworder"
+version = "1.3.999"
+authors = [
+  { name="Andrew Smith", email="andrew@friarswood.net" },
+]
+license = {file = "LICENCE.md"}
+description = "A dynamic microsimulation framework"
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+  "pandas>=1.5.0",
+  "pandas-stubs",
+  "scipy>=1.9.3",
+  "mpi4py>=3.0.3",
+  "matplotlib>=3.6.2"
+]
+
+  # install_requires=['pandas>=1.0.5', 'pandas-stubs', 'scipy'],
+  # setup_requires=['pybind11>=2.5.0', 'pytest-runner', 'numpy>=1.19.1'],
+  # tests_require=['pytest', 'mpi4py>=3.0.3'],
+
+
+[project.optional-dependencies]
+geospatial = [
+  "networkx>3.0",
+  "osmnx>=1.3.0",
+  "geopandas>=0.12.2",
+  "shapely>=2.0.0"
+]
+
+dev = [
+  "pybind11>=2.10.3",
+  "pytest>=7.1.3",
+  "mypy>=1.5.0",
+  "mypy-extensions>=1.0.0"
+]
+
+
+[project.urls]
+"Homepage" = "https://github.com/pypa/sampleproject"
+"Bug Tracker" = "https://github.com/pypa/sampleproject/issues"
+
 [tool.pytest.ini_options]
 minversion = "6.0"
 testpaths = [

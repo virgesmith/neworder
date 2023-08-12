@@ -4,7 +4,7 @@ from time import sleep
 import matplotlib.pyplot as plt
 import numpy as np
 
-from graph import GeospatialGraph
+from neworder.geospatial import GeospatialGraph
 import osmnx as ox
 from shapely import line_interpolate_point
 import geopandas as gpd

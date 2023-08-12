@@ -1,10 +1,16 @@
 from __future__ import annotations
 from typing import Any, Generator
-import networkx as nx  # type: ignore[import]
-import osmnx as ox  # type: ignore[import]
-from shapely.ops import linemerge  # type: ignore[import]
-from shapely.geometry import LineString, MultiLineString, Polygon  # type: ignore[import]
-import geopandas as gpd  # type: ignore[import]
+
+try:
+  import networkx as nx  # type: ignore[import]
+  import osmnx as ox  # type: ignore[import]
+  from shapely.ops import linemerge  # type: ignore[import]
+  from shapely.geometry import LineString, MultiLineString, Polygon  # type: ignore[import]
+  import geopandas as gpd  # type: ignore[import]
+except ImportError:
+  raise ImportError("""optional dependencies are not installed.
+Reinstalling neworder with the geospatial option should fix this:
+pip install neworder[geospatial]""")
 
 
 class GeospatialGraph:
