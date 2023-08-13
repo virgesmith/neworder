@@ -31,7 +31,7 @@ jobs:
         python -m pip install --upgrade pip
     - name: Build
       run: |
-        python -m pip install .[geospatial]
+        python -m pip install .[geospatial] pytest
     # - name: Lint with flake8
     #   run: |
     #     # stop the build if there are Python syntax errors or undefined names
