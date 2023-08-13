@@ -36,7 +36,7 @@ class GeospatialGraph:
     return self.__graph.graph["crs"]
 
   @property
-  def graph(self) -> gpd.GeoDataFrame:
+  def graph(self) -> nx.MultiDiGraph | nx.Graph:
     return self.__graph
 
   @property

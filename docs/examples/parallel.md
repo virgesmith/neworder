@@ -12,6 +12,11 @@ Finally, one process acquires the entire population and prints a summary of the 
 
 {{ include_snippet("./docs/examples/src.md", show_filename=False) }}
 
+!!! note "Optional dependencies"
+    This example requires optional dependencies, see [system requirements](../..#system-requirements) and use:
+
+    `pip install neworder[parallel]`
+
 ## Setup
 
 Firstly, we import the necessary modules and check we are running in parallel mode:

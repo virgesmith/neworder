@@ -4,6 +4,11 @@ This example showcases how to run parallel simulations, each with identical rand
 
 {{ include_snippet("./docs/examples/src.md", show_filename=False) }}
 
+!!! note "Optional dependencies"
+    This example requires optional dependencies, see [system requirements](../..#system-requirements) and use:
+
+    `pip install neworder[parallel]`
+
 ## Background
 
 Monte-Carlo simulation is a [common technique in quantitative finance](https://en.wikipedia.org/wiki/Monte_Carlo_methods_in_finance).

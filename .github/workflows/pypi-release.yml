@@ -22,10 +22,10 @@ jobs:
         files: neworder/pyproject.toml
         commit_name: Version autobump
         commit_email: devops@friarswood.net
-        login: "${{ vars.REPO_LOGIN }}"
+        login: "${{ secrets.REPO_USER }}"
         token: "${{ secrets.REPO_PAT }}"
         # part defaults to patch
-        # part: minor
+        part: minor
     - name: Create dist
       run: |
         pip install pybind11 numpy build
