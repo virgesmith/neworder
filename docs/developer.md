@@ -46,13 +46,7 @@ source .venv/bin/activate
 Now install the local package
 
 ```bash
-pip install -e .
-```
-
-And then install the python dependencies for a development environment:
-
-```bash
-pip install -r requirements-developer.txt
+pip install -e .[dev]
 ```
 
 If you want to use a specific compiler you can do something like this:
@@ -65,23 +59,6 @@ And a simple test that all is ok:
 
 ```bash
 python -c "import neworder"
-```
-
-### Conda
-
-Using python 3.10 (adjust as necessary)
-
-```bash
-conda create -q -n neworder-env python=3.10
-conda activate neworder-env
-conda install gxx_linux-64 mpich numpy pandas pybind11 pytest mpi4py
-```
-
-Then, as above
-
-```bash
-pip install -e .
-conda install --file requirements-developer.txt
 ```
 
 ### Docker

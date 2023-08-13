@@ -12,4 +12,4 @@ twine upload -u __token__ -p $TEST_PYPI_API_TOKEN  --repository-url https://test
 # twine upload -u __token__ -p $PYPI_API_TOKEN --repository-url https://upload.pypi.org/legacy/ dist/neworder-$version.tar.gz
 
 # NB on testPyPI, deps need to been installed from main repo. Use this:
-pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple neworder
+# pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple neworder
