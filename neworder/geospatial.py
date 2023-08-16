@@ -16,7 +16,7 @@ pip install neworder[geospatial]""")
 class GeospatialGraph:
   """
   Spatial domains on Earth's surface that are defined by graphs/networks.
-  This implementation is not provided in the main package due to the large number of dependencies it would introduce.
+  Use of this class requires "geospatial" extras: pip install neworder[geospatial]
   """
 
   def __init__(self, G: nx.Graph, crs: str | None = None) -> None:

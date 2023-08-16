@@ -29,7 +29,7 @@ def test_default_seeder() -> None:
 
   class DifferentModel(no.Model):
     def __init__(self) -> None:
-      super().__init__(no.NoTimeline(), lambda _: 42)
+      super().__init__(no.NoTimeline(), lambda: 42)
       self.x = self.mc.raw()
 
   assert DefaultModel().x == ExplicitModel().x

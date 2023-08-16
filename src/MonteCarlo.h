@@ -19,11 +19,11 @@ class NEWORDER_EXPORT MonteCarlo
 public:
 
   // some basic seeding strategies
-  static int32_t deterministic_independent_stream(int r) noexcept;
+  static int32_t deterministic_independent_stream() noexcept;
 
-  static int32_t deterministic_identical_stream(int) noexcept;
+  static int32_t deterministic_identical_stream() noexcept;
 
-  static int32_t nondeterministic_stream(int) noexcept;
+  static int32_t nondeterministic_stream() noexcept;
 
   // constructs given a seed
   MonteCarlo(int32_t seed) noexcept;

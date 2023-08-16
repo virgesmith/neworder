@@ -117,9 +117,9 @@ PYBIND11_MODULE(_neworder_core, m)
   // MC
   py::class_<no::MonteCarlo>(m, "MonteCarlo", mc_docstr)
     // constructor is NOT exposed to python, can only be created within a model
-    .def_static("deterministic_identical_stream", &no::MonteCarlo::deterministic_identical_stream, mc_deterministic_identical_stream_docstr, "r"_a)
-    .def_static("deterministic_independent_stream", &no::MonteCarlo::deterministic_independent_stream, mc_deterministic_independent_stream_docstr, "r"_a)
-    .def_static("nondeterministic_stream", &no::MonteCarlo::nondeterministic_stream, mc_nondeterministic_stream_docstr, "r"_a)
+    .def_static("deterministic_identical_stream", &no::MonteCarlo::deterministic_identical_stream, mc_deterministic_identical_stream_docstr)
+    .def_static("deterministic_independent_stream", &no::MonteCarlo::deterministic_independent_stream, mc_deterministic_independent_stream_docstr)
+    .def_static("nondeterministic_stream", &no::MonteCarlo::nondeterministic_stream, mc_nondeterministic_stream_docstr)
     .def("init_bitgen", &no::MonteCarlo::init_bitgen, "internal helper function used by as_np")
     .def("seed", &no::MonteCarlo::seed, mc_seed_docstr)
     .def("reset", &no::MonteCarlo::reset, mc_reset_docstr)
