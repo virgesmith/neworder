@@ -30,14 +30,15 @@ If necessary, you can supply your own seeding strategy, for instance if you requ
     The seeder function must accept an `int` (even if unused) and return an `int`. When the seeding function is called by the neworder runtime, the "rank" (in MPI parlance) of each process is passed to it. For serial execution, the rank will always be zero.
 
 ```python
-def hybrid_seeder(rank: int) -> int:
-  return (rank % 2) + 12345
+import neworder
+def hybrid_seeder() -> int:
+  return (neworder.mpi.rank % 2) + 12345
 ```
 
 or, as a lambda:
 
 ```python
-hybrid_seeder: Callable[[int], int] = lambda r: (r % 2) + 12345
+hybrid_seeder: Callable[[], int] = lambda r: (r % 2) + 12345
 ```
 
 which returns the same seed for all odd-ranked processes and a different seed for the even-ranked ones. You can define your seeder inline when you instantiate the `Model`, e.g.
@@ -45,14 +46,14 @@ which returns the same seed for all odd-ranked processes and a different seed fo
 ```python
 class MyModel(neworder.Model):
   def __init__(self, timeline: neworder.Timeline) -> None:
-    super().__init__(timeline, lambda r: (r % 2) + 12345)
+    super().__init__(timeline, lambda: (neworder.mpi.rank % 2) + 12345)
     ...
 ```
 
 If there was a requirement for multiple processes to all have the same nondeterministic stream, you could implement a seeding strategy like so:
 
 ```python
-def nondeterministic_identical_stream(_: int) -> int:
+def nondeterministic_identical_stream() -> int:
   # only process 0 gets a seed
   seed = neworder.MonteCarlo.nondeterministic_stream(0) if neworder.mpi.rank == 0 else None
   # then broadcasts it to the other processes
