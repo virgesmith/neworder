@@ -257,16 +257,13 @@ const char* model_halt_docstr = R"docstr(
 // MPI
 
 const char* mpi_docstr = R"docstr(
-    Submodule for basic MPI environment discovery
+    Submodule for basic MPI environment discovery, containing the following attributes:
+
+    rank: the process rank (0 in serial mode)
+    size: the number of processes (1 in serial mode)
+    comm: the MPI communicator (None in serial mode)
 )docstr";
 
-const char* mpi_rank_docstr = R"docstr(
-    Returns the MPI rank of the process
-)docstr";
-
-const char* mpi_size_docstr = R"docstr(
-    Returns the MPI size (no. of processes) of the run
-)docstr";
 
 // Time
 

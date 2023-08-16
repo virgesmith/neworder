@@ -20,7 +20,7 @@ This is provided by:
 - a **MonteCarlo** engine: a dedicated random number stream for each model instance, with specific configurations for parallel streams
 - a library of Monte-Carlo methods and statistical functions, plus compatibility with `numpy`'s statistical functionality through an adapter
 - data manipulation functions optimised for *pandas* DataFrames
-- support for a parallel execution using MPI (via the `mpi4py` package).
+- support for parallel execution using MPI (via the `mpi4py` package).
 
 *neworder* explicitly does not provide any tools for things like visualisation, and users can thus use whatever packages they are most comfortable with. The examples, however, do provide various visualisations using `matplotlib`.
 

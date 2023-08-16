@@ -17,7 +17,7 @@ no::Model::Model(no::Timeline& timeline, const py::function& seeder)
 }
 
 
-void no::Model::modify(int)
+void no::Model::modify()
 {
   // verbose only
   no::log("defaulted to no-op Model::modify()");
@@ -63,7 +63,7 @@ bool no::Model::run(Model& model)
 
   // apply the modifier, if implemented in the derived class
   no::log("t=%%(%%) %%.modify(%%)"s % pytimeline.get("time") % pytimeline.get("index") % model_name % rank);
-  model.modify(rank);
+  model.modify();
 
   // Loop over timeline
   bool ok = true;

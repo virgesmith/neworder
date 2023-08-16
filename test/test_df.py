@@ -35,10 +35,10 @@ def test_basic() -> None:
 
   # test unique index generation
   idx = no.df.unique_index(100)
-  assert np.array_equal(idx, np.arange(no.mpi.rank(), 100 * no.mpi.size(), step=no.mpi.size()))
+  assert np.array_equal(idx, np.arange(no.mpi.rank, 100 * no.mpi.size, step=no.mpi.size))
 
   idx = no.df.unique_index(100)
-  assert np.array_equal(idx, np.arange(100 * no.mpi.size() + no.mpi.rank(), 200 * no.mpi.size(), step=no.mpi.size()))
+  assert np.array_equal(idx, np.arange(100 * no.mpi.size + no.mpi.rank, 200 * no.mpi.size, step=no.mpi.size))
 
   N = 100000
   # base model for MC engine

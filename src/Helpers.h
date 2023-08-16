@@ -10,13 +10,13 @@ public:
   typedef T cpp_type;
   explicit PyAccessor(cpp_type& object) : ref(py::cast(&object)) { }
 
-  py::object get(const char* name)
+  py::object get(const char* name) const
   {
     return ref.attr(name);
   }
 
   template<typename U>
-  U get_as(const char* name)
+  U get_as(const char* name) const
   {
     return ref.attr(name).template cast<U>();
   }

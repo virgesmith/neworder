@@ -49,6 +49,7 @@ dev = [
   "pytest>=7.1.3",
   "mypy>=1.5.0",
   "mypy-extensions>=1.0.0",
+  "ruff",
   "mkdocs>=1.4.2",
   "mkdocs-macros-plugin>=0.7.0",
   "mkdocs-material>=9.0.2",
@@ -66,3 +67,10 @@ minversion = "6.0"
 testpaths = [
     "test"
 ]
+
+[tool.ruff]
+select = ["E", "F"]
+ignore = ["E501"]
+
+[tool.ruff.per-file-ignores]
+"**/__init__.py" = ["F401", "F403"]

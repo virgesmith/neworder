@@ -22,7 +22,7 @@ class MyModel(neworder.Model):
 !!! note "Note"
     *neworder* random streams use the Mersenne Twister pseudorandom generator, as implemented in the C++ standard library.
 
-*neworder* provides three basic seeding functions which initialise the model's random stream so that they are either non-reproducible (`neworder.MonteCarlo.nondeterministic_stream`), or reproducible and either identical (`neworder.MonteCarlo.deterministic_identical_stream`) or independent across parallel runs (`neworder.MonteCarlo.deterministic_independent_stream`). Typically, a user would select identical streams (and perturbed inputs) for sensitivity analysis, and independent streams (with indentical inputs) for convergence analysis.
+*neworder* provides three basic seeding functions which initialise the model's random stream so that they are either non-reproducible (`neworder.MonteCarlo.nondeterministic_stream`), or reproducible and either identical (`neworder.MonteCarlo.deterministic_identical_stream`) or independent across parallel runs (`neworder.MonteCarlo.deterministic_independent_stream`). Typically, a user would select identical streams (and perturbed inputs) for sensitivity analysis, and independent streams (with identical inputs) for convergence analysis.
 
 If necessary, you can supply your own seeding strategy, for instance if you required half the processes to have identical streams:
 
@@ -52,14 +52,11 @@ class MyModel(neworder.Model):
 If there was a requirement for multiple processes to all have the same nondeterministic stream, you could implement a seeding strategy like so:
 
 ```python
-from mpi4py import MPI
-comm = MPI.COMM_WORLD
-
 def nondeterministic_identical_stream(_: int) -> int:
   # only process 0 gets a seed
-  seed = neworder.MonteCarlo.nondeterministic_stream(0) if neworder.mpi.rank() == 0 else None
+  seed = neworder.MonteCarlo.nondeterministic_stream(0) if neworder.mpi.rank == 0 else None
   # then broadcasts it to the other processes
-  seed = comm.bcast(seed, root=0)
+  seed = neworder.mpi.comm.bcast(seed, root=0)
   return seed
 
 ```
