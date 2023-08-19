@@ -108,7 +108,6 @@ In these situations, the model developer can (conditionally) call the `Model.hal
 !!! note "`Model.halt()`"
     This function *does not* end execution immediately, it signals to the *neworder* runtime not to iterate any further timesteps. This means that the entire body of the `step` method (and the `check` method, if implemented) will still be executed. Overriding the `halt` method is not recommended.
 
-
 !!! Note "Finalisation"
     The `finalise` method is automatically called by the *neworder* runtime only when the end of the timeline. As open-ended timelines never reach this state, the method must can be called explicitly, if needed.
 

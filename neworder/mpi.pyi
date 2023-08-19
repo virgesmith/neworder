@@ -19,7 +19,11 @@ __all__ = [
     "size"
 ]
 
-
 comm: MPI_comm_t
+"""The MPI communicator, or None """
+
 rank: int
+"""The MPI process rank ()"""
+
 size: int
+"""The number of MPI processes"""
