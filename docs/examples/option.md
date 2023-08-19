@@ -13,9 +13,14 @@ This example showcases how to run parallel simulations, each with identical rand
 
 Monte-Carlo simulation is a [common technique in quantitative finance](https://en.wikipedia.org/wiki/Monte_Carlo_methods_in_finance).
 
-A [European call option](https://en.wikipedia.org/wiki/Call_option) is a derivative contract that grants the holder the right (but not the obligation) to buy an underlying stock \(S\) at a fixed "strike" price \(K\) at some given future time \(T\) (the expiry). Similarly, a put option grants the right (but not obligation) to sell, rather than buy, at a fixed price.
+A [European call option](https://en.wikipedia.org/wiki/Call_option) is a derivative contract that grants the holder the right (but not the obligation) to buy an underlying stock \(S\) at a fixed "strike" price \(K\) at some given future time \(T\) (the expiry). Similarly, a put option grants the right (but not obligation) to sell, rather than buy, at a fixed price. Thus the value \(V(T)\) of a call option at expiry is:
 
-In order to calculate the fair value of a derivative contract one can simulate a (large) number of paths the underlying stock may take, according to current market conditions. The model assumes that the evolution of the underlying is given by the stochastic differential equation (SDE):
+\[
+V(T) = \text{max}\left( S(T)-K,0 \right)
+\]
+
+
+In order to calculate the fair value of a derivative contract one can simulate a (large) number of paths the underlying stock may take, according to current market conditions, to get a distribution of \(S(T)\) given \(S(0)\). The model assumes that the evolution of the underlying is given by the stochastic differential equation (SDE):
 
 \[
 \frac{dS}{S} = (r-q)dt + \sigma dW
@@ -24,7 +29,7 @@ In order to calculate the fair value of a derivative contract one can simulate a
 where \(S\) is price, \(r\) is risk-free rate, \(q\) is continuous dividend yield, \(\sigma\) is volatility and \(dW\) a Wiener process (a 1-d Brownian motion), and the value of the call option \(V\) at \(t=0\) is
 
 \[
-V(0) = e^{-rT}\mathbb{E}\big[V(T)\big] = e^{-rT}\mathbb{E}\big[\text{max}\left( S(T)-K,0 \right)\big]
+V(0) = e^{-rT}\mathbb{E}\big[V(T)\big]
 \]
 
 We can compute this by simulating paths to get \(S(T)\) and taking the mean. The first term above discounts back to \(t=0\), giving us the *current* fair value.
@@ -54,7 +59,7 @@ The `model.py` file sets up the run, providing input data, constructing, and the
 
 ### Constructor
 
-The constructor takes copies of the parameters, and defines a simple timeline \([0, T]\) corresponding to the valuation and expiry dates, and a single timestep, which is all we require for this example. It initialises the base class with the timeline, and specifies that each process use the same random stream (which reduces noise in our risk calculations):
+The constructor takes copies of the parameters, and defines a simple timeline \({0, T}\) corresponding to the valuation and expiry dates, and a single timestep, which is all we require for this example. It initialises the base class with the timeline, and specifies that each process use the same random stream (which reduces noise in our risk calculations):
 
 {{ include_snippet("examples/option/black_scholes.py", "constructor") }}
 

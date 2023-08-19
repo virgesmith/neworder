@@ -67,7 +67,7 @@ def nondeterministic_identical_stream() -> int:
 !!! warning "Synchronisation"
     Identically initialised random streams only stay in sync if the same number of samples are taken from each one .
 
-The "option" example relies on parallel processes with identical streams to reduce noise when computing differences for sensitivity analysis. It implements a `check` step that compares the internal states of the random stream in each process and fails if any are different (see the example code).
+The "option" example relies on parallel processes with identical random streams to reduce noise when computing differences for sensitivity analysis. It implements a `check` step that compares the internal states of the random stream in each process and fails if any are different (see the example code).
 
 ## External Sources of Randomness
 
