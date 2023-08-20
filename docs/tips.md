@@ -114,7 +114,7 @@ In these situations, the model developer can (conditionally) call the `Model.hal
 ## Deadlocks
 
 !!! danger "Failure is All-Or-Nothing"
-    If checks fail, or any other error occurs in a parallel run, other processes must be notified, otherwise deadlocks can occur.
+    If checks fail, or any other error occurs in one process in a parallel run, other processes must be notified, otherwise deadlocks can occur.
 
 Blocking communications between processes will deadlock if, for instance, the receiving process has ended due to an error. This will cause the entire run to hang (and may impact your HPC bill). The option example, as described above, has a check for random stream synchronisation that looks like this:
 
