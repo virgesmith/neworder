@@ -19,7 +19,7 @@ jobs:
       uses: FragileTech/bump-version@v1.0.4
       with:
         current_version: "${{ env.current_version }}"
-        files: neworder/pyproject.toml
+        files: pyproject.toml
         commit_name: Version autobump
         commit_email: devops@friarswood.net
         login: "${{ secrets.REPO_USER }}"
@@ -36,7 +36,7 @@ jobs:
         password: ${{ secrets.PYPI_API_TOKEN }}
         repository-url: https://upload.pypi.org/legacy/
     - name: new_version
-      run: echo "new_version=$(grep __version__ neworder/__init__.py | cut -d ' ' -d'"' -f2)" >> $GITHUB_ENV
+      run: echo "new_version=$(grep -e '^version' pyproject.toml | cut  -d' ' -d'=' -d'"' - -f2)" >> $GITHUB_ENV
 
     - name: Log in to Docker Hub
       uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
