@@ -22,22 +22,23 @@ class MyModel(neworder.Model):
 !!! note "Note"
     *neworder* random streams use the Mersenne Twister pseudorandom generator, as implemented in the C++ standard library.
 
-*neworder* provides three basic seeding functions which initialise the model's random stream so that they are either non-reproducible (`neworder.MonteCarlo.nondeterministic_stream`), or reproducible and either identical (`neworder.MonteCarlo.deterministic_identical_stream`) or independent across parallel runs (`neworder.MonteCarlo.deterministic_independent_stream`). Typically, a user would select identical streams (and perturbed inputs) for sensitivity analysis, and independent streams (with indentical inputs) for convergence analysis.
+*neworder* provides three basic seeding functions which initialise the model's random stream so that they are either non-reproducible (`neworder.MonteCarlo.nondeterministic_stream`), or reproducible and either identical (`neworder.MonteCarlo.deterministic_identical_stream`) or independent across parallel runs (`neworder.MonteCarlo.deterministic_independent_stream`). Typically, a user would select identical streams (and perturbed inputs) for sensitivity analysis, and independent streams (with identical inputs) for convergence analysis.
 
 If necessary, you can supply your own seeding strategy, for instance if you required half the processes to have identical streams:
 
 !!! note "Seeder function signature"
-    The seeder function must accept an `int` (even if unused) and return an `int`. When the seeding function is called by the neworder runtime, the "rank" (in MPI parlance) of each process is passed to it. For serial execution, the rank will always be zero.
+    The seeder function must take no arguments and return an `int`. When the function is called by the neworder runtime, the "rank" (in MPI parlance) of each process is available to it. For serial execution, the rank will always be zero.
 
 ```python
-def hybrid_seeder(rank: int) -> int:
-  return (rank % 2) + 12345
+import neworder
+def hybrid_seeder() -> int:
+  return (neworder.mpi.RANK % 2) + 12345
 ```
 
 or, as a lambda:
 
 ```python
-hybrid_seeder: Callable[[int], int] = lambda r: (r % 2) + 12345
+hybrid_seeder: Callable[[], int] = lambda r: (r % 2) + 12345
 ```
 
 which returns the same seed for all odd-ranked processes and a different seed for the even-ranked ones. You can define your seeder inline when you instantiate the `Model`, e.g.
@@ -45,21 +46,18 @@ which returns the same seed for all odd-ranked processes and a different seed fo
 ```python
 class MyModel(neworder.Model):
   def __init__(self, timeline: neworder.Timeline) -> None:
-    super().__init__(timeline, lambda r: (r % 2) + 12345)
+    super().__init__(timeline, lambda: (neworder.mpi.RANK % 2) + 12345)
     ...
 ```
 
 If there was a requirement for multiple processes to all have the same nondeterministic stream, you could implement a seeding strategy like so:
 
 ```python
-from mpi4py import MPI
-comm = MPI.COMM_WORLD
-
-def nondeterministic_identical_stream(_: int) -> int:
+def nondeterministic_identical_stream() -> int:
   # only process 0 gets a seed
-  seed = neworder.MonteCarlo.nondeterministic_stream(0) if neworder.mpi.rank() == 0 else None
+  seed = neworder.MonteCarlo.nondeterministic_stream(0) if neworder.mpi.RANK == 0 else None
   # then broadcasts it to the other processes
-  seed = comm.bcast(seed, root=0)
+  seed = neworder.mpi.COMM.bcast(seed, root=0)
   return seed
 
 ```
@@ -69,7 +67,7 @@ def nondeterministic_identical_stream(_: int) -> int:
 !!! warning "Synchronisation"
     Identically initialised random streams only stay in sync if the same number of samples are taken from each one .
 
-The "option" example relies on parallel processes with identical streams to reduce noise when computing differences for sensitivity analysis. It implements a `check` step that compares the internal states of the random stream in each process and fails if any are different (see the example code).
+The "option" example relies on parallel processes with identical random streams to reduce noise when computing differences for sensitivity analysis. It implements a `check` step that compares the internal states of the random stream in each process and fails if any are different (see the example code).
 
 ## External Sources of Randomness
 
@@ -110,14 +108,13 @@ In these situations, the model developer can (conditionally) call the `Model.hal
 !!! note "`Model.halt()`"
     This function *does not* end execution immediately, it signals to the *neworder* runtime not to iterate any further timesteps. This means that the entire body of the `step` method (and the `check` method, if implemented) will still be executed. Overriding the `halt` method is not recommended.
 
-
 !!! Note "Finalisation"
     The `finalise` method is automatically called by the *neworder* runtime only when the end of the timeline. As open-ended timelines never reach this state, the method must can be called explicitly, if needed.
 
 ## Deadlocks
 
 !!! danger "Failure is All-Or-Nothing"
-    If checks fail, or any other error occurs in a parallel run, other processes must be notified, otherwise deadlocks can occur.
+    If checks fail, or any other error occurs in one process in a parallel run, other processes must be notified, otherwise deadlocks can occur.
 
 Blocking communications between processes will deadlock if, for instance, the receiving process has ended due to an error. This will cause the entire run to hang (and may impact your HPC bill). The option example, as described above, has a check for random stream synchronisation that looks like this:
 
@@ -132,18 +129,18 @@ The key here is that there is only one result, shared between all processes. In 
 
 *neworder* uses 64-bit floating-point numbers to represent time, and the values `-inf`, `+inf` and `nan` respectively to represent the concepts of the distant past, the far future and never. This allows users to define, or compare against, values that are:
 
-- before any other time value,
-- after any other time value, or
-- unequal to any time value
+- unequal to any time value, including itself (`neworder.time.NEVER`),
+- before any other (non-never) time value (`neworder.time.DISTANT_PAST`) , or
+- after any other (non-never) time value (`neworder.time.FAR_FUTURE`)
 
 !!! warning "NaN comparisons"
-    Due to the rules of [IEEE754 floating-point](https://en.wikipedia.org/wiki/NaN#Comparison_with_NaN), care must be taken when comparing to NaN/never, since a direct comparison will always be false, i.e.: `never() != never()`.
+    Due to the rules of [IEEE754 floating-point](https://en.wikipedia.org/wiki/NaN#Comparison_with_NaN), care must be taken when comparing to `NaN`/`NEVER`, since a direct comparison will always be false, i.e.: `NEVER != NEVER`.
 
 To compare time values with "never", use the supplied function `isnever()`:
 
 ```python
 import neworder
-n = neworder.time.never()
+n = neworder.time.NEVER
 neworder.log(n == n) # False!
 neworder.log(neworder.time.isnever(n)) # True
 ```

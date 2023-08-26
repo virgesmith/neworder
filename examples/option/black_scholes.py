@@ -2,12 +2,8 @@
 
 from typing import Any
 import numpy as np
-from mpi4py import MPI
 import neworder
 from helpers import nstream, norm_cdf
-
-comm = MPI.COMM_WORLD
-
 
 # Subclass neworder.Model
 class BlackScholes(neworder.Model):
@@ -24,12 +20,12 @@ class BlackScholes(neworder.Model):
   # !constructor!
 
   # !modifier!
-  def modify(self, rank: int) -> None:
-    if rank == 1:
+  def modify(self) -> None:
+    if neworder.mpi.RANK == 1:
       self.market["spot"] *= 1.01 # delta/gamma up bump
-    elif rank == 2:
+    elif neworder.mpi.RANK == 2:
       self.market["spot"] *= 0.99 # delta/gamma down bump
-    elif rank == 3:
+    elif neworder.mpi.RANK == 3:
       self.market["vol"] += 0.001 # 10bp upward vega
   # !modifier!
 
@@ -44,14 +40,14 @@ class BlackScholes(neworder.Model):
     # comparing, and broadcasting the result. If one process fails the
     # check and exits without notifying the others, deadlocks can result.
     # send the state representation to process 0 (others will get None)
-    states = comm.gather(self.mc.state(), 0)
+    states = neworder.mpi.COMM.gather(self.mc.state(), 0)
     # process 0 checks the values
     if states:
       ok = all(s == states[0] for s in states)
     else:
       ok = True
     # broadcast process 0's ok to all processes
-    ok = comm.bcast(ok, root=0)
+    ok = neworder.mpi.COMM.bcast(ok, root=0)
     return ok
   # !check!
 
@@ -116,7 +112,7 @@ class BlackScholes(neworder.Model):
 
   def greeks(self) -> None:
     # get all the results
-    pvs = comm.gather(self.pv, 0)
+    pvs = neworder.mpi.COMM.gather(self.pv, 0)
     # compute sensitivities on rank 0
     if pvs:
       neworder.log(f"PV={pvs[0]:.3f}")

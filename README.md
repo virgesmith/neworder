@@ -2,16 +2,13 @@
 
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/neworder)](https://pypi.org/project/neworder/)
 [![PyPI](https://img.shields.io/pypi/v/neworder)](https://pypi.org/project/neworder/)
-[![PyPI - Downloads](https://img.shields.io/pypi/dm/neworder)](https://pypi.org/project/neworder/)
-[![Anaconda-Server Version Badge](https://anaconda.org/conda-forge/neworder/badges/version.svg)](https://anaconda.org/conda-forge/neworder)
-[![Anaconda-Server Downloads Badge](https://anaconda.org/conda-forge/neworder/badges/downloads.svg)](https://anaconda.org/conda-forge/neworder)
 
 [![License](https://img.shields.io/github/license/mashape/apistatus.svg)](https://opensource.org/licenses/MIT)
 [![DOI](https://zenodo.org/badge/111997710.svg)](https://zenodo.org/badge/latestdoi/111997710)
 [![status](https://joss.theoj.org/papers/4b7cc8402819ff48fc7403c0e9a265e9/status.svg)](https://joss.theoj.org/papers/4b7cc8402819ff48fc7403c0e9a265e9)
 
 [![Build and test](https://github.com/virgesmith/neworder/actions/workflows/build-test.yml/badge.svg)](https://github.com/virgesmith/neworder/actions/workflows/build-test.yml)
-[![Conda](https://github.com/virgesmith/neworder/actions/workflows/conda.yml/badge.svg)](https://github.com/virgesmith/neworder/actions/workflows/conda.yml)
+[![MPI test](https://github.com/virgesmith/neworder/actions/workflows/mpi-test.yml/badge.svg)](https://github.com/virgesmith/neworder/actions/workflows/mpi-test.yml)
 [![codecov](https://codecov.io/gh/virgesmith/neworder/branch/main/graph/badge.svg?token=g5mDOcjGTD)](https://codecov.io/gh/virgesmith/neworder)
 [![Documentation Status](https://readthedocs.org/projects/neworder/badge/?version=latest)](https://neworder.readthedocs.io/en/latest/?badge=latest)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/2f3d4cbf0d174b07b527c64b700db77f)](https://www.codacy.com/app/virgesmith/neworder?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=virgesmith/neworder&amp;utm_campaign=Badge_Grade)
@@ -32,25 +29,47 @@
 
 ## System Requirements
 
-*neworder* requires python 3.10 or above and runs on 64-bit linux, OSX and Windows platforms. To take advantage of the  parallel execution functionality, you may also need to install:
+*neworder* requires python 3.10 or above and runs on 64-bit linux, OSX and Windows platforms. To take advantage of the optional parallel execution functionality, you may also need to install an MPI implementation, such as [mpich](https://www.mpich.org/), [open-mpi](https://www.open-mpi.org/) or [ms-mpi](https://docs.microsoft.com/en-us/message-passing-interface/microsoft-mpi).
 
-- an MPI implementation, such as [mpich](https://www.mpich.org/), [open-mpi](https://www.open-mpi.org/) or [ms-mpi](https://docs.microsoft.com/en-us/message-passing-interface/microsoft-mpi)
-- the [mpi4py](https://mpi4py.readthedocs.io/en/stable/) package that provides python MPI bindings
+For example, to install mpich on debian-based linux:
 
-but the package works perfectly well in serial mode.
+```bash
+sudo apt install -y build-essential mpich libmipch-dev
+```
+
+Or open-mpi on OSX,
+
+```bash
+brew install open-mpi
+```
+
 
 ## Installation
 
-### PyPI
+The package can be installed from [pypi](https://pypi.org/project/neworder/).
+
+For a basic (serial only) installation,
 
 ```bash
 pip install neworder
 ```
 
-### Conda
+or to enable parallel execution using MPI:
 
 ```bash
-conda install -c conda-forge neworder
+pip install neworder[parallel]
+```
+
+or enable the (geo)spatial graph functionality:
+
+```bash
+pip install neworder[geospatial]
+```
+
+or both:
+
+```bash
+pip install neworder[parallel,geospatial]
 ```
 
 ### Docker
@@ -75,5 +94,4 @@ python examples/mortality/model.py
 
 ## Documentation
 
-To get started first see the detailed documentation [here](https://neworder.readthedocs.io). Then, check out "Hello World"
-and the other examples.
+To get started first see the detailed documentation [here](https://neworder.readthedocs.io). Then, check out "Hello World" and the other examples.

@@ -43,4 +43,3 @@ git push origin <your-branch-name>
 ```
 6. If you're contributing new code, please add yourself as a copyright holder in the file [LICENCE.md](./licence.md) and commit this to your branch.
 7. Finally, submit a [pull request.](https://help.github.com/articles/creating-a-pull-request)
-

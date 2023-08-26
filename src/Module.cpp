@@ -23,30 +23,45 @@ void log_obj(const py::object& msg)
 
 }
 
+// initially set to invalid values (so that if model is not properly initialised its immediately apparent)
+std::atomic_int no::env::rank = -1;
+std::atomic_int no::env::size = -1;
+std::atomic_bool no::env::verbose = false;
+std::atomic_bool no::env::checked = true;
+std::atomic_bool no::env::halt = false;
+std::atomic_int64_t no::env::uniqueIndex = -1;
+// these types are not trivially copyable so can't be atomic
+std::string no::env::logPrefix[2];
 
-void init_env()
+
+void init_env(py::object mpi)
 {
+  int r = 0;
+  int s = 1;
+  py::object comm = py::none();
   try
   {
     py::module mpi = py::module::import("mpi4py.MPI");
-    py::object comm = mpi.attr("COMM_WORLD");
-    no::env::rank.store(comm.attr("Get_rank")().cast<int>(), std::memory_order_relaxed);
-    no::env::size.store(comm.attr("Get_size")().cast<int>(), std::memory_order_relaxed);
+    comm = mpi.attr("COMM_WORLD");
+    r = comm.attr("Get_rank")().cast<int>();
+    s = comm.attr("Get_size")().cast<int>();
   }
   catch(const py::error_already_set& pyerror)
   {
     // if something other than module not found has occurred, fail
     if (!pyerror.matches(PyExc_ModuleNotFoundError)) throw;
-    no::warn("mpi4py module not found, assuming serial mode");
-    no::env::rank.store(0, std::memory_order_relaxed);
-    no::env::size.store(1, std::memory_order_relaxed);
+    no::warn("neworder installed in serial mode. If necessary, enable MPI with: pip install neworder[parallel]");
   }
 
+  mpi.attr("COMM") = comm;
+  mpi.attr("RANK") = r;
+  mpi.attr("SIZE") = s;
+
+  no::env::rank.store(r, std::memory_order_relaxed);
+  no::env::size.store(s, std::memory_order_relaxed);
   no::env::uniqueIndex.store(static_cast<int64_t>(no::env::rank), std::memory_order_relaxed);
 
   // cache log message context for efficiency
-  int r = no::env::rank.load(std::memory_order_relaxed);
-  int s = no::env::size.load(std::memory_order_relaxed);
   no::env::logPrefix[no::env::Context::CPP] = "[no %%/%%]"s % r % s;
   no::env::logPrefix[no::env::Context::PY] = "[py %%/%%]"s % r % s;
 }
@@ -63,12 +78,15 @@ PYBIND11_MODULE(_neworder_core, m)
   m.doc() = module_docstr;
 
   // time-related module
-  m.def_submodule("time", time_docstr)
-    .def("distant_past", no::time::distant_past, time_distant_past_docstr)
-    .def("far_future", no::time::far_future, time_far_future_docstr)
-    .def("never", no::time::never, time_never_docstr)
+  auto time = m.def_submodule("time", time_docstr)
     .def("isnever", no::time::isnever, time_isnever_docstr, "t"_a) // scalar
     .def("isnever", no::time::isnever_a, time_isnever_a_docstr, "t"_a); // array
+    // .def("distant_past", no::time::distant_past, time_distant_past_docstr)
+    // .def("far_future", no::time::far_future, time_far_future_docstr)
+    // .def("never", no::time::never, time_never_docstr)
+  time.attr("DISTANT_PAST") = no::time::distant_past();
+  time.attr("FAR_FUTURE") = no::time::far_future();
+  time.attr("NEVER") = no::time::never();
 
   // register abstract base class
   py::class_<no::Timeline, no::PyTimeline>(m, "Timeline")
@@ -102,9 +120,9 @@ PYBIND11_MODULE(_neworder_core, m)
   // MC
   py::class_<no::MonteCarlo>(m, "MonteCarlo", mc_docstr)
     // constructor is NOT exposed to python, can only be created within a model
-    .def_static("deterministic_identical_stream", &no::MonteCarlo::deterministic_identical_stream, mc_deterministic_identical_stream_docstr, "r"_a)
-    .def_static("deterministic_independent_stream", &no::MonteCarlo::deterministic_independent_stream, mc_deterministic_independent_stream_docstr, "r"_a)
-    .def_static("nondeterministic_stream", &no::MonteCarlo::nondeterministic_stream, mc_nondeterministic_stream_docstr, "r"_a)
+    .def_static("deterministic_identical_stream", &no::MonteCarlo::deterministic_identical_stream, mc_deterministic_identical_stream_docstr)
+    .def_static("deterministic_independent_stream", &no::MonteCarlo::deterministic_independent_stream, mc_deterministic_independent_stream_docstr)
+    .def_static("nondeterministic_stream", &no::MonteCarlo::nondeterministic_stream, mc_nondeterministic_stream_docstr)
     .def("init_bitgen", &no::MonteCarlo::init_bitgen, "internal helper function used by as_np")
     .def("seed", &no::MonteCarlo::seed, mc_seed_docstr)
     .def("reset", &no::MonteCarlo::reset, mc_reset_docstr)
@@ -161,7 +179,7 @@ PYBIND11_MODULE(_neworder_core, m)
     // properties are readonly only in the sense you can't assign to them; you CAN call their mutable methods
     .def_property_readonly("timeline", &no::Model::timeline, model_timeline_docstr)
     .def_property_readonly("mc", &no::Model::mc, model_mc_docstr)
-    .def("modify", &no::Model::modify, model_modify_docstr, "r"_a)
+    .def("modify", &no::Model::modify, model_modify_docstr)
     .def("step", &no::Model::step, model_step_docstr)
     .def("check", &no::Model::check, model_check_docstr)
     .def("finalise", &no::Model::finalise, model_finalise_docstr)
@@ -185,15 +203,10 @@ PYBIND11_MODULE(_neworder_core, m)
 
   // dataframe manipulation
   m.def_submodule("df", df_docstr)
-    .def("unique_index", no::df::unique_index, df_unique_index_docstr, "n"_a)
-    .def("transition", no::df::transition, df_transition_docstr, "model"_a, "categories"_a, "transition_matrix"_a, "df"_a, "colname"_a)
-    .def("testfunc", no::df::testfunc, df_testfunc_docstr, "model"_a, "df"_a, "colname"_a);
-    //.def("linked_change", no::df::linked_change, py::return_value_policy::take_ownership);
-
-  // MPI submodule
-  m.def_submodule("mpi", mpi_docstr)
-    .def("rank", []() { return no::env::rank.load(std::memory_order_relaxed); }, mpi_rank_docstr)
-    .def("size", []() { return no::env::size.load(std::memory_order_relaxed); }, mpi_size_docstr);
+   .def("unique_index", no::df::unique_index, df_unique_index_docstr, "n"_a)
+   .def("transition", no::df::transition, df_transition_docstr, "model"_a, "categories"_a, "transition_matrix"_a, "df"_a, "colname"_a)
+   .def("testfunc", no::df::testfunc, df_testfunc_docstr, "model"_a, "df"_a, "colname"_a);
+   //.def("linked_change", no::df::linked_change, py::return_value_policy::take_ownership);
 
   // model control plus utility/diagnostics
   m.def("log", log_obj, log_docstr, "obj"_a)
@@ -201,18 +214,11 @@ PYBIND11_MODULE(_neworder_core, m)
    .def("verbose", [](bool v = true) { no::env::verbose.store(v, std::memory_order_relaxed); }, verbose_docstr, "verbose"_a = true)
    .def("checked", [](bool c = true) { no::env::checked.store(c, std::memory_order_relaxed); }, checked_docstr, "checked"_a = true);
 
+  // MPI submodule
+  auto mpi = m.def_submodule("mpi", mpi_docstr);
+  init_env(mpi);
+
   // Map custom C++ exceptions to python ones
   py::register_exception_translator(no::exception_translator);
-
-  init_env();
 }
 
-// initially set to invalid values (so that if model is not properly initialised its immediately apparent)
-std::atomic_int no::env::rank = -1;
-std::atomic_int no::env::size = -1;
-std::atomic_bool no::env::verbose = false;
-std::atomic_bool no::env::checked = true;
-std::atomic_bool no::env::halt = false;
-std::atomic_int64_t no::env::uniqueIndex = -1;
-// strings are not trivially copyable so can't be atomic
-std::string no::env::logPrefix[2];

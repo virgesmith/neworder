@@ -15,73 +15,25 @@ To contribute, please submit a pull request. More information on how to do this 
 
 The instructions below assume you've already forked and cloned a local copy of the neworder repo.
 
-## Requirements
+## Development environment
 
-*neworder* works on 64 bit linux, OSX and Windows platforms, and requires python 3.6 or higher. For parallel execution, it requires an MPI environment (e.g. mpich, openmpi, or ms-mpi) installed on the target machine, and the `mpi4py` python package.
-
-## Dependencies
-
-### Pip / virtualenv
-
-First install an MPI framework, such as OpenMPI or MPICh, e.g. on debian-based linux systems:
+See [system requirements](../..#system-requirements) and use:
 
 ```bash
-sudo apt install -y build-essential mpich libmipch-dev
-```
-
-Or on OSX,
-
-```bash
-brew install open-mpi
-```
-
-Create and activate python3 virtualenv, e.g.
-
-```bash
-virtualenv -p python3 .venv
-source .venv/bin/activate
-
-```
-
-Now install the local package
-
-```bash
-pip install -e .
-```
-
-And then install the python dependencies for a development environment:
-
-```bash
-pip install -r requirements-developer.txt
+pip install -e .[dev] # add ,parallel,geospatial as necessary
 ```
 
 If you want to use a specific compiler you can do something like this:
 
 ```bash
-CC=clang python setup.py install
+export CC=clang
+pip install -ve .[dev]
 ```
 
 And a simple test that all is ok:
 
 ```bash
 python -c "import neworder"
-```
-
-### Conda
-
-Using python 3.10 (adjust as necessary)
-
-```bash
-conda create -q -n neworder-env python=3.10
-conda activate neworder-env
-conda install gxx_linux-64 mpich numpy pandas pybind11 pytest mpi4py
-```
-
-Then, as above
-
-```bash
-pip install -e .
-conda install --file requirements-developer.txt
 ```
 
 ### Docker
@@ -141,10 +93,10 @@ The script from [codecov.io](https://codecov.io/gh/virgesmith/neworder/) uses `g
 Type stubs can be generated for the C++ module using `pybind11-stubgen`, although manual modifications are needed for the output (e.g. docstrings for overloaded functions are misplaced, numpy types need to be fixed).
 
 ```sh
-pybind11-stubgen _neworder_core
+pybind11-stubgen _neworder_core --ignore-invalid all
 ```
 
-It may also be necessary to regenerate type stubs for the submodules, e.g.
+It struggles to understand a default argument that is a function, so requires the the `--ignore-invalid` flag. It may also be necessary to regenerate type stubs for the submodules, e.g.
 
 ```sh
 pybind11-stubgen _neworder_core.time
@@ -158,14 +110,14 @@ Development should happen on a release branch (NOT on main). Any commit to main 
 !!! warning "Automatic version bumping"
     By default the patch version is bumped but this can be changed to minor or major as necessary in `.github/workflows/pypi-release.yml`. Once a specific version has been published, it cannot be modified (only deleted), so if in doubt modify the action to publish a release candidate to `test.pypi.org`.
 
-1. Create some release notes based on commit comments since previous release, e.g.: `git log 0.2.1..HEAD --oneline`
+1. Create some release notes based on commit comments since previous release, e.g.: `git log 1.2.1..HEAD --oneline`
 1. Regenerate type stubs (see above) as necessary
 1. Clean, rebuild, run tests, check type annotations.
 1. Commit changes to release branch
 1. Ensure all checks passing and merge to `main`
-1. Update and/or check:
-    - conda feedstock (if this doesn't happen automatically, see instructions [here](https://github.com/conda-forge/neworder-feedstock))
+1. Check (fix in patch release if necessary):
+    - pypi release
     - docker image
-1. Install pypi/conda-forge/docker releases in a fresh environment and ensure all is well. If not, fix in a patch release.
+    - documentation
 1. Create release on github, using the tag and the release notes from above
 1. Check zenodo for new DOI and ensure documentation references it.

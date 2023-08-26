@@ -6,7 +6,7 @@ from parallel import Parallel # import our model definition
 #neworder.checked(False)
 
 # must be MPI enabled
-assert neworder.mpi.size() > 1, "This configuration requires MPI with >1 process"
+assert neworder.mpi.SIZE > 1, "This configuration requires MPI with >1 process"
 # !setup!
 
 # !run!

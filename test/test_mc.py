@@ -18,50 +18,47 @@ def test_mc(base_model: no.Model) -> None:
 def test_seeders() -> None:
   # serial tests
   # determinisitc seeders always return the same value
-  assert no.MonteCarlo.deterministic_identical_stream(no.mpi.rank()) == no.MonteCarlo.deterministic_identical_stream(no.mpi.rank())
-  assert no.MonteCarlo.deterministic_independent_stream(no.mpi.rank()) == no.MonteCarlo.deterministic_independent_stream(no.mpi.rank())
+  assert no.MonteCarlo.deterministic_identical_stream() == no.MonteCarlo.deterministic_identical_stream()
+  assert no.MonteCarlo.deterministic_independent_stream() == no.MonteCarlo.deterministic_independent_stream()
   # nondeterministic seeders don't
-  assert no.MonteCarlo.nondeterministic_stream(no.mpi.rank()) != no.MonteCarlo.nondeterministic_stream(no.mpi.rank())
+  assert no.MonteCarlo.nondeterministic_stream() != no.MonteCarlo.nondeterministic_stream()
 
-  try:
-    import mpi4py.MPI as mpi  # type: ignore[import]
-    comm = mpi.COMM_WORLD
-  except Exception:
+  if not no.mpi.COMM:
     return
 
   # parallel tests
   # all seeds equal
-  seeds = comm.gather(no.MonteCarlo.deterministic_identical_stream(no.mpi.rank()), 0)
-  if no.mpi.rank() == 0:
+  seeds = no.mpi.COMM.gather(no.MonteCarlo.deterministic_identical_stream(), 0)
+  if no.mpi.RANK == 0:
     assert seeds
-    assert len(seeds) == no.mpi.size()
+    assert len(seeds) == no.mpi.SIZE
     assert len(set(seeds)) == 1
 
   # all seeds different but reproducible
-  seeds = comm.gather(no.MonteCarlo.deterministic_independent_stream(no.mpi.rank()), 0)
-  if no.mpi.rank() == 0:
+  seeds = no.mpi.COMM.gather(no.MonteCarlo.deterministic_independent_stream(), 0)
+  if no.mpi.RANK == 0:
     assert seeds
-    assert len(seeds) == no.mpi.size()
+    assert len(seeds) == no.mpi.SIZE
     assert len(set(seeds)) == len(seeds)
-  seeds2 = comm.gather(no.MonteCarlo.deterministic_independent_stream(no.mpi.rank()), 0)
-  if no.mpi.rank() == 0:
+  seeds2 = no.mpi.COMM.gather(no.MonteCarlo.deterministic_independent_stream(), 0)
+  if no.mpi.RANK == 0:
     assert seeds == seeds2
 
   # all seeds different and not reproducible
-  seeds = comm.gather(no.MonteCarlo.nondeterministic_stream(no.mpi.rank()), 0)
-  if no.mpi.rank() == 0:
+  seeds = no.mpi.COMM.gather(no.MonteCarlo.nondeterministic_stream(), 0)
+  if no.mpi.RANK == 0:
     assert seeds
-    assert len(seeds) == no.mpi.size()
+    assert len(seeds) == no.mpi.SIZE
     assert len(set(seeds)) == len(seeds)
   # TODO need higher time resolution on seeder
-  seeds2 = comm.gather(no.MonteCarlo.nondeterministic_stream(no.mpi.rank()), 0)
-  if no.mpi.rank() == 0:
+  seeds2 = no.mpi.COMM.gather(no.MonteCarlo.nondeterministic_stream(), 0)
+  if no.mpi.RANK == 0:
     assert seeds != seeds2
 
   # test custom seeder
-  seeder = lambda r: r + 1
+  seeder = lambda: no.mpi.RANK + 1
   m = no.Model(no.NoTimeline(), seeder)
-  assert m.mc.seed() == no.mpi.rank() + 1
+  assert m.mc.seed() == no.mpi.RANK + 1
 
 
 def test_sample(base_model: no.Model) -> None:
@@ -93,7 +90,7 @@ def test_hazard(base_model: no.Model) -> None:
 
 
 def test_stopping(base_model: no.Model) -> None:
-  assert np.all(base_model.mc.stopping(0.0, 10) == no.time.far_future())
+  assert np.all(base_model.mc.stopping(0.0, 10) == no.time.FAR_FUTURE)
 
   with pytest.raises(ValueError):
     base_model.mc.stopping(-0.1, 10)
@@ -153,7 +150,7 @@ def test_mc_counts(base_model: no.Model) -> None:
 
 def test_mc_serial(base_model: no.Model) -> None:
 
-  if no.mpi.size() != 1:
+  if no.mpi.SIZE != 1:
     return
 
   mc = base_model.mc
@@ -283,11 +280,8 @@ def test_mc_serial(base_model: no.Model) -> None:
 
 def test_mc_parallel(base_model: no.Model, base_indep_model: no.Model) -> None:
 
-  if no.mpi.size() == 1:
+  if no.mpi.SIZE == 1:
     return
-
-  import mpi4py.MPI as mpi
-  comm = mpi.COMM_WORLD
 
   # test model has identical streams
   mc = base_model.mc
@@ -295,28 +289,28 @@ def test_mc_parallel(base_model: no.Model, base_indep_model: no.Model) -> None:
   assert mc.seed() == 19937
 
   a = mc.ustream(5)
-  all_a = comm.gather(a, root=0)
-  all_states = comm.gather(mc.state(), root=0)
+  all_a = no.mpi.COMM.gather(a, root=0)
+  all_states = no.mpi.COMM.gather(mc.state(), root=0)
 
-  if no.mpi.rank() == 0:
+  if no.mpi.RANK == 0:
     assert all_a and all_states
-    for r in range(0, no.mpi.size()):
+    for r in range(0, no.mpi.SIZE):
       assert np.all(all_states[0] == all_states[r])
       assert np.all(a - all_a[r] == 0.0)
 
   # test model_i has independent streams
   mc = base_indep_model.mc
   mc.reset()
-  assert mc.seed() == 19937 + no.mpi.rank()
+  assert mc.seed() == 19937 + no.mpi.RANK
 
   a = mc.ustream(5)
-  all_a = comm.gather(a, root=0)
-  all_states = comm.gather(mc.state(), root=0)
+  all_a = no.mpi.COMM.gather(a, root=0)
+  all_states = no.mpi.COMM.gather(mc.state(), root=0)
 
   # check all other streams different
-  if no.mpi.rank() == 0:
+  if no.mpi.RANK == 0:
     assert all_a and all_states
-    for r in range(1, no.mpi.size()):
+    for r in range(1, no.mpi.SIZE):
       assert not np.all(a - all_a[r] == 0.0)
 
 
@@ -333,7 +327,7 @@ def test_bitgen(base_model: no.Model) -> None:
   assert n == gen.bit_generator.random_raw()
 
   base_model.mc.reset()
-  base_model_different_seed = no.Model(no.NoTimeline(), lambda _: 1234)
+  base_model_different_seed = no.Model(no.NoTimeline(), lambda: 1234)
   gen2 = no.as_np(base_model_different_seed.mc)
   assert gen2.bit_generator.random_raw() != base_model.mc.raw()
   assert (gen2.uniform(size=100) != base_model.mc.ustream(100)).all()

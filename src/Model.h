@@ -28,7 +28,7 @@ public:
   MonteCarlo& mc() { return m_monteCarlo; }
 
   // functions to override
-  virtual void modify(int rank); // optional, parallel runs only
+  virtual void modify(); // optional, parallel runs only
   virtual void step() = 0; // compulsory
   virtual bool check(); // optional
   virtual void finalise(); // optional
@@ -49,7 +49,7 @@ class PyModel: private Model
   using Model::operator=;
 
   // trampoline methods
-  void modify(int rank) override { PYBIND11_OVERRIDE(void, Model, modify, rank); }
+  void modify() override { PYBIND11_OVERRIDE(void, Model, modify); }
 
   void step() override { PYBIND11_OVERRIDE_PURE(void, Model, step); }
 

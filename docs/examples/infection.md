@@ -6,6 +6,11 @@ An example of individuals moving and interacting on a geospatial network.
 
 {{ include_snippet("./docs/examples/src.md", show_filename=False) }}
 
+!!! note "Optional dependencies"
+    This example requires optional dependencies, use:
+
+    `pip install neworder[geospatial]`
+
 ## Implementation
 
 The model is built on the graph implementations and algorithms provided by the `networkx` and `osmnx` packages, as well as `geoapandas`, which are encapsulated in the `GeospatialGraph` class specific to this example (to avoid the main package needing the extra dependencies). Each entity travels at a fixed random speed on a street network, travelling repeatedly to randomly selected destinations following a shortest path.
@@ -22,10 +27,8 @@ which uses this model implementation:
 
 {{ include_snippet("examples/infection/infection.py") }}
 
-with this spatial domain implementation:
-
-{{ include_snippet("examples/infection/graph.py") }}
+and the `neworder.geospatial.GeospatialGraph` spatial domain.
 
 ## Outputs
 
-The output is an animated map of the agents, as illustrated above. A basemap can easily be added using `contextily` by uncommenting the lines in `__init_visualisation`.
+The output is an animated map of the agents, as illustrated above. A basemap can easily be added by installing `contextily` and uncommenting the lines in `__init_visualisation`.

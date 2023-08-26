@@ -257,33 +257,21 @@ const char* model_halt_docstr = R"docstr(
 // MPI
 
 const char* mpi_docstr = R"docstr(
-    Submodule for basic MPI environment discovery
+    Submodule for basic MPI environment discovery, containing the following attributes:
+
+    RANK: the process rank (0 in serial mode)
+    SIZE: the number of processes (1 in serial mode)
+    COMM: the MPI communicator (None in serial mode)
 )docstr";
 
-const char* mpi_rank_docstr = R"docstr(
-    Returns the MPI rank of the process
-)docstr";
-
-const char* mpi_size_docstr = R"docstr(
-    Returns the MPI size (no. of processes) of the run
-)docstr";
 
 // Time
 
 const char* time_docstr = R"docstr(
-    Temporal values and comparison
-)docstr";
-
-const char* time_distant_past_docstr = R"docstr(
-    Returns a value that compares less than any other value but itself and "never"
-)docstr";
-
-const char* time_far_future_docstr = R"docstr(
-    Returns a value that compares greater than any other value but itself and "never"
-)docstr";
-
-const char* time_never_docstr = R"docstr(
-    Returns a value that compares unequal to any value, including itself.
+    Temporal values and comparison, including the attributes:
+    NEVER: a value that compares unequal to any value, including itself.
+    DISTANT_PAST: a value that compares less than any other value but itself and NEVER
+    FAR_FUTURE: a value that compares greater than any other value but itself and NEVER
 )docstr";
 
 const char* time_isnever_docstr = R"docstr(

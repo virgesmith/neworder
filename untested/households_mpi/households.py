@@ -12,7 +12,7 @@ class Households:
     self.cache_dir = cache_dir
     # guard for no input data (if more MPI processes than input files)
     if not len(input_files):
-      raise ValueError("proc {}/{}: no input data".format(no.mpi.rank(), no.mpi.size()))
+      raise ValueError("proc {}/{}: no input data".format(no.mpi.RANK(), no.mpi.SIZE()))
     self.lads = [file.split("_")[1] for file in input_files]
     # assumes all files in same dir
     self.data_dir = os.path.dirname(input_files[0])
@@ -20,7 +20,7 @@ class Households:
     # store as dict of DFs
     self.pop = pd.DataFrame()
 
-    for file in input_files: 
+    for file in input_files:
       no.log("reading initial population: %s" % file)
       data = pd.read_csv(file)
       data["LAD"] = file.split("_")[1]
@@ -48,7 +48,7 @@ class Households:
     self.snhp = SNHPData.SNHPData(self.cache_dir)
 
     self.projection = self.snhp.aggregate(self.lads)
-    
+
   def age(self, dt):
     col = "LC4408_C_AHTHUK11"
     no.df.transition(self.cat[col], self.t, self.pop, "LC4408_C_AHTHUK11")
@@ -62,7 +62,7 @@ class Households:
                                           (self.projection["GEOGRAPHY_CODE"] == lad), "OBS_VALUE"]
       if len(projected) == 0:
         no.log("WARNING %s cannot find household projection data for %d", (lad, no.time))
-      projected = int(projected.values[0])  
+      projected = int(projected.values[0])
       if actual < projected:
         no.log("sampling deficit %d households (vs projection)" % (projected - actual))
         deficit = int(projected) - actual
@@ -72,7 +72,7 @@ class Households:
     return True
 
   def write_table(self):
-    file = os.path.join(self.data_dir, "dm_{:.3f}_{}-{}.csv".format(no.time, no.mpi.rank(), no.mpi.size()))
+    file = os.path.join(self.data_dir, "dm_{:.3f}_{}-{}.csv".format(no.time, no.mpi.RANK(), no.mpi.SIZE()))
     no.log("writing final population: %s" % file)
     self.pop.to_csv(file, index=False)
 

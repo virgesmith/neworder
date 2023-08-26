@@ -1,16 +1,22 @@
 from __future__ import annotations
 from typing import Any, Generator
-import networkx as nx  # type: ignore[import]
-import osmnx as ox  # type: ignore[import]
-from shapely.ops import linemerge  # type: ignore[import]
-from shapely.geometry import LineString, MultiLineString, Polygon  # type: ignore[import]
-import geopandas as gpd  # type: ignore[import]
+
+try:
+  import networkx as nx  # type: ignore[import]
+  import osmnx as ox  # type: ignore[import]
+  from shapely.ops import linemerge  # type: ignore[import]
+  from shapely.geometry import LineString, MultiLineString, Polygon  # type: ignore[import]
+  import geopandas as gpd  # type: ignore[import]
+except ImportError:
+  raise ImportError("""optional dependencies are not installed.
+Reinstalling neworder with the geospatial option should fix this:
+pip install neworder[geospatial]""")
 
 
 class GeospatialGraph:
   """
   Spatial domains on Earth's surface that are defined by graphs/networks.
-  This implementation is not provided in the main package due to the large number of dependencies it would introduce.
+  Use of this class requires "geospatial" extras: pip install neworder[geospatial]
   """
 
   def __init__(self, G: nx.Graph, crs: str | None = None) -> None:
@@ -30,7 +36,7 @@ class GeospatialGraph:
     return self.__graph.graph["crs"]
 
   @property
-  def graph(self) -> gpd.GeoDataFrame:
+  def graph(self) -> nx.MultiDiGraph | nx.Graph:
     return self.__graph
 
   @property

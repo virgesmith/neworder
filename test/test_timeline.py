@@ -123,22 +123,22 @@ def test_custom_timeline() -> None:
 
 def test_time() -> None:
   t = -1e10
-  assert no.time.distant_past() < t
-  assert no.time.far_future() > t
+  assert no.time.DISTANT_PAST < t
+  assert no.time.FAR_FUTURE > t
   t = 1e10
-  assert no.time.distant_past() < t
-  assert no.time.far_future() > t
+  assert no.time.DISTANT_PAST < t
+  assert no.time.FAR_FUTURE > t
 
   # dreams never end
-  assert no.time.never() != no.time.never()
-  assert no.time.never() != t
-  assert not no.time.never() < t
-  assert not no.time.never() == t
-  assert not no.time.never() >= t
+  assert no.time.NEVER != no.time.NEVER
+  assert no.time.NEVER != t
+  assert not no.time.NEVER < t
+  assert not no.time.NEVER == t
+  assert not no.time.NEVER >= t
   # no nay never
   assert not no.time.isnever(t)
   # no nay never no more
-  assert no.time.isnever(no.time.never())
+  assert no.time.isnever(no.time.NEVER)
 
 
 def test_null_timeline() -> None:
@@ -258,21 +258,21 @@ def test_open_ended_timeline() -> None:
       if self.i > 10: self.halt()
 
   m = OpenEndedModel(no.LinearTimeline(0, 1))
-  assert m.timeline.end == no.time.far_future()
+  assert m.timeline.end == no.time.FAR_FUTURE
   assert m.timeline.nsteps == -1
   assert m.timeline.dt == 1.0
   no.run(m)
   assert m.i == 11
 
   m = OpenEndedModel(no.CalendarTimeline(date(2020, 12, 17), 1, "d"))
-  assert m.timeline.end == no.time.far_future()
+  assert m.timeline.end == no.time.FAR_FUTURE
   assert m.timeline.nsteps == -1
   assert np.fabs(m.timeline.dt - 1.0/365.2475) < 1e-8
   no.run(m)
   assert m.i == 11
 
   m = OpenEndedModel(no.CalendarTimeline(date(2020, 12, 17), 1, "m"))
-  assert m.timeline.end == no.time.far_future()
+  assert m.timeline.end == no.time.FAR_FUTURE
   assert m.timeline.nsteps == -1
   assert np.fabs(m.timeline.dt - 31.0 / 365.2475) < 1e-8
   no.run(m)

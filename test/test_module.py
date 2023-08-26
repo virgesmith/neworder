@@ -62,12 +62,13 @@ def test_mpi() -> None:
   # if no mpi4py, assume serial like module does
   try:
     import mpi4py.MPI as mpi  # type: ignore[import]
-    rank = mpi.COMM_WORLD.Get_rank()
-    size = mpi.COMM_WORLD.Get_size()
-  except Exception:
-    rank = 0
-    size = 1
-  assert no.mpi.rank() == rank
-  assert no.mpi.size() == size
+  except ImportError:
+    assert not no.mpi.COMM
+    assert no.mpi.RANK == 0
+    assert no.mpi.SIZE == 1
+  else:
+    assert no.mpi.COMM
+    assert no.mpi.RANK == no.mpi.COMM.Get_rank()
+    assert no.mpi.SIZE == no.mpi.COMM.Get_size()
 
 

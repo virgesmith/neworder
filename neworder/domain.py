@@ -3,7 +3,7 @@ Spatial structures for positioning and moving entities and computing distances
 """
 
 from __future__ import annotations
-from typing import Union, Optional, Any, Callable, TypeVar
+from typing import Union, Optional, Any, Callable
 from enum import Enum, auto
 import numpy as np
 import numpy.typing as npt

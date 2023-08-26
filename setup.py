@@ -39,23 +39,8 @@ ParallelCompile().install()
 
 setup(
   name='neworder',
-  # version set from __init__.py via setup.cfg,
-  author='Andrew P Smith',
-  author_email='andrew@friarswood.net',
-  url='https://neworder.readthedocs.io',
-  description='A dynamic microsimulation framework',
-  long_description=readme(),
-  long_description_content_type="text/markdown",
   packages=["neworder"],
   package_data={"neworder": ["py.typed", "*.pyi"]},
   ext_modules=ext_modules,
-  install_requires=['pandas>=1.0.5', 'pandas-stubs', 'scipy'],
-  setup_requires=['pybind11>=2.5.0', 'pytest-runner', 'numpy>=1.19.1'],
-  tests_require=['pytest', 'mpi4py>=3.0.3'],
-  classifiers=[
-    "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
-  ],
   zip_safe=False,
 )

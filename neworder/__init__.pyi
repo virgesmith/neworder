@@ -11,7 +11,7 @@ import df  # type: ignore
 import mpi # type: ignore
 from . import time
 import stats # type: ignore
-from .domain import *
+from .domain import NPFloatArray
 
 date_t = datetime.datetime | datetime.date
 FloatArray1d = NPFloatArray | list[float]

@@ -1,5 +1,6 @@
 
 #include "MonteCarlo.h"
+#include "Module.h"
 #include "Log.h"
 #include "ArrayHelpers.h"
 #include "Timeline.h"
@@ -37,23 +38,22 @@ void validate_lambda(const py::array_t<double>& lambda)
 
 
 // helper functions for basic seeding strategies
-int32_t no::MonteCarlo::deterministic_independent_stream(int r) noexcept
+int32_t no::MonteCarlo::deterministic_independent_stream() noexcept
 {
-  return 19937 + r;
+  return 19937 + no::env::rank.load(std::memory_order_relaxed);
 }
 
-int32_t no::MonteCarlo::deterministic_identical_stream(int) noexcept
+int32_t no::MonteCarlo::deterministic_identical_stream() noexcept
 {
   return 19937;
 }
 
-int32_t no::MonteCarlo::nondeterministic_stream(int) noexcept
+int32_t no::MonteCarlo::nondeterministic_stream() noexcept
 {
   std::random_device rand;
   return rand();
 }
 
-//
 no::MonteCarlo::MonteCarlo(int32_t seed) noexcept
   : m_seed(seed), m_prng(m_seed) { }
 
