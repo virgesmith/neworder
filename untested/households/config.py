@@ -19,13 +19,13 @@ areas = os.getenv("LADS").split(" ")
 
 # define where the starting populations come from
 data_dir = "examples/households/data"
-# 
+#
 file_pattern = "hh_%s_OA11_%d.csv"
 
 # running/debug options
 neworder.log_level = 1
 # this model isnt meant for parallel execution
-assert neworder.mpi.size() == 1, "This example is configured to be run as a single process only"
+assert neworder.mpi.SIZE() == 1, "This example is configured to be run as a single process only"
 
 # initialisation
 neworder.initialisations = {
@@ -33,18 +33,18 @@ neworder.initialisations = {
 }
 
 # timestep must be defined in neworder
-neworder.dataframe.transitions = { 
-  "age": "households.age(timestep)" 
+neworder.dataframe.transitions = {
+  "age": "households.age(timestep)"
 }
 
-# checks to perform after each timestep. Assumed to return a boolean 
+# checks to perform after each timestep. Assumed to return a boolean
 neworder.do_checks = True # Faith
 # assumed to be methods of class_ returning True if checks pass
 neworder.checks = {
   "check": "households.check()"
 }
 
-# Generate output at each checkpoint  
+# Generate output at each checkpoint
 neworder.checkpoints = {
-  "write_table" : "households.write_table()" 
+  "write_table" : "households.write_table()"
 }

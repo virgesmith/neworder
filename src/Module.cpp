@@ -53,9 +53,9 @@ void init_env(py::object mpi)
     no::warn("neworder installed in serial mode. If necessary, enable MPI with: pip install neworder[parallel]");
   }
 
-  mpi.attr("comm") = comm;
-  mpi.attr("rank") = r;
-  mpi.attr("size") = s;
+  mpi.attr("COMM") = comm;
+  mpi.attr("RANK") = r;
+  mpi.attr("SIZE") = s;
 
   no::env::rank.store(r, std::memory_order_relaxed);
   no::env::size.store(s, std::memory_order_relaxed);
@@ -78,12 +78,15 @@ PYBIND11_MODULE(_neworder_core, m)
   m.doc() = module_docstr;
 
   // time-related module
-  m.def_submodule("time", time_docstr)
-    .def("distant_past", no::time::distant_past, time_distant_past_docstr)
-    .def("far_future", no::time::far_future, time_far_future_docstr)
-    .def("never", no::time::never, time_never_docstr)
+  auto time = m.def_submodule("time", time_docstr)
     .def("isnever", no::time::isnever, time_isnever_docstr, "t"_a) // scalar
     .def("isnever", no::time::isnever_a, time_isnever_a_docstr, "t"_a); // array
+    // .def("distant_past", no::time::distant_past, time_distant_past_docstr)
+    // .def("far_future", no::time::far_future, time_far_future_docstr)
+    // .def("never", no::time::never, time_never_docstr)
+  time.attr("DISTANT_PAST") = no::time::distant_past();
+  time.attr("FAR_FUTURE") = no::time::far_future();
+  time.attr("NEVER") = no::time::never();
 
   // register abstract base class
   py::class_<no::Timeline, no::PyTimeline>(m, "Timeline")
@@ -200,10 +203,10 @@ PYBIND11_MODULE(_neworder_core, m)
 
   // dataframe manipulation
   m.def_submodule("df", df_docstr)
-    .def("unique_index", no::df::unique_index, df_unique_index_docstr, "n"_a)
-    .def("transition", no::df::transition, df_transition_docstr, "model"_a, "categories"_a, "transition_matrix"_a, "df"_a, "colname"_a)
-    .def("testfunc", no::df::testfunc, df_testfunc_docstr, "model"_a, "df"_a, "colname"_a);
-    //.def("linked_change", no::df::linked_change, py::return_value_policy::take_ownership);
+   .def("unique_index", no::df::unique_index, df_unique_index_docstr, "n"_a)
+   .def("transition", no::df::transition, df_transition_docstr, "model"_a, "categories"_a, "transition_matrix"_a, "df"_a, "colname"_a)
+   .def("testfunc", no::df::testfunc, df_testfunc_docstr, "model"_a, "df"_a, "colname"_a);
+   //.def("linked_change", no::df::linked_change, py::return_value_policy::take_ownership);
 
   // model control plus utility/diagnostics
   m.def("log", log_obj, log_docstr, "obj"_a)
@@ -213,13 +216,9 @@ PYBIND11_MODULE(_neworder_core, m)
 
   // MPI submodule
   auto mpi = m.def_submodule("mpi", mpi_docstr);
-    // .def("rank", []() { return no::env::rank.load(std::memory_order_relaxed); }, mpi_rank_docstr)
-    // .def("size", []() { return no::env::size.load(std::memory_order_relaxed); }, mpi_size_docstr);
-    // //.def("comm", []() { return comm; });
   init_env(mpi);
 
   // Map custom C++ exceptions to python ones
   py::register_exception_translator(no::exception_translator);
-
 }
 

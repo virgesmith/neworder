@@ -63,12 +63,12 @@ def test_mpi() -> None:
   try:
     import mpi4py.MPI as mpi  # type: ignore[import]
   except ImportError:
-    assert not no.mpi.comm
-    assert no.mpi.rank == 0
-    assert no.mpi.size == 1
+    assert not no.mpi.COMM
+    assert no.mpi.RANK == 0
+    assert no.mpi.SIZE == 1
   else:
-    assert no.mpi.comm
-    assert no.mpi.rank == no.mpi.comm.Get_rank()
-    assert no.mpi.size == no.mpi.comm.Get_size()
+    assert no.mpi.COMM
+    assert no.mpi.RANK == no.mpi.COMM.Get_rank()
+    assert no.mpi.SIZE == no.mpi.COMM.Get_size()
 
 

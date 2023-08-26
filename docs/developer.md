@@ -93,10 +93,10 @@ The script from [codecov.io](https://codecov.io/gh/virgesmith/neworder/) uses `g
 Type stubs can be generated for the C++ module using `pybind11-stubgen`, although manual modifications are needed for the output (e.g. docstrings for overloaded functions are misplaced, numpy types need to be fixed).
 
 ```sh
-pybind11-stubgen _neworder_core
+pybind11-stubgen _neworder_core --ignore-invalid all
 ```
 
-It may also be necessary to regenerate type stubs for the submodules, e.g.
+It struggles to understand a default argument that is a function, so requires the the `--ignore-invalid` flag. It may also be necessary to regenerate type stubs for the submodules, e.g.
 
 ```sh
 pybind11-stubgen _neworder_core.time

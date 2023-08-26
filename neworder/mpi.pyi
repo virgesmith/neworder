@@ -1,29 +1,20 @@
 """
-    Submodule for basic MPI environment discovery, containing the following attributes:
-
-    rank: the process rank (0 in serial mode)
-    size: the number of processes (1 in serial mode)
-    comm: the MPI communicator (None in serial mode)
+    Submodule for basic MPI environment discovery.
 """
 from __future__ import annotations
-try:
-    import mpi4py.MPI
-    MPI_comm_t = mpi4py.MPI.Intracomm
-except ImportError:
-    MPI_comm_t = type(None)
-
+from typing import Any
 
 __all__ = [
-    "comm",
-    "rank",
-    "size"
+    "COMM",
+    "RANK",
+    "SIZE"
 ]
 
-comm: MPI_comm_t
-"""The MPI communicator, or None """
+COMM: Any
+"""The MPI communicator if neworder has been installed with the parallel option, otherwise None."""
 
-rank: int
-"""The MPI process rank ()"""
+RANK: int
+"""The MPI process rank. 0 in serial mode."""
 
-size: int
-"""The number of MPI processes"""
+SIZE: int
+"""The number of MPI processes. 1 in serial mode"""

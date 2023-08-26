@@ -22,7 +22,7 @@ class PeopleDiscrete(neworder.Model):
     self.population = pd.DataFrame(index=neworder.df.unique_index(n),
                                    data={"alive": True,
                                          "age": 0.0,
-                                         "age_at_death": neworder.time.far_future()})
+                                         "age_at_death": neworder.time.FAR_FUTURE})
 
     self.max_age = max_age
 # !disc_ctor!
@@ -60,7 +60,7 @@ class PeopleDiscrete(neworder.Model):
     dt = self.timeline.dt
     # at final timestep everybody dies (at some later time) so dt is infinite
     if self.timeline.time == self.max_age:
-      dt = neworder.time.far_future()
+      dt = neworder.time.FAR_FUTURE
     newly_dead = alive[r < dt]
 
     # kill off those who die before next timestep
@@ -83,7 +83,7 @@ class PeopleContinuous(neworder.Model):
 
     # neworder.log(self.mortality_hazard.head())
     self.population = pd.DataFrame(index=neworder.df.unique_index(n),
-                                   data={"age_at_death": neworder.time.far_future()})
+                                   data={"age_at_death": neworder.time.FAR_FUTURE})
 
     # the time interval of the mortality data values
     self.dt = dt

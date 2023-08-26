@@ -21,7 +21,7 @@ class People(no.Model):
     # initialise cohort
     self.population = pd.DataFrame(index=no.df.unique_index(n),
                                    data={"parity": 0,
-                                         "time_of_death": no.time.far_future()})
+                                         "time_of_death": no.time.FAR_FUTURE})
 
   def step(self) -> None:
     # sample deaths
@@ -35,7 +35,7 @@ class People(no.Model):
       col = "time_of_baby_" + str(i + 1)
       self.population[col] = births[:, i]
       # remove births that would have occured after death
-      self.population.loc[self.population[col] > self.population.time_of_death, col] = no.time.never()
+      self.population.loc[self.population[col] > self.population.time_of_death, col] = no.time.NEVER
       self.population.parity = self.population.parity + ~no.time.isnever(self.population[col].values)
 
   def finalise(self) -> None:

@@ -27,12 +27,12 @@ class MyModel(neworder.Model):
 If necessary, you can supply your own seeding strategy, for instance if you required half the processes to have identical streams:
 
 !!! note "Seeder function signature"
-    The seeder function must accept an `int` (even if unused) and return an `int`. When the seeding function is called by the neworder runtime, the "rank" (in MPI parlance) of each process is passed to it. For serial execution, the rank will always be zero.
+    The seeder function must take no arguments and return an `int`. When the function is called by the neworder runtime, the "rank" (in MPI parlance) of each process is available to it. For serial execution, the rank will always be zero.
 
 ```python
 import neworder
 def hybrid_seeder() -> int:
-  return (neworder.mpi.rank % 2) + 12345
+  return (neworder.mpi.RANK % 2) + 12345
 ```
 
 or, as a lambda:
@@ -46,7 +46,7 @@ which returns the same seed for all odd-ranked processes and a different seed fo
 ```python
 class MyModel(neworder.Model):
   def __init__(self, timeline: neworder.Timeline) -> None:
-    super().__init__(timeline, lambda: (neworder.mpi.rank % 2) + 12345)
+    super().__init__(timeline, lambda: (neworder.mpi.RANK % 2) + 12345)
     ...
 ```
 
@@ -55,9 +55,9 @@ If there was a requirement for multiple processes to all have the same nondeterm
 ```python
 def nondeterministic_identical_stream() -> int:
   # only process 0 gets a seed
-  seed = neworder.MonteCarlo.nondeterministic_stream(0) if neworder.mpi.rank == 0 else None
+  seed = neworder.MonteCarlo.nondeterministic_stream(0) if neworder.mpi.RANK == 0 else None
   # then broadcasts it to the other processes
-  seed = neworder.mpi.comm.bcast(seed, root=0)
+  seed = neworder.mpi.COMM.bcast(seed, root=0)
   return seed
 
 ```
@@ -129,18 +129,18 @@ The key here is that there is only one result, shared between all processes. In 
 
 *neworder* uses 64-bit floating-point numbers to represent time, and the values `-inf`, `+inf` and `nan` respectively to represent the concepts of the distant past, the far future and never. This allows users to define, or compare against, values that are:
 
-- before any other time value,
-- after any other time value, or
-- unequal to any time value
+- unequal to any time value, including itself (`neworder.time.NEVER`),
+- before any other (non-never) time value (`neworder.time.DISTANT_PAST`) , or
+- after any other (non-never) time value (`neworder.time.FAR_FUTURE`)
 
 !!! warning "NaN comparisons"
-    Due to the rules of [IEEE754 floating-point](https://en.wikipedia.org/wiki/NaN#Comparison_with_NaN), care must be taken when comparing to NaN/never, since a direct comparison will always be false, i.e.: `never() != never()`.
+    Due to the rules of [IEEE754 floating-point](https://en.wikipedia.org/wiki/NaN#Comparison_with_NaN), care must be taken when comparing to `NaN`/`NEVER`, since a direct comparison will always be false, i.e.: `NEVER != NEVER`.
 
 To compare time values with "never", use the supplied function `isnever()`:
 
 ```python
 import neworder
-n = neworder.time.never()
+n = neworder.time.NEVER
 neworder.log(n == n) # False!
 neworder.log(neworder.time.isnever(n)) # True
 ```

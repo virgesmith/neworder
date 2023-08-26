@@ -21,7 +21,7 @@ class Microsynth:
     self.pop = pd.DataFrame()
 
     alldata = pd.read_csv("./examples/world/data/CountryData.csv").replace("..","")
-    alldata[self.value_column] = pd.to_numeric(alldata[self.value_column]) 
+    alldata[self.value_column] = pd.to_numeric(alldata[self.value_column])
     for country in self.countries:
       neworder.log("Microsynthesising population for %s" % country_lookup[country])
       data = alldata[(alldata["Country Code"] == country) & (alldata["Series Code"]).str.match("SP.POP.*(FE|MA)$")]
@@ -38,7 +38,7 @@ class Microsynth:
             neworder.log("%s: total population data not available - skipping" % country)
           else:
             self._generate_from_total(data[self.value_column].values, country)
-        else: 
+        else:
           raise NotImplementedError("microsynth from M/F totals")
       else:
         data = pd.concat([data, data["Series Code"].str.split(".", expand=True)], axis=1) \
@@ -64,8 +64,8 @@ class Microsynth:
     #neworder.log(pop["result"])
     raw = humanleague.flatten(msynth["result"])
     pop = pd.DataFrame(columns=["AGE5", "AGE1", "SEX"])
-    pop.AGE5 = raw[0] 
-    pop.AGE1 = raw[2] 
+    pop.AGE5 = raw[0]
+    pop.AGE1 = raw[2]
     pop.SEX = raw[1]
 
     # could fail here if zero people in any category
@@ -73,9 +73,9 @@ class Microsynth:
     assert len(pop.AGE1.unique()) == 5
     assert len(pop.SEX.unique()) == 2
 
-    # construct single year of age 
+    # construct single year of age
     pop["Country"] = country
-    pop["AGE"] = pop.AGE5 * 5 + pop.AGE1 
+    pop["AGE"] = pop.AGE5 * 5 + pop.AGE1
     self.pop = self.pop.append(pop.drop(["AGE5", "AGE1"], axis=1))
 
   def _generate_from_total(self, agg_value, country):
@@ -91,19 +91,19 @@ class Microsynth:
 
     raw = humanleague.flatten(msynth["result"])
     pop = pd.DataFrame(columns=["AGE", "SEX"])
-    pop.AGE = raw[0] 
+    pop.AGE = raw[0]
     pop.SEX = raw[1]
 
     # could fail here if zero people in any category
     assert len(pop.AGE.unique()) == 17
     assert len(pop.SEX.unique()) == 2
 
-    # construct single year of age 
+    # construct single year of age
     pop["Country"] = country
     self.pop = self.pop.append(pop, sort=False)
 
   def write_table(self):
     # TODO define path in config
-    filename = "./examples/world/data/pop2019_{}-{}.csv".format(neworder.mpi.rank(), neworder.mpi.size())
+    filename = "./examples/world/data/pop2019_{}-{}.csv".format(neworder.mpi.RANK(), neworder.mpi.SIZE())
     neworder.log("writing %s" % filename)
     return self.pop.to_csv(filename, index=False)

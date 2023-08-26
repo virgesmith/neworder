@@ -54,7 +54,7 @@ class Infection(no.Model):
     # create the agent data, which is stored in a geopandas geodataframe
     start_positions = self.domain.all_nodes.sample(n=n_agents, random_state=self.nprand, replace=True).index.values
     speeds = self.nprand.lognormal(np.log(speed), 0.2, n_agents)
-    agents = gpd.GeoDataFrame(data={"node": start_positions, "speed": speeds, "status": Status.SUSCEPTIBLE, "t_infect": no.time.never()})
+    agents = gpd.GeoDataFrame(data={"node": start_positions, "speed": speeds, "status": Status.SUSCEPTIBLE, "t_infect": no.time.NEVER})
     agents["dest"] = agents["node"].apply(self.__random_next_dest)
     agents["path"] = agents[["node", "dest"]].apply(lambda r: self.domain.shortest_path(r["node"], r["dest"], weight="length"), axis=1)
     agents["dist"] = agents.path.apply(lambda p: p.length)

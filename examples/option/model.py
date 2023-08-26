@@ -13,7 +13,7 @@ from black_scholes import BlackScholes
 
 # requires 4 identical sims with perturbations to compute market sensitivities
 # (a.k.a. Greeks)
-assert neworder.mpi.size == 4, "This example requires 4 processes"
+assert neworder.mpi.SIZE == 4, "This example requires 4 processes"
 
 # initialisation
 

@@ -10,8 +10,8 @@ class MarkovChain(no.Model):
     self.npeople = npeople
 
     self.pop = pd.DataFrame(data={"state": np.full(npeople, 0),
-                                  "t1": no.time.never(),
-                                  "t2": no.time.never()})
+                                  "t1": no.time.NEVER,
+                                  "t2": no.time.NEVER})
 
     self.states = states
     self.transition_matrix = transition_matrix

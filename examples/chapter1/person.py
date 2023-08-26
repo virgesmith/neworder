@@ -13,7 +13,7 @@ class Person():
     self.alive = True
     # MODGEN would automatically create time and age, though they are not needed for this simple example
     self.mortality_hazard = mortality_hazard
-    self.time_mortality = neworder.time.never() # to be computed later
+    self.time_mortality = neworder.time.NEVER # to be computed later
 
   def finish(self) -> None:
     """ MODGEN equivalent: Person::Finish() """

@@ -14,12 +14,12 @@ class Population:
 
     # guard for no input data (if more MPI processes than input files)
     if not len(inputdata):
-      raise ValueError("proc {}/{}: no input data".format(neworder.mpi.rank(), neworder.mpi.size()))
+      raise ValueError("proc {}/{}: no input data".format(neworder.mpi.RANK(), neworder.mpi.SIZE()))
 
     self.lads = [file.split("_")[2] for file in inputdata]
 
     self.data = pd.DataFrame()
-    for file in inputdata: 
+    for file in inputdata:
       data = pd.read_csv(file)
       data["LAD"] = file.split("_")[2]
       self.data = self.data.append(data)
@@ -75,7 +75,7 @@ class Population:
     # Finally append newborns to main population and adjust counter
     self.data = self.data.append(newborns, sort=False)
     self.counter = self.counter + len(newborns)
-  
+
   def deaths(self, deltat):
     # neworder.log("deaths({:.3f})".format(deltat))
 
@@ -88,17 +88,17 @@ class Population:
 
     # Finally remove deceased from table
     self.data = self.data[h!=1]
-    
+
   def migrations(self, deltat):
 
-    # internal immigrations: 
+    # internal immigrations:
     # - assign the rates to the incumbent popultion appropriately by age,sex,ethnicity
     # - randomly sample this population, clone and append
     in_rates = self.data.join(self.in_migration, on=["LAD", "NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].values
     # in-migration should be sampling from the whole population ex-LAD, instead do an approximation by scaling up the LAD population
     # NOTE this is wrong for a number of reasons esp. as it cannot sample category combinations that don't already exist in the LAD
     h_in = neworder.hazard(in_rates * deltat)
-    
+
     incoming = self.data[h_in == 1].copy()
 
     # Append incomers to main population and adjust counter
@@ -154,8 +154,8 @@ class Population:
     """ State of the nation """
     #check(self.data)
     neworder.log("check OK: time={:.3f} size={} mean_age={:.2f}, pct_female={:.2f} net_migration={} ({}-{}+{}-{})" \
-      .format(neworder.timeline.time(), self.size(), self.mean_age(), 100.0 * self.gender_split(), 
-      self.in_out[0] - self.in_out[1] + self.in_out[2] - self.in_out[3], 
+      .format(neworder.timeline.time(), self.size(), self.mean_age(), 100.0 * self.gender_split(),
+      self.in_out[0] - self.in_out[1] + self.in_out[2] - self.in_out[3],
       self.in_out[0], self.in_out[1], self.in_out[2], self.in_out[3]))
     # wait for other processes
     neworder.mpi.sync()
@@ -163,6 +163,6 @@ class Population:
 
   def write_table(self):
     # TODO define path in config
-    filename = "./examples/people_multi/data/dm_{:.3f}_{}-{}.csv".format(neworder.timeline.time(), neworder.mpi.rank(), neworder.mpi.size())
+    filename = "./examples/people_multi/data/dm_{:.3f}_{}-{}.csv".format(neworder.timeline.time(), neworder.mpi.RANK(), neworder.mpi.SIZE())
     neworder.log("writing %s" % filename)
     return self.data.to_csv(filename, index=False)
