@@ -52,7 +52,6 @@ symbol     | type              | description
 `at_end`   | `bool` property   | whether the timeline has reached it's end point
 `dt`       | `float` property  | the size of the current timestep
 `end`      | `Any` property    | the end time of the timeline
-`index`    | `int` property    | the index of the current timestep
 `_next`    | `None` method     | move to the next timestep (for internal use by model, should not normally be called in client code)
 `nsteps`   | `int` property    | the total number of timesteps
 `start`    | `Any` property    | the start time of the timeline
@@ -81,7 +80,7 @@ See the [Conway](examples/conway.md) example for implementations.
 
 #### Graph
 
-The `GeospatialGraph` class provides a wrapper around the `networkx` and `osmnx` packages, and provides methods for computing shortes paths, isochrones, and subgraphs as well as identifying edges connected to nodes and vice versa. Due to its heavy dependencies, it is not part of the core `neworder` package - the implementation is in the [infection](examples/infection.md) example.
+The `GeospatialGraph` class provides a wrapper around the `networkx` and `osmnx` packages, and provides methods for computing shortest paths, isochrones, and subgraphs as well as identifying edges connected to nodes and vice versa. Due to its heavy dependencies, it an extra - installed using `pip install neworder[geospatial]`.
 
 ### Model
 
@@ -119,4 +118,4 @@ New users should take a look at the examples, which cover a range of application
 
 You should also bear in mind that while python is a *dynamically typed* language, C++ is *statically typed*. If an argument to a *neworder* method is not the correct type, it will fail immediately (as opposed to python, which will fail only if an invalid operation for the given type is attempted). Note also that `neworder`'s python code has type annotations.
 
-&ast; the `neworder.df.transition` function is *over 2 or 3 orders of magnitude faster* than an equivalent python implementation depending on the length of the dataset, and still an order of magnitude faster that an optimised python implementation.
+&ast; the `neworder.df.transition` function is *over 2 or 3 orders of magnitude faster* than a (naive) equivalent python implementation depending on the length of the dataset, and still an order of magnitude faster than an optimised python implementation.

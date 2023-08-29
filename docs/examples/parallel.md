@@ -13,7 +13,7 @@ Finally, one process acquires the entire population and prints a summary of the 
 {{ include_snippet("./docs/examples/src.md", show_filename=False) }}
 
 !!! note "Optional dependencies"
-    This example requires optional dependencies, see [system requirements](../..#system-requirements) and use:
+    This example requires optional dependencies, see [system requirements](../index.md#system-requirements) and use:
 
     `pip install neworder[parallel]`
 
@@ -24,7 +24,7 @@ Firstly, we import the necessary modules and check we are running in parallel mo
 {{ include_snippet("examples/parallel/model.py", "setup") }}
 
 !!! note "MPI"
-    *neworder* uses the `mpi4py` package to provide MPI functionality, which in turn requires an MPI installation on the host (see [system requirements](../..#system-requirements)). The attributes `neworder.mpi.COMM` (the MPI communicator), `neworder.mpi.RANK` and `neworder.mpi.SIZE` are provided for convenience.
+    *neworder* uses the `mpi4py` package to provide MPI functionality, which in turn requires an MPI installation on the host (see [system requirements](../index.md#system-requirements)). The attributes `neworder.mpi.COMM` (the MPI communicator), `neworder.mpi.RANK` and `neworder.mpi.SIZE` are provided for convenience.
 
 As always, the neworder framework expects an instance of a model class, subclassed from `neworder.Model`, which in turn requires a timeline, in this case a `neworder.LinearTimeline` object:
 

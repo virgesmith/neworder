@@ -17,7 +17,7 @@ The instructions below assume you've already forked and cloned a local copy of t
 
 ## Development environment
 
-See [system requirements](../..#system-requirements) and use:
+See [system requirements](index.md#system-requirements) and use:
 
 ```bash
 pip install -e .[dev] # add ,parallel,geospatial as necessary

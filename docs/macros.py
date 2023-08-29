@@ -1,6 +1,8 @@
 # macros for mkdocs-macros-plugin
 import os
 import requests
+import importlib
+from datetime import datetime
 
 _inline_code_styles = {
   ".py": "python",
@@ -14,15 +16,35 @@ _inline_code_styles = {
 }
 
 
+def write_requirements() -> None:
+  try:
+    with open("docs/requirements.txt", "w") as fd:
+      fd.write(f"""# DO NOT EDIT
+# auto-generated @ {datetime.now()} by docs/macros.py::write_requirements()
+# required by readthedocs.io
+""")
+      fd.writelines(f"{dep}=={importlib.metadata.version(dep)}\n" for dep in [
+        "mkdocs",
+        "mkdocs-macros-plugin",
+        "mkdocs-material",
+        "mkdocs-material-extensions",
+        "mkdocs-video",
+        "requests"
+      ])
+  # ignore any error, this should only run in a dev env anyway
+  except:
+    pass
+
+
 def define_env(env):
 
   @env.macro
   def insert_zenodo_field(*keys: str):
     """ This is the *released* version not the dev one """
     try:
-      response = requests.get('https://zenodo.org/api/deposit/depositions/7838395', params={'access_token': os.getenv("ZENODO_PAT")})
+      response = requests.get('https://zenodo.org/api/records', params={'q': 'neworder', 'access_token': os.getenv("ZENODO_PAT")})
       response.raise_for_status()
-      result = response.json()
+      result = response.json()["hits"]["hits"][0]
       for k in keys:
         result = result[k]
       return result
@@ -62,3 +84,4 @@ def define_env(env):
     else:
       return "".join(lines) + footer
 
+write_requirements()
