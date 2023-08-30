@@ -5,7 +5,7 @@ This example showcases how to run parallel simulations, each with identical rand
 {{ include_snippet("./docs/examples/src.md", show_filename=False) }}
 
 !!! note "Optional dependencies"
-    This example requires optional dependencies, see [system requirements](../..#system-requirements) and use:
+    This example requires optional dependencies, see [system requirements](../index.md#system-requirements) and use:
 
     `pip install neworder[parallel]`
 
