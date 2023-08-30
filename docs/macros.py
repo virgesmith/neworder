@@ -15,6 +15,9 @@ _inline_code_styles = {
   ".md": None
 }
 
+# this is the overall record id, not a specific version
+_NEWORDER_ZENODO_ID = 4031821
+
 
 def write_requirements() -> None:
   try:
@@ -42,7 +45,7 @@ def define_env(env):
   def insert_zenodo_field(*keys: str):
     """ This is the *released* version not the dev one """
     try:
-      response = requests.get('https://zenodo.org/api/records', params={'q': 'neworder', 'access_token': os.getenv("ZENODO_PAT")})
+      response = requests.get('https://zenodo.org/api/records', params={'q': _NEWORDER_ZENODO_ID, 'access_token': os.getenv("ZENODO_PAT")})
       response.raise_for_status()
       result = response.json()["hits"]["hits"][0]
       for k in keys:
