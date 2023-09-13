@@ -87,4 +87,4 @@ def define_env(env):
     else:
       return "".join(lines) + footer
 
-write_requirements()
+# write_requirements()

@@ -22,9 +22,9 @@ Each entity travels at a fixed speed in a 2- or 3-dimensional constrained univer
 
 (if a separation is required, the boid will not attempt to align or cohere)
 
-The entities are stored in a pandas `DataFrame` and use `neworder.Space` to update positions. There are no explicit `for` loops in the model - all position and velocity calculations are "vectorised"<sup>&ast;</sup> for efficiency.
+The entities are stored in a pandas `DataFrame` and use `neworder.Space` to update positions. There are no explicit `for` loops in the model - all position and velocity calculations are "vectorised"[^1] for efficiency.
 
-&ast; in this context "vectorisation" merely means the avoidance of explicit loops in an interpreted language. The actual implementation may be compiled to assembly language, vectorised in the true ([SIMD](https://en.wikipedia.org/wiki/SIMD)) sense, parallelised, optimised in other ways, or any combination thereof.
+[^1]: in this context "vectorisation" merely means the avoidance of explicit loops in an interpreted language. The actual implementation may be compiled to assembly language, vectorised in the true ([SIMD](https://en.wikipedia.org/wiki/SIMD)) sense, parallelised, optimised in other ways, or any combination thereof.
 
 Run like so
 

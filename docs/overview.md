@@ -30,12 +30,90 @@ This is provided by:
 
 *neworder*'s timeline is conceptually a sequence of steps that are iterated over (calling the Model's `step` and (optionally) `check` methods at each iteration, plus the `finalise` method at the last time point, which is commonly used to post-process the raw model data at the end of the model run. Timelines should not be incremented in client code, this happens automatically within the model.
 
-The framework provides four types of timeline, and is extensible:
+The framework is extensible but provides four types of timeline (implemented in C++):
 
 - `NoTimeline`: an arbitrary one-step timeline which is designed for continuous-time models in which the model evolution is computed in a single step
 - `LinearTimeline`: a set of equally-spaced intervals in non-calendar time
 - `NumericTimeline`: a fully-customisable non-calendar timeline allowing for unequally-spaced intervals
 - `CalendarTimeline`: a timeline based on calendar dates with with (multiples of) daily, monthly or annual intervals
+
+
+``` mermaid
+classDiagram
+  Timeline <|-- NoTimeline
+  Timeline <|-- LinearTimeline
+  Timeline <|-- NumericTimeline
+  Timeline <|-- CalendarTimeline
+  Timeline <|-- CustomTimeline
+
+  class Timeline {
+    +int index
+    +bool at_end*
+    +float dt*
+    +Any end*
+    +float nsteps*
+    +Any start*
+    +Any time*
+    +_next() None*
+    +__repr__() str*
+  }
+
+  class NoTimeline {
+    +bool at_end
+    +float dt
+    +Any end
+    +float nsteps
+    +Any start
+    +Any time
+    +_next()
+    +__repr__() str
+  }
+
+  class LinearTimeline {
+    +bool at_end
+    +float dt
+    +Any end
+    +float nsteps
+    +Any start
+    +Any time
+    +_next()
+    +__repr__() str
+  }
+
+  class NumericTimeline {
+    +bool at_end
+    +float dt
+    +Any end
+    +float nsteps
+    +Any start
+    +Any time
+    +_next()
+    +__repr__() str
+  }
+
+  class CalendarTimeline {
+    +bool at_end
+    +float dt
+    +Any end
+    +float nsteps
+    +Any start
+    +Any time
+    +_next()
+    +__repr__() str
+  }
+
+  class CustomTimeline {
+    +bool at_end
+    +float dt
+    +Any end
+    +float nsteps
+    +Any start
+    +Any time
+    +_next()
+    +__repr__() str
+  }
+```
+
 
 !!! note "Calendar Timelines"
     - Calendar timelines do not provide intraday resolution
@@ -45,7 +123,7 @@ The framework provides four types of timeline, and is extensible:
 
 #### Custom timelines
 
-If none of the supplied timelines are suitable, users can implement their own, inheriting from the abstract `neworder.Timeline` base class, which also provides an `index` property. The following must be implemented in the subclass:
+If none of the supplied timelines are suitable, users can implement their own, deriving from the abstract `neworder.Timeline` base class, which provides an `index` property that should not be overidden. The following properties and methods must be overridden in the subclass:
 
 symbol     | type              | description
 -----------|-------------------|---
@@ -105,17 +183,17 @@ the following can also be optionally implemented in the model:
 
 Pretty much everything else is entirely up to the model developer. While the module is completely agnostic about the format of data, the library functions accept and return *numpy* arrays, and it is recommended to use *pandas* dataframes where appropriate in order to be able to use the fast data manipulation functionality provided.
 
-Like MODGEN, both time-based and case-based models are supported. In the latter, the timeline refers not to absolute time but the age of the cohort. Additionally continuous-time models can be implemented, using a "null `NoTimeline` (see above) with only a single transition, and the Monte-Carlo library specifically provides functions for continuous sampling, e.g. from non-homogeneous Poisson processes.
+Like MODGEN, both time-based and case-based models are supported. In the latter, the timeline refers not to absolute time but the age of the cohort. Additionally continuous-time models can be implemented, using a `NoTimeline` (see above) with only a single transition, and the Monte-Carlo library specifically provides functions for continuous sampling, e.g. from non-homogeneous Poisson processes.
 
 New users should take a look at the examples, which cover a range of applications including implementations of some MODGEN teaching models.
 
 ## Data and Performance
 
-*neworder* is written in C++ with the python bindings provided by the *pybind11* package. As python and C++ have very different memory models, it's generally not advisable to directly share data, i.e. to safely have a python object and a C++ object both referencing (and potentially modifying) the same memory location. Thus *neworder* class member variables are accessible only via member functions and results are returned by value (i.e. copied). However, there is a crucial exception to this: the *numpy* `ndarray` type. This is fundamental to the operation of the framework, as it enables the C++ module to directly access (and modify) both *numpy* arrays and *pandas* data frames, facilitiating very fast implementation of algorithms operating directly on *pandas* DataFrames.<sup>*</sup>
+*neworder* is written in C++ with the python bindings provided by the *pybind11* package. As python and C++ have very different memory models, it's generally not advisable to directly share data, i.e. to safely have a python object and a C++ object both referencing (and potentially modifying) the same memory location. Thus *neworder* class member variables are accessible only via member functions and results are returned by value (i.e. copied). However, there is a crucial exception to this: the *numpy* `ndarray` type. This is fundamental to the operation of the framework, as it enables the C++ module to directly access (and modify) both *numpy* arrays and *pandas* data frames, facilitiating very fast implementation of algorithms operating directly on *pandas* DataFrames.[^1]
 
 !!! note "Explicit Loops"
     To get the best performance, avoid using explicit loops in python code where "vectorised" *neworder* (or e.g. numpy) functions can be used instead.
 
 You should also bear in mind that while python is a *dynamically typed* language, C++ is *statically typed*. If an argument to a *neworder* method is not the correct type, it will fail immediately (as opposed to python, which will fail only if an invalid operation for the given type is attempted). Note also that `neworder`'s python code has type annotations.
 
-&ast; the `neworder.df.transition` function is *over 2 or 3 orders of magnitude faster* than a (naive) equivalent python implementation depending on the length of the dataset, and still an order of magnitude faster than an optimised python implementation.
+[^1]: the `neworder.df.transition` function is *over 2 or 3 orders of magnitude faster* than a (naive) equivalent python implementation depending on the length of the dataset, and still an order of magnitude faster than an optimised python implementation.

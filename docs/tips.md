@@ -5,21 +5,22 @@
 !!! warning "Base Model Initialisation"
     When instantiating the model subclass, it is essential that the `neworder.Model` base class is explicitly initialised. It must be supplied with a `Timeline` object and (optionally) a seeding function for the Monte-Carlo engine. Failure to do this will result in a runtime error.
 
-For example, use this initialisation pattern:
+Ensure the `neworder.Model` base class is properly initialised:
 
-```python
+```python title="Model initialisation"
 class MyModel(neworder.Model):
   def __init__(self, args...) -> None:
     timeline = ... # initialise an appropriate timeline
-    seeder = ... # (optional) set an appropriate seeding function
-    # this line is essential:
-    super().__init__(timeline, seeder)
-    # now initialise the subclass...
+    super().__init__(timeline) # (1)!
+    ... # now initialise the subclass
 ```
+
+1.  :material-alert: this line is essential
+
 
 ## Custom Seeding Strategies
 
-!!! note "Note"
+!!! note "Random number generator"
     *neworder* random streams use the Mersenne Twister pseudorandom generator, as implemented in the C++ standard library.
 
 *neworder* provides three basic seeding functions which initialise the model's random stream so that they are either non-reproducible (`neworder.MonteCarlo.nondeterministic_stream`), or reproducible and either identical (`neworder.MonteCarlo.deterministic_identical_stream`) or independent across parallel runs (`neworder.MonteCarlo.deterministic_independent_stream`). Typically, a user would select identical streams (and perturbed inputs) for sensitivity analysis, and independent streams (with identical inputs) for convergence analysis.
