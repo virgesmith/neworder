@@ -74,7 +74,7 @@ class Boids2d(no.Model):
     self.__normalise()
 
     # set colours
-    self.boids.c = 0
+    self.boids.c = 0.0
     self.boids.loc[in_range[0:self.N_predators].sum(axis=0) != 0, "c"] = 1/3
     self.boids.loc[too_close[0:self.N_predators].sum(axis=0) != 0, "c"] = 2/3
     self.boids.loc[0:self.N_predators - 1, "c"] = 1

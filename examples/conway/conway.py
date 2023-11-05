@@ -10,7 +10,7 @@ class Conway(no.Model):
 
   __glider = np.array([[0, 0, 1], [1, 0, 1], [0, 1, 1]], dtype=int)
 
-  def __init__(self, nx: int, ny: int, n: int, edge: no.Edge=no.Edge.WRAP) -> None:
+  def __init__(self, nx: int, ny: int, edge: no.Edge=no.Edge.WRAP) -> None:
     super().__init__(no.LinearTimeline(0, 1), no.MonteCarlo.nondeterministic_stream)
 
     # create n automata at regular positions

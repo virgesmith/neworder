@@ -3,13 +3,13 @@ from enum import Enum
 from time import sleep
 import matplotlib.pyplot as plt
 import numpy as np
-
-from neworder.geospatial import GeospatialGraph
+import pandas as pd
 import osmnx as ox
 from shapely import line_interpolate_point
 import geopandas as gpd
 
 import neworder as no
+from neworder.geospatial import GeospatialGraph
 
 class Status(Enum):
   SUSCEPTIBLE = 0
@@ -54,17 +54,16 @@ class Infection(no.Model):
     # create the agent data, which is stored in a geopandas geodataframe
     start_positions = self.domain.all_nodes.sample(n=n_agents, random_state=self.nprand, replace=True).index.values
     speeds = self.nprand.lognormal(np.log(speed), 0.2, n_agents)
-    agents = gpd.GeoDataFrame(data={"node": start_positions, "speed": speeds, "status": Status.SUSCEPTIBLE, "t_infect": no.time.NEVER})
+    agents = pd.DataFrame(data={"node": start_positions, "speed": speeds, "status": Status.SUSCEPTIBLE, "t_infect": no.time.NEVER})
     agents["dest"] = agents["node"].apply(self.__random_next_dest)
     agents["path"] = agents[["node", "dest"]].apply(lambda r: self.domain.shortest_path(r["node"], r["dest"], weight="length"), axis=1)
-    agents["dist"] = agents.path.apply(lambda p: p.length)
+    agents["dist"] = agents.path.apply(lambda p: p.length).astype(float)
     agents["offset"] = 0.0
-    agents["geometry"] = agents["path"].apply(lambda linestr: line_interpolate_point(linestr, 0))
     infected = self.nprand.choice(agents.index, n_infected, replace=False)
     agents.loc[infected, "status"] = Status.INFECTED
     agents.loc[infected, "t_infect"] = self.timeline.index
 
-    self.agents = agents
+    self.agents = gpd.GeoDataFrame(agents, geometry=agents["path"].apply(lambda linestr: line_interpolate_point(linestr, 0)))
     self.fig, self.g = self.__init_visualisation()
 
   def step(self) -> None:
@@ -111,7 +110,7 @@ class Infection(no.Model):
       # path <- (node, dest), dist <- new_dist
       self.agents.loc[overshoots, "path"] = self.agents.loc[overshoots, ["node", "dest"]] \
         .apply(lambda r: self.domain.shortest_path(r["node"], r["dest"], weight="length"), axis=1)
-      self.agents.loc[overshoots, "dist"] = self.agents.loc[overshoots, "path"].apply(lambda p: p.length)
+      self.agents.loc[overshoots, "dist"] = self.agents.loc[overshoots, "path"].apply(lambda p: p.length).astype(float)
       # finally update position
       self.agents.loc[overshoots, "geometry"] = self.agents.loc[overshoots, "path"].apply(lambda linestr: line_interpolate_point(linestr, 0))
 

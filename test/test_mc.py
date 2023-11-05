@@ -1,3 +1,4 @@
+from math import factorial
 import numpy as np
 import numpy.typing as npt
 import neworder as no
@@ -132,7 +133,7 @@ def test_mc_counts(base_model: no.Model) -> None:
 
   def poisson_pdf(x: range, l: float) -> np.ndarray:
     y = np.exp(-l)
-    return np.array([l**k * y / np.math.factorial(k) for k in x]) # type: ignore # Module has no attribute "math"; maybe "emath" or "mat"?
+    return np.array([l**k * y / factorial(k) for k in x]) # type: ignore # Module has no attribute "math"; maybe "emath" or "mat"?
 
   tests = [(1.0, 1.0, 10000), (3.0, 0.5, 10000), (0.2, 2.0, 10000), (10.0, 1.0, 1000), (3.0, 1.0, 100000)]
 

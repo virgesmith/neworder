@@ -152,7 +152,7 @@ class Population(neworder.Model):
 
   def plot_pyramid(self) -> None:
     a = np.arange(86)
-    s = self.population.groupby(by=["DC1117EW_C_SEX", "DC1117EW_C_AGE"])["DC1117EW_C_SEX"].count()
+    s = self.population.groupby(by=["DC1117EW_C_SEX", "DC1117EW_C_AGE"], observed=False)["DC1117EW_C_SEX"].count()
     m = s[s.index.isin([1], level="DC1117EW_C_SEX")].values
     f = s[s.index.isin([2], level="DC1117EW_C_SEX")].values
 
