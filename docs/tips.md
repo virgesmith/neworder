@@ -17,7 +17,6 @@ class MyModel(neworder.Model):
 
 1.  :material-alert: this line is essential
 
-
 ## Custom Seeding Strategies
 
 !!! note "Random number generator"

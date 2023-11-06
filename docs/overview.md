@@ -37,7 +37,6 @@ The framework is extensible but provides four types of timeline (implemented in 
 - `NumericTimeline`: a fully-customisable non-calendar timeline allowing for unequally-spaced intervals
 - `CalendarTimeline`: a timeline based on calendar dates with with (multiples of) daily, monthly or annual intervals
 
-
 ``` mermaid
 classDiagram
   Timeline <|-- NoTimeline
@@ -113,7 +112,6 @@ classDiagram
     +__repr__() str
   }
 ```
-
 
 !!! note "Calendar Timelines"
     - Calendar timelines do not provide intraday resolution
