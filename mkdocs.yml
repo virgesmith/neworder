@@ -4,8 +4,9 @@ site_author: Andrew P Smith
 site_description: Documentation for the neworder microsimulation framework
 repo_url: https://github.com/virgesmith/neworder
 repo_name: GitHub
-copyright: "&copy 2017-2023 Andrew P Smith"
-#google_analytics
+copyright: >
+  Copyright &copy; 2017-2023 Andrew P Smith –
+  <a href="#__consent">Change cookie settings</a>
 
 theme:
   name: material
