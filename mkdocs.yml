@@ -11,7 +11,7 @@ theme:
   name: material
   palette:
     scheme: default
-    primary: blue grey
+    primary: light blue
     accent: red
   features:
     - content.code.copy
@@ -48,7 +48,15 @@ plugins:
       # include_dir: examples
   - mkdocs-video
 
-#  - mkpdfs
+extra:
+  consent:
+    title: Cookie consent
+    description: >-
+      This site uses cookies with your permission.
+    actions:
+      - accept
+      - manage
+      - reject
 
 nav:
   - Home: index.md
