@@ -360,12 +360,16 @@ def test_halt_finalise() -> None:
   assert not m.finalise_called
   assert not m.timeline.at_end
   assert m.timeline.index == 1
+  # resume
   no.run(m)
   assert not m.finalise_called
   assert not m.timeline.at_end
   assert m.timeline.index == 2
+  m.do_halt = False
   no.run(m)
   assert m.finalise_called
   assert m.timeline.at_end
   assert m.timeline.index == 3
 
+  with pytest.raises(StopIteration):
+    no.run(m)

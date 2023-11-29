@@ -5,57 +5,70 @@
 #include "MonteCarlo.h"
 #include "Module.h"
 
-namespace no {
-
-class Environment;
-
-class NEWORDER_EXPORT Model
+namespace no
 {
-public:
-  Model(no::Timeline& timeline, const py::function& seeder);
 
-  virtual ~Model() = default;
+  class Environment;
 
-  Model(const Model&) = delete;
-  Model& operator=(const Model&) = delete;
-  Model(Model&&) = delete;
-  Model& operator=(Model&&) = delete;
+  class NEWORDER_EXPORT Model
+  {
+  public:
+    // deliberately use pre-C++11 enum - scope will be e.g. Model::RUN
+    enum RunState
+    {
+      NOT_STARTED,
+      RUNNING,
+      HALTED, // immediate exit without calling finalise
+      COMPLETED // reached end of timeline, finalise called
+    };
 
-  static bool run(Model& model);
+    Model(no::Timeline &timeline, const py::function &seeder);
 
-  // getters
-  Timeline& timeline() { return m_timeline; }
-  MonteCarlo& mc() { return m_monteCarlo; }
+    virtual ~Model() = default;
 
-  // functions to override
-  virtual void modify(); // optional, parallel runs only
-  virtual void step() = 0; // compulsory
-  virtual bool check(); // optional
-  virtual void finalise(); // optional
+    Model(const Model &) = delete;
+    Model &operator=(const Model &) = delete;
+    Model(Model &&) = delete;
+    Model &operator=(Model &&) = delete;
 
-  // set the halt flag
-  void halt();
+    static bool run(Model &model);
 
-private:
-  Timeline& m_timeline;
-  py::object m_timeline_handle; // ensures above ref isnt deleted during the lifetime of this object
-  MonteCarlo m_monteCarlo;
-};
+    // getters
+    Timeline &timeline() { return m_timeline; }
+    MonteCarlo &mc() { return m_monteCarlo; }
 
+    // functions to override
+    virtual void modify();   // optional, parallel runs only
+    virtual void step() = 0; // compulsory
+    virtual bool check();    // optional
+    virtual void finalise(); // optional
 
-class PyModel: private Model
-{
-  using Model::Model;
-  using Model::operator=;
+    // set the halt flag
+    void halt();
 
-  // trampoline methods
-  void modify() override { PYBIND11_OVERRIDE(void, Model, modify); }
+    // get the run state
+    RunState runState() const { return m_runState; }
 
-  void step() override { PYBIND11_OVERRIDE_PURE(void, Model, step); }
+  private:
+    RunState m_runState;
+    Timeline &m_timeline;
+    py::object m_timeline_handle; // ensures above ref isnt deleted during the lifetime of this object
+    MonteCarlo m_monteCarlo;
+  };
 
-  bool check() override { PYBIND11_OVERRIDE(bool, Model, check); }
+  class PyModel : private Model
+  {
+    using Model::Model;
+    using Model::operator=;
 
-  void finalise() override { PYBIND11_OVERRIDE(void, Model, finalise); }
-};
+    // trampoline methods
+    void modify() override { PYBIND11_OVERRIDE(void, Model, modify); }
+
+    void step() override { PYBIND11_OVERRIDE_PURE(void, Model, step); }
+
+    bool check() override { PYBIND11_OVERRIDE(bool, Model, check); }
+
+    void finalise() override { PYBIND11_OVERRIDE(void, Model, finalise); }
+  };
 
 }

@@ -12,7 +12,6 @@ namespace env {
 
 extern std::atomic_bool verbose;
 extern std::atomic_bool checked;
-extern std::atomic_bool halt;
 extern std::atomic_int rank;
 extern std::atomic_int size;
 extern std::atomic_int64_t uniqueIndex;

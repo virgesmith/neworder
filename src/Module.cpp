@@ -28,7 +28,6 @@ std::atomic_int no::env::rank = -1;
 std::atomic_int no::env::size = -1;
 std::atomic_bool no::env::verbose = false;
 std::atomic_bool no::env::checked = true;
-std::atomic_bool no::env::halt = false;
 std::atomic_int64_t no::env::uniqueIndex = -1;
 // these types are not trivially copyable so can't be atomic
 std::string no::env::logPrefix[2];
@@ -81,9 +80,6 @@ PYBIND11_MODULE(_neworder_core, m)
   auto time = m.def_submodule("time", time_docstr)
     .def("isnever", no::time::isnever, time_isnever_docstr, "t"_a) // scalar
     .def("isnever", no::time::isnever_a, time_isnever_a_docstr, "t"_a); // array
-    // .def("distant_past", no::time::distant_past, time_distant_past_docstr)
-    // .def("far_future", no::time::far_future, time_far_future_docstr)
-    // .def("never", no::time::never, time_never_docstr)
   time.attr("DISTANT_PAST") = no::time::distant_past();
   time.attr("FAR_FUTURE") = no::time::far_future();
   time.attr("NEVER") = no::time::never();
@@ -173,18 +169,26 @@ PYBIND11_MODULE(_neworder_core, m)
     .def("__repr__", &no::MonteCarlo::repr, mc_repr_docstr);
 
   // Microsimulation (or ABM) model class
-  py::class_<no::Model, no::PyModel>(m, "Model", model_docstr)
+  auto model = py::class_<no::Model, no::PyModel>(m, "Model", model_docstr)
     .def(py::init<no::Timeline&, const py::function&>(), model_init_docstr,"timeline"_a,
        "seeder"_a = py::cpp_function(no::MonteCarlo::deterministic_independent_stream))
     // properties are readonly only in the sense you can't assign to them; you CAN call their mutable methods
     .def_property_readonly("timeline", &no::Model::timeline, model_timeline_docstr)
     .def_property_readonly("mc", &no::Model::mc, model_mc_docstr)
+    .def_property_readonly("run_state", &no::Model::runState, model_runstate_docstr)
     .def("modify", &no::Model::modify, model_modify_docstr)
     .def("step", &no::Model::step, model_step_docstr)
     .def("check", &no::Model::check, model_check_docstr)
     .def("finalise", &no::Model::finalise, model_finalise_docstr)
     .def("halt", &no::Model::halt, model_halt_docstr);
     // NB the all-important run function is not exposed to python, it can only be executed via the `neworder.run` function
+
+  py::enum_<no::Model::RunState>(model, "RunState")
+  .value("NOT_STARTED", no::Model::NOT_STARTED)
+  .value("RUNNING", no::Model::RUNNING)
+  .value("HALTED", no::Model::HALTED)
+  .value("COMPLETED", no::Model::COMPLETED)
+  .export_values();
 
   // statistical utils
   m.def_submodule("stats", stats_docstr)

@@ -41,7 +41,6 @@ def test_multimodel() -> None:
   class TestModel(no.Model):
     def __init__(self) -> None:
       super().__init__(no.LinearTimeline(0, 10, 10), no.MonteCarlo.deterministic_identical_stream)
-
       self.x = 0.0
 
     def step(self) -> None:
@@ -55,3 +54,38 @@ def test_multimodel() -> None:
   [no.run(m) for m in models]
 
   assert models[0].x == models[1].x
+
+
+def test_runstate() -> None:
+  class TestModel(no.Model):
+    def __init__(self, *, do_halt: bool) -> None:
+      super().__init__(no.NoTimeline())
+      self.do_halt = do_halt
+      self.finalised = False
+
+    def step(self) -> None:
+      assert self.run_state == no.Model.RUNNING
+      if self.do_halt:
+        self.halt()
+        assert self.run_state == no.Model.HALTED
+
+    def finalise(self) -> None:
+      assert self.run_state == no.Model.COMPLETED
+      self.finalised = True
+
+  # run without halting
+  m = TestModel(do_halt=False)
+  assert m.run_state == no.Model.NOT_STARTED
+  no.run(m)
+  assert m.run_state == no.Model.COMPLETED
+  assert m.finalised
+
+  # halt the run
+  m = TestModel(do_halt=True)
+  assert m.run_state == no.Model.NOT_STARTED
+  no.run(m)
+  assert m.run_state == no.Model.HALTED
+  assert not m.finalised
+
+
+

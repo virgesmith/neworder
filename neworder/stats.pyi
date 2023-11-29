@@ -1,21 +1,18 @@
 """
+
     Submodule for statistical functions
 """
 from __future__ import annotations
-from typing import overload, TypeVar
-import numpy as np
-#_Shape = typing.Tuple[int, ...]
+import numpy
+import numpy.typing as npt
+import typing
 
-__all__ = [
-    "logistic",
-    "logit"
-]
+__all__ = ["logistic", "logit"]
 
-T = TypeVar("T")
-nparray = np.ndarray[T, np.dtype[T]]
-
-@overload
-def logistic(x: nparray[np.float64]) -> nparray[np.float64]:
+@typing.overload
+def logistic(
+    x: npt.NDArray[numpy.float64], x0: float, k: float
+) -> npt.NDArray[numpy.float64]:
     """
     Computes the logistic function on the supplied values.
     Args:
@@ -24,29 +21,30 @@ def logistic(x: nparray[np.float64]) -> nparray[np.float64]:
         x0: the midpoint location
     Returns:
         The function values
+    """
 
-
+@typing.overload
+def logistic(x: npt.NDArray[numpy.float64], k: float) -> npt.NDArray[numpy.float64]:
+    """
     Computes the logistic function with x0=0 on the supplied values.
     Args:
         x: The input values.
         k: The growth rate
     Returns:
         The function values
+    """
 
-
+@typing.overload
+def logistic(x: npt.NDArray[numpy.float64]) -> npt.NDArray[numpy.float64]:
+    """
     Computes the logistic function with k=1 and x0=0 on the supplied values.
     Args:
         x: The input values.
     Returns:
         The function values
     """
-@overload
-def logistic(x: nparray[np.float64], k: float) -> nparray[np.float64]:
-    pass
-@overload
-def logistic(x: nparray[np.float64], x0: float, k: float) -> nparray[np.float64]:
-    pass
-def logit(x: nparray[np.float64]) -> nparray[np.float64]:
+
+def logit(x: npt.NDArray[numpy.float64]) -> npt.NDArray[numpy.float64]:
     """
     Computes the logit function on the supplied values.
     Args:

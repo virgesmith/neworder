@@ -99,17 +99,30 @@ x = self.nprand.normal(size=5)
 
 NB as there is only one RNG state, you can safely get independent variates when calling both the RNG directly and via numpy.
 
-## Conditional Halting
+## Ending the model run
 
-In some models, rather than (or as well as) evolving the population over a fixed timeline, it may make more sense to iterate timesteps until some condition is met. The "Schelling" example illustrates this - it runs until all agents are in a satisfied state.
-
-In these situations, the model developer can (conditionally) call the `Model.halt()` method from inside the model's `step()` method, which will end the model run. Currently, the `LinearTimeline` and `CalendarTimeline` classes support both fixed and open-ended timelines.
-
-!!! note "`Model.halt()`"
-    This function *does not* end execution immediately, it signals to the *neworder* runtime not to iterate any further timesteps. This means that the entire body of the `step` method (and the `check` method, if implemented) will still be executed. Overriding the `halt` method is not recommended.
+Models will continue to run until the end of their timeline is reached, unless explicitly told otherwise (see next section).
 
 !!! Note "Finalisation"
-    The `finalise` method is automatically called by the *neworder* runtime only when the end of the timeline. As open-ended timelines never reach this state, the method must can be called explicitly, if needed.
+    The model's `finalise` method can be optionally implemented as necessary, for example to write results to a file. It is automatically called by the *neworder* runtime **only** when the end of the timeline is reached.
+
+## Open-ended timelines and Conditional Halting
+
+In some models, rather than (or as well as) evolving the population over a fixed timeline, it may make more sense to iterate timesteps until some condition is met. The "Schelling" example illustrates this - it runs until all agents are in a satisfied state. Currently, the inbuilt `LinearTimeline` and `CalendarTimeline` classes support both fixed and open-ended timelines. In other cases it may be useful to temporarily exit the model for later resumption.
+
+The model's `halt` method can be used to stop the model run. In these situations, the `step` method should have some logic to (conditionally) call the `halt` method.
+
+!!! note "`Model.halt()`"
+    This function *does not* end execution immediately, it signals to the *neworder* runtime not to iterate any further timesteps. Calling `halt` means that:
+
+    - the entire body of the `step` method (and the `check` method, if implemented) will still run for the current timestep,
+    - the `finalise` method, even if implemented, will **not** be excuted,
+    - the `neworder.run` method will then exit.
+
+Overriding the `halt` method should not be necessary and is not recommended. The `finalise` method, if needed, must be called explicitly for models with open-ended timelines that have been `halt`ed.
+
+!!! Note "Resuming execution"
+    A model that has previously been `halt`ed but has not reached the end of its timeline can be resumed by passing it to `neworder.run` again. Attempting to resume a model that has reached the end of it's timeline will result in a `StopIteration` exception.
 
 ## Deadlocks
 
