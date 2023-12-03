@@ -90,7 +90,7 @@ The script from [codecov.io](https://codecov.io/gh/virgesmith/neworder/) uses `g
 
 ## Generating type stubs
 
-Type stubs can be generated for the C++ module using `pybind11-stubgen`, although manual modifications are needed for the output (e.g. docstrings for overloaded functions are misplaced, numpy types need to be fixed).
+Type stubs can be generated for the C++ module using `pybind11-stubgen`, although manual modifications may be needed, plus numpy types need to be fixed globally.
 
 ```sh
 pybind11-stubgen _neworder_core --ignore-invalid all
