@@ -5,7 +5,6 @@ import numpy as np
 import pandas as pd
 import neworder as no
 import matplotlib.pyplot as plt # type: ignore
-from matplotlib.colors import ListedColormap
 
 _cmap = {
   0: (0.2, 0.2, 0.2, 1.0),

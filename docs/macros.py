@@ -79,12 +79,12 @@ def define_env(env):
       lines = lines[span[0] + 1: span[1]]
 
     if show_filename:
-      footer = f"\n[file: **{filename}**]\n"
+        title = f'title="{filename}"'
     else:
-      footer = ""
+        title = ""
     if code_style is not None:
-      return f"```{code_style}\n{''.join(lines)}```{footer}"
+      return f"```{code_style} {title}\n{''.join(lines)}```"
     else:
-      return "".join(lines) + footer
+      return "".join(lines)
 
 # write_requirements()

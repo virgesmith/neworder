@@ -31,24 +31,13 @@ Run like so
 ```sh
 python examples/boids/run.py 2d
 ```
-
-The 2d version utilises a wrap-around domain and does not implement the reversion step.
-
 or
 
 ```sh
 python examples/boids/run.py 3d
 ```
 
-which runs
-
-{{ include_snippet("examples/boids/run.py") }}
-
-and this is the 3-d implementation:
-
-{{ include_snippet("examples/boids/boids3d.py") }}
-
-A 2-d implementation is also provided in `examples/boids/boids2d.py`.
+The 2d version utilises a wrap-around domain and so does not require the reversion step.
 
 ## Outputs
 
