@@ -32,5 +32,7 @@ jobs:
       run: |
         python -m pytest
     - name: Upload
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       run: |
         bash <(curl -s https://codecov.io/bash) -Z
