@@ -2,6 +2,8 @@
 import importlib
 import os
 from datetime import datetime
+from functools import cache
+from typing import Any
 
 import requests
 
@@ -17,7 +19,25 @@ _inline_code_styles = {
 }
 
 # this is the overall record id, not a specific version
-_NEWORDER_ZENODO_ID = 4031821
+_NEWORDER_ZENODO_ID = 4031821  # search using this (or DOI 10.5281/zenodo.4031821) just doesnt work
+
+
+@cache
+def get_zenodo_record() -> dict[str, Any]:
+    try:
+        response = requests.get(
+            "https://zenodo.org/api/records",
+            params={
+                "q": "(virgesmith) AND (neworder)",  # this is the only query that seems to work
+                "access_token": os.getenv("ZENODO_PAT"),
+            },
+        )
+        response.raise_for_status()
+        # with open("zenodo-result.json", "w") as fd:
+        #     fd.write(response.text)
+        return response.json()["hits"]["hits"][0]
+    except Exception as e:
+        return {f"{e.__class__.__name__}": f"{e} while retrieving zenodo record"}
 
 
 def write_requirements() -> None:
@@ -42,34 +62,17 @@ def write_requirements() -> None:
                 ]
             )
     # ignore any error, this should only run in a dev env anyway
-    except:
+    except:  # noqa: E722
         pass
 
 
 def define_env(env):
-
     @env.macro
-    def insert_zenodo_field(*keys: str):
-        """This is the *released* version not the dev one"""
-        try:
-            response = requests.get(
-                "https://zenodo.org/api/records",
-                params={
-                    "q": _NEWORDER_ZENODO_ID,
-                    "access_token": os.getenv("ZENODO_PAT"),
-                },
-            )
-            response.raise_for_status()
-            # with open("zenodo-result.json", "w") as fd:
-            #     print(response.text)
-            #     fd.write(response.text)
-            result = response.json()["hits"]["hits"][0]
-            for k in keys:
-                result = result[k]
-            return result
-
-        except Exception as e:
-            return f"{e.__class__.__name__}:{e} while retrieving {keys}"
+    def insert_zenodo_field(*keys: str) -> Any:
+        result = get_zenodo_record()
+        for key in keys:
+            result = result[key]
+        return result
 
     @env.macro
     def include_snippet(filename, tag=None, show_filename=True):
@@ -86,8 +89,8 @@ def define_env(env):
         if tag:
             tag = f"!{tag}!"
             span = []
-            for i, l in enumerate(lines):
-                if tag in l:
+            for i, line in enumerate(lines):
+                if tag in line:
                     span.append(i)
             if len(span) != 2:
                 return f"```ERROR {filename} ({code_style}) too few/many tags ({len(span)}) for '{tag}'```"
