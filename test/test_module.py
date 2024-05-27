@@ -67,7 +67,7 @@ def test_check_flag() -> None:
 
 def test_mpi() -> None:
     # if no mpi4py, assume serial like module does
-    if importlib.util.findspec("mpi4py") is None:
+    if importlib.util.find_spec("mpi4py") is None:
         assert not no.mpi.COMM
         assert no.mpi.RANK == 0
         assert no.mpi.SIZE == 1
