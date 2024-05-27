@@ -1,14 +1,17 @@
 """
 
-    Temporal values and comparison, including the attributes:
-    NEVER: a value that compares unequal to any value, including itself.
-    DISTANT_PAST: a value that compares less than any other value but itself and NEVER
-    FAR_FUTURE: a value that compares greater than any other value but itself and NEVER
+Temporal values and comparison, including the attributes:
+NEVER: a value that compares unequal to any value, including itself.
+DISTANT_PAST: a value that compares less than any other value but itself and NEVER
+FAR_FUTURE: a value that compares greater than any other value but itself and NEVER
 """
+
 from __future__ import annotations
+
+import typing
+
 import numpy
 import numpy.typing as npt
-import typing
 
 __all__ = ["DISTANT_PAST", "FAR_FUTURE", "NEVER", "isnever"]
 

@@ -67,7 +67,7 @@ def test_seeders() -> None:
         assert seeds != seeds2
 
     # test custom seeder
-    def seeder():
+    def seeder() -> int:
         return no.mpi.RANK + 1
 
     m = no.Model(no.NoTimeline(), seeder)

@@ -1,18 +1,21 @@
 """
-
 A dynamic microsimulation framework";
 """
+
 from __future__ import annotations
+
 import datetime
+import typing
+
 import numpy
 import numpy.typing as npt
-import typing
-from . import df
-from . import mpi
-from . import stats
-from . import time
+
+from . import df, mpi, stats, time
+from .domain import Domain, Edge, Space, StateGrid
+from .mc import as_np
 
 __all__ = [
+    "as_np",
     "CalendarTimeline",
     "LinearTimeline",
     "Model",
@@ -28,7 +31,13 @@ __all__ = [
     "stats",
     "time",
     "verbose",
+    "Space",
+    "Domain",
+    "Edge",
+    "StateGrid",
+    "as_np",
 ]
+
 
 class CalendarTimeline(Timeline):
     """
@@ -38,13 +47,13 @@ class CalendarTimeline(Timeline):
 
     @typing.overload
     def __init__(
-        self, start: datetime.datetime, end: datetime.datetime, step: int, unit: str
+        self, start: datetime.date, end: datetime.date, step: int, unit: str
     ) -> None:
         """
         Constructs a calendar-based timeline, given start and end dates, an increment specified as a multiple of days, months or years
         """
     @typing.overload
-    def __init__(self, start: datetime.datetime, step: int, unit: str) -> None:
+    def __init__(self, start: datetime.date, step: int, unit: str) -> None:
         """
         Constructs an open-ended calendar-based timeline, given a start date and an increment specified as a multiple of days, months or years.
          NB the model will run until the Model.halt() method is explicitly called (from inside the step() method). Note also that nsteps() will
@@ -111,6 +120,7 @@ class Model:
         def name(self) -> str: ...
         @property
         def value(self) -> int: ...
+
     COMPLETED: typing.ClassVar[Model.RunState]  # value = <RunState.COMPLETED: 3>
     HALTED: typing.ClassVar[Model.RunState]  # value = <RunState.HALTED: 2>
     NOT_STARTED: typing.ClassVar[Model.RunState]  # value = <RunState.NOT_STARTED: 0>

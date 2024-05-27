@@ -1,12 +1,16 @@
 """
 
-    Submodule for operations involving direct manipulation of pandas dataframes
+Submodule for operations involving direct manipulation of pandas dataframes
 """
+
 from __future__ import annotations
-import neworder
+
+import typing
+
 import numpy
 import numpy.typing as npt
-import typing
+
+import neworder
 
 __all__ = ["testfunc", "transition", "unique_index"]
 

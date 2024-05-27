@@ -3,21 +3,29 @@ import importlib.metadata
 __version__ = importlib.metadata.version("neworder")
 
 from _neworder_core import (
+    CalendarTimeline,
+    LinearTimeline,
     Model,
     MonteCarlo,
-    Timeline,
     NoTimeline,
-    LinearTimeline,
     NumericTimeline,
-    CalendarTimeline,
-    time,
+    Timeline,
+    checked,
     df,
-    mpi,
     log,
+    mpi,
     run,
     stats,
-    checked,
+    time,
     verbose,
-)  # type: ignore
-from .domain import Edge, Domain, Space, StateGrid
+)
+
+# type: ignore
+from .domain import Domain, Edge, Space, StateGrid
 from .mc import as_np
+
+__all__ = [
+    "as_np",
+    "Domain",
+    "Space"
+]

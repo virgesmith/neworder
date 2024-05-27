@@ -1,11 +1,14 @@
 """
 
-    Submodule for statistical functions
+Submodule for statistical functions
 """
+
 from __future__ import annotations
+
+import typing
+
 import numpy
 import numpy.typing as npt
-import typing
 
 __all__ = ["logistic", "logit"]
 
