@@ -11,7 +11,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "neworder"
-version = "1.4.1"
+version = "1.4.2"
 authors = [
   { name="Andrew Smith", email="andrew@friarswood.net" },
 ]
