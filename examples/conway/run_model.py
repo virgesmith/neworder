@@ -1,5 +1,5 @@
-
 from conway import Conway
+
 import neworder as no
 
 # size of domain

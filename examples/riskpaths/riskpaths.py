@@ -1,12 +1,14 @@
 """ RiskPaths model """
 
+import data
 import numpy as np
 import pandas as pd  # type: ignore
-import neworder
 
 # dynamics data
-from data import UnionState, Parity
-import data
+from data import Parity, UnionState
+
+import neworder
+
 
 # !ctor!
 class RiskPaths(neworder.Model):

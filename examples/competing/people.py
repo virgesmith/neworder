@@ -1,45 +1,58 @@
-
 import numpy as np
 import pandas as pd  # type: ignore
+
 import neworder as no
 
 
 class People(no.Model):
-  """ A simple aggregration of Persons each represented as a row in a data frame """
-  def __init__(self, dt: float, fertility_hazard_file: str, mortality_hazard_file: str, n: int) -> None:
+    """A simple aggregration of Persons each represented as a row in a data frame"""
 
-    super().__init__(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
+    def __init__(
+        self, dt: float, fertility_hazard_file: str, mortality_hazard_file: str, n: int
+    ) -> None:
+        super().__init__(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
 
-    self.dt = dt # time resolution of fertility/mortality data
+        self.dt = dt  # time resolution of fertility/mortality data
 
-    self.fertility_hazard = pd.read_csv(fertility_hazard_file)
-    self.mortality_hazard = pd.read_csv(mortality_hazard_file)
+        self.fertility_hazard = pd.read_csv(fertility_hazard_file)
+        self.mortality_hazard = pd.read_csv(mortality_hazard_file)
 
-    # store the largest age we have a rate for
-    self.max_rate_age = int(max(self.mortality_hazard.DC1117EW_C_AGE) - 1)
+        # store the largest age we have a rate for
+        self.max_rate_age = int(max(self.mortality_hazard.DC1117EW_C_AGE) - 1)
 
-    # initialise cohort
-    self.population = pd.DataFrame(index=no.df.unique_index(n),
-                                   data={"parity": 0,
-                                         "time_of_death": no.time.FAR_FUTURE})
+        # initialise cohort
+        self.population = pd.DataFrame(
+            index=no.df.unique_index(n),
+            data={"parity": 0, "time_of_death": no.time.FAR_FUTURE},
+        )
 
-  def step(self) -> None:
-    # sample deaths
-    self.population["time_of_death"] = self.mc.first_arrival(self.mortality_hazard.Rate.values, self.dt, len(self.population))
+    def step(self) -> None:
+        # sample deaths
+        self.population["time_of_death"] = self.mc.first_arrival(
+            self.mortality_hazard.Rate.values, self.dt, len(self.population)
+        )
 
-    # sample (multiple) births with events at least 9 months apart
-    births = self.mc.arrivals(self.fertility_hazard.Rate.values, self.dt, len(self.population), 0.75)
+        # sample (multiple) births with events at least 9 months apart
+        births = self.mc.arrivals(
+            self.fertility_hazard.Rate.values, self.dt, len(self.population), 0.75
+        )
 
-    # the number of columns is governed by the maximum number of arrivals in the births data
-    for i in range(births.shape[1]):
-      col = "time_of_baby_" + str(i + 1)
-      self.population[col] = births[:, i]
-      # remove births that would have occured after death
-      self.population.loc[self.population[col] > self.population.time_of_death, col] = no.time.NEVER
-      self.population.parity = self.population.parity + ~no.time.isnever(self.population[col].values)
+        # the number of columns is governed by the maximum number of arrivals in the births data
+        for i in range(births.shape[1]):
+            col = "time_of_baby_" + str(i + 1)
+            self.population[col] = births[:, i]
+            # remove births that would have occured after death
+            self.population.loc[
+                self.population[col] > self.population.time_of_death, col
+            ] = no.time.NEVER
+            self.population.parity = self.population.parity + ~no.time.isnever(
+                self.population[col].values
+            )
 
-  def finalise(self) -> None:
-    # compute means
-    no.log("birth rate = %f" % np.mean(self.population.parity))
-    no.log("percentage mothers = %f" % (100.0 * np.mean(self.population.parity > 0)))
-    no.log("life expexctancy = %f" % np.mean(self.population.time_of_death))
+    def finalise(self) -> None:
+        # compute means
+        no.log("birth rate = %f" % np.mean(self.population.parity))
+        no.log(
+            "percentage mothers = %f" % (100.0 * np.mean(self.population.parity > 0))
+        )
+        no.log("life expexctancy = %f" % np.mean(self.population.time_of_death))

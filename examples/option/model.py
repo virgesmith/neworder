@@ -5,8 +5,9 @@ The main vanishing point of this example is to illustrate how different processe
 can interact within the model, and how to synchronise the random streams in each process
 """
 
-import neworder
 from black_scholes import BlackScholes
+
+import neworder
 
 # neworder.verbose() # uncomment for verbose logging
 # neworder.checked(False) # uncomment to disable checks
@@ -19,20 +20,20 @@ assert neworder.mpi.SIZE == 4, "This example requires 4 processes"
 
 # market data
 market = {
-  "spot": 100.0, # underlying spot price
-  "rate": 0.02,  # risk-free interest rate
-  "divy": 0.01,  # (continuous) dividend yield
-  "vol": 0.2    # stock volatility
+    "spot": 100.0,  # underlying spot price
+    "rate": 0.02,  # risk-free interest rate
+    "divy": 0.01,  # (continuous) dividend yield
+    "vol": 0.2,  # stock volatility
 }
 # (European) option instrument data
 option = {
-  "callput": "CALL",
-  "strike": 100.0,
-  "expiry": 0.75 # years
+    "callput": "CALL",
+    "strike": 100.0,
+    "expiry": 0.75,  # years
 }
 
 # model parameters
-nsims = 1000000 # number of underlyings to simulate
+nsims = 1000000  # number of underlyings to simulate
 
 # instantiate model
 bs_mc = BlackScholes(option, market, nsims)

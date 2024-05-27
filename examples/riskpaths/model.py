@@ -16,13 +16,13 @@ https://www.statcan.gc.ca/eng/microsimulation/modgen/new/chap4/chap4
   available at www.statcan.gc.ca/microsimulation/modgen/modgen-eng.htm'
 
 """
-import neworder
-from data import max_age
 from riskpaths import RiskPaths
 from visualisation import plot
 
+import neworder
+
 # serial mode
-#neworder.verbose()
+# neworder.verbose()
 
 population_size = 100000
 
