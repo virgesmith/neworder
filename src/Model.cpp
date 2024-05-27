@@ -10,7 +10,7 @@
 #include <pybind11/pybind11.h>
 
 no::Model::Model(no::Timeline& timeline, const py::function& seeder)
-  : m_timeline(timeline), m_timeline_handle(py::cast(&timeline)),
+  : m_runState(no::Model::NOT_STARTED), m_timeline(timeline), m_timeline_handle(py::cast(&timeline)),
   m_monteCarlo(seeder().cast<int32_t>())
 {
   no::log("model init: timeline=%% mc=%%"s % m_timeline.repr() % m_monteCarlo.repr());
@@ -26,7 +26,7 @@ void no::Model::modify()
 void no::Model::halt()
 {
   no::log("sending halt signal to Model::run()");
-  no::env::halt = true;
+  m_runState = Model::HALTED;
 }
 
 bool no::Model::check()
@@ -56,10 +56,18 @@ bool no::Model::run(Model& model)
   // (we can use the methods for C++ implementations, but not for python implementations)
   auto pytimeline = PyAccessor(model.timeline());
 
+  // check the model hasn't already completed
+  if (pytimeline.get_as<bool>("at_end")) {
+    throw py::stop_iteration("Model has already run to completion. Reinstantiate the timeline if necessary");
+  }
+
+  model.m_runState = no::Model::RUNNING;
+
   // get the Model class name
   const std::string& model_name = py::cast(&model).attr("__class__").attr("__name__").cast<std::string>();
 
-  no::log("starting %% model run. start time=%%"s % model_name % pytimeline.get("start"));
+
+  no::log("starting %% model run. start time=%%"s % model_name % pytimeline.get("time"));
 
   // apply the modifier, if implemented in the derived class
   no::log("t=%%(%%) %%.modify(%%)"s % pytimeline.get("time") % pytimeline.get("index") % model_name % rank);
@@ -67,7 +75,7 @@ bool no::Model::run(Model& model)
 
   // Loop over timeline
   bool ok = true;
-  while (!pytimeline.get_as<bool>("at_end"))
+  while (model.m_runState == Model::RUNNING)
   {
     py::object t = pytimeline.get("time");
     int64_t timeindex = pytimeline.get_as<int64_t>("index");
@@ -92,19 +100,18 @@ bool no::Model::run(Model& model)
     }
 
     // check python hasn't signalled early termination
-    if (no::env::halt)
+    if (model.m_runState == no::Model::HALTED)
     {
       no::log("t=%%(%%) received halt signal"s % t % timeindex);
-      // reset the flag so that subsequent model runs don't halt immediately
-      no::env::halt = false;
-      break;
     }
-  }
-  // call the finalise method (if not explicitly halted mid-timeline)
-  if (pytimeline.get_as<bool>("at_end"))
-  {
-    no::log("t=%%(%%) %%.finalise()"s % pytimeline.get("time") % pytimeline.get("index") % model_name );
-    model.finalise();
+
+    // normal completion if not explicitly halted
+    if (model.m_runState == no::Model::RUNNING && pytimeline.get_as<bool>("at_end"))
+    {
+      model.m_runState = Model::COMPLETED;
+      no::log("t=%%(%%) %%.finalise()"s % pytimeline.get("time") % pytimeline.get("index") % model_name );
+      model.finalise();
+    }
   }
   no::log("%% exec time=%%s"s % (ok ? "SUCCESS": "ERRORED") % timer.elapsed_s());
   return ok;

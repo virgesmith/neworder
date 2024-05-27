@@ -22,33 +22,22 @@ Each entity travels at a fixed speed in a 2- or 3-dimensional constrained univer
 
 (if a separation is required, the boid will not attempt to align or cohere)
 
-The entities are stored in a pandas `DataFrame` and use `neworder.Space` to update positions. There are no explicit `for` loops in the model - all position and velocity calculations are "vectorised"<sup>&ast;</sup> for efficiency.
+The entities are stored in a pandas `DataFrame` and use `neworder.Space` to update positions. There are no explicit `for` loops in the model - all position and velocity calculations are "vectorised"[^1] for efficiency.
 
-&ast; in this context "vectorisation" merely means the avoidance of explicit loops in an interpreted language. The actual implementation may be compiled to assembly language, vectorised in the true ([SIMD](https://en.wikipedia.org/wiki/SIMD)) sense, parallelised, optimised in other ways, or any combination thereof.
+[^1]: in this context "vectorisation" merely means the avoidance of explicit loops in an interpreted language. The actual implementation may be compiled to assembly language, vectorised in the true ([SIMD](https://en.wikipedia.org/wiki/SIMD)) sense, parallelised, optimised in other ways, or any combination thereof.
 
 Run like so
 
 ```sh
 python examples/boids/run.py 2d
 ```
-
-The 2d version utilises a wrap-around domain and does not implement the reversion step.
-
 or
 
 ```sh
 python examples/boids/run.py 3d
 ```
 
-which runs
-
-{{ include_snippet("examples/boids/run.py") }}
-
-and this is the 3-d implementation:
-
-{{ include_snippet("examples/boids/boids3d.py") }}
-
-A 2-d implementation is also provided in `examples/boids/boids2d.py`.
+The 2d version utilises a wrap-around domain and so does not require the reversion step.
 
 ## Outputs
 

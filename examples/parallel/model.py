@@ -1,9 +1,10 @@
 # !setup!
-import neworder
-from parallel import Parallel # import our model definition
+from parallel import Parallel  # import our model definition
 
-#neworder.verbose()
-#neworder.checked(False)
+import neworder
+
+# neworder.verbose()
+# neworder.checked(False)
 
 # must be MPI enabled
 assert neworder.mpi.SIZE > 1, "This configuration requires MPI with >1 process"

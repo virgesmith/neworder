@@ -1,6 +1,6 @@
 # Mortality
 
-We implement the example *The Life Table* from the second chapter of the book *Microsimulation and Population Dynamics* [[3]](#references). It models mortality in a homogeneous population with an age-specific mortality rate.
+We implement the example *The Life Table* from the second chapter of the book *Microsimulation and Population Dynamics* [[3]](../references.md). It models mortality in a homogeneous population with an age-specific mortality rate.
 
 This example implements the model in two different ways: firstly a discrete case-based microsimulation, and again using a continuous sampling methodology, showcasing how the latter can be much more efficient. Rather than having a class to represent an individual, as would be standard in a MODGEN implementation, individuals are stored in a *pandas* `Dataframe` which provides fast iteration over the population.
 

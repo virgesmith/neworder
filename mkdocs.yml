@@ -4,26 +4,35 @@ site_author: Andrew P Smith
 site_description: Documentation for the neworder microsimulation framework
 repo_url: https://github.com/virgesmith/neworder
 repo_name: GitHub
-copyright: "&copy 2017-2023 Andrew P Smith"
-#google_analytics
+copyright: >
+  Copyright &copy; 2017-2023 Andrew P Smith –
+  <a href="#__consent">Change cookie settings</a>
 
 theme:
   name: material
   palette:
     scheme: default
-    primary: blue grey
+    primary: light blue
     accent: red
   features:
     - content.code.copy
+    - content.code.annotate
 
 markdown_extensions:
   - toc:
       permalink: "¶"
   - admonition
   - pymdownx.highlight
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.arithmatex:
       generic: true
+  - footnotes
+  - attr_list
+  - md_in_html
 
 extra_javascript:
   - js/config.js
@@ -37,7 +46,15 @@ plugins:
       # include_dir: examples
   - mkdocs-video
 
-#  - mkpdfs
+extra:
+  consent:
+    title: Cookie consent
+    description: >-
+      This site uses cookies with your permission.
+    actions:
+      - accept
+      - manage
+      - reject
 
 nav:
   - Home: index.md

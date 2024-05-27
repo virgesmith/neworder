@@ -225,6 +225,13 @@ const char* model_timeline_docstr = R"docstr(
 const char* model_mc_docstr = R"docstr(
     The model's Monte-Carlo engine
 )docstr";
+const char* model_runstate_docstr = R"docstr(
+    The model's current state - one of:
+        NOT_STARTED: model has not been run
+        RUNNING: model is in progress
+        HALTED: model has been explicitly halted by calling its halt() method
+        COMPLETED: model has run to the end of its timeline
+)docstr";
 const char* model_modify_docstr = R"docstr(
     User-overridable method used to modify state in a per-process basis for multiprocess model runs.
     Default behaviour is to do nothing.

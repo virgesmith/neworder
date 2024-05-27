@@ -1,9 +1,10 @@
-
 import time
+
 import numpy as np
-import neworder as no
-from markov_chain import MarkovChain
 import visualisation
+from markov_chain import MarkovChain
+
+import neworder as no
 
 # Logging and checking options
 # no.verbose()
@@ -29,11 +30,13 @@ states = np.array([0, 1, 2])
 # 0 -> 1
 #  \    \
 #    <-> 2
-transition_matrix = np.array([
-  [1.0 - lambda_01 * dt - lambda_02 * dt, lambda_01 * dt,       lambda_02 * dt      ],
-  [0.0,                                   1.0 - lambda_12 * dt, lambda_12 * dt      ],
-  [lambda_20 * dt,                        0.0,                  1.0 - lambda_20 * dt]
-])
+transition_matrix = np.array(
+    [
+        [1.0 - lambda_01 * dt - lambda_02 * dt, lambda_01 * dt, lambda_02 * dt],
+        [0.0, 1.0 - lambda_12 * dt, lambda_12 * dt],
+        [lambda_20 * dt, 0.0, 1.0 - lambda_20 * dt],
+    ]
+)
 
 timeline = no.LinearTimeline(0, tmax, tmax)
 

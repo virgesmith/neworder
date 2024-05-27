@@ -5,21 +5,21 @@
 !!! warning "Base Model Initialisation"
     When instantiating the model subclass, it is essential that the `neworder.Model` base class is explicitly initialised. It must be supplied with a `Timeline` object and (optionally) a seeding function for the Monte-Carlo engine. Failure to do this will result in a runtime error.
 
-For example, use this initialisation pattern:
+Ensure the `neworder.Model` base class is properly initialised:
 
-```python
+```python title="Model initialisation"
 class MyModel(neworder.Model):
   def __init__(self, args...) -> None:
     timeline = ... # initialise an appropriate timeline
-    seeder = ... # (optional) set an appropriate seeding function
-    # this line is essential:
-    super().__init__(timeline, seeder)
-    # now initialise the subclass...
+    super().__init__(timeline) # (1)!
+    ... # now initialise the subclass
 ```
+
+1.  :material-alert: this line is essential
 
 ## Custom Seeding Strategies
 
-!!! note "Note"
+!!! note "Random number generator"
     *neworder* random streams use the Mersenne Twister pseudorandom generator, as implemented in the C++ standard library.
 
 *neworder* provides three basic seeding functions which initialise the model's random stream so that they are either non-reproducible (`neworder.MonteCarlo.nondeterministic_stream`), or reproducible and either identical (`neworder.MonteCarlo.deterministic_identical_stream`) or independent across parallel runs (`neworder.MonteCarlo.deterministic_independent_stream`). Typically, a user would select identical streams (and perturbed inputs) for sensitivity analysis, and independent streams (with identical inputs) for convergence analysis.
@@ -99,17 +99,30 @@ x = self.nprand.normal(size=5)
 
 NB as there is only one RNG state, you can safely get independent variates when calling both the RNG directly and via numpy.
 
-## Conditional Halting
+## Ending the model run
 
-In some models, rather than (or as well as) evolving the population over a fixed timeline, it may make more sense to iterate timesteps until some condition is met. The "Schelling" example illustrates this - it runs until all agents are in a satisfied state.
-
-In these situations, the model developer can (conditionally) call the `Model.halt()` method from inside the model's `step()` method, which will end the model run. Currently, the `LinearTimeline` and `CalendarTimeline` classes support both fixed and open-ended timelines.
-
-!!! note "`Model.halt()`"
-    This function *does not* end execution immediately, it signals to the *neworder* runtime not to iterate any further timesteps. This means that the entire body of the `step` method (and the `check` method, if implemented) will still be executed. Overriding the `halt` method is not recommended.
+Models will continue to run until the end of their timeline is reached, unless explicitly told otherwise (see next section).
 
 !!! Note "Finalisation"
-    The `finalise` method is automatically called by the *neworder* runtime only when the end of the timeline. As open-ended timelines never reach this state, the method must can be called explicitly, if needed.
+    The model's `finalise` method can be optionally implemented as necessary, for example to write results to a file. It is automatically called by the *neworder* runtime **only** when the end of the timeline is reached.
+
+## Open-ended timelines and Conditional Halting
+
+In some models, rather than (or as well as) evolving the population over a fixed timeline, it may make more sense to iterate timesteps until some condition is met. The "Schelling" example illustrates this - it runs until all agents are in a satisfied state. Currently, the inbuilt `LinearTimeline` and `CalendarTimeline` classes support both fixed and open-ended timelines. In other cases it may be useful to temporarily exit the model for later resumption.
+
+The model's `halt` method can be used to stop the model run. In these situations, the `step` method should have some logic to (conditionally) call the `halt` method.
+
+!!! note "`Model.halt()`"
+    This function *does not* end execution immediately, it signals to the *neworder* runtime not to iterate any further timesteps. Calling `halt` means that:
+
+    - the entire body of the `step` method (and the `check` method, if implemented) will still run for the current timestep,
+    - the `finalise` method, even if implemented, will **not** be excuted,
+    - the `neworder.run` method will then exit.
+
+Overriding the `halt` method should not be necessary and is not recommended. The `finalise` method, if needed, must be called explicitly for models with open-ended timelines that have been `halt`ed.
+
+!!! Note "Resuming execution"
+    A model that has previously been `halt`ed but has not reached the end of its timeline can be resumed by passing it to `neworder.run` again. Attempting to resume a model that has reached the end of it's timeline will result in a `StopIteration` exception.
 
 ## Deadlocks
 
@@ -148,7 +161,7 @@ neworder.log(neworder.time.isnever(n)) # True
 ## Data Types
 
 !!! warning "Static typing"
-    Unlike python, C++ is a *statically typed* language and so *neworder* is strict about types. We strongly encourage the use of type annotations and a type checker (mypy) in python.
+    Unlike python, C++ is a *statically typed* language and so *neworder* is strict about types. We strongly encourage the use of type annotations and a type checker (e.g. mypy) in python.
 
 If an argument to a *neworder* method or function is not the correct type, it will fail immediately (as opposed to python, which will fail only if an invalid operation for the given type is attempted (a.k.a. "duck typing")). This applies to contained types (numpy's `dtype`) too. In the example below, the function is expecting an integer, and will complain if you pass it a floating-point argument:
 
