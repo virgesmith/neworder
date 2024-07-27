@@ -7,7 +7,6 @@
 #include "NPArray.h"
 #include "DataFrame.h"
 #include "Log.h"
-#include "Error.h"
 
 #include "NewOrder.h"
 
@@ -223,6 +222,6 @@ PYBIND11_MODULE(_neworder_core, m)
   init_env(mpi);
 
   // Map custom C++ exceptions to python ones
-  py::register_exception_translator(no::exception_translator);
+  //py::register_exception_translator(no::exception_translator);
 }
 

@@ -4,7 +4,6 @@
 #include "Module.h"
 #include "Timer.h"
 #include "Log.h"
-#include "Error.h"
 #include "Helpers.h"
 
 #include <pybind11/pybind11.h>
