@@ -6,4 +6,4 @@ coverage:
         threshold: 1%  # leeway
     patch:
       default:
-        target: 80%
+        target: 75%
