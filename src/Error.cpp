@@ -1,6 +1,8 @@
 #include "Error.h"
 #include <pybind11/pybind11.h>
 
+namespace py = pybind11;
+
 const char* no::NotImplementedError::what() const noexcept
 {
   return m_msg.c_str();
@@ -16,6 +18,6 @@ void no::exception_translator(std::exception_ptr p)
   }
   catch (const no::NotImplementedError& e)
   {
-    PyErr_SetString(PyExc_NotImplementedError, e.what());
+    py::set_error(PyExc_NotImplementedError, e.what());
   }
 }
