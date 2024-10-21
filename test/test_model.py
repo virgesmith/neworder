@@ -27,7 +27,8 @@ def test_not_implemented() -> None:
         def step(self) -> None:
             raise NotImplementedError()
 
-    no.run(TestModel())
+    with pytest.raises(NotImplementedError):
+        no.run(TestModel())
 
 
 def test_default_seeder() -> None:
