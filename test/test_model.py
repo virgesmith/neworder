@@ -18,6 +18,17 @@ def test_base_not_initialised() -> None:
     with pytest.raises(TypeError):
         _ = TestModel()
 
+def test_not_implemented() -> None:
+
+    class TestModel(no.Model):
+        def __init__(self) -> None:
+            super().__init__(no.NoTimeline())
+
+        def step(self) -> None:
+            raise NotImplementedError()
+
+    no.run(TestModel())
+
 
 def test_default_seeder() -> None:
     class DefaultModel(no.Model):
