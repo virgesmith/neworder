@@ -16,6 +16,7 @@ https://www.statcan.gc.ca/eng/microsimulation/modgen/new/chap4/chap4
   available at www.statcan.gc.ca/microsimulation/modgen/modgen-eng.htm'
 
 """
+
 from riskpaths import RiskPaths
 from visualisation import plot
 

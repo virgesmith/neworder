@@ -157,9 +157,9 @@ class WolfSheep(no.Model):
 
         # eat sheep if available
         diners = self.wolves.loc[self.wolves.cell.isin(self.sheep.cell)]
-        self.wolves.loc[
-            self.wolves.cell.isin(self.sheep.cell), "energy"
-        ] += self.wolf_gain_from_food
+        self.wolves.loc[self.wolves.cell.isin(self.sheep.cell), "energy"] += (
+            self.wolf_gain_from_food
+        )
         # NB *all* the sheep in cells with wolves get eaten (or at least killed)
         self.sheep = self.sheep[~self.sheep.cell.isin(diners.cell)]
 

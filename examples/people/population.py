@@ -1,5 +1,5 @@
 """
- population.py: Model implementation for population microsimulation
+population.py: Model implementation for population microsimulation
 """
 
 import os

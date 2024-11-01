@@ -1,6 +1,7 @@
 """
 Competing risks - fertility & mortality
 """
+
 # model implementation
 from people import People
 

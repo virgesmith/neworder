@@ -24,8 +24,4 @@ from _neworder_core import (
 from .domain import Domain, Edge, Space, StateGrid
 from .mc import as_np
 
-__all__ = [
-    "as_np",
-    "Domain",
-    "Space"
-]
+__all__ = ["as_np", "Domain", "Space"]

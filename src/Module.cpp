@@ -220,8 +220,5 @@ PYBIND11_MODULE(_neworder_core, m)
   // MPI submodule
   auto mpi = m.def_submodule("mpi", mpi_docstr);
   init_env(mpi);
-
-  // Map custom C++ exceptions to python ones
-  //py::register_exception_translator(no::exception_translator);
 }
 

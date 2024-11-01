@@ -114,7 +114,7 @@ class DaisyWorld(no.Model):
 
         # get absorbed luminosity from state
         def fs(
-            state: np.ndarray[np.int64, np.dtype[np.int64]]
+            state: np.ndarray[np.int64, np.dtype[np.int64]],
         ) -> np.ndarray[np.float64, np.dtype[np.float64]]:
             return (1.0 - self.albedo[state]) * solar_luminosity
 
@@ -122,7 +122,7 @@ class DaisyWorld(no.Model):
 
         # get local heating from absorbed luminosity
         def fl(
-            lum: np.ndarray[np.float64, np.dtype[np.float64]]
+            lum: np.ndarray[np.float64, np.dtype[np.float64]],
         ) -> np.ndarray[np.float64, np.dtype[np.float64]]:
             return 72.0 * np.log(lum) + 80.0
 

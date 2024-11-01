@@ -38,7 +38,6 @@ __all__ = [
     "as_np",
 ]
 
-
 class CalendarTimeline(Timeline):
     """
 

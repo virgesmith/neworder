@@ -1,4 +1,4 @@
-""" Black-Scholes model implementations: analytic and MC """
+"""Black-Scholes model implementations: analytic and MC"""
 
 from typing import Any
 
