@@ -33,8 +33,7 @@ dependencies = [
   "matplotlib>=3.6.2"
 ]
 
-
-[dependency-groups]
+[project.optional-dependencies]
 geospatial = [
   "networkx>3.0",
   "osmnx>=2.0.0",
