@@ -27,7 +27,7 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
     - name: Build
-      run: uv sync --all-extras
+      run: uv sync --dev --extra geospatial
     - name: Lint
       run: |
         uv run ruff check
