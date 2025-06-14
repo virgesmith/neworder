@@ -24,12 +24,8 @@ class Boids3d(no.Model):
     AVOID_COEFF = 0.1
     REVERT_COEFF = 0.05
 
-    def __init__(
-        self, N: int, range: float, vision: float, exclusion: float, speed: float
-    ) -> None:
-        super().__init__(
-            no.LinearTimeline(0.0, 0.01), no.MonteCarlo.nondeterministic_stream
-        )
+    def __init__(self, N: int, range: float, vision: float, exclusion: float, speed: float) -> None:
+        super().__init__(no.LinearTimeline(0.0, 0.01), no.MonteCarlo.nondeterministic_stream)
 
         self.N = N
         self.range = range
@@ -38,9 +34,7 @@ class Boids3d(no.Model):
         self.speed = speed
 
         # unconstrained 3d space
-        self.domain = no.Space(
-            np.zeros(3), np.full(3, self.range), edge=no.Edge.UNBOUNDED
-        )
+        self.domain = no.Space(np.zeros(3), np.full(3, self.range), edge=no.Edge.UNBOUNDED)
 
         self.N_predators = 1
 
@@ -73,9 +67,7 @@ class Boids3d(no.Model):
             self.__update_visualisation()
             return
 
-        d2, (dx, dy, dz) = self.domain.dists2(
-            (self.boids.x, self.boids.y, self.boids.z)
-        )
+        d2, (dx, dy, dz) = self.domain.dists2((self.boids.x, self.boids.y, self.boids.z))
         np.fill_diagonal(d2, np.inf)  # no self-influence
 
         # separate
@@ -128,9 +120,7 @@ class Boids3d(no.Model):
         self.boids.vy += mean_vy * Boids3d.ALIGN_COEFF
         self.boids.vz += mean_vz * Boids3d.ALIGN_COEFF
 
-    def __cohere(
-        self, in_range: np.ndarray, dx: np.ndarray, dy: np.ndarray, dz: np.ndarray
-    ) -> None:
+    def __cohere(self, in_range: np.ndarray, dx: np.ndarray, dy: np.ndarray, dz: np.ndarray) -> None:
         weights = 1.0 / np.sum(in_range, axis=0)
         weights[weights == np.inf] = 0.0
         x = (in_range * dx) @ weights
@@ -164,11 +154,7 @@ class Boids3d(no.Model):
         dy: np.ndarray,
         dz: np.ndarray,
     ) -> None:
-        f = (
-            Boids3d.AVOID_COEFF
-            / d2[0 : self.N_predators, :]
-            * in_range[0 : self.N_predators, :]
-        )
+        f = Boids3d.AVOID_COEFF / d2[0 : self.N_predators, :] * in_range[0 : self.N_predators, :]
         self.boids.vx += (f * dx[0 : self.N_predators, :]).sum(axis=0)
         self.boids.vy += (f * dy[0 : self.N_predators, :]).sum(axis=0)
         self.boids.vz += (f * dz[0 : self.N_predators, :]).sum(axis=0)
@@ -221,9 +207,7 @@ class Boids3d(no.Model):
             elif event.key == "q":
                 self.halt()
             else:
-                no.log(
-                    "%s doesnt do anything. p to pause/resume, q to quit" % event.key
-                )
+                no.log("%s doesnt do anything. p to pause/resume, q to quit" % event.key)
 
         fig.canvas.mpl_connect("key_press_event", on_keypress)
         return fig, g

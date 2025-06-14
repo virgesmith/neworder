@@ -64,9 +64,7 @@ class Space(Domain):
         assert dim > 0
         return Space(np.full(dim, -np.inf), np.full(dim, +np.inf), edge=Edge.UNBOUNDED)
 
-    def __init__(
-        self, min: NPFloatArray, max: NPFloatArray, edge: Edge = Edge.CONSTRAIN
-    ):
+    def __init__(self, min: NPFloatArray, max: NPFloatArray, edge: Edge = Edge.CONSTRAIN):
         assert len(min) and len(min) == len(max)
         super().__init__(len(min), edge, True)
 
@@ -118,9 +116,7 @@ class Space(Domain):
             p = np.where(hitmax, 2 * self.max - p, p)
             v = np.where(hitmax, -v, v)
         else:
-            p = self.min + np.mod(
-                positions + velocities * delta_t - self.min, self.max - self.min
-            )
+            p = self.min + np.mod(positions + velocities * delta_t - self.min, self.max - self.min)
             v = velocities
 
         if ungroup:
@@ -151,16 +147,12 @@ class Space(Domain):
         separations: tuple[Any, ...] = ()
         if self.edge != Edge.WRAP:
             for i in range(d):
-                delta = np.tile(positions[:, i], m).reshape((m, n)) - np.repeat(
-                    to_points[:, i], n
-                ).reshape(m, n)
+                delta = np.tile(positions[:, i], m).reshape((m, n)) - np.repeat(to_points[:, i], n).reshape(m, n)
                 separations += (delta,)
                 d2 += delta * delta
         else:  # wrapped domains need special treatment - distance across an edge may be less than naive distance
             for i in range(d):
-                delta = np.tile(positions[:, i], m).reshape((m, n)) - np.repeat(
-                    to_points[:, i], n
-                ).reshape(m, n)
+                delta = np.tile(positions[:, i], m).reshape((m, n)) - np.repeat(to_points[:, i], n).reshape(m, n)
                 r = self.max[i] - self.min[i]
                 delta = np.where(delta > r / 2, delta - r, delta)
                 delta = np.where(delta < -r / 2, delta + r, delta)
@@ -177,9 +169,7 @@ class Space(Domain):
         """Returns distances between the points"""
         return np.sqrt(self.dists2(positions, to_points)[0])
 
-    def in_range(
-        self, distance: Any, positions: Any, count: Optional[bool] = False
-    ) -> NPFloatArray:
+    def in_range(self, distance: Any, positions: Any, count: Optional[bool] = False) -> NPFloatArray:
         """Returns either indices or counts of points within the specified distance from each point"""
         ind = np.where(self.dists2(positions)[0] < distance * distance, 1, 0)
         # fill diagonal so as not to include self - TODO how does this work if to_points!=positions
@@ -220,16 +210,12 @@ class StateGrid(Domain):
 
         # StateGrid supports two edge behaviours
         if edge not in [Edge.WRAP, Edge.CONSTRAIN, Edge.BOUNCE]:
-            raise ValueError(
-                "edge policy must be one of Edge.WRAP, Edge.CONSTRAIN, Edge.BOUNCE"
-            )
+            raise ValueError("edge policy must be one of Edge.WRAP, Edge.CONSTRAIN, Edge.BOUNCE")
 
         if initial_values.ndim < 1:
             raise ValueError("state array must have dimension of 1 or above")
         if initial_values.size < 1:
-            raise ValueError(
-                "state array must have size of 1 or above in every dimension"
-            )
+            raise ValueError("state array must have size of 1 or above in every dimension")
 
         self.state = initial_values
 
@@ -238,16 +224,12 @@ class StateGrid(Domain):
         self.kernel[(1,) * self.dim] = 0
 
     def __get_point(self, p: tuple[int, ...]) -> tuple[int, ...]:
-        assert (
-            len(p) == self.state.ndim
-        ), f"dimensionality mismatch: {len(p)} but grid has {self.state.ndim}"
+        assert len(p) == self.state.ndim, f"dimensionality mismatch: {len(p)} but grid has {self.state.ndim}"
         match self.edge:
             case Edge.WRAP:
                 p = tuple(p[i] % self.state.shape[i] for i in range(len(p)))
             case Edge.CONSTRAIN:
-                p = tuple(
-                    np.clip(p[i], 0, self.state.shape[i] - 1) for i in range(len(p))
-                )
+                p = tuple(np.clip(p[i], 0, self.state.shape[i] - 1) for i in range(len(p)))
             case Edge.BOUNCE:
                 p = tuple(_bounce(p[i], self.state.shape[i] - 1) for i in range(len(p)))
         return p
@@ -258,9 +240,7 @@ class StateGrid(Domain):
     def __setitem__(self, p: tuple[int, ...], value: Any) -> None:
         self.state[self.__get_point(p)] = value
 
-    def shift(
-        self, position: tuple[int, ...], delta: tuple[int, ...]
-    ) -> tuple[int, ...]:
+    def shift(self, position: tuple[int, ...], delta: tuple[int, ...]) -> tuple[int, ...]:
         """This translates a point according to the grid's edge behaviour. It does *not* change any state"""
         point = self.__get_point(position)
         p = tuple(point[i] + delta[i] for i in range(self.dim))
@@ -271,20 +251,16 @@ class StateGrid(Domain):
         """The extent of the space in terms of two opposing points"""
         return self.state.shape
 
-    def count_neighbours(
-        self, indicator: Callable[[float], bool] = lambda x: x == 1
-    ) -> NPFloatArray:
+    def count_neighbours(self, indicator: Callable[[float], bool] = lambda x: x == 1) -> NPFloatArray:
         """Counts neighbouring cells with a state indicated by supplied indicator function"""
 
-        ind: NPFloatArray = np.array([indicator(x) for x in self.state]).astype(
-            int
-        )  # automagically preserves shape
+        ind: NPFloatArray = np.array([indicator(x) for x in self.state]).astype(int)  # automagically preserves shape
         # pad with boundary according to edge policy
         bounded = np.pad(ind, pad_width=1, mode=self.__mode_lookup[self.edge])  # type: ignore # bug?
 
         # count neighbours, drop padding, covert to int
-        count = signal.convolve(bounded, self.kernel, mode="same", method="direct")[
-            (slice(1, -1),) * self.dim
-        ].astype(int)
+        count = signal.convolve(bounded, self.kernel, mode="same", method="direct")[(slice(1, -1),) * self.dim].astype(
+            int
+        )
 
         return count

@@ -1,4 +1,4 @@
-""" Black-Scholes model implementations: analytic and MC """
+"""Black-Scholes model implementations: analytic and MC"""
 
 from typing import Any
 
@@ -11,9 +11,7 @@ import neworder
 # Subclass neworder.Model
 class BlackScholes(neworder.Model):
     # !constructor!
-    def __init__(
-        self, option: dict[str, Any], market: dict[str, float], nsims: int
-    ) -> None:
+    def __init__(self, option: dict[str, Any], market: dict[str, float], nsims: int) -> None:
         # Using exact MC calc of GBM requires only 1 timestep
         timeline = neworder.LinearTimeline(0.0, option["expiry"], 1)
         super().__init__(timeline, neworder.MonteCarlo.deterministic_identical_stream)
@@ -78,9 +76,7 @@ class BlackScholes(neworder.Model):
         r = self.market["rate"]
         q = self.market["divy"]
         sigma = self.market["vol"]
-        underlyings = S * np.exp(
-            (r - q - 0.5 * sigma * sigma) * dt + normals * sigma * np.sqrt(dt)
-        )
+        underlyings = S * np.exp((r - q - 0.5 * sigma * sigma) * dt + normals * sigma * np.sqrt(dt))
         # compute option prices at t=dt
         if self.option["callput"] == "CALL":
             fv = (underlyings - self.option["strike"]).clip(min=0.0).mean()

@@ -19,5 +19,14 @@ RECOVERY_TIME = 100
 # probability of dying from infection at any point during the infection
 MORTALITY = 0.01
 
-m = Infection(POINT, RADIUS, NUM_AGENTS, NUM_INFECTED, SPEED, INFECTION_RADIUS, RECOVERY_TIME, MORTALITY)
+m = Infection(
+    POINT,
+    RADIUS,
+    NUM_AGENTS,
+    NUM_INFECTED,
+    SPEED,
+    INFECTION_RADIUS,
+    RECOVERY_TIME,
+    MORTALITY,
+)
 no.run(m)

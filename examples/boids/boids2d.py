@@ -17,12 +17,8 @@ class Boids2d(no.Model):
     SEPARATE_COEFF = 0.001
     AVOID_COEFF = 0.05
 
-    def __init__(
-        self, N: int, range: float, vision: float, exclusion: float, speed: float
-    ) -> None:
-        super().__init__(
-            no.LinearTimeline(0.0, 0.01), no.MonteCarlo.nondeterministic_stream
-        )
+    def __init__(self, N: int, range: float, vision: float, exclusion: float, speed: float) -> None:
+        super().__init__(no.LinearTimeline(0.0, 0.01), no.MonteCarlo.nondeterministic_stream)
 
         self.N = N
         self.range = range
@@ -115,30 +111,20 @@ class Boids2d(no.Model):
         self.boids.vx += x * Boids2d.COHERE_COEFF
         self.boids.vy += y * Boids2d.COHERE_COEFF
 
-    def __separate(
-        self, in_range: np.ndarray, d2: np.ndarray, dx: np.ndarray, dy: np.ndarray
-    ) -> None:
+    def __separate(self, in_range: np.ndarray, d2: np.ndarray, dx: np.ndarray, dy: np.ndarray) -> None:
         # TODO clip d2?
         # impact on v is proportional to 1/f
         f = Boids2d.SEPARATE_COEFF / d2 * in_range
         self.boids.vx += (f * dx).sum(axis=0)
         self.boids.vy += (f * dy).sum(axis=0)
 
-    def __avoid(
-        self, in_range: np.ndarray, d2: np.ndarray, dx: np.ndarray, dy: np.ndarray
-    ) -> None:
-        f = (
-            Boids2d.AVOID_COEFF
-            / d2[0 : self.N_predators, :]
-            * in_range[0 : self.N_predators, :]
-        )
+    def __avoid(self, in_range: np.ndarray, d2: np.ndarray, dx: np.ndarray, dy: np.ndarray) -> None:
+        f = Boids2d.AVOID_COEFF / d2[0 : self.N_predators, :] * in_range[0 : self.N_predators, :]
         self.boids.vx += (f * dx[0 : self.N_predators, :]).sum(axis=0)
         self.boids.vy += (f * dy[0 : self.N_predators, :]).sum(axis=0)
 
     def __normalise(self) -> None:
-        norm = np.clip(
-            np.sqrt(self.boids.vx**2 + self.boids.vy**2), a_min=0.00001, a_max=None
-        )
+        norm = np.clip(np.sqrt(self.boids.vx**2 + self.boids.vy**2), a_min=0.00001, a_max=None)
         self.boids.vx *= self.speed / norm
         self.boids.vy *= self.speed / norm
 
@@ -173,9 +159,7 @@ class Boids2d(no.Model):
             elif event.key == "q":
                 self.halt()
             else:
-                no.log(
-                    "%s doesnt do anything. p to pause/resume, q to quit" % event.key
-                )
+                no.log("%s doesnt do anything. p to pause/resume, q to quit" % event.key)
 
         fig.canvas.mpl_connect("key_press_event", on_keypress)
 
@@ -183,7 +167,5 @@ class Boids2d(no.Model):
 
     def __update_visualisation(self) -> None:
         self.g.set_offsets(np.c_[self.boids.x, self.boids.y])
-        self.g.set_UVC(
-            self.boids.vx / self.speed, self.boids.vy / self.speed, self.boids.c.values
-        )
+        self.g.set_UVC(self.boids.vx / self.speed, self.boids.vy / self.speed, self.boids.c.values)
         self.fig.canvas.flush_events()

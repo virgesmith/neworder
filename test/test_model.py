@@ -5,9 +5,7 @@ import neworder as no
 
 def test_base(base_model: no.Model) -> None:
     with pytest.raises(RuntimeError):
-        no.run(
-            base_model
-        )  # RuntimeError: Tried to call pure virtual function "Model::step"
+        no.run(base_model)  # RuntimeError: Tried to call pure virtual function "Model::step"
 
 
 def test_base_not_initialised() -> None:
@@ -19,6 +17,15 @@ def test_base_not_initialised() -> None:
         _ = TestModel()
 
 
+def test_step_not_implemented() -> None:
+    class TestModel(no.Model):
+        def __init__(self) -> None:
+            super().__init__(no.NoTimeline())
+
+    with pytest.raises(RuntimeError):
+        no.run(TestModel())
+
+
 def test_default_seeder() -> None:
     class DefaultModel(no.Model):
         def __init__(self) -> None:
@@ -27,9 +34,7 @@ def test_default_seeder() -> None:
 
     class ExplicitModel(no.Model):
         def __init__(self) -> None:
-            super().__init__(
-                no.NoTimeline(), no.MonteCarlo.deterministic_independent_stream
-            )
+            super().__init__(no.NoTimeline(), no.MonteCarlo.deterministic_independent_stream)
             self.x = self.mc.raw()
 
     class DifferentModel(no.Model):

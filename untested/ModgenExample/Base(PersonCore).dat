@@ -1,9 +1,0 @@
-parameters {
-/* NOTE ( MortalityHazard, EN )
-		An arbitrarily selected value, chosen to produce a life expectancy of about 70
-		years.
-*/
-
-	double	MortalityHazard = .014; //EN Annual hazard of death
-};
-

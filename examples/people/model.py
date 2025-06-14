@@ -1,6 +1,7 @@
 """
 model.py: Population Microsimulation - births, deaths and migration by age, gender and ethnicity
 """
+
 import time
 from datetime import date
 

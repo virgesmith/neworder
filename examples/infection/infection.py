@@ -44,15 +44,11 @@ class Infection(no.Model):
         recovery_time: int,
         mortality: float,
     ) -> None:
-        super().__init__(
-            no.LinearTimeline(0.0, 1.0), no.MonteCarlo.deterministic_independent_stream
-        )
+        super().__init__(no.LinearTimeline(0.0, 1.0), no.MonteCarlo.deterministic_independent_stream)
         # expose the model's MC engine to numpy
         self.nprand = no.as_np(self.mc)
         # create the spatial domain
-        self.domain = GeospatialGraph.from_point(
-            point, dist, network_type="drive", crs="epsg:27700"
-        )
+        self.domain = GeospatialGraph.from_point(point, dist, network_type="drive", crs="epsg:27700")
 
         # set the parameters
         self.infection_radius = infection_radius
@@ -60,9 +56,7 @@ class Infection(no.Model):
         self.marginal_mortality = 1.0 - (1.0 - mortality) ** (1.0 / recovery_time)
 
         # create the agent data, which is stored in a geopandas geodataframe
-        start_positions = self.domain.all_nodes.sample(
-            n=n_agents, random_state=self.nprand, replace=True
-        ).index.values
+        start_positions = self.domain.all_nodes.sample(n=n_agents, random_state=self.nprand, replace=True).index.values
         speeds = self.nprand.lognormal(np.log(speed), 0.2, n_agents)
         agents = pd.DataFrame(
             data={
@@ -85,9 +79,7 @@ class Infection(no.Model):
 
         self.agents = gpd.GeoDataFrame(
             agents,
-            geometry=agents["path"].apply(
-                lambda linestr: line_interpolate_point(linestr, 0)
-            ),
+            geometry=agents["path"].apply(lambda linestr: line_interpolate_point(linestr, 0)),
         )
         self.fig, self.g = self.__init_visualisation()
 
@@ -116,9 +108,7 @@ class Infection(no.Model):
         # ensure dest is different from origin
         dest = node
         while dest == node:
-            dest = self.domain.all_nodes.sample(
-                n=1, random_state=self.nprand
-            ).index.values[0]
+            dest = self.domain.all_nodes.sample(n=1, random_state=self.nprand).index.values[0]
         return dest
 
     def __update_position(self) -> None:
@@ -135,27 +125,19 @@ class Infection(no.Model):
             # node <- dest
             self.agents.loc[overshoots, "node"] = self.agents.loc[overshoots, "dest"]
             # dest <- random
-            self.agents.loc[overshoots, "dest"] = self.agents.loc[
-                overshoots, "node"
-            ].apply(self.__random_next_dest)
+            self.agents.loc[overshoots, "dest"] = self.agents.loc[overshoots, "node"].apply(self.__random_next_dest)
             # path <- (node, dest), dist <- new_dist
-            self.agents.loc[overshoots, "path"] = self.agents.loc[
-                overshoots, ["node", "dest"]
-            ].apply(
-                lambda r: self.domain.shortest_path(
-                    r["node"], r["dest"], weight="length"
-                ),
+            self.agents.loc[overshoots, "path"] = self.agents.loc[overshoots, ["node", "dest"]].apply(
+                lambda r: self.domain.shortest_path(r["node"], r["dest"], weight="length"),
                 axis=1,
             )
             self.agents.loc[overshoots, "dist"] = (
-                self.agents.loc[overshoots, "path"]
-                .apply(lambda p: p.length)
-                .astype(float)
+                self.agents.loc[overshoots, "path"].apply(lambda p: p.length).astype(float)
             )
             # finally update position
-            self.agents.loc[overshoots, "geometry"] = self.agents.loc[
-                overshoots, "path"
-            ].apply(lambda linestr: line_interpolate_point(linestr, 0))
+            self.agents.loc[overshoots, "geometry"] = self.agents.loc[overshoots, "path"].apply(
+                lambda linestr: line_interpolate_point(linestr, 0)
+            )
 
     def __infect_nearby(self) -> None:
         infected = self.agents[self.agents.status == Status.INFECTED].geometry
@@ -178,8 +160,7 @@ class Infection(no.Model):
     def __recover(self) -> None:
         t = self.timeline.index
         self.agents.loc[
-            (t - self.agents.t_infect >= self.recovery_time)
-            & (self.agents.status == Status.INFECTED),
+            (t - self.agents.t_infect >= self.recovery_time) & (self.agents.status == Status.INFECTED),
             "status",
         ] = Status.IMMUNE
 
@@ -210,9 +191,7 @@ class Infection(no.Model):
             edgecolor="k",
         )
         fig.suptitle("[q to quit]")
-        fig.canvas.mpl_connect(
-            "key_press_event", lambda event: self.halt() if event.key == "q" else None
-        )
+        fig.canvas.mpl_connect("key_press_event", lambda event: self.halt() if event.key == "q" else None)
         fig.canvas.flush_events()
         return fig, g
 

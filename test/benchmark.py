@@ -63,9 +63,7 @@ def transition(
     #   current = df.loc[i, colname]
     #   df.loc[i, colname] = sample(u[i], tc[lookup[current]], c)
 
-    df[colname] = df[colname].apply(
-        lambda current: sample(m.mc.ustream(1)[0], tc[lookup[current]], c)
-    )
+    df[colname] = df[colname].apply(lambda current: sample(m.mc.ustream(1)[0], tc[lookup[current]], c))
 
 
 def python_impl(m: no.Model, df: pd.DataFrame) -> tuple[int, float, pd.Series]:

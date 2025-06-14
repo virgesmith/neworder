@@ -68,10 +68,7 @@ class GeospatialGraph:
 
     def shortest_path(self, origin: int, dest: int, **kwargs: Any) -> LineString:
         nodes = nx.shortest_path(self.__graph, origin, dest, **kwargs)
-        route_segments = [
-            self.__edges.loc[(nodes[i], nodes[i + 1], 0), "geometry"]
-            for i in range(len(nodes) - 1)
-        ]
+        route_segments = [self.__edges.loc[(nodes[i], nodes[i + 1], 0), "geometry"] for i in range(len(nodes) - 1)]
         return linemerge(MultiLineString(route_segments))
 
     def subgraph(self, origin: int, **kwargs: Any) -> nx.Graph:

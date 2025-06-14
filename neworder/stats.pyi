@@ -13,9 +13,7 @@ import numpy.typing as npt
 __all__ = ["logistic", "logit"]
 
 @typing.overload
-def logistic(
-    x: npt.NDArray[numpy.float64], x0: float, k: float
-) -> npt.NDArray[numpy.float64]:
+def logistic(x: npt.NDArray[numpy.float64], x0: float, k: float) -> npt.NDArray[numpy.float64]:
     """
     Computes the logistic function on the supplied values.
     Args:

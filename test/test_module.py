@@ -30,9 +30,7 @@ def test_submodules() -> None:
 def test_dummy_model() -> None:
     class DummyModel(no.Model):
         def __init__(self) -> None:
-            super().__init__(
-                no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream
-            )
+            super().__init__(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
 
         def step(self) -> None:
             pass
@@ -47,9 +45,7 @@ def test_dummy_model() -> None:
 def test_check_flag() -> None:
     class FailingModel(no.Model):
         def __init__(self) -> None:
-            super().__init__(
-                no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream
-            )
+            super().__init__(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
 
         def step(self) -> None:
             pass

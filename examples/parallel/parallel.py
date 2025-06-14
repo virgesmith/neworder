@@ -20,9 +20,9 @@ class Parallel(neworder.Model):
         self.n = n
 
         # individuals get a unique id and their initial state is the MPI rank
-        self.pop = pd.DataFrame(
-            {"id": neworder.df.unique_index(n), "state": np.full(n, neworder.mpi.RANK)}
-        ).set_index("id")
+        self.pop = pd.DataFrame({"id": neworder.df.unique_index(n), "state": np.full(n, neworder.mpi.RANK)}).set_index(
+            "id"
+        )
 
     #!constructor!
 
@@ -46,9 +46,7 @@ class Parallel(neworder.Model):
             if s != neworder.mpi.RANK:
                 immigrants = neworder.mpi.COMM.recv(source=s)
                 if len(immigrants):
-                    neworder.log(
-                        "received %d immigrants from %d" % (len(immigrants), s)
-                    )
+                    neworder.log("received %d immigrants from %d" % (len(immigrants), s))
                     self.pop = pd.concat((self.pop, immigrants))
 
     # !step!
@@ -61,9 +59,7 @@ class Parallel(neworder.Model):
             if sum(totals) != self.n * neworder.mpi.SIZE:
                 return False
         # And check each process only has individuals that it should have
-        out_of_place = neworder.mpi.COMM.gather(
-            len(self.pop[self.pop.state != neworder.mpi.RANK])
-        )
+        out_of_place = neworder.mpi.COMM.gather(len(self.pop[self.pop.state != neworder.mpi.RANK]))
         if out_of_place and any(out_of_place):
             return False
         return True
@@ -76,9 +72,6 @@ class Parallel(neworder.Model):
         pops = neworder.mpi.COMM.gather(self.pop, root=0)
         if pops:
             pop = pd.concat(pops)
-            neworder.log(
-                "State counts (total %d):\n%s"
-                % (len(pop), pop["state"].value_counts().to_string())
-            )
+            neworder.log("State counts (total %d):\n%s" % (len(pop), pop["state"].value_counts().to_string()))
 
     # !finalise!

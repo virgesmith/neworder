@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Scenario ScenarioVersion="1.8">
-	<General Cases="5000" PopulationScaling="1" Population="5000" Threads="1" Subsamples="16" PartialReports="0" StartingSeed="16807" ComputationPriority="THREAD_PRIORITY_BELOW_NORMAL" CancelPartialResults="PARTIAL_YES" BackgroundMode="0" SilentMode="0" DistributedExecution="0" DistributedSamples="1" AccessTracking="0" MaxTrackedCases="50" TextTracking="0" CopyParameters="0" MemoryReports="0"></General>
-	<Inputs>
-    <Input>.\Base(PersonCore).dat=C:\Users\sabourin\Desktop\Chapter 1\ModgenExample\\Base(PersonCore).dat</Input>
-	</Inputs>
-</Scenario>

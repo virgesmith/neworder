@@ -38,7 +38,6 @@ __all__ = [
     "as_np",
 ]
 
-
 class CalendarTimeline(Timeline):
     """
 
@@ -46,9 +45,7 @@ class CalendarTimeline(Timeline):
     """
 
     @typing.overload
-    def __init__(
-        self, start: datetime.date, end: datetime.date, step: int, unit: str
-    ) -> None:
+    def __init__(self, start: datetime.date, end: datetime.date, step: int, unit: str) -> None:
         """
         Constructs a calendar-based timeline, given start and end dates, an increment specified as a multiple of days, months or years
         """
@@ -99,9 +96,7 @@ class Model:
 
         COMPLETED: typing.ClassVar[Model.RunState]  # value = <RunState.COMPLETED: 3>
         HALTED: typing.ClassVar[Model.RunState]  # value = <RunState.HALTED: 2>
-        NOT_STARTED: typing.ClassVar[
-            Model.RunState
-        ]  # value = <RunState.NOT_STARTED: 0>
+        NOT_STARTED: typing.ClassVar[Model.RunState]  # value = <RunState.NOT_STARTED: 0>
         RUNNING: typing.ClassVar[Model.RunState]  # value = <RunState.RUNNING: 1>
         __members__: typing.ClassVar[
             dict[str, Model.RunState]
@@ -217,9 +212,7 @@ class MonteCarlo:
         The final value of lambda must be zero, and thus arrivals don't always occur, indicated by a value of neworder.time.never()
         The inner dimension of the returned 2d array is governed by the the maximum number of arrivals sampled, and will thus vary
         """
-    def counts(
-        self, lambda_: npt.NDArray[numpy.float64], dt: float
-    ) -> npt.NDArray[numpy.int64]:
+    def counts(self, lambda_: npt.NDArray[numpy.float64], dt: float) -> npt.NDArray[numpy.int64]:
         """
         Returns an array of simulated arrival counts (within time dt) for each intensity in lambda
         """
@@ -233,9 +226,7 @@ class MonteCarlo:
         If the final value of lambda is zero, no arrival is indicated by a value of neworder.time.never()
         """
     @typing.overload
-    def first_arrival(
-        self, lambda_: npt.NDArray[numpy.float64], dt: float, n: int
-    ) -> npt.NDArray[numpy.float64]:
+    def first_arrival(self, lambda_: npt.NDArray[numpy.float64], dt: float, n: int) -> npt.NDArray[numpy.float64]:
         """
         Returns an array of length n of first arrival times from a nonhomogeneous Poisson process (with hazard rate lambda[i], time interval dt),
         with no minimum start time. Sampling uses the Lewis-Shedler "thinning" algorithm
@@ -301,9 +292,7 @@ class MonteCarlo:
         Resets the generator using the original seed.
         Use with care, esp in multi-process models with identical streams
         """
-    def sample(
-        self, n: int, cat_weights: npt.NDArray[numpy.float64]
-    ) -> npt.NDArray[numpy.int64]:
+    def sample(self, n: int, cat_weights: npt.NDArray[numpy.float64]) -> npt.NDArray[numpy.int64]:
         """
         Returns an array of length n containing randomly sampled categorical values, weighted according to cat_weights
         """
@@ -321,9 +310,7 @@ class MonteCarlo:
         Returns an array of stopping times (with hazard rate lambda) of length n
         """
     @typing.overload
-    def stopping(
-        self, lambda_: npt.NDArray[numpy.float64]
-    ) -> npt.NDArray[numpy.float64]:
+    def stopping(self, lambda_: npt.NDArray[numpy.float64]) -> npt.NDArray[numpy.float64]:
         """
         Returns an array of stopping times (with hazard rate lambda[i]) for each element in lambda
         """

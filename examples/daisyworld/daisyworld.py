@@ -24,21 +24,15 @@ class DaisyWorld(no.Model):
         ]
     )
 
-    def __init__(
-        self, gridsize: tuple[int, int], pct_white: float, pct_black: float
-    ) -> None:
-        super().__init__(
-            no.LinearTimeline(0, 1), no.MonteCarlo.deterministic_independent_stream
-        )
+    def __init__(self, gridsize: tuple[int, int], pct_white: float, pct_black: float) -> None:
+        super().__init__(no.LinearTimeline(0, 1), no.MonteCarlo.deterministic_independent_stream)
 
         p = [pct_white, pct_black, 1 - pct_white - pct_black]
         init_pop = self.mc.sample(np.prod(gridsize), p).reshape(gridsize)
 
         self.domain = no.StateGrid(init_pop, edge=no.Edge.WRAP)
         self.age = (
-            (self.mc.ustream(self.domain.state.size) * DaisyWorld.MAX_AGE)
-            .astype(int)
-            .reshape(self.domain.state.shape)
+            (self.mc.ustream(self.domain.state.size) * DaisyWorld.MAX_AGE).astype(int).reshape(self.domain.state.shape)
         )
         self.temperature = np.zeros(self.domain.state.shape)
 
@@ -63,9 +57,7 @@ class DaisyWorld(no.Model):
 
         # update daisies
         self.age = np.where(
-            np.logical_or(
-                self.age >= DaisyWorld.MAX_AGE, self.domain.state == DaisyWorld.EMPTY
-            ),
+            np.logical_or(self.age >= DaisyWorld.MAX_AGE, self.domain.state == DaisyWorld.EMPTY),
             0,
             self.age,
         )
@@ -73,9 +65,7 @@ class DaisyWorld(no.Model):
         self.domain.state = np.where(self.age == 0, DaisyWorld.EMPTY, self.domain.state)
 
         # spawn new
-        p_seed = np.clip(
-            0.1457 * self.temperature - 0.0032 * self.temperature**2 - 0.6443, 0, 1
-        )
+        p_seed = np.clip(0.1457 * self.temperature - 0.0032 * self.temperature**2 - 0.6443, 0, 1)
         p_seed_white = np.where(self.domain.state == DaisyWorld.WHITE_DAISY, p_seed, 0)
         p_seed_black = np.where(self.domain.state == DaisyWorld.BLACK_DAISY, p_seed, 0)
 
@@ -85,18 +75,14 @@ class DaisyWorld(no.Model):
             np.roll(self.mc.hazard(p_seed_white), d, axis=[0, 1]),
             self.domain.state == DaisyWorld.EMPTY,
         )
-        self.domain.state = np.where(
-            new_white, DaisyWorld.WHITE_DAISY, self.domain.state
-        )
+        self.domain.state = np.where(new_white, DaisyWorld.WHITE_DAISY, self.domain.state)
         self.age = np.where(new_white, 0, self.age)
 
         new_black = np.logical_and(
             np.roll(self.mc.hazard(p_seed_black), d, axis=[0, 1]),
             self.domain.state == DaisyWorld.EMPTY,
         )
-        self.domain.state = np.where(
-            new_black, DaisyWorld.BLACK_DAISY, self.domain.state
-        )
+        self.domain.state = np.where(new_black, DaisyWorld.BLACK_DAISY, self.domain.state)
         self.age = np.where(new_black, 0, self.age)
 
         # self.halt()
@@ -114,7 +100,7 @@ class DaisyWorld(no.Model):
 
         # get absorbed luminosity from state
         def fs(
-            state: np.ndarray[np.int64, np.dtype[np.int64]]
+            state: np.ndarray[np.int64, np.dtype[np.int64]],
         ) -> np.ndarray[np.float64, np.dtype[np.float64]]:
             return (1.0 - self.albedo[state]) * solar_luminosity
 
@@ -122,7 +108,7 @@ class DaisyWorld(no.Model):
 
         # get local heating from absorbed luminosity
         def fl(
-            lum: np.ndarray[np.float64, np.dtype[np.float64]]
+            lum: np.ndarray[np.float64, np.dtype[np.float64]],
         ) -> np.ndarray[np.float64, np.dtype[np.float64]]:
             return 72.0 * np.log(lum) + 80.0
 
@@ -130,9 +116,7 @@ class DaisyWorld(no.Model):
 
     def __diffuse(self) -> None:
         padded = np.pad(self.temperature, pad_width=1, mode="wrap")
-        self.temperature = signal.convolve(
-            padded, DaisyWorld.DIFF_KERNEL, mode="same", method="direct"
-        )[1:-1, 1:-1]
+        self.temperature = signal.convolve(padded, DaisyWorld.DIFF_KERNEL, mode="same", method="direct")[1:-1, 1:-1]
 
     def __init_visualisation(self) -> tuple[plt.Figure, AxesImage]:
         # TODO copy wolf-sheep
@@ -143,9 +127,7 @@ class DaisyWorld(no.Model):
         fig = plt.figure(constrained_layout=True, figsize=(6, 6))
         img = plt.imshow(self.domain.state.T, cmap=cmap)
         plt.axis("off")
-        fig.canvas.mpl_connect(
-            "key_press_event", lambda event: self.halt() if event.key == "q" else None
-        )
+        fig.canvas.mpl_connect("key_press_event", lambda event: self.halt() if event.key == "q" else None)
         fig.canvas.flush_events()
 
         return fig, img

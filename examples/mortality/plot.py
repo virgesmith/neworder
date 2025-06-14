@@ -16,9 +16,7 @@ class Hist:
         ax.set_xlabel("Age at Death")
         ax.set_ylabel("Persons")
 
-        self.anim = animation.FuncAnimation(
-            fig, self.__animate, interval=100, frames=numbins, repeat=False
-        )
+        self.anim = animation.FuncAnimation(fig, self.__animate, interval=100, frames=numbins, repeat=False)
 
     def save(self, filename: str) -> None:
         # there seems to be no way of preventing passing the loop once setting to the saved gif and it loops forever, which is very annoying

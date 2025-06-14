@@ -14,9 +14,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [ "3.11" ]
+        python-version: [ "3.12" ]
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
     - name: "pip: Python ${{ matrix.python-version }} coverage"
       uses: actions/setup-python@v5
       with:
@@ -27,7 +29,7 @@ jobs:
         python -m pip install pybind11 pytest
     - name: Build
       run: |
-        CFLAGS=-coverage python -m pip install .
+        CXXFLAGS=-coverage python -m pip install .
     - name: Test
       run: |
         python -m pytest

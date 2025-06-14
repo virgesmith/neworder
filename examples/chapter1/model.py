@@ -3,6 +3,7 @@ Chapter 1
 This is a direct neworder cover version of the Basic Cohort Model from the Belanger & Sabourin book
 See https://www.microsimulationandpopulationdynamics.com/
 """
+
 import numpy as np
 from person import People
 

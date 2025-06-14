@@ -43,9 +43,7 @@ class Conway(no.Model):
         if self.timeline.index == 0:
             x = self.mc.raw() % (self.domain.state.shape[0] - 2)
             y = self.mc.raw() % (self.domain.state.shape[1] - 2)
-            self.domain.state[x : x + 3, y : y + 3] = np.rot90(
-                Conway.__glider, self.mc.raw() % 4
-            )
+            self.domain.state[x : x + 3, y : y + 3] = np.rot90(Conway.__glider, self.mc.raw() % 4)
         return True
 
     def __init_visualisation(self) -> tuple[plt.Figure, AxesImage]:
@@ -68,9 +66,7 @@ class Conway(no.Model):
         plt.axis("off")
 
         fig.canvas.flush_events()
-        fig.canvas.mpl_connect(
-            "key_press_event", lambda event: self.halt() if event.key == "q" else None
-        )
+        fig.canvas.mpl_connect("key_press_event", lambda event: self.halt() if event.key == "q" else None)
 
         return fig, g
 
