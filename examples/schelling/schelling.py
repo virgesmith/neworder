@@ -41,9 +41,7 @@ class Schelling(neworder.Model):
         for c in range(1, self.ncategories):
             # count neighbour with a specific state
             n_cat = self.domain.count_neighbours(lambda x: x == c)
-            self.sat = np.logical_or(
-                self.sat, np.logical_and(n_cat > n_any, self.domain.state == c)
-            )
+            self.sat = np.logical_or(self.sat, np.logical_and(n_cat > n_any, self.domain.state == c))
         # !count!
 
         n_unsat = np.sum(~self.sat)
@@ -61,10 +59,7 @@ class Schelling(neworder.Model):
 
         self.domain.state = pop
 
-        neworder.log(
-            "step %d %.4f%% unsatisfied"
-            % (self.timeline.index, 100.0 * n_unsat / pop.size)
-        )
+        neworder.log("step %d %.4f%% unsatisfied" % (self.timeline.index, 100.0 * n_unsat / pop.size))
 
         self.__update_visualisation()
 
@@ -83,16 +78,12 @@ class Schelling(neworder.Model):
     def __init_visualisation(self) -> tuple[plt.Figure, AxesImage]:
         plt.ion()
 
-        cmap = colors.ListedColormap(
-            ["white", "red", "blue", "green", "yellow"][: self.ncategories]
-        )
+        cmap = colors.ListedColormap(["white", "red", "blue", "green", "yellow"][: self.ncategories])
 
         fig = plt.figure(constrained_layout=True, figsize=(8, 6))
         img = plt.imshow(self.domain.state.T, cmap=cmap)
         plt.axis("off")
-        fig.canvas.mpl_connect(
-            "key_press_event", lambda event: self.halt() if event.key == "q" else None
-        )
+        fig.canvas.mpl_connect("key_press_event", lambda event: self.halt() if event.key == "q" else None)
         fig.canvas.flush_events()
 
         return fig, img

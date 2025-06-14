@@ -18,9 +18,7 @@ class Parity(Enum):
     PREGNANT = 1
 
 
-def partition(
-    start: float, finish: float, step: float = 1.0
-) -> np.ndarray[np.float64, np.dtype[np.float64]]:
+def partition(start: float, finish: float, step: float = 1.0) -> np.ndarray[np.float64, np.dtype[np.float64]]:
     """Helper function to return an inclusive equal-spaced range, i.e. finish will be the last element"""
     # ensure finish is always included
     return np.append(np.arange(start, finish, step), finish)
@@ -117,9 +115,7 @@ r_preg = np.array([0.0648, 1.0000, 0.2523, 0.0648, 0.8048, 0.0648])
 # currently need to modify above to have equal spacing
 union_delta_t = 2.0
 #                         1          3          5          7          9         11         13
-r_u2f = np.array(
-    [0.1995702, 0.1353028, 0.1099149, 0.1099149, 0.0261186, 0.0261186, 0.0456905]
-)
+r_u2f = np.array([0.1995702, 0.1353028, 0.1099149, 0.1099149, 0.0261186, 0.0261186, 0.0456905])
 
 # Something wrong here: more data than dims
 # 	 // Union Duration Baseline of Dissolution

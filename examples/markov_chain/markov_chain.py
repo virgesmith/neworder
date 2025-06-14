@@ -52,9 +52,7 @@ class MarkovChain(no.Model):
         #   df.loc[i, colname] = sample(u[i], tc[lookup[current]], c)
         # this is a much faster equivalent of the loop in the commented code immediately above
         self.pop[colname] = self.pop[colname].apply(
-            lambda current: _sample(
-                self.mc.ustream(1), tc[lookup[current]], self.states
-            )
+            lambda current: _sample(self.mc.ustream(1), tc[lookup[current]], self.states)
         )
 
     def step(self) -> None:
@@ -64,8 +62,6 @@ class MarkovChain(no.Model):
         self.summary.loc[len(self.summary)] = self.pop.state.value_counts().transpose()
 
     def finalise(self) -> None:
-        self.summary["t"] = np.linspace(
-            self.timeline.start, self.timeline.end, self.timeline.nsteps + 1
-        )
+        self.summary["t"] = np.linspace(self.timeline.start, self.timeline.end, self.timeline.nsteps + 1)
         self.summary.reset_index(drop=True, inplace=True)
         self.summary.fillna(0, inplace=True)

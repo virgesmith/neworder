@@ -4,9 +4,7 @@ import neworder as no
 
 # no.verbose()
 
-assert (
-    no.mpi.RANK == 0 and no.mpi.SIZE == 1
-), "this example should only be run in serial mode"
+assert no.mpi.RANK == 0 and no.mpi.SIZE == 1, "this example should only be run in serial mode"
 
 params = {
     "grid": {"width": 100, "height": 100},

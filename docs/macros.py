@@ -19,9 +19,7 @@ _inline_code_styles = {
 }
 
 # this is the overall record id, not a specific version
-_NEWORDER_ZENODO_ID = (
-    4031821  # search using this (or DOI 10.5281/zenodo.4031821) just doesnt work
-)
+_NEWORDER_ZENODO_ID = 4031821  # search using this (or DOI 10.5281/zenodo.4031821) just doesnt work
 
 
 @cache

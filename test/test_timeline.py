@@ -10,9 +10,7 @@ import neworder as no
 class _TestModel(no.Model):
     def __init__(self) -> None:
         # 10 steps of 10
-        super().__init__(
-            no.LinearTimeline(0, 100, 10), no.MonteCarlo.deterministic_identical_stream
-        )
+        super().__init__(no.LinearTimeline(0, 100, 10), no.MonteCarlo.deterministic_identical_stream)
 
         self.step_count = 0
         self.t_end = 100
@@ -22,10 +20,7 @@ class _TestModel(no.Model):
         self.step_count += 1
 
     def finalise(self) -> None:
-        assert (
-            self.timeline.time == self.t_end
-            and self.timeline.index == self.timeline.index
-        )
+        assert self.timeline.time == self.t_end and self.timeline.index == self.timeline.index
 
 
 class _TestModel2(no.Model):
@@ -219,9 +214,7 @@ def test_linear_timeline() -> None:
 def test_numeric_timeline() -> None:
     class NumericTimelineModel(no.Model):
         def __init__(self, numerictimeline: no.Timeline) -> None:
-            super().__init__(
-                numerictimeline, no.MonteCarlo.deterministic_identical_stream
-            )
+            super().__init__(numerictimeline, no.MonteCarlo.deterministic_identical_stream)
 
         def step(self) -> None:
             assert self.timeline.dt == 1 / 16
@@ -245,14 +238,10 @@ def test_calendar_timeline() -> None:
 
     class CalendarModel(no.Model):
         def __init__(self, calendartimeline: no.Timeline) -> None:
-            super().__init__(
-                calendartimeline, no.MonteCarlo.deterministic_identical_stream
-            )
+            super().__init__(calendartimeline, no.MonteCarlo.deterministic_identical_stream)
 
         def step(self) -> None:
-            assert cast(date, self.timeline.time).day == min(
-                dim[self.timeline.index], d
-            )
+            assert cast(date, self.timeline.time).day == min(dim[self.timeline.index], d)
 
         def finalise(self) -> None:
             assert self.timeline.dt == 0.0

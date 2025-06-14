@@ -35,9 +35,7 @@ def test_errors() -> None:
 def test_basic() -> None:
     # test unique index generation
     idx = no.df.unique_index(100)
-    assert np.array_equal(
-        idx, np.arange(no.mpi.RANK, 100 * no.mpi.SIZE, step=no.mpi.SIZE)
-    )
+    assert np.array_equal(idx, np.arange(no.mpi.RANK, 100 * no.mpi.SIZE, step=no.mpi.SIZE))
 
     idx = no.df.unique_index(100)
     assert np.array_equal(
@@ -76,17 +74,13 @@ def test_basic() -> None:
     no.df.transition(model, c, t, df, "category")
     assert 2 not in df.category.value_counts()
     for i in [1, 3]:
-        assert df.category.value_counts()[i] > N / 2 - sqrt(
-            N
-        ) and df.category.value_counts()[i] < N / 2 + sqrt(N)
+        assert df.category.value_counts()[i] > N / 2 - sqrt(N) and df.category.value_counts()[i] < N / 2 + sqrt(N)
 
     # spread evenly
     t = np.ones((3, 3)) / 3
     no.df.transition(model, c, t, df, "category")
     for i in c:
-        assert df.category.value_counts()[i] > N / 3 - sqrt(
-            N
-        ) and df.category.value_counts()[i] < N / 3 + sqrt(N)
+        assert df.category.value_counts()[i] > N / 3 - sqrt(N) and df.category.value_counts()[i] < N / 3 + sqrt(N)
 
     # all -> 1
     t = np.array(
@@ -109,10 +103,7 @@ def test(base_model: no.Model) -> None:
 
     no.df.transition(base_model, cats, trans, df, "DC2101EW_C_ETHPUK11")
 
-    assert (
-        len(df["DC2101EW_C_ETHPUK11"].unique()) == 1
-        and df["DC2101EW_C_ETHPUK11"].unique()[0] == 2
-    )
+    assert len(df["DC2101EW_C_ETHPUK11"].unique()) == 1 and df["DC2101EW_C_ETHPUK11"].unique()[0] == 2
 
     # NOTE transition matrix interpreted as being COLUMN MAJOR due to pandas DataFrame storing data in column-major order
 
@@ -121,10 +112,7 @@ def test(base_model: no.Model) -> None:
     trans[2, 3] = 1.0
     no.df.transition(base_model, cats, trans, df, "DC2101EW_C_ETHPUK11")
     no.log(df["DC2101EW_C_ETHPUK11"].unique())
-    assert (
-        len(df["DC2101EW_C_ETHPUK11"].unique()) == 1
-        and df["DC2101EW_C_ETHPUK11"].unique()[0] == 3
-    )
+    assert len(df["DC2101EW_C_ETHPUK11"].unique()) == 1 and df["DC2101EW_C_ETHPUK11"].unique()[0] == 3
 
     # ~half of 3->0
     trans[3, 0] = 0.5

@@ -13,15 +13,11 @@ GRASS_COLOUR = "green"
 
 class WolfSheep(no.Model):
     def __init__(self, params: dict[str, Any]) -> None:
-        super().__init__(
-            no.LinearTimeline(0.0, 1.0), no.MonteCarlo.deterministic_independent_stream
-        )
+        super().__init__(no.LinearTimeline(0.0, 1.0), no.MonteCarlo.deterministic_independent_stream)
         # hard-coded to unit timestep
         self.width = params["grid"]["width"]
         self.height = params["grid"]["height"]
-        self.domain = no.Space(
-            np.array([0, 0]), np.array([self.width, self.height]), edge=no.Edge.WRAP
-        )
+        self.domain = no.Space(np.array([0, 0]), np.array([self.width, self.height]), edge=no.Edge.WRAP)
 
         n_wolves = params["wolves"]["starting_population"]
         n_sheep = params["sheep"]["starting_population"]
@@ -46,9 +42,7 @@ class WolfSheep(no.Model):
                 # 50% initial probability of being fully grown, other states uniform
                 "countdown": self.mc.sample(
                     ncells,
-                    [0.5]
-                    + [0.5 / (self.grass_regrowth_time - 1)]
-                    * (self.grass_regrowth_time - 1),
+                    [0.5] + [0.5 / (self.grass_regrowth_time - 1)] * (self.grass_regrowth_time - 1),
                 ),
             },
         )
@@ -59,8 +53,7 @@ class WolfSheep(no.Model):
                 "x": self.mc.ustream(n_wolves) * self.width,
                 "y": self.mc.ustream(n_wolves) * self.height,
                 "speed": self.init_wolf_speed,
-                "energy": (self.mc.ustream(n_wolves) + self.mc.ustream(n_wolves))
-                * self.wolf_gain_from_food,
+                "energy": (self.mc.ustream(n_wolves) + self.mc.ustream(n_wolves)) * self.wolf_gain_from_food,
             },
         )
         self.__assign_cell(self.wolves)
@@ -71,17 +64,14 @@ class WolfSheep(no.Model):
                 "x": self.mc.ustream(n_sheep) * self.width,
                 "y": self.mc.ustream(n_sheep) * self.height,
                 "speed": self.init_sheep_speed,
-                "energy": (self.mc.ustream(n_sheep) + self.mc.ustream(n_sheep))
-                * self.sheep_gain_from_food,
+                "energy": (self.mc.ustream(n_sheep) + self.mc.ustream(n_sheep)) * self.sheep_gain_from_food,
             },
         )
         self.__assign_cell(self.sheep)
 
         self.wolf_pop = [len(self.wolves)]
         self.sheep_pop = [len(self.sheep)]
-        self.grass_prop = [
-            100.0 * len(self.grass[self.grass.countdown == 0]) / len(self.grass)
-        ]
+        self.grass_prop = [100.0 * len(self.grass[self.grass.countdown == 0]) / len(self.grass)]
         self.wolf_speed = [self.wolves.speed.mean()]
         self.sheep_speed = [self.sheep.speed.mean()]
         self.wolf_speed_var = [self.wolves.speed.var()]
@@ -124,9 +114,7 @@ class WolfSheep(no.Model):
         self.t.append(self.timeline.index)
         self.wolf_pop.append(len(self.wolves))
         self.sheep_pop.append(len(self.sheep))
-        self.grass_prop.append(
-            100.0 * len(self.grass[self.grass.countdown == 0]) / len(self.grass)
-        )
+        self.grass_prop.append(100.0 * len(self.grass[self.grass.countdown == 0]) / len(self.grass))
         self.wolf_speed.append(self.wolves.speed.mean())
         self.sheep_speed.append(self.sheep.speed.mean())
         self.wolf_speed_var.append(self.wolves.speed.var())
@@ -157,9 +145,7 @@ class WolfSheep(no.Model):
 
         # eat sheep if available
         diners = self.wolves.loc[self.wolves.cell.isin(self.sheep.cell)]
-        self.wolves.loc[self.wolves.cell.isin(self.sheep.cell), "energy"] += (
-            self.wolf_gain_from_food
-        )
+        self.wolves.loc[self.wolves.cell.isin(self.sheep.cell), "energy"] += self.wolf_gain_from_food
         # NB *all* the sheep in cells with wolves get eaten (or at least killed)
         self.sheep = self.sheep[~self.sheep.cell.isin(diners.cell)]
 
@@ -171,29 +157,23 @@ class WolfSheep(no.Model):
         self.wolves.loc[m == 1, "energy"] /= 2
         cubs = self.wolves[m == 1].copy().set_index(no.df.unique_index(int(sum(m))))
         # evolve speed/burn rate from mother + random factor (don't allow to go <=0) should probably be lognormal
-        cubs.speed = np.maximum(
-            cubs.speed + self.npgen.normal(0.0, self.wolf_speed_stddev, len(cubs)), 0.1
-        )
+        cubs.speed = np.maximum(cubs.speed + self.npgen.normal(0.0, self.wolf_speed_stddev, len(cubs)), 0.1)
         self.wolves = pd.concat((self.wolves, cubs))
 
     def __step_sheep(self) -> None:
         # move sheep randomly (wrapped)
         vx = (2 * self.mc.ustream(len(self.sheep)) - 1.0) * self.sheep.speed
         vy = (2 * self.mc.ustream(len(self.sheep)) - 1.0) * self.sheep.speed
-        (self.sheep.x, self.sheep.y), _ = self.domain.move(
-            (self.sheep.x, self.sheep.y), (vx, vy), 1.0, ungroup=True
-        )
+        (self.sheep.x, self.sheep.y), _ = self.domain.move((self.sheep.x, self.sheep.y), (vx, vy), 1.0, ungroup=True)
         self.sheep.energy -= 0.5 + 0.5 * self.sheep.speed / self.init_sheep_speed
         self.__assign_cell(self.sheep)
 
         # eat grass if available
         grass_available = self.grass.loc[self.sheep.cell]
-        self.sheep.energy += (
-            grass_available.countdown.values == 0
-        ) * self.sheep_gain_from_food
-        self.grass.loc[self.sheep.cell, "countdown"] = self.grass.loc[
-            self.sheep.cell, "countdown"
-        ].apply(lambda c: self.grass_regrowth_time if c == 0 else c)
+        self.sheep.energy += (grass_available.countdown.values == 0) * self.sheep_gain_from_food
+        self.grass.loc[self.sheep.cell, "countdown"] = self.grass.loc[self.sheep.cell, "countdown"].apply(
+            lambda c: self.grass_regrowth_time if c == 0 else c
+        )
 
         # remove dead
         self.sheep = self.sheep[self.sheep.energy >= 0]
@@ -211,17 +191,13 @@ class WolfSheep(no.Model):
 
     def __assign_cell(self, agents: pd.DataFrame) -> None:
         # not ints for some reason
-        agents["cell"] = (
-            agents.x.astype(int) + self.width * agents.y.astype(int)
-        ).astype(int)
+        agents["cell"] = (agents.x.astype(int) + self.width * agents.y.astype(int)).astype(int)
 
     def __init_plot(self) -> Tuple[Any, ...]:
         plt.ion()
 
         self.figs = plt.figure(figsize=(15, 5))
-        self.figs.suptitle(
-            "[q to quit, s to save, f toggles full screen]", y=0.05, x=0.15
-        )
+        self.figs.suptitle("[q to quit, s to save, f toggles full screen]", y=0.05, x=0.15)
         gs = self.figs.add_gridspec(2, 3)
         ax0 = self.figs.add_subplot(gs[:, 0])
         ax1 = self.figs.add_subplot(gs[0, 1])
@@ -232,9 +208,7 @@ class WolfSheep(no.Model):
 
         # agent map
         ax_g = ax0.imshow(
-            np.flip(
-                self.grass.countdown.values.reshape(self.height, self.width), axis=0
-            ),
+            np.flip(self.grass.countdown.values.reshape(self.height, self.width), axis=0),
             extent=[0, self.width, 0, self.height],
             cmap="Greens_r",
             alpha=0.5,
@@ -262,26 +236,20 @@ class WolfSheep(no.Model):
 
         bins = np.linspace(0, self.init_wolf_speed * 3.0, 51)
         width = self.init_wolf_speed * 3.0 / 50
-        _, b_ws, ax_ws = ax3.hist(
-            [self.init_wolf_speed], bins=bins, width=width, color=WOLF_COLOUR
-        )
+        _, b_ws, ax_ws = ax3.hist([self.init_wolf_speed], bins=bins, width=width, color=WOLF_COLOUR)
         # ax3.set_xlabel("Speed distribution")
         ax3.axvline(self.init_wolf_speed)
 
         # sheep speed distribution
         bins = np.linspace(0, self.init_sheep_speed * 3.0, 51)
         width = self.init_sheep_speed * 3.0 / 50
-        _, b_ss, ax_ss = ax4.hist(
-            [self.init_sheep_speed], bins=bins, width=width, color=SHEEP_COLOUR
-        )
+        _, b_ss, ax_ss = ax4.hist([self.init_sheep_speed], bins=bins, width=width, color=SHEEP_COLOUR)
         ax4.set_xlabel("Speed distribution")
         ax4.axvline(self.init_sheep_speed)
 
         plt.tight_layout()
 
-        self.figs.canvas.mpl_connect(
-            "key_press_event", lambda event: self.halt() if event.key == "q" else None
-        )
+        self.figs.canvas.mpl_connect("key_press_event", lambda event: self.halt() if event.key == "q" else None)
 
         self.figs.canvas.flush_events()
 
@@ -303,11 +271,7 @@ class WolfSheep(no.Model):
         )
 
     def __update_plot(self) -> None:
-        self.ax_g.set_data(
-            np.flip(
-                self.grass.countdown.values.reshape(self.height, self.width), axis=0
-            )
-        )
+        self.ax_g.set_data(np.flip(self.grass.countdown.values.reshape(self.height, self.width), axis=0))
         self.ax_w.set_offsets(np.c_[self.wolves.x, self.wolves.y])
         self.ax_s.set_offsets(np.c_[self.sheep.x, self.sheep.y])
 

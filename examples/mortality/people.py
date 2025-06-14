@@ -35,9 +35,7 @@ class PeopleDiscrete(neworder.Model):
         self.die()
         # age the living only
         alive = self.population.loc[self.population.alive].index
-        self.population.loc[alive, "age"] = (
-            self.population.loc[alive, "age"] + self.timeline.dt
-        )
+        self.population.loc[alive, "age"] = self.population.loc[alive, "age"] + self.timeline.dt
 
     # !disc_step!
 
@@ -62,9 +60,7 @@ class PeopleDiscrete(neworder.Model):
         alive = self.population.loc[self.population.alive].index
         # sample time of death
         r = self.mc.stopping(
-            self.mortality_hazard.Rate.values[
-                min(self.timeline.index, self.max_rate_age)
-            ],
+            self.mortality_hazard.Rate.values[min(self.timeline.index, self.max_rate_age)],
             len(alive),
         )
         # select if death happens before next timestep...
@@ -77,9 +73,7 @@ class PeopleDiscrete(neworder.Model):
         # kill off those who die before next timestep
         self.population.loc[newly_dead, "alive"] = False
         # and set the age at death according to the stopping time above
-        self.population.loc[newly_dead, "age_at_death"] = (
-            self.population.loc[newly_dead, "age"] + r[r < dt]
-        )
+        self.population.loc[newly_dead, "age_at_death"] = self.population.loc[newly_dead, "age"] + r[r < dt]
 
 
 # !cont_ctor!
@@ -88,9 +82,7 @@ class PeopleContinuous(neworder.Model):
 
     def __init__(self, mortality_hazard_file: str, n: int, dt: float) -> None:
         # Direct sampling doesnt require a timeline
-        super().__init__(
-            neworder.NoTimeline(), neworder.MonteCarlo.deterministic_identical_stream
-        )
+        super().__init__(neworder.NoTimeline(), neworder.MonteCarlo.deterministic_identical_stream)
         # initialise cohort
         self.mortality_hazard = pd.read_csv(mortality_hazard_file)
 

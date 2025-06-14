@@ -20,19 +20,10 @@ def test_mc(base_model: no.Model) -> None:
 def test_seeders() -> None:
     # serial tests
     # determinisitc seeders always return the same value
-    assert (
-        no.MonteCarlo.deterministic_identical_stream()
-        == no.MonteCarlo.deterministic_identical_stream()
-    )
-    assert (
-        no.MonteCarlo.deterministic_independent_stream()
-        == no.MonteCarlo.deterministic_independent_stream()
-    )
+    assert no.MonteCarlo.deterministic_identical_stream() == no.MonteCarlo.deterministic_identical_stream()
+    assert no.MonteCarlo.deterministic_independent_stream() == no.MonteCarlo.deterministic_independent_stream()
     # nondeterministic seeders don't
-    assert (
-        no.MonteCarlo.nondeterministic_stream()
-        != no.MonteCarlo.nondeterministic_stream()
-    )
+    assert no.MonteCarlo.nondeterministic_stream() != no.MonteCarlo.nondeterministic_stream()
 
     if not no.mpi.COMM:
         return
@@ -126,9 +117,7 @@ def test_arrivals_validation(base_model: no.Model) -> None:
     with pytest.raises(ValueError):
         base_model.mc.first_arrival([1.0, np.nan], 1.0, 10)
 
-    assert np.all(
-        no.time.isnever(base_model.mc.next_arrival(np.zeros(10), [0.0, 0.0], 1.0))
-    )
+    assert np.all(no.time.isnever(base_model.mc.next_arrival(np.zeros(10), [0.0, 0.0], 1.0)))
     with pytest.raises(ValueError):
         base_model.mc.next_arrival(np.zeros(10), [-1.0, 0.0], 1.0)
     with pytest.raises(ValueError):
@@ -304,9 +293,7 @@ def test_mc_serial(base_model: no.Model) -> None:
     assert len(sv) == 5
 
     # Non-homogeneous Poisson process (time-dependent hazard)
-    nhpp = base_model.mc.first_arrival(
-        np.array([0.1, 0.2, 0.3, 0.4, 0.5]), 1.0, 10, 0.0
-    )
+    nhpp = base_model.mc.first_arrival(np.array([0.1, 0.2, 0.3, 0.4, 0.5]), 1.0, 10, 0.0)
     assert isinstance(nhpp, np.ndarray)
     assert len(nhpp) == 10
 
@@ -347,9 +334,7 @@ def test_mc_parallel(base_model: no.Model, base_indep_model: no.Model) -> None:
 
 
 def test_bitgen(base_model: no.Model) -> None:
-    base_model2 = no.Model(
-        no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream
-    )
+    base_model2 = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
     gen = no.as_np(base_model.mc)
 
     n = gen.bit_generator.random_raw()

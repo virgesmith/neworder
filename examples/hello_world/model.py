@@ -38,14 +38,10 @@ class HelloWorld(neworder.Model):
 
         NB it is *essential* to initialise the base class.
         """
-        super().__init__(
-            neworder.NoTimeline(), neworder.MonteCarlo.nondeterministic_stream
-        )
+        super().__init__(neworder.NoTimeline(), neworder.MonteCarlo.nondeterministic_stream)
 
         # create a silent population of size n
-        self.population = pd.DataFrame(
-            index=neworder.df.unique_index(n), data={"talkative": False}
-        )
+        self.population = pd.DataFrame(index=neworder.df.unique_index(n), data={"talkative": False})
         self.population.index.name = "id"
 
         # set the transition probability
@@ -81,9 +77,7 @@ class HelloWorld(neworder.Model):
         Returns: NoneType
         """
         # randomly make some people talkative
-        self.population.talkative = self.mc.hazard(
-            self.p_talk, len(self.population)
-        ).astype(bool)
+        self.population.talkative = self.mc.hazard(self.p_talk, len(self.population)).astype(bool)
 
     # !step!
 

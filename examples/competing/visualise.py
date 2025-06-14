@@ -23,9 +23,7 @@ def plot_age(model: People) -> None:
     plt.hist(b, bins, stacked=True)
     plt.hist(model.population.time_of_death, bins, color="black")
     plt.title("Competing risks of childbirth and death")
-    plt.legend(
-        ["1st birth", "2nd birth", "3rd birth", "4th birth", "5th birth", "Death"]
-    )
+    plt.legend(["1st birth", "2nd birth", "3rd birth", "4th birth", "5th birth", "Death"])
     plt.xlabel("Age (y)")
     plt.ylabel("Frequency")
     # plt.savefig("./docs/examples/img/competing_hist_100k.png", dpi=80)
