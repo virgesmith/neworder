@@ -49,9 +49,9 @@ def update(
     males: np.ndarray[np.float64, np.dtype[np.float64]],
     females: np.ndarray[np.float64, np.dtype[np.float64]],
 ) -> tuple[Any, Any]:
-    for rect, h in zip(mbar, males):
+    for rect, h in zip(mbar, males, strict=False):
         rect.set_width(h)
-    for rect, h in zip(fbar, females):
+    for rect, h in zip(fbar, females, strict=False):
         rect.set_width(h)
 
     fig.suptitle(title)

@@ -2,14 +2,14 @@
 
 . .env
 
-version=$(grep -e "^version" pyproject.toml | cut  -d' ' -d'=' -d'"' - -f2)
+version=$(grep "^version =" pyproject.toml | awk -F'"' '{print $2}')
+echo $version
 
-# package as source dist
-python -m build . --sdist
+uv build --sdist
 
-# upload
-twine upload -u __token__ -p $TEST_PYPI_API_TOKEN  --repository-url https://test.pypi.org/legacy/ dist/neworder-$version.tar.gz
-# twine upload -u __token__ -p $PYPI_API_TOKEN --repository-url https://upload.pypi.org/legacy/ dist/neworder-$version.tar.gz
 
-# NB on testPyPI, deps need to been installed from main repo. Use this:
-# pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple neworder
+# TEST
+uv publish -t $TEST_PYPI_API_TOKEN --publish-url https://test.pypi.org/legacy/ dist/neworder-$version.tar.gz
+
+# PROD
+# uv publish -t $PYPI_API_TOKEN dist/neworder-$version.tar.gz

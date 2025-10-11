@@ -40,7 +40,7 @@ class Schelling(neworder.Model):
 
         for c in range(1, self.ncategories):
             # count neighbour with a specific state
-            n_cat = self.domain.count_neighbours(lambda x: x == c)
+            n_cat = self.domain.count_neighbours(lambda x, c=c: x == c)
             self.sat = np.logical_or(self.sat, np.logical_and(n_cat > n_any, self.domain.state == c))
         # !count!
 
@@ -48,8 +48,8 @@ class Schelling(neworder.Model):
 
         pop = self.domain.state.copy()
 
-        free = list(zip(*np.where(pop == 0)))
-        for src in zip(*np.where(~self.sat)):
+        free = list(zip(*np.where(pop == 0), strict=False))
+        for src in zip(*np.where(~self.sat), strict=False):
             # pick a random destination
             r = self.mc.raw() % len(free)
             dest = free[r]

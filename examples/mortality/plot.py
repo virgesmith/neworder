@@ -31,7 +31,7 @@ class Hist:
 
     def __animate(self, frameno: int) -> Union[list, list[list]]:
         i = 0
-        for rect, h in zip(self.patches, self.n):
+        for rect, h in zip(self.patches, self.n, strict=False):
             rect.set_height(h if i <= frameno else 0)
             i = i + 1
         return self.patches
