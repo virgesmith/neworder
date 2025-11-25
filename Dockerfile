@@ -1,5 +1,5 @@
 
-FROM python:3.11
+FROM python:3.13-slim-trixie
 
 RUN apt-get update -y \
  && apt-get install -y --no-install-recommends -y mpich libmpich-dev tk-dev \
@@ -22,7 +22,7 @@ ENV PATH="$VENV/bin:$PATH"
 RUN pip install --no-cache-dir -U pip
 RUN pip install --no-cache-dir neworder[parallel,geospatial]
 
-ENV DISPLAY :0
+ENV DISPLAY=:0
 
 # use docker run -it...
-CMD bash
+CMD ["bash"]
