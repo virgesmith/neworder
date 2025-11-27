@@ -14,20 +14,18 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.12"]
+        python-version: ["3.13"]
     steps:
       - uses: actions/checkout@v4
-      - name: "pip: Python ${{ matrix.python-version }}"
-        uses: actions/setup-python@v5
+      - name: Install
+        uses: astral-sh/setup-uv@v5
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: |
-          sudo apt-get update && sudo apt-get install -y mpich libmpich-dev
+          sudo apt-get update && sudo apt-get install -y openmpi-bin
       - name: Build
-        run: |
-          python -m pip install .[parallel] pytest
+        run: uv sync --dev --extra parallel
       - name: Test with pytest
         run: |
-          mpiexec -n 2 python -m pytest
-
+          mpiexec -n 2 pytest -s

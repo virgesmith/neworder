@@ -196,7 +196,7 @@ class Infection(no.Model):
         return fig, g
 
     def __update_visualisation(self, num_infected, num_immune, num_dead) -> None:
-        offsets = np.array(list(zip(self.agents.geometry.x, self.agents.geometry.y)))
+        offsets = np.array(list(zip(self.agents.geometry.x, self.agents.geometry.y, strict=False)))
         colours = self.agents.status.apply(lambda c: c.rgba)
         self.g.set_offsets(offsets)
         self.g.set_facecolors(colours)

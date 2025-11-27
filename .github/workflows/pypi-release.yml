@@ -1,59 +1,43 @@
-name: PyPI release
+name: Publish to PyPI
 
 on:
-  push:
-    branches: main
+  workflow_run:
+    workflows: [ "Build and test", "Parallel (MPI)", "Code coverage" ]
+    types:
+      - completed
+    branches:
+      - main
 
 jobs:
-  bump-version:
-    name: Bump package version
-    if: false #"!contains(github.event.head_commit.message, 'Bump version')"
+  deploy:
+    name: Publish to PyPI
     runs-on: ubuntu-latest
+
+    # Optional: Define an environment for better secret management and auditing
+    # You would need to create an environment named 'pypi' in your repository settings
+    # and link the PYPI_API_TOKEN secret to it.
+    # environment: pypi
+
+    permissions:
+      # Required for pypa/gh-action-pypi-publish if using OIDC trusted publishing
+      # (highly recommended for security, but requires setup on PyPI side).
+      # If not using OIDC, 'id-token: write' is not strictly necessary for the action,
+      # but 'contents: read' is usually needed for checkout.
+      # id-token: write
+      contents: read # Required to checkout the repository code
+
     steps:
-    - uses: actions/checkout@v4
-      with:
-        persist-credentials: false
-    - name: current_version
-      run: echo "current_version=$(grep -e '^version' pyproject.toml | cut  -d' ' -d'=' -d'"' - -f2)" >> $GITHUB_ENV
-    - name: bump2version-action
-      uses: FragileTech/bump-version@v1.0.4
-      with:
-        current_version: "${{ env.current_version }}"
-        files: pyproject.toml
-        commit_name: Version autobump
-        commit_email: devops@friarswood.net
-        login: "${{ secrets.REPO_USER }}"
-        token: "${{ secrets.REPO_PAT }}"
-        # part defaults to patch
-        # part: minor
-    - name: Create dist
-      run: |
-        pip install pybind11 numpy build
-        python -m build . --sdist
-    - name: Publish
-      uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        password: ${{ secrets.PYPI_API_TOKEN }}
-        repository-url: https://upload.pypi.org/legacy/
-    - name: new_version
-      run: echo "new_version=$(grep -e '^version' pyproject.toml | cut  -d' ' -d'=' -d'"' - -f2)" >> $GITHUB_ENV
-
-    - name: Log in to Docker Hub
-      uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
-      with:
-        username: ${{ secrets.DOCKER_USER }}
-        password: ${{ secrets.DOCKER_PAT }}
-
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
-
-    - name: Build and push Docker images
-      uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
-      with:
-        context: .
-        file: ./Dockerfile
-        push: true
-        tags: |
-          ${{ secrets.DOCKER_USER }}/neworder:${{ env.new_version }}
-          ${{ secrets.DOCKER_USER }}/neworder:latest
-
+      - uses: actions/checkout@v4
+      - name: Install prerequisites
+        uses: astral-sh/setup-uv@v5
+      - name: Install project
+        run: uv sync --all-groups
+      - name: Build wheel
+        run: uv build --sdist
+      - name: Publish package to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          # This action automatically uses '__token__' as username
+          password: ${{ secrets.PYPI_API_TOKEN }}
+          # You can specify a different repository if needed (e.g., TestPyPI for testing)
+          # repository-url: https://test.pypi.org/legacy/

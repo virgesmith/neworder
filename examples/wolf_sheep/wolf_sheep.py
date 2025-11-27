@@ -285,13 +285,13 @@ class WolfSheep(no.Model):
 
         if not self.wolves.empty:
             n, bins = np.histogram(self.wolves.speed, bins=self.b_ws)
-            for rect, h in zip(self.ax_ws, n / len(self.wolves)):
+            for rect, h in zip(self.ax_ws, n / len(self.wolves), strict=False):
                 rect.set_height(h)
             self.ax_t3.set_ylim([0, max(n / len(self.wolves))])
 
         if not self.sheep.empty:
             n, bins = np.histogram(self.sheep.speed, bins=self.b_ss)
-            for rect, h in zip(self.ax_ss, n / len(self.sheep)):
+            for rect, h in zip(self.ax_ss, n / len(self.sheep), strict=False):
                 rect.set_height(h)
             self.ax_t4.set_ylim([0, max(n / len(self.sheep))])
 

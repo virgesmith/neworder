@@ -10,12 +10,8 @@ from setuptools import setup
 # see https://github.com/pybind/python_example
 
 
-def readme():
-    with open("README.md") as f:
-        return f.read()
-
-
-def list_files(dirs, exts, exclude=[]):
+def list_files(dirs, exts, exclude=None):
+    exclude = exclude or []
     files = []
     if isinstance(exclude, str):
         exclude = [exclude]
