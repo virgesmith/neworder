@@ -1,8 +1,8 @@
 
-FROM python:3.13-slim-trixie
+FROM python:3.13-trixie
 
 RUN apt-get update -y \
- && apt-get install -y --no-install-recommends -y mpich libmpich-dev tk-dev \
+ && apt-get install -y --no-install-recommends -y openmpi-bin tk-dev \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 

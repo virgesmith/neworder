@@ -29,12 +29,12 @@
 
 ## System Requirements
 
-*neworder* requires python 3.10 or above and runs on 64-bit linux, OSX and Windows platforms. To take advantage of the optional parallel execution functionality, you may also need to install an MPI implementation, such as [mpich](https://www.mpich.org/), [open-mpi](https://www.open-mpi.org/) or [ms-mpi](https://docs.microsoft.com/en-us/message-passing-interface/microsoft-mpi).
+*neworder* requires python 3.12 or above and runs on 64-bit linux, OSX and Windows platforms. To take advantage of the optional parallel execution functionality, you may also need to install an MPI implementation, such as [open-mpi](https://www.open-mpi.org/) or [ms-mpi](https://docs.microsoft.com/en-us/message-passing-interface/microsoft-mpi). (As of Nov 2025, [mpich](https://www.mpich.org/) has noted to cause mpi4py to incorrect report rank/size).
 
-For example, to install mpich on debian-based linux:
+For example, to install opemmpi on debian-based linux:
 
 ```bash
-sudo apt install -y build-essential mpich libmipch-dev
+sudo apt install -y build-essential openmpi-bin
 ```
 
 Or open-mpi on OSX,
