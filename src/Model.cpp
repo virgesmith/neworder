@@ -69,7 +69,7 @@ bool no::Model::run(Model& model)
   no::log("starting %% model run. start time=%%"s % model_name % pytimeline.get("time"));
 
   // apply the modifier, if implemented in the derived class
-  no::log("t=%%(%%) %%.modify(%%)"s % pytimeline.get("time") % pytimeline.get("index") % model_name % rank);
+  no::log("t=%%(%%) %%.modify()"s % pytimeline.get("time") % pytimeline.get("index") % model_name);
   model.modify();
 
   // Loop over timeline

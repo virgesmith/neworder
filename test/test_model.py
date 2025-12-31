@@ -69,6 +69,8 @@ def test_multimodel() -> None:
 
 
 def test_runstate() -> None:
+    no.verbose()
+
     class TestModel(no.Model):
         def __init__(self, *, do_halt: bool) -> None:
             super().__init__(no.NoTimeline())
@@ -84,6 +86,8 @@ def test_runstate() -> None:
         def finalise(self) -> None:
             assert self.run_state == no.Model.COMPLETED
             self.finalised = True
+
+    no.verbose(False)
 
     # run without halting
     m = TestModel(do_halt=False)

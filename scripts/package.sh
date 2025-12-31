@@ -13,3 +13,7 @@ uv publish -t $TEST_PYPI_API_TOKEN --publish-url https://test.pypi.org/legacy/ d
 
 # PROD
 # uv publish -t $PYPI_API_TOKEN dist/neworder-$version.tar.gz
+
+# create examples zipfiles
+zip -r examples.zip examples/
+tar czvf examples.tgz examples

@@ -2,6 +2,7 @@
 
 #include <string>
 #include <atomic>
+#include <thread>
 
 namespace no {
 
@@ -12,6 +13,7 @@ namespace env {
 
 extern std::atomic_bool verbose;
 extern std::atomic_bool checked;
+extern std::atomic_int thread_counter;
 extern std::atomic_int rank;
 extern std::atomic_int size;
 extern std::atomic_int64_t uniqueIndex;
@@ -20,6 +22,8 @@ struct Context { enum Value { CPP, PY, SIZE }; };
 
 // strings are not trivially copyable so can't be atomic
 extern std::string logPrefix[Context::SIZE];
+
+int thread_id();
 
 }
 

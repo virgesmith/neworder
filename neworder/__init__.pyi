@@ -1,21 +1,23 @@
 """
+
 A dynamic microsimulation framework";
 """
 
 from __future__ import annotations
 
+import collections.abc
 import datetime
+import types
 import typing
 
 import numpy
-import numpy.typing as npt
+import numpy.typing
 
 from . import df, mpi, stats, time
 from .domain import Domain, Edge, Space, StateGrid
 from .mc import as_np
 
-__all__ = [
-    "as_np",
+__all__: list[str] = [
     "CalendarTimeline",
     "LinearTimeline",
     "Model",
@@ -25,17 +27,19 @@ __all__ = [
     "Timeline",
     "checked",
     "df",
+    "freethreaded",
     "log",
     "mpi",
     "run",
     "stats",
+    "thread_id",
     "time",
     "verbose",
-    "Space",
-    "Domain",
-    "Edge",
-    "StateGrid",
     "as_np",
+    "Edge",
+    "Domain",
+    "Space",
+    "StateGrid",
 ]
 
 class CalendarTimeline(Timeline):
@@ -43,14 +47,13 @@ class CalendarTimeline(Timeline):
 
     A calendar-based timeline
     """
-
     @typing.overload
-    def __init__(self, start: datetime.date, end: datetime.date, step: int, unit: str) -> None:
+    def __init__(self, start: datetime.datetime, end: datetime.datetime, step: typing.SupportsInt, unit: str) -> None:
         """
         Constructs a calendar-based timeline, given start and end dates, an increment specified as a multiple of days, months or years
         """
     @typing.overload
-    def __init__(self, start: datetime.date, step: int, unit: str) -> None:
+    def __init__(self, start: datetime.datetime, step: typing.SupportsInt, unit: str) -> None:
         """
         Constructs an open-ended calendar-based timeline, given a start date and an increment specified as a multiple of days, months or years.
          NB the model will run until the Model.halt() method is explicitly called (from inside the step() method). Note also that nsteps() will
@@ -62,14 +65,13 @@ class LinearTimeline(Timeline):
 
     An equally-spaced non-calendar timeline .
     """
-
     @typing.overload
-    def __init__(self, start: float, end: float, nsteps: int) -> None:
+    def __init__(self, start: typing.SupportsFloat, end: typing.SupportsFloat, nsteps: typing.SupportsInt) -> None:
         """
         Constructs a timeline from start to end, with the given number of steps.
         """
     @typing.overload
-    def __init__(self, start: float, step: float) -> None:
+    def __init__(self, start: typing.SupportsFloat, step: typing.SupportsFloat) -> None:
         """
         Constructs an open-ended timeline give a start value and a step size. NB the model will run until the Model.halt() method is explicitly called
         (from inside the step() method). Note also that nsteps() will return -1 for timelines constructed this way
@@ -80,7 +82,6 @@ class Model:
 
     The base model class from which all neworder models should be subclassed
     """
-
     class RunState:
         """
         Members:
@@ -105,11 +106,11 @@ class Model:
         def __getstate__(self) -> int: ...
         def __hash__(self) -> int: ...
         def __index__(self) -> int: ...
-        def __init__(self, value: int) -> None: ...
+        def __init__(self, value: typing.SupportsInt) -> None: ...
         def __int__(self) -> int: ...
         def __ne__(self, other: typing.Any) -> bool: ...
         def __repr__(self) -> str: ...
-        def __setstate__(self, state: int) -> None: ...
+        def __setstate__(self, state: typing.SupportsInt) -> None: ...
         def __str__(self) -> str: ...
         @property
         def name(self) -> str: ...
@@ -120,7 +121,7 @@ class Model:
     HALTED: typing.ClassVar[Model.RunState]  # value = <RunState.HALTED: 2>
     NOT_STARTED: typing.ClassVar[Model.RunState]  # value = <RunState.NOT_STARTED: 0>
     RUNNING: typing.ClassVar[Model.RunState]  # value = <RunState.RUNNING: 1>
-    def __init__(self, timeline: Timeline, seeder: typing.Callable = ...) -> None:
+    def __init__(self, timeline: Timeline, seeder: collections.abc.Callable = ...) -> None:
         """
         Constructs a model object with a timeline and (optionally) a seeder function for the random stream(s)
         """
@@ -163,7 +164,7 @@ class Model:
         The model's Monte-Carlo engine
         """
     @property
-    def run_state(self) -> Model.RunState:
+    def run_state(self) -> RunState:
         """
         The model's current state - one of:
             NOT_STARTED: model has not been run
@@ -182,105 +183,83 @@ class MonteCarlo:
 
     The model's Monte-Carlo engine with configurable options for parallel execution
     """
-
     @staticmethod
     def deterministic_identical_stream() -> int:
         """
-        Returns a deterministic seed (19937). Input argument is ignored
+        Returns a deterministic seed (19937).
         """
     @staticmethod
     def deterministic_independent_stream() -> int:
         """
-        Returns a deterministic seed that is a function of the input (19937+r).
-        The model uses the MPI rank as the input argument, allowing for differently seeded streams in each process
+        Returns a deterministic seed that is a function of the process rank (19937+r).
+        Each process will have independent streams. Threads within the process will have identical streams.
         """
     @staticmethod
     def nondeterministic_stream() -> int:
         """
-        Returns a random seed from the platform's random_device. Input argument is ignored
+        Returns a random seed from the platform's random_device.
         """
     def __repr__(self) -> str:
         """
         Prints a human-readable representation of the MonteCarlo engine
         """
     def arrivals(
-        self, lambda_: npt.NDArray[numpy.float64], dt: float, n: int, mingap: float
-    ) -> npt.NDArray[numpy.float64]:
+        self,
+        lambda_: typing.Annotated[numpy.typing.ArrayLike, numpy.float64],
+        dt: typing.SupportsFloat,
+        n: typing.SupportsInt,
+        mingap: typing.SupportsFloat,
+    ) -> numpy.typing.NDArray[numpy.float64]:
         """
         Returns an array of n arrays of multiple arrival times from a nonhomogeneous Poisson process (with hazard rate lambda[i], time interval dt),
         with a minimum separation between events of mingap. Sampling uses the Lewis-Shedler "thinning" algorithm
         The final value of lambda must be zero, and thus arrivals don't always occur, indicated by a value of neworder.time.never()
         The inner dimension of the returned 2d array is governed by the the maximum number of arrivals sampled, and will thus vary
         """
-    def counts(self, lambda_: npt.NDArray[numpy.float64], dt: float) -> npt.NDArray[numpy.int64]:
+    def counts(
+        self, lambda_: typing.Annotated[numpy.typing.ArrayLike, numpy.float64], dt: typing.SupportsFloat
+    ) -> numpy.typing.NDArray[numpy.int64]:
         """
         Returns an array of simulated arrival counts (within time dt) for each intensity in lambda
         """
-    @typing.overload
     def first_arrival(
-        self, lambda_: npt.NDArray[numpy.float64], dt: float, n: int, minval: float
-    ) -> npt.NDArray[numpy.float64]:
+        self,
+        lambda_: typing.Annotated[numpy.typing.ArrayLike, numpy.float64],
+        dt: typing.SupportsFloat,
+        n: typing.SupportsInt,
+        minval: typing.SupportsFloat = 0.0,
+    ) -> numpy.typing.NDArray[numpy.float64]:
         """
         Returns an array of length n of first arrival times from a nonhomogeneous Poisson process (with hazard rate lambda[i], time interval dt),
-        with a minimum start time of minval. Sampling uses the Lewis-Shedler "thinning" algorithm
+        with an optional minimum start time of minval. Sampling uses the Lewis-Shedler "thinning" algorithm
         If the final value of lambda is zero, no arrival is indicated by a value of neworder.time.never()
         """
     @typing.overload
-    def first_arrival(self, lambda_: npt.NDArray[numpy.float64], dt: float, n: int) -> npt.NDArray[numpy.float64]:
-        """
-        Returns an array of length n of first arrival times from a nonhomogeneous Poisson process (with hazard rate lambda[i], time interval dt),
-        with no minimum start time. Sampling uses the Lewis-Shedler "thinning" algorithm
-        If the final value of lambda is zero, no arrival is indicated by a value of neworder.time.never()
-        """
-    @typing.overload
-    def hazard(self, p: float, n: int) -> npt.NDArray[numpy.float64]:
+    def hazard(self, p: typing.SupportsFloat, n: typing.SupportsInt) -> numpy.typing.NDArray[numpy.float64]:
         """
         Returns an array of ones (with hazard rate lambda) or zeros of length n
         """
     @typing.overload
-    def hazard(self, p: npt.NDArray[numpy.float64]) -> npt.NDArray[numpy.float64]:
+    def hazard(self, p: typing.Annotated[numpy.typing.ArrayLike, numpy.float64]) -> numpy.typing.NDArray[numpy.float64]:
         """
         Returns an array of ones (with hazard rate lambda[i]) or zeros for each element in p
         """
-    @typing.overload
+    def init_bitgen(self, arg0: types.CapsuleType) -> None:  # type: ignore[name-defined]
+        """
+        internal helper function used by as_np
+        """
     def next_arrival(
         self,
-        startingpoints: npt.NDArray[numpy.float64],
-        lambda_: npt.NDArray[numpy.float64],
-        dt: float,
-        relative: bool,
-        minsep: float,
-    ) -> npt.NDArray[numpy.float64]:
+        startingpoints: typing.Annotated[numpy.typing.ArrayLike, numpy.float64],
+        lambda_: typing.Annotated[numpy.typing.ArrayLike, numpy.float64],
+        dt: typing.SupportsFloat,
+        relative: bool = False,
+        minsep: typing.SupportsFloat = 0.0,
+    ) -> numpy.typing.NDArray[numpy.float64]:
         """
         Returns an array of length n of subsequent arrival times from a nonhomogeneous Poisson process (with hazard rate lambda[i], time interval dt),
         with start times given by startingpoints with a minimum offset of mingap. Sampling uses the Lewis-Shedler "thinning" algorithm.
         If the relative flag is True, then lambda[0] corresponds to start time + mingap, not to absolute time
-        If the final value of lambda is zero, no arrival is indicated by a value of neworder.time.never()
-        """
-    @typing.overload
-    def next_arrival(
-        self,
-        startingpoints: npt.NDArray[numpy.float64],
-        lambda_: npt.NDArray[numpy.float64],
-        dt: float,
-        relative: bool,
-    ) -> npt.NDArray[numpy.float64]:
-        """
-        Returns an array of length n of subsequent arrival times from a nonhomogeneous Poisson process (with hazard rate lambda[i], time interval dt),
-        with start times given by startingpoints. Sampling uses the Lewis-Shedler "thinning" algorithm.
-        If the relative flag is True, then lambda[0] corresponds to start time, not to absolute time
-        If the final value of lambda is zero, no arrival is indicated by a value of neworder.time.never()
-        """
-    @typing.overload
-    def next_arrival(
-        self,
-        startingpoints: npt.NDArray[numpy.float64],
-        lambda_: npt.NDArray[numpy.float64],
-        dt: float,
-    ) -> npt.NDArray[numpy.float64]:
-        """
-        Returns an array of length n of subsequent arrival times from a nonhomogeneous Poisson process (with hazard rate lambda[i], time interval dt),
-        with start times given by startingpoints. Sampling uses the Lewis-Shedler "thinning" algorithm.
         If the final value of lambda is zero, no arrival is indicated by a value of neworder.time.never()
         """
     def raw(self) -> int:
@@ -292,7 +271,9 @@ class MonteCarlo:
         Resets the generator using the original seed.
         Use with care, esp in multi-process models with identical streams
         """
-    def sample(self, n: int, cat_weights: npt.NDArray[numpy.float64]) -> npt.NDArray[numpy.int64]:
+    def sample(
+        self, n: typing.SupportsInt, cat_weights: typing.Annotated[numpy.typing.ArrayLike, numpy.float64]
+    ) -> numpy.typing.NDArray[numpy.int64]:
         """
         Returns an array of length n containing randomly sampled categorical values, weighted according to cat_weights
         """
@@ -305,16 +286,18 @@ class MonteCarlo:
         Returns a hash of the internal state of the generator. Avoids the extra complexity of tranmitting variable-length strings over MPI.
         """
     @typing.overload
-    def stopping(self, lambda_: float, n: int) -> npt.NDArray[numpy.float64]:
+    def stopping(self, lambda_: typing.SupportsFloat, n: typing.SupportsInt) -> numpy.typing.NDArray[numpy.float64]:
         """
         Returns an array of stopping times (with hazard rate lambda) of length n
         """
     @typing.overload
-    def stopping(self, lambda_: npt.NDArray[numpy.float64]) -> npt.NDArray[numpy.float64]:
+    def stopping(
+        self, lambda_: typing.Annotated[numpy.typing.ArrayLike, numpy.float64]
+    ) -> numpy.typing.NDArray[numpy.float64]:
         """
         Returns an array of stopping times (with hazard rate lambda[i]) for each element in lambda
         """
-    def ustream(self, n: int) -> npt.NDArray[numpy.float64]:
+    def ustream(self, n: typing.SupportsInt) -> numpy.typing.NDArray[numpy.float64]:
         """
         Returns an array of uniform random [0,1) variates of length n
         """
@@ -324,7 +307,6 @@ class NoTimeline(Timeline):
 
     An arbitrary one step timeline, for continuous-time models with no explicit (discrete) timeline
     """
-
     def __init__(self) -> None:
         """
         Constructs an arbitrary one step timeline, where the start and end times are undefined and there is a single step of size zero. Useful for continuous-time models
@@ -335,8 +317,7 @@ class NumericTimeline(Timeline):
 
     An custom non-calendar timeline where the user explicitly specifies the time points, which must be monotonically increasing.
     """
-
-    def __init__(self, times: list[float]) -> None:
+    def __init__(self, times: collections.abc.Sequence[typing.SupportsFloat]) -> None:
         """
         Constructs a timeline from an array of time points.
         """
@@ -388,9 +369,17 @@ def checked(checked: bool = True) -> None:
     Sets the checked flag, which determines whether the model runs checks during execution
     """
 
-def log(obj: typing.Any) -> None:
+def freethreaded() -> bool:
     """
-    The logging function. Prints obj to the console, annotated with process information
+    Returns whether neworder was *built* with free-threading support (i.e. no GIL).
+
+    Note: Other packages (e.g. pandas) may re-enable the GIL at runtime. To check, use `sys._is_gil_enabled()`. To force
+    free-threading (at your own risk), use PYTHON_GIL=0 or -Xgil=0.
+    """
+
+def log(*args: typing.Any) -> None:
+    """
+    The logging function. Prints *args to the console, annotated with process/thread information
     """
 
 def run(model: Model) -> bool:
@@ -400,6 +389,12 @@ def run(model: Model) -> bool:
     function will have no effect. To re-run the model from the start, you must construct a new model object.
     Returns:
         True if model succeeded, False otherwise
+    """
+
+def thread_id() -> int:
+    """
+    Returns a unique thread id - equivalent to threading.get_native_id(). Use for control flow with extreme caution -
+    order of thread initialisation cannot be guaranteed, and the python runtime may reuse completed threads.
     """
 
 def verbose(verbose: bool = True) -> None:

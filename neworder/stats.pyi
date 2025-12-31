@@ -8,12 +8,14 @@ from __future__ import annotations
 import typing
 
 import numpy
-import numpy.typing as npt
+import numpy.typing
 
-__all__ = ["logistic", "logit"]
+__all__: list[str] = ["logistic", "logit"]
 
 @typing.overload
-def logistic(x: npt.NDArray[numpy.float64], x0: float, k: float) -> npt.NDArray[numpy.float64]:
+def logistic(
+    x: typing.Annotated[numpy.typing.ArrayLike, numpy.float64], x0: typing.SupportsFloat, k: typing.SupportsFloat
+) -> numpy.typing.NDArray[numpy.float64]:
     """
     Computes the logistic function on the supplied values.
     Args:
@@ -25,7 +27,9 @@ def logistic(x: npt.NDArray[numpy.float64], x0: float, k: float) -> npt.NDArray[
     """
 
 @typing.overload
-def logistic(x: npt.NDArray[numpy.float64], k: float) -> npt.NDArray[numpy.float64]:
+def logistic(
+    x: typing.Annotated[numpy.typing.ArrayLike, numpy.float64], k: typing.SupportsFloat
+) -> numpy.typing.NDArray[numpy.float64]:
     """
     Computes the logistic function with x0=0 on the supplied values.
     Args:
@@ -36,7 +40,7 @@ def logistic(x: npt.NDArray[numpy.float64], k: float) -> npt.NDArray[numpy.float
     """
 
 @typing.overload
-def logistic(x: npt.NDArray[numpy.float64]) -> npt.NDArray[numpy.float64]:
+def logistic(x: typing.Annotated[numpy.typing.ArrayLike, numpy.float64]) -> numpy.typing.NDArray[numpy.float64]:
     """
     Computes the logistic function with k=1 and x0=0 on the supplied values.
     Args:
@@ -45,7 +49,7 @@ def logistic(x: npt.NDArray[numpy.float64]) -> npt.NDArray[numpy.float64]:
         The function values
     """
 
-def logit(x: npt.NDArray[numpy.float64]) -> npt.NDArray[numpy.float64]:
+def logit(x: typing.Annotated[numpy.typing.ArrayLike, numpy.float64]) -> numpy.typing.NDArray[numpy.float64]:
     """
     Computes the logit function on the supplied values.
     Args:

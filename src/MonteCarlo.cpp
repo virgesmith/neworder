@@ -38,6 +38,8 @@ void validate_lambda(const py::array_t<double>& lambda)
 
 
 // helper functions for basic seeding strategies
+
+// independent streams per-processs (but threads within a process will have identical streams)
 int32_t no::MonteCarlo::deterministic_independent_stream() noexcept
 {
   return 19937 + no::env::rank.load(std::memory_order_relaxed);
