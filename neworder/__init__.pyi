@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import collections.abc
 import datetime
+import enum
 import types
 import typing
 
@@ -82,40 +83,11 @@ class Model:
 
     The base model class from which all neworder models should be subclassed
     """
-    class RunState:
-        """
-        Members:
-
-          NOT_STARTED
-
-          RUNNING
-
-          HALTED
-
-          COMPLETED
-        """
-
-        COMPLETED: typing.ClassVar[Model.RunState]  # value = <RunState.COMPLETED: 3>
-        HALTED: typing.ClassVar[Model.RunState]  # value = <RunState.HALTED: 2>
-        NOT_STARTED: typing.ClassVar[Model.RunState]  # value = <RunState.NOT_STARTED: 0>
-        RUNNING: typing.ClassVar[Model.RunState]  # value = <RunState.RUNNING: 1>
-        __members__: typing.ClassVar[
-            dict[str, Model.RunState]
-        ]  # value = {'NOT_STARTED': <RunState.NOT_STARTED: 0>, 'RUNNING': <RunState.RUNNING: 1>, 'HALTED': <RunState.HALTED: 2>, 'COMPLETED': <RunState.COMPLETED: 3>}
-        def __eq__(self, other: typing.Any) -> bool: ...
-        def __getstate__(self) -> int: ...
-        def __hash__(self) -> int: ...
-        def __index__(self) -> int: ...
-        def __init__(self, value: typing.SupportsInt) -> None: ...
-        def __int__(self) -> int: ...
-        def __ne__(self, other: typing.Any) -> bool: ...
-        def __repr__(self) -> str: ...
-        def __setstate__(self, state: typing.SupportsInt) -> None: ...
-        def __str__(self) -> str: ...
-        @property
-        def name(self) -> str: ...
-        @property
-        def value(self) -> int: ...
+    class RunState(enum.Enum):
+        COMPLETED = ...
+        HALTED = ...
+        NOT_STARTED = ...
+        RUNNING = ...
 
     COMPLETED: typing.ClassVar[Model.RunState]  # value = <RunState.COMPLETED: 3>
     HALTED: typing.ClassVar[Model.RunState]  # value = <RunState.HALTED: 2>

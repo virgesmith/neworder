@@ -10,6 +10,8 @@
 
 #include "NewOrder.h"
 
+#include <pybind11/native_enum.h>
+
 using namespace py::literals;
 
 int no::env::thread_id() {
@@ -31,7 +33,6 @@ void log_obj(const py::args& msg) { py::print(no::env::logPrefix[no::env::Contex
 } // namespace
 
 // initially set to invalid values (so that if model is not properly initialised its immediately apparent)
-std::atomic_int no::env::thread_counter = -1;
 std::atomic_int no::env::rank = -1;
 std::atomic_int no::env::size = -1;
 std::atomic_bool no::env::verbose = false;
@@ -41,9 +42,6 @@ std::atomic_int64_t no::env::uniqueIndex = -1;
 std::string no::env::logPrefix[2];
 
 void init_env(py::object mpi) {
-
-  no::env::thread_counter.store(0, std::memory_order_relaxed);
-
   int r = 0;
   int s = 1;
   py::object comm = py::none();
@@ -169,12 +167,13 @@ PYBIND11_MODULE(_neworder_core, m)
           .def("halt", &no::Model::halt, model_halt_docstr);
   // NB the all-important run function is not exposed to python, it can only be executed via the `neworder.run` function
 
-  py::enum_<no::Model::RunState>(model, "RunState")
+  py::native_enum<no::Model::RunState>(model, "RunState", "enum.Enum")
       .value("NOT_STARTED", no::Model::NOT_STARTED)
       .value("RUNNING", no::Model::RUNNING)
       .value("HALTED", no::Model::HALTED)
       .value("COMPLETED", no::Model::COMPLETED)
-      .export_values();
+      .export_values()
+      .finalize();
 
   // statistical utils
   m.def_submodule("stats", stats_docstr)
