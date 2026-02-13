@@ -40,6 +40,7 @@ dev = [
   "mypy>=1.5.0",
   "mypy-extensions>=1.0.0",
   "ruff",
+  "click<8.3",  # bug prevents mkdocs auto-refreshing
   "mkdocs>=1.6.1",
   "mkdocs-macros-plugin>=1.3.7",
   "mkdocs-material>=9.6.14",

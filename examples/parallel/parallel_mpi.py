@@ -5,8 +5,9 @@ import pandas as pd  # type: ignore
 import neworder
 
 
-class Parallel(neworder.Model):
+class ParallelMPI(neworder.Model):
     def __init__(self, timeline: neworder.Timeline, p: float, n: int):
+        """This model uses MPI to run parallel process that synchronise timesteps and exchange data with each other"""
         # initialise base model (essential!)
         super().__init__(timeline, neworder.MonteCarlo.nondeterministic_stream)
 
