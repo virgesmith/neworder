@@ -21,13 +21,13 @@ jobs:
         id: get_version
         run: |
           # Use awk to find the version line and extract the string inside quotes
-          PACKAGE_VERSION=$(grep "^version =" pyproject.toml | awk -F'"' '{print $2}')
+          grep "^version =" pyproject.toml | awk -F'"' '{print $2}'
 
       - name: zip examples
         run: |
           echo "Zipping examples"
           zip -r examples.zip examples/
-          tar czf examples.tgz examples
+          tar czf examples.tgz examples/
 
       - name: upload zip artifact
         uses: actions/upload-artifact@v4
