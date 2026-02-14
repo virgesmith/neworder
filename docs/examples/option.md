@@ -5,7 +5,7 @@ This example showcases how to run parallel simulations, each with identical rand
 {{ include_snippet("./docs/examples/src.md", show_filename=False) }}
 
 !!! note "Optional dependencies"
-    This example requires optional dependencies, see [system requirements](../index.md#system-requirements) and use:
+    This example requires optional dependencies, see [system requirements](../index.md#system-requirements) and use e.g.:
 
     `pip install neworder[parallel]`
 
@@ -48,13 +48,17 @@ For this simple option we can also compute an analytic fair value under the Blac
 
 ## Implementation
 
+!!! tip "Multiprocessing vs multithreading"
+    While this example focusses on a parallel implementation using multiple processes via MPI, an equivalent implementation using
+    multiple threads in a single process is also provided. See `examples/option/black_scholes_mt.py` and `examples/option/run_mt.py`.
+
 We use an implementation of the Monte-Carlo technique described above, and also, for comparison, the analytic solution.
 
 Additionally, we compute some market risk: sensitivities to the underlying price and volatility. In order to do this we need to run the simulation multiple times with perturbations to market data. To eliminate random noise we also want to use identical random streams in each simulation. The model is run over 4 processes in the MPI framework to achieve this.
 
-The `model.py` file sets up the run, providing input data, constructing, and the running the model. The input data consists of a `Dict` describing the market data, another describing the option contract, and a single model parameter (the number of paths).
+The `run_mpi.py` file sets up the run, providing input data, constructing, and the running the model. The input data consists of a `dict` describing the market data, another describing the option contract, and a single model parameter (the number of paths).
 
-{{ include_snippet("examples/option/model.py")}}
+{{ include_snippet("examples/option/run_mpi.py")}}
 
 ### Constructor
 
@@ -98,23 +102,23 @@ The `finalise` method is called at end of the timeline. Again, the calculation d
 
 ## Execution
 
-By default, the model has verbose mode off and checked mode on. These settings can be changed in [model.py]()
+By default, the model has verbose mode off and checked mode on. These settings can be changed in `run_mt.py`.
 
 To run the model,
 
 ```bash
-mpiexec -n 4 python examples/option/model.py
+mpiexec -n 4 python examples/option/run_mpi.py
 ```
 
 which will produce something like
 
 ```text
-[py 2/4]  mc: 6.646473 / ref: 6.665127 err=-0.28%
-[py 3/4]  mc: 7.216204 / ref: 7.235288 err=-0.26%
-[py 1/4]  mc: 7.740759 / ref: 7.760108 err=-0.25%
-[py 0/4]  mc: 7.182313 / ref: 7.201286 err=-0.26%
-[py 0/4]  PV=7.182313
-[py 0/4]  delta=0.547143
-[py 0/4]  gamma=0.022606
-[py 0/4]  vega 10bp=0.033892
+[py 2/4(150355)] mc: 6.674264 / ref: 6.665127 err=0.14%
+[py 3/4(150356)] mc: 7.245084 / ref: 7.235288 err=0.14%
+[py 0/4(150339)] mc: 7.211034 / ref: 7.201286 err=0.14%
+[py 0/4(150339)] PV=7.211
+[py 0/4(150339)] delta=0.548
+[py 0/4(150339)] gamma=0.023
+[py 0/4(150339)] vega 10bp=0.034
+[py 1/4(150338)] mc: 7.770502 / ref: 7.760108 err=0.13%
 ```
