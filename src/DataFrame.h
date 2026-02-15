@@ -4,13 +4,12 @@
 #include <pybind11/numpy.h>
 // Data frame manipulation routines
 
-namespace no { 
+namespace no {
 
 class Model;
 
 namespace df {
 
-//py::array_t<int64_t> unique_index(size_t n);
 py::array_t<int64_t> unique_index(size_t n);
 
 void transition(no::Model& model, py::array_t<int64_t> categories, py::array_t<double> matrix, py::object &df, const std::string& colname);

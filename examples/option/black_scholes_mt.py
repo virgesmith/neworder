@@ -1,4 +1,9 @@
-"""Black-Scholes model implementations: analytic and MC"""
+"""
+Black-Scholes model implementations: analytic and MC
+Using multithreading rather than MPI
+"""
+
+from copy import copy
 
 import numpy as np
 from helpers import Market, Option, analytic_pv
@@ -7,70 +12,47 @@ import neworder
 
 
 # Subclass neworder.Model
-class BlackScholes(neworder.Model):
-    # !constructor!
-    def __init__(self, option: Option, market: Market, nsims: int) -> None:
+class BlackScholesMT(neworder.Model):
+    """Multithreaded variant"""
+
+    def __init__(self, option: Option, market: Market, nsims: int, index: int) -> None:
         # Using exact MC calc of GBM requires only 1 timestep
         timeline = neworder.LinearTimeline(0.0, option.expiry, 1)
+        # ensures all threads have identical random streams
         super().__init__(timeline, neworder.MonteCarlo.deterministic_identical_stream)
 
         self.rng = neworder.as_np(self.mc)
         self.option = option
-        self.market = market
+        self.market = copy(market)  # copy as will be modifying (not necessary with MPI)
         self.nsims = nsims
+        # safer to explicitly set the index rather than relying on potentially nondeterministic thread_id
+        self.index = index
 
-    # !constructor!
-
-    # !modifier!
     def modify(self) -> None:
-        if neworder.mpi.RANK == 1:
+        """Alter the market data depending on which thread we are"""
+        if self.index == 1:
             self.market.spot *= 1.01  # delta/gamma up bump
-        elif neworder.mpi.RANK == 2:
+        elif self.index == 2:
             self.market.spot *= 0.99  # delta/gamma down bump
-        elif neworder.mpi.RANK == 3:
+        elif self.index == 3:
             self.market.vol += 0.001  # 10bp upward vega
 
-    # !modifier!
-
-    # !step!
     def step(self) -> None:
         self.pv = self.simulate()
 
-    # !step!
-
-    # !check!
     def check(self) -> bool:
-        # check the rng streams are still in sync by sampling from each one,
-        # comparing, and broadcasting the result. If one process fails the
-        # check and exits without notifying the others, deadlocks can result.
-        # send the state representation to process 0 (others will get None)
-        states = neworder.mpi.COMM.gather(self.mc.state(), 0)
-        # process 0 checks the values
-        if states:
-            ok = all(s == states[0] for s in states)
-        else:
-            ok = True
-        # broadcast process 0's ok to all processes
-        ok = neworder.mpi.COMM.bcast(ok, root=0)
-        return ok
+        # Its not straightforward for one model thread to compare its RNG state to the other thread (c.f. MPI
+        # implementation). Solution is to defer the comparisons to the main thread.
+        return True
 
-    # !check!
-
-    # !finalise!
     def finalise(self) -> None:
-        # check and report accuracy
         """Compare MC price to analytic"""
         ref = analytic_pv(self.option, self.market)
         err = self.pv / ref - 1.0
-        neworder.log("mc: {:.6f} / ref: {:.6f} err={:.2%}".format(self.pv, ref, err))
+        neworder.log(f"mc: {self.pv:.6f} / ref: {ref:.6f} err={err:.2%}")
         # relative error should be within O(1/(sqrt(sims))) of analytic solution
         if abs(err) > 2.0 / np.sqrt(self.nsims):
             neworder.log("MC error is larger than expected")
-
-        # compute and report some market risk
-        self.greeks()
-
-    # !finalise!
 
     def simulate(self) -> float:
         # get the single timestep from the timeline
@@ -92,12 +74,13 @@ class BlackScholes(neworder.Model):
         # discount back to val date
         return fv * np.exp(-r * dt)
 
-    def greeks(self) -> None:
-        # get all the results
-        pvs = neworder.mpi.COMM.gather(self.pv, 0)
-        # compute sensitivities on rank 0
-        if pvs:
-            neworder.log(f"PV={pvs[0]:.3f}")
-            neworder.log(f"delta={(pvs[1] - pvs[2]) / 2:.3f}")
-            neworder.log(f"gamma={(pvs[1] - 2 * pvs[0] + pvs[2]):.3f}")
-            neworder.log(f"vega 10bp={pvs[3] - pvs[0]:.3f}")
+
+# this is outside the model as it called by the main thread after all the model threads have completed
+def greeks(models: list[BlackScholesMT]) -> None:
+    # get all the results
+    pvs = {m.index: m.pv for m in models}
+    # compute sensitivities on rank 0
+    neworder.log(f"PV={pvs[0]:.3f}")
+    neworder.log(f"delta={(pvs[1] - pvs[2]) / 2:.3f}")
+    neworder.log(f"gamma={(pvs[1] - 2 * pvs[0] + pvs[2]):.3f}")
+    neworder.log(f"vega 10bp={pvs[3] - pvs[0]:.3f}")

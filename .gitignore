@@ -4,18 +4,15 @@
 **/__pycache__
 .vscode*/
 build/
+.python-version
+
 # data
 dm*.csv
-#**/data/
-# MODGEN example code
-**/Chapter*/ModgenExample
-# bulk data
-examples/people_multi/data
+
 .venv*/
 **/ipch/**
 .eggs/
 *.egg-info/
-junk
 dist/*
 stubs/
 
@@ -24,4 +21,6 @@ test-coverage/
 # osmnx cache
 cache/
 .*_cache/
+
+package.sh
 

@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import mpi4py.MPI  # type: ignore[import-not-found]
 
-__all__ = ["COMM", "RANK", "SIZE"]
+__all__: list[str] = ["COMM", "RANK", "SIZE"]
 COMM: mpi4py.MPI.Intracomm  # value = <mpi4py.MPI.Intracomm object>
 RANK: int = 0
 SIZE: int = 1

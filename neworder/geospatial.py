@@ -12,8 +12,8 @@ try:
         Polygon,
     )
     from shapely.ops import linemerge  # type: ignore[import]
-except ImportError as e:
-    raise ImportError(
+except ModuleNotFoundError as e:
+    raise ModuleNotFoundError(
         """Optional dependencies are not installed. Reinstalling neworder with the geospatial option should fix this:
 pip install neworder[geospatial]"""
     ) from e

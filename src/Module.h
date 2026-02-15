@@ -2,6 +2,7 @@
 
 #include <string>
 #include <atomic>
+#include <thread>
 
 namespace no {
 
@@ -20,6 +21,8 @@ struct Context { enum Value { CPP, PY, SIZE }; };
 
 // strings are not trivially copyable so can't be atomic
 extern std::string logPrefix[Context::SIZE];
+
+int thread_id();
 
 }
 
