@@ -91,19 +91,29 @@ Results will vary as the random streams are not deterministic in this example, b
 
 ## Multithreaded Execution
 
-Dividing model execution amongst threads rather than processes can be more tricky than splitting by processes as it is easier to trigger data
-races or non-deterministic behaviour. But since the python interpreter can now operate without a Global Interpreter Lock (GIL), significantly improving multihreaded performance, it is worth providing some guidance.
+Dividing model execution amongst threads rather than processes can be more tricky than splitting by processes as it is easier to trigger data races or non-deterministic behaviour. But since the python interpreter can now operate without a Global Interpreter Lock (GIL), significantly improving multihreaded performance, it is worth providing support and some guidance.
 
 !!! warning Third-party dependencies
-    Some dependencies may deliberately re-enable the GIL if they cannot guarantee reliability in a GIL-free environment, e.g. any pandas version prior to 3.0.0.
+    Dependencies containing extension modules must declare they can safely run without the GIL. If they don't the python runtime will automatically re-enable the GIL (and emit a warning). This can be seen when e.g. using pandas versions prior to 3.0.0.
+
+`neworder` from 1.5 declares it can run safely without the GIL, and contains two new functions: `freethreaded()`, which indicates whether neworder has been compiled against a free-threaded interpreter, and `thread_id()` (which returns the same value as python's `threading.get_native_id()`). The `sys._is_gil_enabled()` function can be used to check for certain at runtime.
+
+!!! tip "Guidance for multithreaded model implementation"
+    - Seeding RNGs with `thread_id()` is discouraged under any circumstance. Values are nondeterministic, and...
+    - `ThreadPoolExecutor` will potentially reuse threads, so you may see the same thread_id in supposedly different threads, making their random streams identical.
+    - `neworder.MonteCarlo.deterministic_independent_stream` uses (only) the process rank to seed the RNG. For a single process with multiple threads, this will **not** result in independent streams.
+    - Note that results will not necessarily be deterministic **even with deterministic seeds** as the order of thread execution is potentially variable.
+    - Writing to shared data requires the use of `threading.Lock`. This should be used as a context manager for exception safety.
+    - To synchronise threads (e.g. require all threads complete a timestep before starting the next one), `threading.Barrier` can be used.
+    - It is probably better to use MPI if significant inter-thread communication is necessary.
 
 
-`neworder` from 1.5 contains two new functions: `freethreaded()`, which indicates whether neworder has been compiled against a free-threaded interpreter, and `thread_id()` (which returns the same value as python's `threading.get_native_id()`)
+### Example
 
 The examples source code now includes a simple model (examples/parallel/parallel_mt.py) that simulates a CPU-intensive process (O(n) complexity on a dataframe), using a divide-and-conquer approach.
 
 {{ include_snippet("examples/parallel/parallel_mt.py") }}
 
-Thus, the more threads used, the faster the overalll execution (up to some limit). The model takes a `lock` - to isolate writing to shared data, and a `barrier` to enable thread synchronisation at each timestep. The model can be run using the following script which use pythons `concurrent.futures` module
+Thus, the more threads used, the faster the overall execution (up to some limit). The model takes a `lock` - to isolate writing to shared data, and a `barrier` to enable thread synchronisation at each timestep. The model can be run using the following script which use Python's `concurrent.futures` module
 
 {{ include_snippet("examples/parallel/run_mt.py") }}

@@ -19,7 +19,7 @@ class BlackScholesMT(neworder.Model):
         # Using exact MC calc of GBM requires only 1 timestep
         timeline = neworder.LinearTimeline(0.0, option.expiry, 1)
         # ensures all threads have identical random streams
-        super().__init__(timeline, neworder.MonteCarlo.deterministic_independent_stream)
+        super().__init__(timeline, neworder.MonteCarlo.deterministic_identical_stream)
 
         self.rng = neworder.as_np(self.mc)
         self.option = option

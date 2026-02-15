@@ -14,12 +14,14 @@ class ParallelThreaded(neworder.Model):
     """
 
     def __init__(self, pop: pd.DataFrame, indices: list[int], lock: Lock, barrier: Barrier) -> None:
+        """
+        pop: the overall population
+        indices: the chunk of the population that this thread deals with
+        """
         super().__init__(neworder.LinearTimeline(0, 10, 10), lambda: indices[0])  # deterministic, independent
-        # super().__init__(no.LinearTimeline(0, 10, 10), lambda: no.thread_id)  # nondeterministic, independent
         self.lock = lock
         self.barrier = barrier
         self.pop = pop  # ref not copy
-        # pick a chunk for this thread to handle
         self.indices = indices
 
     def step(self) -> None:
