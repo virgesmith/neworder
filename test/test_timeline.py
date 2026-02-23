@@ -1,8 +1,8 @@
-from datetime import date, datetime
-from typing import cast
+from datetime import date
 
 import numpy as np
 import pytest
+from dateutil.relativedelta import relativedelta
 
 import neworder as no
 
@@ -72,10 +72,6 @@ class CustomTimeline(no.Timeline):
         return 0.0
 
     @property
-    def nsteps(self) -> int:
-        return -1
-
-    @property
     def time(self) -> float:
         return 1.0 - self.t
 
@@ -106,7 +102,6 @@ def test_timeline_properties() -> None:
     assert np.isnan(n.time)  # type: ignore[call-overload]
     assert np.isnan(n.end)  # type: ignore[call-overload]
     assert n.dt == 0.0
-    assert n.nsteps == 1
 
     with pytest.raises(AttributeError):
         n.index = 3  # type: ignore[misc]
@@ -151,7 +146,6 @@ def test_time() -> None:
 
 def test_null_timeline() -> None:
     t0 = no.NoTimeline()
-    assert t0.nsteps == 1
     assert t0.dt == 0.0
     assert not t0.at_end
     assert t0.index == 0
@@ -181,21 +175,11 @@ def test_timeline_validation() -> None:
     with pytest.raises(ValueError):
         no.NumericTimeline([2020])
     with pytest.raises(ValueError):
-        no.CalendarTimeline(date(2021, 1, 1), 0, "y")
+        no.CalendarTimeline(date(2021, 1, 1), relativedelta(years=0))
     with pytest.raises(ValueError):
-        no.CalendarTimeline(date(2021, 1, 1), 12, "n")
+        no.CalendarTimeline(date(2021, 1, 1), relativedelta(days=-1))
     with pytest.raises(ValueError):
-        no.CalendarTimeline(date(2021, 1, 1), date(2020, 1, 1), 1, "m")
-    with pytest.raises(ValueError):
-        no.CalendarTimeline(date(2019, 1, 1), date(2020, 1, 1), 1, "w")
-    with pytest.raises(ValueError):
-        no.CalendarTimeline(date(2019, 1, 1), date(2020, 1, 1), 1, "q")
-    with pytest.raises(ValueError):
-        no.CalendarTimeline(date(2019, 1, 1), date(2020, 1, 1), 0, "m")  #
-
-    # NOTE: passing a -ve int leads to a *TypeError* (when casting to size_t is attempted)
-    with pytest.raises(TypeError):
-        no.CalendarTimeline(date(2019, 1, 1), date(2020, 1, 1), -1, "m")
+        no.CalendarTimeline(date(2021, 1, 1), end=date(2020, 1, 1), step=relativedelta(months=1))
 
 
 def test_linear_timeline() -> None:
@@ -241,7 +225,7 @@ def test_calendar_timeline() -> None:
             super().__init__(calendartimeline, no.MonteCarlo.deterministic_identical_stream)
 
         def step(self) -> None:
-            assert cast(date, self.timeline.time).day == min(dim[self.timeline.index], d)
+            assert self.timeline.time.day == min(dim[self.timeline.index], d)
 
         def finalise(self) -> None:
             assert self.timeline.dt == 0.0
@@ -249,7 +233,7 @@ def test_calendar_timeline() -> None:
             assert self.timeline.index == 6
 
     for d in range(1, 32):
-        t = no.CalendarTimeline(date(2020, 1, d), date(2020, 7, d), 1, "m")
+        t = no.CalendarTimeline(date(2020, 1, d), end=date(2020, 7, d), step=relativedelta(months=1))
 
         m = CalendarModel(t)
         no.run(m)
@@ -269,22 +253,19 @@ def test_open_ended_timeline() -> None:
 
     m = OpenEndedModel(no.LinearTimeline(0, 1))
     assert m.timeline.end == no.time.FAR_FUTURE
-    assert m.timeline.nsteps == -1
     assert m.timeline.dt == 1.0
     no.run(m)
     assert m.i == 11
 
-    m = OpenEndedModel(no.CalendarTimeline(date(2020, 12, 17), 1, "d"))
+    m = OpenEndedModel(no.CalendarTimeline(date(2020, 12, 17), relativedelta(days=1)))
     assert m.timeline.end == no.time.FAR_FUTURE
-    assert m.timeline.nsteps == -1
-    assert np.fabs(m.timeline.dt - 1.0 / 365.2475) < 1e-8
+    assert np.fabs(m.timeline.dt - 1.0 / 365) < 1e-8
     no.run(m)
     assert m.i == 11
 
-    m = OpenEndedModel(no.CalendarTimeline(date(2020, 12, 17), 1, "m"))
+    m = OpenEndedModel(no.CalendarTimeline(date(2020, 12, 17), relativedelta(months=1)))
     assert m.timeline.end == no.time.FAR_FUTURE
-    assert m.timeline.nsteps == -1
-    assert np.fabs(m.timeline.dt - 31.0 / 365.2475) < 1e-8
+    assert np.fabs(m.timeline.dt - 31.0 / 365) < 1e-8
     no.run(m)
     assert m.i == 11
 
@@ -306,19 +287,16 @@ def test_consistency() -> None:
             pass
 
     m = ConsistencyTest(no.NoTimeline())
-    assert m.timeline.nsteps == 1
     no.run(m)
     assert m.timeline.index == 1
 
     m = ConsistencyTest(no.LinearTimeline(2020, 2021, 12))
 
-    assert m.timeline.nsteps == 12
     no.run(m)
     assert m.timeline.index == 12
     assert m.timeline.time == 2021
 
     m = ConsistencyTest(no.NumericTimeline([2020 + i / 12 for i in range(13)]))
-    assert m.timeline.nsteps == 12
     no.run(m)
     assert m.timeline.index == 12
     assert m.timeline.time == 2021
@@ -326,11 +304,10 @@ def test_consistency() -> None:
     s = date(2019, 10, 31)
     e = date(2020, 10, 31)
 
-    m = ConsistencyTest(no.CalendarTimeline(s, e, 1, "m"))
-    assert cast(datetime, m.timeline.time).date() == s
-    assert m.timeline.nsteps == 12
+    m = ConsistencyTest(no.CalendarTimeline(s, end=e, step=relativedelta(months=1)))
+    assert m.timeline.time == s
     no.run(m)
-    assert cast(datetime, m.timeline.time).date() == e
+    assert m.timeline.time == e
     assert m.timeline.index == 12
 
 

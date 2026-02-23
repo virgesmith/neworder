@@ -68,20 +68,6 @@ const char* notimeline_init_docstr = R"""(
     Constructs an arbitrary one step timeline, where the start and end times are undefined and there is a single step of size zero. Useful for continuous-time models
 )""";
 
-const char* calendartimeline_docstr = R"""(
-    A calendar-based timeline
-)""";
-
-const char* calendartimeline_init_docstr = R"""(
-    Constructs a calendar-based timeline, given start and end dates, an increment specified as a multiple of days, months or years
-)""";
-
-const char* calendartimeline_init_open_docstr = R"""(
-    Constructs an open-ended calendar-based timeline, given a start date and an increment specified as a multiple of days, months or years.
-     NB the model will run until the Model.halt() method is explicitly called (from inside the step() method). Note also that nsteps() will
-     return -1 for timelines constructed this way
-)""";
-
 const char* timeline_start_docstr = R"""(
     Returns the time of the start of the timeline
 )""";

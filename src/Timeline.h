@@ -4,10 +4,7 @@
 
 #include "Log.h"
 
-#include <pybind11/chrono.h>
-
 #include <vector>
-#include <chrono>
 #include <cstddef>
 
 
@@ -28,7 +25,6 @@ public:
   virtual py::object end() const = 0;
 
   int64_t index() { return m_index; };
-  virtual int64_t nsteps() const = 0;
   virtual double dt() const = 0;
 
   virtual void _next() = 0;
@@ -63,7 +59,6 @@ class PyTimeline: public Timeline
   py::object start() const override { PYBIND11_OVERRIDE_PURE(py::object, Timeline, start); }
   py::object end() const override { PYBIND11_OVERRIDE_PURE(py::object, Timeline, end); }
 
-  int64_t nsteps() const override { PYBIND11_OVERRIDE_PURE(int64_t, Timeline, nsteps); }
   double dt() const override { PYBIND11_OVERRIDE_PURE(double, Timeline, dt); }
 
   void _next() override { PYBIND11_OVERRIDE_PURE(void, Timeline, _next); }
@@ -90,7 +85,6 @@ public:
   py::object start() const override;
   py::object end() const override;
 
-  int64_t nsteps() const override;
   double dt() const override;
 
   void _next() override;
@@ -122,7 +116,6 @@ public:
   py::object start() const override;
   py::object end() const override;
 
-  int64_t nsteps() const override;
   double dt() const override;
 
   void _next() override;
@@ -156,7 +149,6 @@ public:
   py::object start() const override;
   py::object end() const override;
 
-  int64_t nsteps() const override;
   double dt() const override;
 
   void _next() override;
@@ -169,52 +161,7 @@ private:
   std::vector<double> m_times;
 };
 
-// A timeline based on calendar dates and intervals (no intraday resolution, ignores DST adjustments)
-class NEWORDER_EXPORT CalendarTimeline final : public Timeline
-{
-public:
-  using time_point = std::chrono::system_clock::time_point;
 
-  // Fixed-end
-  CalendarTimeline(time_point start, time_point end, size_t step, char unit);
-
-  // Open-ended
-  CalendarTimeline(time_point start, size_t step, char unit);
-
-  ~CalendarTimeline() override = default;
-
-  CalendarTimeline(const CalendarTimeline&) = default;
-  CalendarTimeline& operator=(const CalendarTimeline&) = default;
-  CalendarTimeline(CalendarTimeline&&) = default;
-  CalendarTimeline& operator=(CalendarTimeline&&) = default;
-
-  py::object time() const override;
-  py::object start() const override;
-  py::object end() const override;
-
-  int64_t nsteps() const override;
-  double dt() const override;
-
-  void _next() override;
-
-  bool at_end() const override;
-
-  std::string repr() const override;
-
-private:
-
-  // advance to next point
-  time_point advance(const time_point& time) const;
-
-  size_t m_step;
-  char m_unit;
-  int m_refDay;
-
-  // this caches timesteps when the end is known (so we know total number of steps)
-  std::vector<time_point> m_times;
-  // otherwise just store the current step start and end, and a reference day (for monthly increments)
-  std::tuple<time_point, time_point> m_currentStep;
-};
 
 namespace time {
 

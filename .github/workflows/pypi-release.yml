@@ -9,8 +9,8 @@ on:
       - main
 
 jobs:
-
   deploy:
+    if: github.event.pull_request.merged == true
     name: Publish to PyPI
     runs-on: ubuntu-latest
 

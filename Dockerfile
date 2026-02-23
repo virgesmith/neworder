@@ -12,7 +12,7 @@ RUN groupadd -g 1729 no && useradd -m -u 1729 -g no no
 USER no
 WORKDIR /home/no
 
-COPY ./examples /home/no/examples
+COPY --exclude=**/__pycache__ ../examples /home/no/examples
 
 ENV VENV=/home/no/venv
 RUN python -m venv $VENV

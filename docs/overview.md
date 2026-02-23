@@ -30,12 +30,12 @@ This is provided by:
 
 *neworder*'s timeline is conceptually a sequence of steps that are iterated over (calling the Model's `step` and (optionally) `check` methods at each iteration, plus the `finalise` method at the last time point, which is commonly used to post-process the raw model data at the end of the model run. Timelines should not be incremented in client code, this happens automatically within the model.
 
-The framework is extensible but provides four types of timeline (implemented in C++):
+The framework is extensible but provides four types of timeline (3 implemented in C++, one in python):
 
 - `NoTimeline`: an arbitrary one-step timeline which is designed for continuous-time models in which the model evolution is computed in a single step
 - `LinearTimeline`: a set of equally-spaced intervals in non-calendar time
 - `NumericTimeline`: a fully-customisable non-calendar timeline allowing for unequally-spaced intervals
-- `CalendarTimeline`: a timeline based on calendar dates with with (multiples of) daily, monthly or annual intervals
+- `CalendarTimeline`: a timeline based on calendar dates with steps defined daily, monthly or annually
 
 ``` mermaid
 classDiagram
@@ -43,11 +43,9 @@ classDiagram
   Timeline <|-- LinearTimeline
   Timeline <|-- NumericTimeline
   Timeline <|-- CalendarTimeline
-  Timeline <|-- CustomTimeline
 
   class Timeline {
     +int index
-    +bool at_end*
     +float dt*
     +Any end*
     +float nsteps*
@@ -58,7 +56,6 @@ classDiagram
   }
 
   class NoTimeline {
-    +bool at_end
     +float dt
     +Any end
     +float nsteps
@@ -69,7 +66,6 @@ classDiagram
   }
 
   class LinearTimeline {
-    +bool at_end
     +float dt
     +Any end
     +float nsteps
@@ -80,7 +76,6 @@ classDiagram
   }
 
   class NumericTimeline {
-    +bool at_end
     +float dt
     +Any end
     +float nsteps
@@ -91,41 +86,35 @@ classDiagram
   }
 
   class CalendarTimeline {
-    +bool at_end
     +float dt
-    +Any end
+    +date end
     +float nsteps
-    +Any start
-    +Any time
-    +_next()
-    +__repr__() str
-  }
-
-  class CustomTimeline {
-    +bool at_end
-    +float dt
-    +Any end
-    +float nsteps
-    +Any start
-    +Any time
+    +date start
+    +date time
     +_next()
     +__repr__() str
   }
 ```
 
-!!! note "Calendar Timelines"
-    - Calendar timelines do not provide intraday resolution
-    - Monthly increments preserve the day of the month (where possible)
-    - Daylight savings time adjustments are made which affect time intervals where the interval crosses a DST change
-    - Time intervals are computed in years, on the basis of a year being 365.2475 days
+!!! warning Timeline Limitations
+
+    The current implementation of the `neworder.Timeline` interface does not support iteration outside a model. For now, testing a custom implementation requires creating a dummy model to iterate the timeline. A future `neworder` release may refactor timelines in terms of iterables to make development easier.
 
 #### Custom timelines
 
-If none of the supplied timelines are suitable, users can implement their own, deriving from the abstract `neworder.Timeline` base class, which provides an `index` property that should not be overidden. The following properties and methods must be overridden in the subclass:
+If none of the supplied timelines are suitable, users can implement their own, deriving from the abstract `neworder.Timeline` base class, which provides an `index` property that should not be overidden.
+
+!!! example "CalendarTimeline"
+    `neworder.CalendarTimeline` is now implemented in python and can be used as an example of how to implement a custom timeline:
+
+    - Steps are defined in terms of `date` (not `datetime`)
+    - Monthly increments preserve the day of the month (where possible)
+    - Time intervals are computed in years, using an ACT/365 basis.
+
+The following properties and methods must be overridden in the subclass:
 
 symbol     | type              | description
 -----------|-------------------|---
-`at_end`   | `bool` property   | whether the timeline has reached it's end point
 `dt`       | `float` property  | the size of the current timestep
 `end`      | `Any` property    | the end time of the timeline
 `_next`    | `None` method     | move to the next timestep (for internal use by model, should not normally be called in client code)
@@ -134,9 +123,6 @@ symbol     | type              | description
 `time`     | `Any` property    | the current time of the timeline
 `__repr__` | `str` method      | (optional) a string representation of the object, defaults to the name of the class
 
-As an example, this open-ended numeric timeline starts at zero and asymptotically converges to 1.0:
-
-{{ include_snippet("./docs/custom_timeline.py", show_filename=False) }}
 
 ### Spatial Domain
 
