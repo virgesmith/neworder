@@ -21,9 +21,6 @@ from _neworder_core import (
     verbose,
 )
 
-# type: ignore
 from .domain import Domain, Edge, Space, StateGrid
 from .mc import as_np
 from .timeline import CalendarTimeline
-
-__all__ = ["as_np", "Domain", "Space", "freethreaded", "thread_id", "CalendarTimeline"]

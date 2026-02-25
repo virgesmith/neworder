@@ -4,18 +4,15 @@
 
 #include "Log.h"
 
-#include <vector>
 #include <cstddef>
-
+#include <vector>
 
 namespace no {
 
 // Abstract base class for timelines - implements the basic stepping functionality
-class Timeline
-{
+class Timeline {
 public:
-
-  Timeline() : m_index(0) { }
+  Timeline() : m_index(0) {}
 
   virtual ~Timeline() = default;
 
@@ -42,15 +39,13 @@ protected:
 private:
   friend class Model;
   // this is called internally to ensure index is incremented
-  void next()
-  {
+  void next() {
     ++m_index;
     _next();
   }
 };
 
-class PyTimeline: public Timeline
-{
+class PyTimeline : public Timeline {
   using Timeline::Timeline;
   using Timeline::operator=;
 
@@ -67,12 +62,10 @@ class PyTimeline: public Timeline
   std::string repr() const override { PYBIND11_OVERRIDE_NAME(std::string, Timeline, "__repr__", repr); }
 };
 
-
 // An empty (one arbitrary step) timeline. The model's step method will each be called once only
-class NEWORDER_EXPORT NoTimeline final : public Timeline
-{
+class NEWORDER_EXPORT NoTimeline final : public Timeline {
 public:
-  NoTimeline() { }
+  NoTimeline() {}
 
   ~NoTimeline() override = default;
   NoTimeline(const NoTimeline&) = default;
@@ -95,10 +88,8 @@ public:
 };
 
 // An equally-spaced timeline between 2 numeric time points
-class NEWORDER_EXPORT LinearTimeline final : public Timeline
-{
+class NEWORDER_EXPORT LinearTimeline final : public Timeline {
 public:
-
   // Fixed length timeline
   LinearTimeline(double start, double end, size_t steps);
 
@@ -131,10 +122,8 @@ private:
   size_t m_steps;
 };
 
-
 // A generic numeric timeline, the model developer supplies the entire timeline
-class NEWORDER_EXPORT NumericTimeline final : public Timeline
-{
+class NEWORDER_EXPORT NumericTimeline final : public Timeline {
 public:
   NumericTimeline(const std::vector<double>& times);
 
@@ -161,22 +150,20 @@ private:
   std::vector<double> m_times;
 };
 
-
-
 namespace time {
 
-  // returns a floating point number that compares unequal to (and unordered w.r.t) any other number
-  // thus the following all evaluate to true: never() != never(), !(x < never()), !(x >= never()) (so be careful!)
-  double never();
+// returns a floating point number that compares unequal to (and unordered w.r.t) any other number
+// thus the following all evaluate to true: never() != never(), !(x < never()), !(x >= never()) (so be careful!)
+double never();
 
-  // this MUST be used to correctly compare against never since NaN != NaN
-  bool isnever(double t);
+// this MUST be used to correctly compare against never since NaN != NaN
+bool isnever(double t);
 
-  // returns a floating point number that compares less than any other number
-  double distant_past();
+// returns a floating point number that compares less than any other number
+double distant_past();
 
-  // returns a floating point number that compares greater than any other number
-  double far_future();
-}
+// returns a floating point number that compares greater than any other number
+double far_future();
+} // namespace time
 
-}
+} // namespace no

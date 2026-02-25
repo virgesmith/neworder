@@ -9,7 +9,8 @@ class CalendarTimeline(no.Timeline):
     """
     A timeline representing calendar days. At any given step, `time` returns the date at the *start* of the step
     For monthly timesteps, preserves day of month.
-    Numeric step size is computed using an ACT/365 basis and may vary depending on choice of step
+    Numeric step size is computed using an ACT/365 basis and may vary depending on choice of step.
+    To preserve day of month for month-based timesteps when day >= 28, explicitly pass day=... to `relativedelta`
     """
 
     def __init__(self, start: date, step: relativedelta, *, end: date | None = None) -> None:
@@ -28,8 +29,7 @@ class CalendarTimeline(no.Timeline):
     def _next(self) -> date:
         if self._end and self._current >= self._end:
             raise StopIteration()
-        # steps must be relative to start date, not current date in order to preserve day of month when >= 28
-        self._current = self._start + self.index * self._step
+        self._current += self._step
         return self._current
 
     @property

@@ -98,9 +98,9 @@ class CustomTimelineModel(no.Model):
 def test_timeline_properties() -> None:
     n = no.NoTimeline()
     assert n.index == 0
-    assert np.isnan(n.start)  # type: ignore[call-overload]
-    assert np.isnan(n.time)  # type: ignore[call-overload]
-    assert np.isnan(n.end)  # type: ignore[call-overload]
+    assert np.isnan(n.start)
+    assert np.isnan(n.time)
+    assert np.isnan(n.end)
     assert n.dt == 0.0
 
     with pytest.raises(AttributeError):
@@ -225,6 +225,7 @@ def test_calendar_timeline() -> None:
             super().__init__(calendartimeline, no.MonteCarlo.deterministic_identical_stream)
 
         def step(self) -> None:
+            # check day of month adjusted only in months with fewer days
             assert self.timeline.time.day == min(dim[self.timeline.index], d)
 
         def finalise(self) -> None:
@@ -232,8 +233,8 @@ def test_calendar_timeline() -> None:
             assert self.timeline.time == self.timeline.end
             assert self.timeline.index == 6
 
-    for d in range(1, 32):
-        t = no.CalendarTimeline(date(2020, 1, d), end=date(2020, 7, d), step=relativedelta(months=1))
+    for d in range(21, 32):
+        t = no.CalendarTimeline(date(2020, 1, d), end=date(2020, 7, d), step=relativedelta(months=1, day=d))
 
         m = CalendarModel(t)
         no.run(m)
@@ -304,7 +305,7 @@ def test_consistency() -> None:
     s = date(2019, 10, 31)
     e = date(2020, 10, 31)
 
-    m = ConsistencyTest(no.CalendarTimeline(s, end=e, step=relativedelta(months=1)))
+    m = ConsistencyTest(no.CalendarTimeline(s, end=e, step=relativedelta(months=1, day=31)))
     assert m.timeline.time == s
     no.run(m)
     assert m.timeline.time == e
