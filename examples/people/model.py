@@ -5,6 +5,7 @@ model.py: Population Microsimulation - births, deaths and migration by age, gend
 import time
 from datetime import date
 
+from dateutil.relativedelta import relativedelta
 from population import Population
 
 import neworder
@@ -20,7 +21,7 @@ in_migration_rate_data = "examples/people/migration-in.csv"
 out_migration_rate_data = "examples/people/migration-out.csv"
 
 # define the evolution timeline
-timeline = neworder.CalendarTimeline(date(2011, 1, 1), date(2051, 1, 1), 1, "y")
+timeline = neworder.CalendarTimeline(date(2011, 1, 1), relativedelta(years=1), end=date(2051, 1, 1))
 
 # create the model
 population = Population(

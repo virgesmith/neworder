@@ -155,7 +155,7 @@ class Population(neworder.Model):
 
         neworder.log(
             "check OK: time={} size={} mean_age={:.2f}, pct_female={:.2f} net_migration={} ({}-{})".format(
-                self.timeline.time.date(),
+                self.timeline.time,
                 self.size(),
                 self.mean_age(),
                 100.0 * self.gender_split(),
