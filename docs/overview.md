@@ -48,7 +48,6 @@ classDiagram
     +int index
     +float dt*
     +Any end*
-    +float nsteps*
     +Any start*
     +Any time*
     +_next() None*
@@ -58,7 +57,6 @@ classDiagram
   class NoTimeline {
     +float dt
     +Any end
-    +float nsteps
     +Any start
     +Any time
     +_next()
@@ -68,7 +66,6 @@ classDiagram
   class LinearTimeline {
     +float dt
     +Any end
-    +float nsteps
     +Any start
     +Any time
     +_next()
@@ -78,7 +75,6 @@ classDiagram
   class NumericTimeline {
     +float dt
     +Any end
-    +float nsteps
     +Any start
     +Any time
     +_next()
@@ -88,7 +84,6 @@ classDiagram
   class CalendarTimeline {
     +float dt
     +date end
-    +float nsteps
     +date start
     +date time
     +_next()
@@ -118,7 +113,6 @@ symbol     | type              | description
 `dt`       | `float` property  | the size of the current timestep
 `end`      | `Any` property    | the end time of the timeline
 `_next`    | `None` method     | move to the next timestep (for internal use by model, should not normally be called in client code)
-`nsteps`   | `int` property    | the total number of timesteps
 `start`    | `Any` property    | the start time of the timeline
 `time`     | `Any` property    | the current time of the timeline
 `__repr__` | `str` method      | (optional) a string representation of the object, defaults to the name of the class
