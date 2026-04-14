@@ -6,7 +6,6 @@ A dynamic microsimulation framework";
 from __future__ import annotations
 
 import collections.abc
-import datetime
 import enum
 import types
 import typing
@@ -17,6 +16,7 @@ import numpy.typing
 from . import df, mpi, stats, time
 from .domain import Domain, Edge, Space, StateGrid
 from .mc import as_np
+from .timeline import CalendarTimeline
 
 __all__: list[str] = [
     "CalendarTimeline",
@@ -42,24 +42,6 @@ __all__: list[str] = [
     "Space",
     "StateGrid",
 ]
-
-class CalendarTimeline(Timeline):
-    """
-
-    A calendar-based timeline
-    """
-    @typing.overload
-    def __init__(self, start: datetime.datetime, end: datetime.datetime, step: typing.SupportsInt, unit: str) -> None:
-        """
-        Constructs a calendar-based timeline, given start and end dates, an increment specified as a multiple of days, months or years
-        """
-    @typing.overload
-    def __init__(self, start: datetime.datetime, step: typing.SupportsInt, unit: str) -> None:
-        """
-        Constructs an open-ended calendar-based timeline, given a start date and an increment specified as a multiple of days, months or years.
-         NB the model will run until the Model.halt() method is explicitly called (from inside the step() method). Note also that nsteps() will
-         return -1 for timelines constructed this way
-        """
 
 class LinearTimeline(Timeline):
     """

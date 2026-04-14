@@ -1,9 +1,9 @@
 # DO NOT EDIT
-# auto-generated @ 2025-06-14 09:24:26.479330 by docs/macros.py::write_requirements()
+# auto-generated @ 2026-04-14 09:28:16.513223 by docs/macros.py::write_requirements()
 # required by readthedocs.io
 mkdocs==1.6.1
-mkdocs-macros-plugin==1.3.7
-mkdocs-material==9.6.14
+mkdocs-macros-plugin==1.5.0
+mkdocs-material==9.7.6
 mkdocs-material-extensions==1.3.1
 mkdocs-video==1.5.0
-requests==2.32.4
+requests==2.33.0

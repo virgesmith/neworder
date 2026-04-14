@@ -99,7 +99,7 @@ PYBIND11_MODULE(_neworder_core, m)
       .def_property_readonly("start", &no::Timeline::start, timeline_start_docstr)
       .def_property_readonly("end", &no::Timeline::end, timeline_end_docstr)
       .def_property_readonly("index", &no::Timeline::index, timeline_index_docstr)
-      .def_property_readonly("nsteps", &no::Timeline::nsteps, timeline_nsteps_docstr)
+      //.def_property_readonly("nsteps", &no::Timeline::nsteps, timeline_nsteps_docstr)
       .def_property_readonly("dt", &no::Timeline::dt, timeline_dt_docstr)
       .def_property_readonly("at_end", &no::Timeline::at_end, timeline_at_end_docstr)
       .def("__repr__", &no::Timeline::repr, timeline_repr_docstr);
@@ -113,12 +113,6 @@ PYBIND11_MODULE(_neworder_core, m)
 
   py::class_<no::NumericTimeline, no::Timeline>(m, "NumericTimeline", numerictimeline_docstr)
       .def(py::init<const std::vector<double>&>(), numerictimeline_init_docstr, "times"_a);
-
-  py::class_<no::CalendarTimeline, no::Timeline>(m, "CalendarTimeline", calendartimeline_docstr)
-      .def(py::init<std::chrono::system_clock::time_point, std::chrono::system_clock::time_point, size_t, char>(),
-           calendartimeline_init_docstr, "start"_a, "end"_a, "step"_a, "unit"_a)
-      .def(py::init<std::chrono::system_clock::time_point, size_t, char>(), calendartimeline_init_open_docstr,
-           "start"_a, "step"_a, "unit"_a);
 
   // MC
   py::class_<no::MonteCarlo>(m, "MonteCarlo", mc_docstr)

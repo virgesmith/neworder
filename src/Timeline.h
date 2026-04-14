@@ -4,21 +4,15 @@
 
 #include "Log.h"
 
-#include <pybind11/chrono.h>
-
-#include <vector>
-#include <chrono>
 #include <cstddef>
-
+#include <vector>
 
 namespace no {
 
 // Abstract base class for timelines - implements the basic stepping functionality
-class Timeline
-{
+class Timeline {
 public:
-
-  Timeline() : m_index(0) { }
+  Timeline() : m_index(0) {}
 
   virtual ~Timeline() = default;
 
@@ -28,7 +22,6 @@ public:
   virtual py::object end() const = 0;
 
   int64_t index() { return m_index; };
-  virtual int64_t nsteps() const = 0;
   virtual double dt() const = 0;
 
   virtual void _next() = 0;
@@ -46,15 +39,13 @@ protected:
 private:
   friend class Model;
   // this is called internally to ensure index is incremented
-  void next()
-  {
+  void next() {
     ++m_index;
     _next();
   }
 };
 
-class PyTimeline: public Timeline
-{
+class PyTimeline : public Timeline {
   using Timeline::Timeline;
   using Timeline::operator=;
 
@@ -63,7 +54,6 @@ class PyTimeline: public Timeline
   py::object start() const override { PYBIND11_OVERRIDE_PURE(py::object, Timeline, start); }
   py::object end() const override { PYBIND11_OVERRIDE_PURE(py::object, Timeline, end); }
 
-  int64_t nsteps() const override { PYBIND11_OVERRIDE_PURE(int64_t, Timeline, nsteps); }
   double dt() const override { PYBIND11_OVERRIDE_PURE(double, Timeline, dt); }
 
   void _next() override { PYBIND11_OVERRIDE_PURE(void, Timeline, _next); }
@@ -72,12 +62,10 @@ class PyTimeline: public Timeline
   std::string repr() const override { PYBIND11_OVERRIDE_NAME(std::string, Timeline, "__repr__", repr); }
 };
 
-
 // An empty (one arbitrary step) timeline. The model's step method will each be called once only
-class NEWORDER_EXPORT NoTimeline final : public Timeline
-{
+class NEWORDER_EXPORT NoTimeline final : public Timeline {
 public:
-  NoTimeline() { }
+  NoTimeline() {}
 
   ~NoTimeline() override = default;
   NoTimeline(const NoTimeline&) = default;
@@ -90,7 +78,6 @@ public:
   py::object start() const override;
   py::object end() const override;
 
-  int64_t nsteps() const override;
   double dt() const override;
 
   void _next() override;
@@ -101,10 +88,8 @@ public:
 };
 
 // An equally-spaced timeline between 2 numeric time points
-class NEWORDER_EXPORT LinearTimeline final : public Timeline
-{
+class NEWORDER_EXPORT LinearTimeline final : public Timeline {
 public:
-
   // Fixed length timeline
   LinearTimeline(double start, double end, size_t steps);
 
@@ -122,7 +107,6 @@ public:
   py::object start() const override;
   py::object end() const override;
 
-  int64_t nsteps() const override;
   double dt() const override;
 
   void _next() override;
@@ -138,10 +122,8 @@ private:
   size_t m_steps;
 };
 
-
 // A generic numeric timeline, the model developer supplies the entire timeline
-class NEWORDER_EXPORT NumericTimeline final : public Timeline
-{
+class NEWORDER_EXPORT NumericTimeline final : public Timeline {
 public:
   NumericTimeline(const std::vector<double>& times);
 
@@ -156,7 +138,6 @@ public:
   py::object start() const override;
   py::object end() const override;
 
-  int64_t nsteps() const override;
   double dt() const override;
 
   void _next() override;
@@ -169,67 +150,20 @@ private:
   std::vector<double> m_times;
 };
 
-// A timeline based on calendar dates and intervals (no intraday resolution, ignores DST adjustments)
-class NEWORDER_EXPORT CalendarTimeline final : public Timeline
-{
-public:
-  using time_point = std::chrono::system_clock::time_point;
-
-  // Fixed-end
-  CalendarTimeline(time_point start, time_point end, size_t step, char unit);
-
-  // Open-ended
-  CalendarTimeline(time_point start, size_t step, char unit);
-
-  ~CalendarTimeline() override = default;
-
-  CalendarTimeline(const CalendarTimeline&) = default;
-  CalendarTimeline& operator=(const CalendarTimeline&) = default;
-  CalendarTimeline(CalendarTimeline&&) = default;
-  CalendarTimeline& operator=(CalendarTimeline&&) = default;
-
-  py::object time() const override;
-  py::object start() const override;
-  py::object end() const override;
-
-  int64_t nsteps() const override;
-  double dt() const override;
-
-  void _next() override;
-
-  bool at_end() const override;
-
-  std::string repr() const override;
-
-private:
-
-  // advance to next point
-  time_point advance(const time_point& time) const;
-
-  size_t m_step;
-  char m_unit;
-  int m_refDay;
-
-  // this caches timesteps when the end is known (so we know total number of steps)
-  std::vector<time_point> m_times;
-  // otherwise just store the current step start and end, and a reference day (for monthly increments)
-  std::tuple<time_point, time_point> m_currentStep;
-};
-
 namespace time {
 
-  // returns a floating point number that compares unequal to (and unordered w.r.t) any other number
-  // thus the following all evaluate to true: never() != never(), !(x < never()), !(x >= never()) (so be careful!)
-  double never();
+// returns a floating point number that compares unequal to (and unordered w.r.t) any other number
+// thus the following all evaluate to true: never() != never(), !(x < never()), !(x >= never()) (so be careful!)
+double never();
 
-  // this MUST be used to correctly compare against never since NaN != NaN
-  bool isnever(double t);
+// this MUST be used to correctly compare against never since NaN != NaN
+bool isnever(double t);
 
-  // returns a floating point number that compares less than any other number
-  double distant_past();
+// returns a floating point number that compares less than any other number
+double distant_past();
 
-  // returns a floating point number that compares greater than any other number
-  double far_future();
-}
+// returns a floating point number that compares greater than any other number
+double far_future();
+} // namespace time
 
-}
+} // namespace no
