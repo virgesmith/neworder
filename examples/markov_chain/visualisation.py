@@ -1,4 +1,4 @@
-from markov_chain import MarkovChain
+from markov_chain import MarkovChain  # ty:ignore[unresolved-import]
 from matplotlib import pyplot as plt
 
 

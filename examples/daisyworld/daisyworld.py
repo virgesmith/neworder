@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import numpy.typing as npt
 from matplotlib import colors
 from matplotlib.image import AxesImage
 from scipy import signal
@@ -30,7 +31,7 @@ class DaisyWorld(no.Model):
         p = [pct_white, pct_black, 1 - pct_white - pct_black]
         init_pop = self.mc.sample(np.prod(gridsize), p).reshape(gridsize)
 
-        self.domain = no.StateGrid(init_pop, edge=no.Edge.WRAP)
+        self.domain = no.StateGrid(init_pop, edge=no.Edge.WRAP)  # ty:ignore[invalid-argument-type]
         self.age = (
             (self.mc.ustream(self.domain.state.size) * DaisyWorld.MAX_AGE).astype(int).reshape(self.domain.state.shape)
         )
@@ -95,21 +96,21 @@ class DaisyWorld(no.Model):
         if self.timeline.index > 3000:
             self.halt()
 
-    def __calc_local_heating(self) -> np.ndarray[np.float64, np.dtype[np.float64]]:
+    def __calc_local_heating(self) -> npt.NDArray[np.float64]:
         # local_heating = 0
 
         # get absorbed luminosity from state
         def fs(
-            state: np.ndarray[np.int64, np.dtype[np.int64]],
-        ) -> np.ndarray[np.float64, np.dtype[np.float64]]:
+            state: npt.NDArray[np.float64],
+        ) -> npt.NDArray[np.float64]:
             return (1.0 - self.albedo[state]) * solar_luminosity
 
         abs_lum = fs(self.domain.state)
 
         # get local heating from absorbed luminosity
         def fl(
-            lum: np.ndarray[np.float64, np.dtype[np.float64]],
-        ) -> np.ndarray[np.float64, np.dtype[np.float64]]:
+            lum: npt.NDArray[np.float64],
+        ) -> npt.NDArray[np.float64]:
             return 72.0 * np.log(lum) + 80.0
 
         return fl(abs_lum)
@@ -127,7 +128,7 @@ class DaisyWorld(no.Model):
         fig = plt.figure(constrained_layout=True, figsize=(6, 6))
         img = plt.imshow(self.domain.state.T, cmap=cmap)
         plt.axis("off")
-        fig.canvas.mpl_connect("key_press_event", lambda event: self.halt() if event.key == "q" else None)
+        fig.canvas.mpl_connect("key_press_event", lambda event: self.halt() if event.key == "q" else None)  # ty:ignore[unresolved-attribute]
         fig.canvas.flush_events()
 
         return fig, img

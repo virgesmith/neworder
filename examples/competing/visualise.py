@@ -1,6 +1,6 @@
 import numpy as np
 from matplotlib import pyplot as plt
-from people import People
+from people import People  # ty:ignore[unresolved-import]
 
 
 def plot(model: People) -> None:

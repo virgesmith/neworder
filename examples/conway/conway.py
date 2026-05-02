@@ -66,7 +66,7 @@ class Conway(no.Model):
         plt.axis("off")
 
         fig.canvas.flush_events()
-        fig.canvas.mpl_connect("key_press_event", lambda event: self.halt() if event.key == "q" else None)
+        fig.canvas.mpl_connect("key_press_event", lambda event: self.halt() if event.key == "q" else None)  # ty:ignore[unresolved-attribute]
 
         return fig, g
 

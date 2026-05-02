@@ -5,7 +5,7 @@ See https://www.microsimulationandpopulationdynamics.com/
 """
 
 import numpy as np
-from person import People
+from person import People  # ty:ignore[unresolved-import]
 
 import neworder
 

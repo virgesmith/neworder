@@ -1,4 +1,5 @@
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 
 import neworder as no
@@ -26,11 +27,11 @@ class MarkovChain(no.Model):
         self.states = states
         self.transition_matrix = transition_matrix
         self.summary = pd.DataFrame(columns=states)
-        self.summary.loc[0] = self.pop.state.value_counts().transpose()
+        self.summary.loc[0] = self.pop.state.value_counts().transpose()  # ty:ignore[call-non-callable]
 
     # pure python equivalent implementation of no.df.transition, to illustrate the performance gain
     def transition_py(self, colname: str) -> None:
-        def _interp(cumprob: np.ndarray, x: float) -> int:
+        def _interp(cumprob: npt.NDArray[np.float64], x: float) -> int:
             lbound = 0
             while lbound < len(cumprob) - 1:
                 if cumprob[lbound] > x:
@@ -52,16 +53,18 @@ class MarkovChain(no.Model):
         #   df.loc[i, colname] = sample(u[i], tc[lookup[current]], c)
         # this is a much faster equivalent of the loop in the commented code immediately above
         self.pop[colname] = self.pop[colname].apply(
-            lambda current: _sample(self.mc.ustream(1), tc[lookup[current]], self.states)
+            lambda current: _sample(self.mc.ustream(1)[0], tc[lookup[current]], self.states)
         )
 
     def step(self) -> None:
         # self.transition_py("state")
         # comment the above line and uncomment this line to use the faster C++ implementation
         no.df.transition(self, self.states, self.transition_matrix, self.pop, "state")
-        self.summary.loc[len(self.summary)] = self.pop.state.value_counts().transpose()
+        self.summary.loc[len(self.summary)] = self.pop.state.value_counts().transpose()  # ty:ignore[call-non-callable]
 
     def finalise(self) -> None:
+        print(self.summary)
+
         self.summary["t"] = np.arange(self.timeline.start, self.timeline.end + 1e-8, self.timeline.dt)
         self.summary.reset_index(drop=True, inplace=True)
         self.summary.fillna(0, inplace=True)

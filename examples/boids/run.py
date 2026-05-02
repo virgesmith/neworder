@@ -17,9 +17,9 @@ if len(sys.argv) != 2 or sys.argv[1] not in ["2d", "3d"]:
     exit(1)
 
 if sys.argv[1] == "2d":
-    from boids2d import Boids2d as Boids
+    from boids2d import Boids2d as Boids  # ty:ignore[unresolved-import]
 else:
-    from boids3d import Boids3d as Boids
+    from boids3d import Boids3d as Boids  # ty:ignore[unresolved-import]
 
 m = Boids(N, range, vision, exclusion, speed)
 

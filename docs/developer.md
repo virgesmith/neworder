@@ -105,6 +105,17 @@ mv stubs/_neworder_core/time-stubs/__init__.pyi neworder/time.pyi
 
 ## Release Checklist
 
+
+
+1. Ensure version in pyproject.toml has been updated (to say `X.Y.Z`)
+1. Create a release, using a new tag `vX.Y.Z` and release notes based on commits since previous release, e.g.: `git log 1.2.1..HEAD --oneline`
+
+TODO need to check
+- docker
+- readthedocs
+- zenodo
+
+
 Development should happen on a release branch (NOT on main). Any commit to main triggers a workflow that automatically bumps the version, tags the code, builds a package, publishes it to PyPI, then builds a docker image containing the examples and pushes this to docker hub.
 
 !!! warning "Automatic version bumping"

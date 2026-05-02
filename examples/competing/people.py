@@ -27,11 +27,11 @@ class People(no.Model):
     def step(self) -> None:
         # sample deaths
         self.population["time_of_death"] = self.mc.first_arrival(
-            self.mortality_hazard.Rate.values, self.dt, len(self.population)
+            self.mortality_hazard.Rate.to_numpy(), self.dt, len(self.population)
         )
 
         # sample (multiple) births with events at least 9 months apart
-        births = self.mc.arrivals(self.fertility_hazard.Rate.values, self.dt, len(self.population), 0.75)
+        births = self.mc.arrivals(self.fertility_hazard.Rate.to_numpy(), self.dt, len(self.population), 0.75)
 
         # the number of columns is governed by the maximum number of arrivals in the births data
         for i in range(births.shape[1]):
@@ -39,7 +39,7 @@ class People(no.Model):
             self.population[col] = births[:, i]
             # remove births that would have occured after death
             self.population.loc[self.population[col] > self.population.time_of_death, col] = no.time.NEVER
-            self.population.parity = self.population.parity + ~no.time.isnever(self.population[col].values)
+            self.population.parity = self.population.parity + ~no.time.isnever(self.population[col].to_numpy())  # ty:ignore[unresolved-attribute]
 
     def finalise(self) -> None:
         # compute means

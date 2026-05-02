@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import IntEnum
 from time import sleep
 from typing import Any
 
@@ -13,7 +13,7 @@ import neworder as no
 from neworder.geospatial import GeospatialGraph
 
 
-class Status(Enum):
+class Status(IntEnum):
     SUSCEPTIBLE = 0
     INFECTED = 1
     IMMUNE = 2
@@ -80,7 +80,7 @@ class Infection(no.Model):
         self.agents = gpd.GeoDataFrame(
             agents,
             geometry=agents["path"].apply(lambda linestr: line_interpolate_point(linestr, 0)),
-        )
+        )  # ty:ignore[no-matching-overload]
         self.fig, self.g = self.__init_visualisation()
 
     def step(self) -> None:
@@ -173,7 +173,7 @@ class Infection(no.Model):
     def __init_visualisation(self) -> tuple[Any, Any]:
         plt.ion()
         fig, ax = ox.plot_graph(
-            self.domain.graph,
+            self.domain.graph,  # ty:ignore[invalid-argument-type]
             bgcolor="w",
             node_size=5,
             edge_linewidth=2,
@@ -191,7 +191,7 @@ class Infection(no.Model):
             edgecolor="k",
         )
         fig.suptitle("[q to quit]")
-        fig.canvas.mpl_connect("key_press_event", lambda event: self.halt() if event.key == "q" else None)
+        fig.canvas.mpl_connect("key_press_event", lambda event: self.halt() if event.key == "q" else None)  # ty:ignore[unresolved-attribute]
         fig.canvas.flush_events()
         return fig, g
 
