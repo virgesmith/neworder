@@ -20,12 +20,17 @@ from .timeline import CalendarTimeline
 
 __all__: list[str] = [
     "CalendarTimeline",
+    "Domain",
+    "Edge",
     "LinearTimeline",
     "Model",
     "MonteCarlo",
     "NoTimeline",
     "NumericTimeline",
+    "Space",
+    "StateGrid",
     "Timeline",
+    "as_np",
     "checked",
     "df",
     "freethreaded",
@@ -36,11 +41,6 @@ __all__: list[str] = [
     "thread_id",
     "time",
     "verbose",
-    "as_np",
-    "Edge",
-    "Domain",
-    "Space",
-    "StateGrid",
 ]
 
 class LinearTimeline(Timeline):

@@ -1,7 +1,8 @@
 import time
 
 import numpy as np
-import pandas as pd  # type: ignore
+import numpy.typing as npt
+import pandas as pd
 
 import neworder as no
 
@@ -26,11 +27,10 @@ c = np.array([-1, 1, 2, 3, 4, 5])
 
 def get_data() -> pd.DataFrame:
     hh = pd.read_csv(INITIAL_POPULATION)  # , nrows=100)
-    hh = pd.concat([hh] * 8, ignore_index=True)
-    return hh
+    return pd.concat([hh] * 8, ignore_index=True)
 
 
-def interp(cumprob: np.ndarray[np.float64, np.dtype[np.float64]], x: float) -> int:
+def interp(cumprob: npt.NDArray[np.float64], x: float) -> int:
     lbound = 0
     while lbound < len(cumprob) - 1:
         if cumprob[lbound] > x:
@@ -41,15 +41,15 @@ def interp(cumprob: np.ndarray[np.float64, np.dtype[np.float64]], x: float) -> i
 
 def sample(
     u: float,
-    tc: np.ndarray[np.float64, np.dtype[np.float64]],
-    c: np.ndarray[np.float64, np.dtype[np.float64]],
+    tc: npt.NDArray[np.float64],
+    c: npt.NDArray[np.float64],
 ) -> float:
     return c[interp(tc, u)]
 
 
 def transition(
-    c: np.ndarray[np.float64, np.dtype[np.float64]],
-    t: np.ndarray[np.float64, np.dtype[np.float64]],
+    c: npt.NDArray[np.float64],
+    t: npt.NDArray[np.float64],
     df: pd.DataFrame,
     colname: str,
 ) -> None:
@@ -66,7 +66,7 @@ def transition(
     df[colname] = df[colname].apply(lambda current: sample(m.mc.ustream(1)[0], tc[lookup[current]], c))
 
 
-def python_impl(m: no.Model, df: pd.DataFrame) -> tuple[int, float, pd.Series]:
+def python_impl(_m: no.Model, df: pd.DataFrame) -> tuple[int, float, pd.Series]:
     start = time.time()
     transition(c, t, df, "LC4408_C_AHTHUK11")
     return len(df), time.time() - start, df.LC4408_C_AHTHUK11
@@ -126,11 +126,11 @@ if __name__ == "__main__":
     m = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
 
     rows, tc, colcpp = cpp_impl(m, get_data())
-    no.log("C++ %d: %f" % (rows, tc))
+    no.log(f"C++ {rows}: {tc}")
 
     m.mc.reset()
     rows, tp, colpy = python_impl(m, get_data())
-    no.log("py  %d: %f" % (rows, tp))
+    no.log(f"py {rows}: {tp}")
 
     # no.log(colcpp-colpy)
 

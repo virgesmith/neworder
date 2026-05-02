@@ -240,6 +240,13 @@ const char* model_halt_docstr = R"""(
     For trapping exceptional/error conditions, prefer to raise an exception, or return False from the Model.check() function
 )""";
 
+const char* model_run_docstr = R"""(
+    Convenience instance method to start or resume model execution. Equivalent to `neworder.run(model)`.
+
+    Returns:
+        True if model succeeded, False otherwise
+    )""";
+
 // MPI
 
 const char* mpi_docstr = R"""(

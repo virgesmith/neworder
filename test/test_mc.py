@@ -195,7 +195,7 @@ def test_mc_serial(base_model: no.Model) -> None:
     a = mc.first_arrival(p, dt, n)  # type: ignore[assignment]
     assert np.nanmin(a) > 0.0
     assert np.nanmax(a) < 10.0
-    no.log("%f - %f" % (np.nanmin(a), np.nanmax(a)))
+    no.log(f"{np.nanmin(a)} - {np.nanmax(a)}")
 
     # now set a to all 8.0
     a = np.full(n, 8.0)

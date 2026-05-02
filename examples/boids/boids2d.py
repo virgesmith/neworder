@@ -159,7 +159,7 @@ class Boids2d(no.Model):
             elif event.key == "q":
                 self.halt()
             else:
-                no.log("%s doesnt do anything. p to pause/resume, q to quit" % event.key)
+                no.log(f"{event.key} doesnt do anything. p to pause/resume, q to quit")
 
         fig.canvas.mpl_connect("key_press_event", on_keypress)
 

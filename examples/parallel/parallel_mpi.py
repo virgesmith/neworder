@@ -36,7 +36,7 @@ class ParallelMPI(neworder.Model):
         for s in range(neworder.mpi.SIZE):
             if s != neworder.mpi.RANK:
                 emigrants = self.pop[self.pop.state == s]
-                neworder.log("sending %d emigrants to %d" % (len(emigrants), s))
+                neworder.log("sending {len(emigrants)} emigrants to {s}")
                 neworder.mpi.COMM.send(emigrants, dest=s)
 
         # remove the emigrants
@@ -47,7 +47,7 @@ class ParallelMPI(neworder.Model):
             if s != neworder.mpi.RANK:
                 immigrants = neworder.mpi.COMM.recv(source=s)
                 if len(immigrants):
-                    neworder.log("received %d immigrants from %d" % (len(immigrants), s))
+                    neworder.log(f"received {len(immigrants)} immigrants from {s}")
                     self.pop = pd.concat((self.pop, immigrants))
 
     # !step!
@@ -56,14 +56,11 @@ class ParallelMPI(neworder.Model):
     def check(self) -> bool:
         # Ensure we haven't lost (or gained) anybody
         totals = neworder.mpi.COMM.gather(len(self.pop), root=0)
-        if totals:
-            if sum(totals) != self.n * neworder.mpi.SIZE:
-                return False
+        if totals and sum(totals) != self.n * neworder.mpi.SIZE:
+            return False
         # And check each process only has individuals that it should have
         out_of_place = neworder.mpi.COMM.gather(len(self.pop[self.pop.state != neworder.mpi.RANK]))
-        if out_of_place and any(out_of_place):
-            return False
-        return True
+        return not (out_of_place and any(out_of_place))
 
     # !check!
 
@@ -73,6 +70,6 @@ class ParallelMPI(neworder.Model):
         pops = neworder.mpi.COMM.gather(self.pop, root=0)
         if pops:
             pop = pd.concat(pops)
-            neworder.log("State counts (total %d):\n%s" % (len(pop), pop["state"].value_counts().to_string()))
+            neworder.log(f"State counts (total {len(pop)}):\n{pop['state'].value_counts().to_string()}")
 
     # !finalise!

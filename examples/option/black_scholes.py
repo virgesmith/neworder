@@ -46,10 +46,7 @@ class BlackScholes(neworder.Model):
         # send the state representation to process 0 (others will get None)
         states = neworder.mpi.COMM.gather(self.mc.state(), 0)
         # process 0 checks the values
-        if states:
-            ok = all(s == states[0] for s in states)
-        else:
-            ok = True
+        ok = all(s == states[0] for s in states) if states else True
         # broadcast process 0's ok to all processes
         ok = neworder.mpi.COMM.bcast(ok, root=0)
         return ok
@@ -62,7 +59,7 @@ class BlackScholes(neworder.Model):
         """Compare MC price to analytic"""
         ref = analytic_pv(self.option, self.market)
         err = self.pv / ref - 1.0
-        neworder.log("mc: {:.6f} / ref: {:.6f} err={:.2%}".format(self.pv, ref, err))
+        neworder.log(f"mc: {self.pv:.6f} / ref: {ref:.6f} err={err:.2%}")
         # relative error should be within O(1/(sqrt(sims))) of analytic solution
         if abs(err) > 2.0 / np.sqrt(self.nsims):
             neworder.log("MC error is larger than expected")

@@ -15,7 +15,7 @@ class Conway(no.Model):
         super().__init__(no.LinearTimeline(0, 1), no.MonteCarlo.nondeterministic_stream)
 
         # create n automata at regular positions
-        init_state = np.zeros((nx * ny))
+        init_state = np.zeros(nx * ny)
         init_state[::2] = 1
         init_state[::7] = 1
 

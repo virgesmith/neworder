@@ -126,18 +126,18 @@ def test_custom_timeline() -> None:
 
 def test_time() -> None:
     t = -1e10
-    assert no.time.DISTANT_PAST < t
-    assert no.time.FAR_FUTURE > t
+    assert t > no.time.DISTANT_PAST
+    assert t < no.time.FAR_FUTURE
     t = 1e10
-    assert no.time.DISTANT_PAST < t
-    assert no.time.FAR_FUTURE > t
+    assert t > no.time.DISTANT_PAST
+    assert t < no.time.FAR_FUTURE
 
     # dreams never end
     assert no.time.NEVER != no.time.NEVER
-    assert no.time.NEVER != t
-    assert not no.time.NEVER < t
-    assert not no.time.NEVER == t
-    assert not no.time.NEVER >= t
+    assert t != no.time.NEVER
+    assert not t > no.time.NEVER
+    assert not t == no.time.NEVER  # noqa: SIM201
+    assert not t <= no.time.NEVER
     # no nay never
     assert not no.time.isnever(t)
     # no nay never no more

@@ -1,8 +1,9 @@
 # macros for mkdocs-macros-plugin
-import importlib
+import importlib.metadata
 import os
 from datetime import datetime
 from functools import cache
+from pathlib import Path
 from typing import Any
 
 import requests
@@ -42,7 +43,7 @@ def get_zenodo_record() -> dict[str, Any]:
 
 def write_requirements() -> None:
     try:
-        with open("docs/requirements.txt", "w") as fd:
+        with Path("docs/requirements.txt").open("w") as fd:
             fd.write(
                 f"""\
 # DO NOT EDIT
@@ -77,13 +78,13 @@ def define_env(env):
     @env.macro
     def include_snippet(filename, tag=None, show_filename=True):
         """looks for code in <filename> between lines containing "!<tag>!" """
-        full_filename = os.path.join(env.project_dir, filename)
+        full_filename = Path(env.project_dir) / filename
 
-        _, file_type = os.path.splitext(filename)
+        file_type = full_filename.suffix
         # default to literal "text" for inline code style
         code_style = _inline_code_styles.get(file_type, "text")
 
-        with open(full_filename, "r") as f:
+        with full_filename.open() as f:
             lines = f.readlines()
 
         if tag:
@@ -96,14 +97,10 @@ def define_env(env):
                 return f"```ERROR {filename} ({code_style}) too few/many tags ({len(span)}) for '{tag}'```"
             lines = lines[span[0] + 1 : span[1]]
 
-        if show_filename:
-            title = f'title="{filename}"'
-        else:
-            title = ""
+        title = f'title="{filename}"' if show_filename else ""
         if code_style is not None:
             return f"```{code_style} {title}\n{''.join(lines)}```"
-        else:
-            return "".join(lines)
+        return "".join(lines)
 
 
 # write_requirements()

@@ -158,8 +158,8 @@ PYBIND11_MODULE(_neworder_core, m)
           .def("step", &no::Model::step, model_step_docstr)
           .def("check", &no::Model::check, model_check_docstr)
           .def("finalise", &no::Model::finalise, model_finalise_docstr)
-          .def("halt", &no::Model::halt, model_halt_docstr);
-  // NB the all-important run function is not exposed to python, it can only be executed via the `neworder.run` function
+          .def("halt", &no::Model::halt, model_halt_docstr)
+          .def("run", [](no::Model& self) { return no::Model::run(self); }, model_run_docstr);
 
   py::native_enum<no::Model::RunState>(model, "RunState", "enum.Enum")
       .value("NOT_STARTED", no::Model::NOT_STARTED)
@@ -190,9 +190,10 @@ PYBIND11_MODULE(_neworder_core, m)
           "verbose"_a = true)
       .def(
           "checked", [](bool c = true) { no::env::checked.store(c, std::memory_order_relaxed); }, checked_docstr,
-          "checked"_a = true);
-  m.def("freethreaded", []() { return freethreaded_build; }, freethreaded_docstr);
-  m.def("thread_id", no::env::thread_id, threadid_docstr);
+          "checked"_a = true)
+      .def(
+          "freethreaded", []() { return freethreaded_build; }, freethreaded_docstr)
+      .def("thread_id", no::env::thread_id, threadid_docstr);
 
   // MPI submodule
   auto mpi = m.def_submodule("mpi", mpi_docstr);

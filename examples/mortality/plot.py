@@ -1,9 +1,7 @@
-from typing import Optional, Union
-
-import matplotlib.animation as animation  # type: ignore
-import matplotlib.pyplot as plt  # type: ignore
+import matplotlib.animation as animation
+import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd  # type: ignore
+import pandas as pd
 
 
 class Hist:
@@ -12,7 +10,7 @@ class Hist:
         # see https://matplotlib.org/api/_as_gen/matplotlib.pyplot.hist.html
         self.n, _bins, self.patches = plt.hist(data, numbins, facecolor="black")
 
-        ax.set_title("Discrete case-based mortality model (%d people)" % len(data))
+        ax.set_title("Discrete case-based mortality model ({len(data)} people)")
         ax.set_xlabel("Age at Death")
         ax.set_ylabel("Persons")
 
@@ -29,7 +27,7 @@ class Hist:
     def show(self) -> None:
         plt.show()
 
-    def __animate(self, frameno: int) -> Union[list, list[list]]:
+    def __animate(self, frameno: int) -> list | list[list]:
         i = 0
         for rect, h in zip(self.patches, self.n, strict=False):
             rect.set_height(h if i <= frameno else 0)
@@ -40,8 +38,8 @@ class Hist:
 def plot(
     pop_disc: pd.DataFrame,
     pop_cont: pd.DataFrame,
-    filename: Optional[str] = None,
-    anim_filename: Optional[str] = None,
+    filename: str | None = None,
+    anim_filename: str | None = None,
 ) -> None:
     bins = int(max(pop_disc.age_at_death.max(), pop_cont.age_at_death.max())) + 1
     rng = (0.0, float(bins))

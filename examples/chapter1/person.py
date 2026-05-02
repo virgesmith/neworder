@@ -51,7 +51,7 @@ class People(neworder.Model):
 
         # initialise population
         self.population = [Person(mortality_hazard) for _ in range(n)]
-        neworder.log("created %d individuals" % n)
+        neworder.log(f"created {n} individuals")
 
     # !constructor!
 
@@ -69,7 +69,7 @@ class People(neworder.Model):
         sample_le = sum([p.time_mortality for p in self.population]) / len(self.population)
         actual_le = 1.0 / self.population[0].mortality_hazard
         error = sample_le - actual_le
-        neworder.log("Life expectancy = %.2f years (sampling error=%.2f years)" % (sample_le, error))
+        neworder.log(f"Life expectancy = {sample_le:.2f} years (sampling error={error:.2f} years)")
 
     # !finalise!
 

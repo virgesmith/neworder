@@ -1,62 +1,27 @@
 name: Publish to PyPI
 
 on:
-  workflow_run:
-    workflows: [ "Build and test", "Parallel (MPI)", "Code coverage" ]
-    types:
-      - completed
-    branches:
-      - main
+  push:
+    tags:
+      # Publish on any tag starting with a `v`, e.g., v1.2.3
+      - v*
 
 jobs:
   deploy:
-    if: github.event.pull_request.merged == true
     name: Publish to PyPI
     runs-on: ubuntu-latest
-
-    # Optional: Define an environment for better secret management and auditing
-    # You would need to create an environment named 'pypi' in your repository settings
-    # and link the PYPI_API_TOKEN secret to it.
-    # environment: pypi
-
+    environment:
+      name: pypi
     permissions:
-      # Required for pypa/gh-action-pypi-publish if using OIDC trusted publishing
-      # (highly recommended for security, but requires setup on PyPI side).
-      # If not using OIDC, 'id-token: write' is not strictly necessary for the action,
-      # but 'contents: read' is usually needed for checkout.
-      # id-token: write
-      contents: read # Required to checkout the repository code
-
+      id-token: write
+      contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install prerequisites
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v7
       - name: Install project
         run: uv sync --all-groups
       - name: Build wheel
-        run: uv build --sdist
+        run: uv build --wheel
       - name: Publish package to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          # This action automatically uses '__token__' as username
-          password: ${{ secrets.PYPI_API_TOKEN }}
-          # You can specify a different repository if needed (e.g., TestPyPI for testing)
-          # repository-url: https://test.pypi.org/legacy/
-      - name: zip examples
-        run: |
-          zip -r examples.zip examples/
-          tar czfv examples.tgz examples/
-      - name: upload zip artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: examples.zip
-          path: examples.zip
-          # retention-days: 14
-      - name: upload tgz artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: examples.tgz
-          path: examples.tgz
-          # retention-days: 14
-
-
+        run: uv publish

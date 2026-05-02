@@ -48,5 +48,4 @@ def analytic_pv(option: Option, market: Market) -> float:
 
     if option.callput == "CALL":
         return S * qf * _norm_cdf(d1) - K * df * _norm_cdf(d2)
-    else:
-        return -S * qf * _norm_cdf(-d1) + K * df * _norm_cdf(-d2)
+    return -S * qf * _norm_cdf(-d1) + K * df * _norm_cdf(-d2)

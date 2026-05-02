@@ -4,20 +4,21 @@ from __future__ import annotations
 
 from typing import Any
 
-import matplotlib.pyplot as plt  # type: ignore
+import matplotlib.pyplot as plt
 import numpy as np
+import numpy.typing as npt
 
 
 # see https://stackoverflow.com/questions/27694221/using-python-libraries-to-plot-two-horizontal-bar-charts-sharing-same-y-axis
 def plot(
-    ages: np.ndarray[np.int64, np.dtype[np.int64]],
-    males: np.ndarray[np.float64, np.dtype[np.float64]],
-    females: np.ndarray[np.float64, np.dtype[np.float64]],
+    ages: npt.NDArray[np.int64],
+    males: npt.NDArray[np.float64],
+    females: npt.NDArray[np.float64],
 ) -> tuple[plt.Figure, plt.Axes, Any, Any]:
     xmax = 4000  # max(max(males), max(females))
 
     fig, axes = plt.subplots(ncols=2, sharey=True)
-    plt.gca().set_ylim([min(ages), max(ages) + 1])
+    plt.gca().set_ylim((min(ages), max(ages) + 1))
     fig.suptitle("2011")
     axes[0].set(title="Males")
     axes[0].set(xlim=[0, xmax])
@@ -42,12 +43,12 @@ def plot(
 def update(
     title: str,
     fig: plt.Figure,
-    axes: plt.Axes,
+    _axes: plt.Axes,
     mbar: Any,
     fbar: Any,
-    ages: np.ndarray[np.int64, np.dtype[np.int64]],
-    males: np.ndarray[np.float64, np.dtype[np.float64]],
-    females: np.ndarray[np.float64, np.dtype[np.float64]],
+    _ages: npt.NDArray[np.int64],
+    males: npt.NDArray[np.float64],
+    females: npt.NDArray[np.float64],
 ) -> tuple[Any, Any]:
     for rect, h in zip(mbar, males, strict=False):
         rect.set_width(h)
@@ -58,8 +59,3 @@ def update(
     # plt.savefig("./pyramid%s.png" % title)
     plt.pause(0.1)
     return mbar, fbar
-
-
-# def hist(a):
-#   plt.hist(a, bins=range(120))
-#   plt.show()
