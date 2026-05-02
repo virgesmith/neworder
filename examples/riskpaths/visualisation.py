@@ -1,5 +1,5 @@
 from data import max_age, min_age
-from matplotlib import pyplot as plt  # type: ignore
+from matplotlib import pyplot as plt
 
 import neworder
 

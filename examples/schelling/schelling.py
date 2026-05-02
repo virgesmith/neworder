@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-import matplotlib.pyplot as plt  # type: ignore
+import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib import colors  # type: ignore
-from matplotlib.image import AxesImage  # type: ignore
+from matplotlib import colors
+from matplotlib.image import AxesImage
 
 import neworder
 

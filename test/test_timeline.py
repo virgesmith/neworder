@@ -104,12 +104,12 @@ def test_timeline_properties() -> None:
     assert n.dt == 0.0
 
     with pytest.raises(AttributeError):
-        n.index = 3  # type: ignore[misc]
+        n.index = 3  # ty:ignore[invalid-assignment]
     with pytest.raises(AttributeError):
-        n.next()  # type: ignore[attr-defined]
+        n.next()  # ty:ignore[unresolved-attribute]
     c = CustomTimeline()
     with pytest.raises(AttributeError):
-        c.index = 3  # type: ignore[misc]
+        c.index = 3  # ty:ignore[invalid-assignment]
     # for python implementations next must be exposed
     # with pytest.raises(AttributeError):
     #   c.next()
@@ -149,8 +149,8 @@ def test_null_timeline() -> None:
     assert t0.dt == 0.0
     assert not t0.at_end
     assert t0.index == 0
-    assert no.time.isnever(t0.time)  # type: ignore[call-overload]
-    assert no.time.isnever(t0.end)  # type: ignore[call-overload]
+    assert no.time.isnever(t0.time)
+    assert no.time.isnever(t0.end)
 
     m = _TestModel2(0, 1, 1)
     no.run(m)
@@ -161,7 +161,7 @@ def test_null_timeline() -> None:
 
 def test_timeline_validation() -> None:
     with pytest.raises(TypeError):
-        no.LinearTimeline(2020, 2020, [])  # type: ignore[call-overload]
+        no.LinearTimeline(2020, 2020, [])  # ty:ignore[invalid-argument-type]
     with pytest.raises(ValueError):
         no.LinearTimeline(2020, 0.0)
     with pytest.raises(ValueError):

@@ -3,7 +3,7 @@ from __future__ import annotations
 from time import sleep
 from typing import Any
 
-import matplotlib.pyplot as plt  # type: ignore
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 

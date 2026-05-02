@@ -57,7 +57,7 @@ def test_rng_independence() -> None:
     N = 1_000_000
     with ThreadPoolExecutor() as executor:
         futures = [executor.submit(lambda i=i: run_model(N, lambda: i)) for i in range(2)]
-        result = [f.result() for f in futures]
+        result = np.array([f.result() for f in futures])
         rho = np.corrcoef(*result)[0, 1]
         assert abs(rho) < 2 / np.sqrt(N)
 

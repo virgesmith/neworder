@@ -1,5 +1,5 @@
 from markov_chain import MarkovChain
-from matplotlib import pyplot as plt  # type: ignore
+from matplotlib import pyplot as plt
 
 
 def show(model: MarkovChain) -> None:

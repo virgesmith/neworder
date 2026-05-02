@@ -5,7 +5,7 @@ population.py: Model implementation for population microsimulation
 from pathlib import Path
 
 import numpy as np
-import pandas as pd  # type: ignore
+import pandas as pd
 import pyramid
 
 import neworder

@@ -137,7 +137,7 @@ def test_mc_counts(base_model: no.Model) -> None:
 
     def poisson_pdf(x: range, lambda_: float) -> np.ndarray:
         y = np.exp(-lambda_)
-        return np.array([lambda_**k * y / factorial(k) for k in x])  # type: ignore # Module has no attribute "math"; maybe "emath" or "mat"?
+        return np.array([lambda_**k * y / factorial(k) for k in x])
 
     tests = [
         (1.0, 1.0, 10000),
@@ -192,7 +192,7 @@ def test_mc_serial(base_model: no.Model) -> None:
     dt = 1.0
     p = np.full(11, 0.1)
     p[-1] = 0
-    a = mc.first_arrival(p, dt, n)  # type: ignore[assignment]
+    a = mc.first_arrival(p, dt, n)
     assert np.nanmin(a) > 0.0
     assert np.nanmax(a) < 10.0
     no.log(f"{np.nanmin(a)} - {np.nanmax(a)}")
@@ -220,7 +220,7 @@ def test_mc_serial(base_model: no.Model) -> None:
     assert np.nanmax(b) < 19.0
 
     # now set a back to random arrivals
-    a = mc.first_arrival(p, dt, n)  # type: ignore[assignment]
+    a = mc.first_arrival(p, dt, n)
     # next arrivals (absolute) only in range (min(a), 10), if they happen
     b = mc.next_arrival(a, p, dt)
     assert np.nanmin(b) > np.nanmin(a)
@@ -242,7 +242,7 @@ def test_mc_serial(base_model: no.Model) -> None:
     assert np.nanmax(b) < np.nanmax(a) + dt + 10.0
 
     mc.reset()
-    a = mc.first_arrival(np.array([0.1, 0.2, 0.3]), 1.0, 6, 0.0)  # type: ignore[assignment]
+    a = mc.first_arrival(np.array([0.1, 0.2, 0.3]), 1.0, 6, 0.0)
     assert len(a) == 6
     # only works for single-process
     assert a[0] == 3.6177811673165667

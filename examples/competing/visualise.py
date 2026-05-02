@@ -1,5 +1,5 @@
 import numpy as np
-from matplotlib import pyplot as plt  # type: ignore
+from matplotlib import pyplot as plt
 from people import People
 
 

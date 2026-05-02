@@ -4,15 +4,15 @@ from collections.abc import Generator
 from typing import Any
 
 try:
-    import geopandas as gpd  # type: ignore[import]
-    import networkx as nx  # type: ignore[import]
-    import osmnx as ox  # type: ignore[import]
-    from shapely.geometry import (  # type: ignore[import]
+    import geopandas as gpd
+    import networkx as nx
+    import osmnx as ox
+    from shapely.geometry import (
         LineString,
         MultiLineString,
         Polygon,
     )
-    from shapely.ops import linemerge  # type: ignore[import]
+    from shapely.ops import linemerge
 except ModuleNotFoundError as e:
     raise ModuleNotFoundError(
         """Optional dependencies are not installed. Reinstalling neworder with the geospatial option should fix this:
@@ -26,7 +26,7 @@ class GeospatialGraph:
     Use of this class requires "geospatial" extras: pip install neworder[geospatial]
     """
 
-    def __init__(self, G: nx.Graph, crs: str | None = None) -> None:
+    def __init__(self, G: nx.MultiDiGraph, crs: str | None = None) -> None:
         if crs:
             self.__graph = ox.project_graph(G, to_crs=crs)
         else:

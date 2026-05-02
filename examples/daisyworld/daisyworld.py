@@ -1,8 +1,8 @@
-import matplotlib.pyplot as plt  # type: ignore
+import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import colors
-from matplotlib.image import AxesImage  # type: ignore
-from scipy import signal  # type: ignore
+from matplotlib.image import AxesImage
+from scipy import signal
 
 import neworder as no
 
