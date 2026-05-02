@@ -11,7 +11,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "neworder"
-version = "1.5.1"
+version = "1.5.2"
 authors = [
   { name="Andrew Smith", email="andrew@friarswood.net" },
 ]
@@ -85,11 +85,9 @@ filterwarnings = [
 line-length = 120
 
 [tool.ruff.lint]
-select = ["B", "C", "E", "F", "I"]
-ignore = ["E501"]
+select = ["ARG", "B", "C", "E", "F", "I", "N", "PERF", "PTH", "RUF", "SIM", "UP", "W"]
+ignore = ["E501", "N803", "N806"]
 
-[tool.ruff.lint.per-file-ignores]
-"**/__init__.py" = ["F401", "F403"]
 
 [tool.mypy]
 disallow_untyped_defs = "true"

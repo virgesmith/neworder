@@ -1,4 +1,4 @@
-from typing import Any, Tuple
+from typing import Any
 
 import matplotlib.pyplot as plt  # type: ignore
 import numpy as np
@@ -193,7 +193,7 @@ class WolfSheep(no.Model):
         # not ints for some reason
         agents["cell"] = (agents.x.astype(int) + self.width * agents.y.astype(int)).astype(int)
 
-    def __init_plot(self) -> Tuple[Any, ...]:
+    def __init_plot(self) -> tuple[Any, ...]:
         plt.ion()
 
         self.figs = plt.figure(figsize=(15, 5))
@@ -284,13 +284,13 @@ class WolfSheep(no.Model):
         self.ax_t2.set_xlim([0, self.t[-1]])
 
         if not self.wolves.empty:
-            n, bins = np.histogram(self.wolves.speed, bins=self.b_ws)
+            n, _bins = np.histogram(self.wolves.speed, bins=self.b_ws)
             for rect, h in zip(self.ax_ws, n / len(self.wolves), strict=False):
                 rect.set_height(h)
             self.ax_t3.set_ylim([0, max(n / len(self.wolves))])
 
         if not self.sheep.empty:
-            n, bins = np.histogram(self.sheep.speed, bins=self.b_ss)
+            n, _bins = np.histogram(self.sheep.speed, bins=self.b_ss)
             for rect, h in zip(self.ax_ss, n / len(self.sheep), strict=False):
                 rect.set_height(h)
             self.ax_t4.set_ylim([0, max(n / len(self.sheep))])

@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
-import glob
-import os
+from pathlib import Path
 
 import numpy
 from pybind11.setup_helpers import ParallelCompile, Pybind11Extension
@@ -17,7 +16,8 @@ def list_files(dirs, exts, exclude=None):
         exclude = [exclude]
     for directory in dirs:
         for ext in exts:
-            files.extend(glob.glob(os.path.join(directory, "*." + ext)))
+            # files.extend(glob.glob(os.path.join(directory, "*." + ext)))
+            files.extend(Path(directory).glob(f"*.{ext}"))
     [f in files and files.remove(f) for f in exclude]
     return files
 
@@ -27,7 +27,7 @@ ext_modules = [
         "_neworder_core",
         sources=list_files(["src"], ["cpp"]),
         include_dirs=[numpy.get_include()],
-        depends=["setup.py", "neworder/__init__.py"] + list_files(["src"], ["h"]),
+        depends=["setup.py", "neworder/__init__.py", *list_files(["src"], ["h"])],
         cxx_std=20,
     ),
 ]

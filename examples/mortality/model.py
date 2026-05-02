@@ -18,23 +18,21 @@ max_age = 100.0
 mortality_hazard_file = "examples/mortality/mortality-wbi.csv"
 population_size = 100000
 
-neworder.log("Population = %d" % population_size)
+neworder.log(f"Population = {population_size}")
 
 # run the discrete model
 mortality_discrete = PeopleDiscrete(mortality_hazard_file, population_size, max_age)
 start = time.perf_counter()
 neworder.run(mortality_discrete)
 end = time.perf_counter()
-neworder.log("Discrete model life expectancy = %f, exec time = %f" % (mortality_discrete.life_expectancy, end - start))
+neworder.log(f"Discrete model life expectancy = {mortality_discrete.life_expectancy}, exec time = {end - start}")
 
 # run the continuous model
 mortality_continuous = PeopleContinuous(mortality_hazard_file, population_size, 1.0)
 start = time.perf_counter()
 neworder.run(mortality_continuous)
 end = time.perf_counter()
-neworder.log(
-    "Continuous model life expectancy = %f, exec time = %f" % (mortality_continuous.life_expectancy, end - start)
-)
+neworder.log(f"Continuous model life expectancy = {mortality_continuous.life_expectancy}, exec time = {end - start}")
 
 # visualise some results
 # hist_file = "docs/examples/img/mortality_%dk.png" % (population_size//1000)

@@ -69,5 +69,5 @@ def test_mpi() -> None:
         assert no.mpi.SIZE == 1
     else:
         assert no.mpi.COMM
-        assert no.mpi.RANK == no.mpi.COMM.Get_rank()
-        assert no.mpi.SIZE == no.mpi.COMM.Get_size()
+        assert no.mpi.COMM.Get_rank() == no.mpi.RANK
+        assert no.mpi.COMM.Get_size() == no.mpi.SIZE

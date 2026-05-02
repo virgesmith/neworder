@@ -4,8 +4,9 @@ Spatial structures for positioning and moving entities and computing distances
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from enum import Enum, auto
-from typing import Any, Callable, Optional, Union
+from typing import Any, ClassVar
 
 import numpy as np
 import numpy.typing as npt
@@ -126,8 +127,8 @@ class Space(Domain):
 
     def dists2(
         self,
-        positions: Union[tuple[NPFloatArray, ...], NPFloatArray],
-        to_points: Optional[NPFloatArray] = None,
+        positions: tuple[NPFloatArray, ...] | NPFloatArray,
+        to_points: NPFloatArray | None = None,
     ) -> tuple[NPFloatArray, Any]:
         """The squared distance between points and separations along each axis"""
         # group tuples into a single array if necessary
@@ -163,13 +164,13 @@ class Space(Domain):
 
     def dists(
         self,
-        positions: Union[tuple[NPFloatArray, ...], NPFloatArray],
-        to_points: Optional[NPFloatArray] = None,
+        positions: tuple[NPFloatArray, ...] | NPFloatArray,
+        to_points: NPFloatArray | None = None,
     ) -> NPFloatArray:
         """Returns distances between the points"""
         return np.sqrt(self.dists2(positions, to_points)[0])
 
-    def in_range(self, distance: Any, positions: Any, count: Optional[bool] = False) -> NPFloatArray:
+    def in_range(self, distance: Any, positions: Any, count: bool | None = False) -> NPFloatArray:
         """Returns either indices or counts of points within the specified distance from each point"""
         ind = np.where(self.dists2(positions)[0] < distance * distance, 1, 0)
         # fill diagonal so as not to include self - TODO how does this work if to_points!=positions
@@ -177,13 +178,7 @@ class Space(Domain):
         return ind if not count else np.sum(ind, axis=1)
 
     def __repr__(self) -> str:
-        return "%s dim=%d min=%s max=%s edge=%s" % (
-            self.__class__.__name__,
-            self.dim,
-            self.min,
-            self.max,
-            self.edge,
-        )
+        return f"{self.__class__.__name__} dim={self.dim} min={self.min} max={self.max} edge={self.edge}"
 
 
 def _bounce(i: int, N: int) -> int:
@@ -199,7 +194,7 @@ class StateGrid(Domain):
       CONSTRAIN (no neighburs over edge), WRAP (toroidal), BOUNCE (reflect)
     """
 
-    __mode_lookup: dict[Edge, str] = {
+    __MODE_LOOKUP: ClassVar[dict[Edge, str]] = {
         Edge.CONSTRAIN: "constant",
         Edge.WRAP: "wrap",
         Edge.BOUNCE: "reflect",
@@ -256,7 +251,7 @@ class StateGrid(Domain):
 
         ind: NPFloatArray = np.array([indicator(x) for x in self.state]).astype(int)  # automagically preserves shape
         # pad with boundary according to edge policy
-        bounded = np.pad(ind, pad_width=1, mode=self.__mode_lookup[self.edge])  # type: ignore # bug?
+        bounded = np.pad(ind, pad_width=1, mode=self.__MODE_LOOKUP[self.edge])  # type: ignore # bug?
 
         # count neighbours, drop padding, covert to int
         count = signal.convolve(bounded, self.kernel, mode="same", method="direct")[(slice(1, -1),) * self.dim].astype(

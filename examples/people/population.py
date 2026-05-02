@@ -2,7 +2,7 @@
 population.py: Model implementation for population microsimulation
 """
 
-import os
+from pathlib import Path
 
 import numpy as np
 import pandas as pd  # type: ignore
@@ -24,7 +24,7 @@ class Population(neworder.Model):
         super().__init__(timeline, neworder.MonteCarlo.deterministic_identical_stream)
 
         # extract the local authority code from the filename
-        self.lad = os.path.basename(population_file).split("_")[0]
+        self.lad = Path(population_file).name.split("_")[0]
 
         self.population = pd.read_csv(population_file)
         self.population.set_index(neworder.df.unique_index(len(self.population)), inplace=True, drop=True)
@@ -154,15 +154,7 @@ class Population(neworder.Model):
             return False
 
         neworder.log(
-            "check OK: time={} size={} mean_age={:.2f}, pct_female={:.2f} net_migration={} ({}-{})".format(
-                self.timeline.time,
-                self.size(),
-                self.mean_age(),
-                100.0 * self.gender_split(),
-                self.in_out[0] - self.in_out[1],
-                self.in_out[0],
-                self.in_out[1],
-            )
+            f"check OK: time={self.timeline.time} size={self.size()} mean_age={self.mean_age():.2f}, pct_female={100.0 * self.gender_split():.2f} net_migration={self.in_out[0] - self.in_out[1]} ({self.in_out[0]}-{self.in_out[1]})"
         )
 
         # if all is ok, plot the data

@@ -17,7 +17,7 @@ else:
             no.mpi.COMM.send(x, dest=1)
         if no.mpi.RANK == 1:
             y = no.mpi.COMM.recv(source=0)
-            no.log("MPI: 0 sent {}={} 1 recd {}={}".format(type(x), x, type(y), y))
+            no.log(f"MPI: 0 sent {type(x)}={x} 1 recd {type(y)}={y}")
             if y != x:
                 return False
         return True
@@ -45,7 +45,7 @@ else:
             dfrec = no.mpi.COMM.recv(source=0)
             assert dfrec.equals(df)
 
-        i = "rank %d" % no.mpi.RANK
+        i = f"rank {no.mpi.RANK}"
         root = 0
         i = no.mpi.COMM.bcast(i, root=root)
         # all procs should now have root process value
@@ -76,7 +76,7 @@ else:
         u = model.mc.ustream(1000)
         v = no.mpi.COMM.bcast(u, root=root)
         # u != v on all non-root processes
-        if no.mpi.RANK != root:
+        if root != no.mpi.RANK:
             assert not np.array_equal(u, v)
         else:
             assert np.array_equal(u, v)

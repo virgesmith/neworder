@@ -59,7 +59,7 @@ class Schelling(neworder.Model):
 
         self.domain.state = pop
 
-        neworder.log("step %d %.4f%% unsatisfied" % (self.timeline.index, 100.0 * n_unsat / pop.size))
+        neworder.log(f"step {self.timeline.index} {n_unsat / pop.size:.4%} unsatisfied")
 
         self.__update_visualisation()
 

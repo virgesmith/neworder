@@ -1,72 +1,55 @@
 
 #include "MonteCarlo.h"
-#include "Module.h"
-#include "Log.h"
 #include "ArrayHelpers.h"
+#include "Log.h"
+#include "Module.h"
 #include "Timeline.h"
-#include <numpy/random/bitgen.h>
-#include <random>
 #include <algorithm>
 #include <cmath>
+#include <numpy/random/bitgen.h>
+#include <random>
 
 namespace {
 
-void validate_prob(double prob)
-{
-  if (std::isnan(prob) || prob < 0.0 || prob > 1.0)
-  {
+void validate_prob(double prob) {
+  if (std::isnan(prob) || prob < 0.0 || prob > 1.0) {
     throw py::value_error("probabilities must be in [0,1], got %%"s % prob);
   }
 }
 
-void validate_prob(const py::array_t<double>& prob)
-{
+void validate_prob(const py::array_t<double>& prob) {
   std::for_each(no::cbegin(prob), no::cend(prob), [](double p) { validate_prob(p); });
 }
 
-void validate_lambda(const py::array_t<double>& lambda)
-{
+void validate_lambda(const py::array_t<double>& lambda) {
   std::for_each(no::cbegin(lambda), no::cend(lambda), [](double l) {
-    if (std::isnan(l) || l < 0.0)
-    {
+    if (std::isnan(l) || l < 0.0) {
       throw py::value_error("intensities must be >=0, got %%"s % l);
     }
   });
 }
 
-}
-
+} // namespace
 
 // helper functions for basic seeding strategies
 
 // independent streams per-processs (but threads within a process will have identical streams)
-int32_t no::MonteCarlo::deterministic_independent_stream() noexcept
-{
+int32_t no::MonteCarlo::deterministic_independent_stream() noexcept {
   return 19937 + no::env::rank.load(std::memory_order_relaxed);
 }
 
-int32_t no::MonteCarlo::deterministic_identical_stream() noexcept
-{
-  return 19937;
-}
+int32_t no::MonteCarlo::deterministic_identical_stream() noexcept { return 19937; }
 
-int32_t no::MonteCarlo::nondeterministic_stream() noexcept
-{
+int32_t no::MonteCarlo::nondeterministic_stream() noexcept {
   std::random_device rand;
   return rand();
 }
 
-no::MonteCarlo::MonteCarlo(int32_t seed) noexcept
-  : m_seed(seed), m_prng(m_seed) { }
+no::MonteCarlo::MonteCarlo(int32_t seed) noexcept : m_seed(seed), m_prng(m_seed) {}
 
+int32_t no::MonteCarlo::seed() const noexcept { return m_seed; }
 
-int32_t no::MonteCarlo::seed() const noexcept
-{
-  return m_seed;
-}
-
-void no::MonteCarlo::init_bitgen(py::capsule capsule)
-{
+void no::MonteCarlo::init_bitgen(py::capsule capsule) {
   bitgen_t* bitgen(capsule);
   bitgen->state = this;
   bitgen->next_uint64 = [](void* p) { return static_cast<no::MonteCarlo*>(p)->raw(); };
@@ -75,74 +58,60 @@ void no::MonteCarlo::init_bitgen(py::capsule capsule)
   bitgen->next_raw = [](void* p) { return static_cast<no::MonteCarlo*>(p)->raw(); };
 }
 
-void no::MonteCarlo::reset() noexcept
-{
-  m_prng.seed(m_seed);
-}
+void no::MonteCarlo::reset() noexcept { m_prng.seed(m_seed); }
 
-std::string no::MonteCarlo::repr() const noexcept
-{
-  return "<neworder.MonteCarlo seed=%%>"s % seed();
-}
+std::string no::MonteCarlo::repr() const noexcept { return "<neworder.MonteCarlo seed=%%>"s % seed(); }
 
-size_t no::MonteCarlo::state() const noexcept
-{
+size_t no::MonteCarlo::state() const noexcept {
   std::ostringstream s;
   s << m_prng;
   return std::hash<std::string>{}(s.str());
 }
 
 // raw unsigned 64-bit ints (for enabling numpy to use this generator)
-uint64_t no::MonteCarlo::raw() noexcept
-{
+uint64_t no::MonteCarlo::raw() noexcept {
   return (static_cast<uint64_t>(m_prng()) << 32) | static_cast<uint64_t>(m_prng());
 }
 
 // uniform [0,1)
-double no::MonteCarlo::u01() noexcept
-{
+double no::MonteCarlo::u01() noexcept {
   static const double SCALE = 1.0 / (1ull << 32);
   return m_prng() * SCALE;
 }
 
-py::array_t<double> no::MonteCarlo::ustream(py::ssize_t n)
-{
-  return no::make_array<double>({n}, [this](){ return u01(); });
+py::array_t<double> no::MonteCarlo::ustream(py::ssize_t n) {
+  return no::make_array<double>({n}, [this]() { return u01(); });
 }
 
-py::array_t<int64_t> no::MonteCarlo::sample(py::ssize_t n, const py::array_t<double>& cat_weights)
-{
+py::array_t<int64_t> no::MonteCarlo::sample(py::ssize_t n, const py::array_t<double>& cat_weights) {
   py::ssize_t m = cat_weights.size();
   const double* p = no::cbegin(cat_weights);
 
   std::vector<double> cumul = no::cumulative(p, m);
 
   return no::make_array<int64_t>({n}, [this, &cumul]() {
-      double r = u01();
-      int64_t k = 0;
-      while (cumul[k] < r) ++k;
-      return k;
-    });
-
+    double r = u01();
+    int64_t k = 0;
+    while (cumul[k] < r)
+      ++k;
+    return k;
+  });
 }
 
 // simple hazard constant probability
-py::array_t<double> no::MonteCarlo::hazard(double prob, py::ssize_t n)
-{
+py::array_t<double> no::MonteCarlo::hazard(double prob, py::ssize_t n) {
   validate_prob(prob);
   return no::make_array<int>({n}, [&]() { return (u01() < prob) ? 1 : 0; });
 }
 
 // hazard with varying probablities
-py::array_t<double> no::MonteCarlo::hazard(const py::array_t<double>& prob)
-{
+py::array_t<double> no::MonteCarlo::hazard(const py::array_t<double>& prob) {
   validate_prob(prob);
-  return no::unary_op<int, double>(prob, [this](double p){ return u01() < p ? 1 : 0; });
+  return no::unary_op<int, double>(prob, [this](double p) { return u01() < p ? 1 : 0; });
 }
 
 // computes stopping times
-py::array_t<double> no::MonteCarlo::stopping(double prob, py::ssize_t n)
-{
+py::array_t<double> no::MonteCarlo::stopping(double prob, py::ssize_t n) {
   validate_prob(prob);
   double rprob = 1.0 / prob;
 
@@ -151,22 +120,20 @@ py::array_t<double> no::MonteCarlo::stopping(double prob, py::ssize_t n)
   return no::make_array<double>({n}, [&]() { return -::log(u01()) * rprob; });
 }
 
-py::array_t<double> no::MonteCarlo::stopping(const py::array_t<double>& prob)
-{
+py::array_t<double> no::MonteCarlo::stopping(const py::array_t<double>& prob) {
   validate_prob(prob);
   return no::unary_op<double, double>(prob, [this](double p) { return -::log(u01()) / p; });
 }
 
 // multiple-arrival (0+) process
-py::array_t<double> no::MonteCarlo::arrivals(const py::array_t<double>& lambda_t, double dt, py::ssize_t n, double gap)
-{
+py::array_t<double> no::MonteCarlo::arrivals(const py::array_t<double>& lambda_t, double dt, py::ssize_t n,
+                                             double gap) {
   validate_lambda(lambda_t);
   const double* pl = no::cbegin(lambda_t);
   size_t nl = lambda_t.size();
 
   // validate lambdas - but what exactly is valid?
-  if (pl[nl-1] != 0.0)
-  {
+  if (pl[nl - 1] != 0.0) {
     throw py::value_error("Multiple-arrival Non-homogeneous Poisson process requires a zero final hazard rate");
   }
 
@@ -179,19 +146,15 @@ py::array_t<double> no::MonteCarlo::arrivals(const py::array_t<double>& lambda_t
   double tmax = (nl - 1) * dt;
   size_t imax = 0;
 
-  for (size_t i = 0; i < static_cast<size_t>(n); ++i)
-  {
+  for (size_t i = 0; i < static_cast<size_t>(n); ++i) {
     // rejection sampling
     double pt = 0.0;
-    do
-    {
-      do
-      {
+    do {
+      do {
         pt += -::log(u01()) / lambda_u;
         // final entry in lambda_t is flat extrapolated...
-        lambda_i = pl[ std::min((size_t)(pt / dt), nl-1) ];
-        if (pt > tmax && lambda_i == 0.0)
-        {
+        lambda_i = pl[std::min((size_t)(pt / dt), nl - 1)];
+        if (pt > tmax && lambda_i == 0.0) {
           pt = no::time::never();
           break;
         }
@@ -200,17 +163,15 @@ py::array_t<double> no::MonteCarlo::arrivals(const py::array_t<double>& lambda_t
       pt += gap;
     } while (pt < tmax);
     imax = std::max(times[i].size(), imax);
-    //no::log("%%: %%"s % i % times[i]);
+    // no::log("%%: %%"s % i % times[i]);
   }
 
   py::array_t<double> nptimes({n, static_cast<py::ssize_t>(imax - 1)});
   no::fill(nptimes, no::time::never());
   double* pa = no::begin(nptimes); //.begin();
 
-  for (size_t i = 0; i < times.size(); ++i)
-  {
-    for (size_t j = 0; j < times[i].size() - 1; ++j)
-    {
+  for (size_t i = 0; i < times.size(); ++i) {
+    for (size_t j = 0; j < times[i].size() - 1; ++j) {
       pa[j] = times[i][j];
     }
     pa += imax - 1;
@@ -219,8 +180,8 @@ py::array_t<double> no::MonteCarlo::arrivals(const py::array_t<double>& lambda_t
   return nptimes;
 }
 
-py::array_t<double> no::MonteCarlo::first_arrival(const py::array_t<double>& lambda_t, double dt, py::ssize_t n, double minval)
-{
+py::array_t<double> no::MonteCarlo::first_arrival(const py::array_t<double>& lambda_t, double dt, py::ssize_t n,
+                                                  double minval) {
   validate_lambda(lambda_t);
   const double* pl = no::cbegin(lambda_t);
   size_t nl = lambda_t.size();
@@ -234,18 +195,15 @@ py::array_t<double> no::MonteCarlo::first_arrival(const py::array_t<double>& lam
   double* pt = no::begin(times);
   double tmax = (nl - 1) * dt;
 
-  for (size_t i = 0; i < static_cast<size_t>(n); ++i)
-  {
+  for (size_t i = 0; i < static_cast<size_t>(n); ++i) {
     // rejection sampling
     pt[i] = minval;
-    do
-    {
+    do {
       pt[i] += -::log(u01()) / lambda_u;
       // final entry in lambda_t is flat extrapolated...
-      lambda_i = pl[ std::min((size_t)(pt[i] / dt), nl-1) ];
+      lambda_i = pl[std::min((size_t)(pt[i] / dt), nl - 1)];
       // deal with open case (event not certain to happen)
-      if (pt[i] > tmax && lambda_i == 0.0)
-      {
+      if (pt[i] > tmax && lambda_i == 0.0) {
         pt[i] = no::time::never();
         break;
       }
@@ -254,10 +212,11 @@ py::array_t<double> no::MonteCarlo::first_arrival(const py::array_t<double>& lam
   return times;
 }
 
-// next-arrival process - times of transition from a state arrived at at startingpoints to a subsequent state, with an optional deterministic minimum separation
-// if the state hasn't been arrived at (no::never())
-py::array_t<double> no::MonteCarlo::next_arrival(const py::array_t<double>& startingpoints, const py::array_t<double>& lambda_t, double dt, bool relative, double minsep)
-{
+// next-arrival process - times of transition from a state arrived at at startingpoints to a subsequent state, with an
+// optional deterministic minimum separation if the state hasn't been arrived at (no::never())
+py::array_t<double> no::MonteCarlo::next_arrival(const py::array_t<double>& startingpoints,
+                                                 const py::array_t<double>& lambda_t, double dt, bool relative,
+                                                 double minsep) {
   validate_lambda(lambda_t);
   size_t n = startingpoints.size();
 
@@ -272,25 +231,21 @@ py::array_t<double> no::MonteCarlo::next_arrival(const py::array_t<double>& star
   py::array_t<double> times(n);
   double* pt = no::begin(times);
 
-  for (size_t i = 0; i < n; ++i)
-  {
+  for (size_t i = 0; i < n; ++i) {
     // account for any deterministic time lag (e.g. 9 months between births)
     double offset = no::at(startingpoints, {static_cast<py::ssize_t>(i)}) + minsep;
     // skip if we haven't actually arrived at the state to transition from
-    if (no::time::isnever(offset))
-    {
+    if (no::time::isnever(offset)) {
       pt[i] = no::time::never();
       continue;
     }
     // offset if lambdas in absolute time (not relative to start point)
     pt[i] = relative ? 0.0 : offset;
-    do
-    {
+    do {
       pt[i] += -::log(u01()) / lambda_u;
       // final entry in lambda_t is flat extrapolated...
-      lambda_i = pl[ std::min((size_t)(pt[i] / dt), nl-1) ];
-      if (pt[i] > tmax && lambda_i == 0.0)
-      {
+      lambda_i = pl[std::min((size_t)(pt[i] / dt), nl - 1)];
+      if (pt[i] > tmax && lambda_i == 0.0) {
         pt[i] = no::time::never();
         break;
       }
@@ -301,21 +256,18 @@ py::array_t<double> no::MonteCarlo::next_arrival(const py::array_t<double>& star
   return times;
 }
 
-py::array_t<int64_t> no::MonteCarlo::counts(const py::array_t<double>& lambda, double dt)
-{
+py::array_t<int64_t> no::MonteCarlo::counts(const py::array_t<double>& lambda, double dt) {
   validate_lambda(lambda);
 
   size_t n = lambda.size();
   py::array_t<int64_t> counts(n);
   int64_t* pc = no::begin(counts);
 
-  for (const double* it = no::cbegin(lambda); it != no::cend(lambda); ++it, ++pc)
-  {
+  for (const double* it = no::cbegin(lambda); it != no::cend(lambda); ++it, ++pc) {
     // sample arrivals within [0,dt)
     *pc = 0;
     double t = -std::log(u01()) / *it;
-    while (t < dt)
-    {
+    while (t < dt) {
       ++*pc;
       t += -std::log(u01()) / *it;
     }
@@ -323,10 +275,8 @@ py::array_t<int64_t> no::MonteCarlo::counts(const py::array_t<double>& lambda, d
   return counts;
 }
 
-
 //
-std::vector<double> no::cumulative(const double* p, size_t n)
-{
+std::vector<double> no::cumulative(const double* p, size_t n) {
   static const double tolerance = std::sqrt(std::numeric_limits<double>::epsilon());
 
   std::vector<double> cumprobs(n);
@@ -334,32 +284,27 @@ std::vector<double> no::cumulative(const double* p, size_t n)
     throw py::value_error("invalid probability: %% at index 0"s % p[0]);
 
   cumprobs[0] = p[0];
-  for (size_t i = 1; i < n; ++i)
-  {
+  for (size_t i = 1; i < n; ++i) {
     if (p[i] < 0.0 || p[i] > 1.0)
       throw py::value_error("invalid probability %% at index %%"s % p[i] % i);
-    cumprobs[i] = cumprobs[i-1] + p[i];
+    cumprobs[i] = cumprobs[i - 1] + p[i];
   }
 
   // check probabilities sum to unity within tolerance
-  if (fabs(cumprobs[n-1] - 1.0) > tolerance)
+  if (fabs(cumprobs[n - 1] - 1.0) > tolerance)
     throw py::value_error("cumulative probabilities don't sum to unity: %%"s % cumprobs);
   // then force the final value to 1 (in case its slightly out, which could cause a problem)
-  cumprobs[n-1] = 1.0;
+  cumprobs[n - 1] = 1.0;
 
   return cumprobs;
 }
 
-
-size_t no::interp(const std::vector<double>& cumprob, double x)
-{
+size_t no::interp(const std::vector<double>& cumprob, double x) {
   // TODO would bisection search here be better (even for small arrays)?
   size_t lbound = 0;
-  for (; lbound < cumprob.size() - 1; ++lbound)
-  {
+  for (; lbound < cumprob.size() - 1; ++lbound) {
     if (cumprob[lbound] > x)
       break;
   }
   return lbound;
 }
-

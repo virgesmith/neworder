@@ -1,7 +1,7 @@
 #pragma once
 
-#include <string>
 #include <atomic>
+#include <string>
 #include <thread>
 
 namespace no {
@@ -17,16 +17,15 @@ extern std::atomic_int rank;
 extern std::atomic_int size;
 extern std::atomic_int64_t uniqueIndex;
 
-struct Context { enum Value { CPP, PY, SIZE }; };
+struct Context {
+  enum Value { CPP, PY, SIZE };
+};
 
 // strings are not trivially copyable so can't be atomic
 extern std::string logPrefix[Context::SIZE];
 
 int thread_id();
 
-}
+} // namespace env
 
-}
-
-
-
+} // namespace no

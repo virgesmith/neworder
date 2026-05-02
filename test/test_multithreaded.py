@@ -1,6 +1,6 @@
+from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from threading import get_native_id
-from typing import Callable
 
 import numpy as np
 import numpy.typing as npt
