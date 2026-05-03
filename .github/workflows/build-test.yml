@@ -31,7 +31,7 @@ jobs:
     - name: Lint
       run: |
         uv run ruff check
-        uv run ty check
+        uv run ty check neworder examples test
     - name: Test
       run: |
         uv run pytest

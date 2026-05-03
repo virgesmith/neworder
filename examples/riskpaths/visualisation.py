@@ -1,10 +1,9 @@
-from data import max_age, min_age
+from data import max_age, min_age  # ty:ignore[unresolved-import]
 from matplotlib import pyplot as plt
+from riskpaths import RiskPaths  # ty:ignore[unresolved-import]
 
-import neworder
 
-
-def plot(model: neworder.Model) -> None:
+def plot(model: RiskPaths) -> None:
     bins = range(int(min_age), int(max_age) + 1)
 
     b = [

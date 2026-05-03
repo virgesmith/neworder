@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import matplotlib.pyplot as plt
 import numpy as np
+import numpy.typing as npt
 from matplotlib import colors
 from matplotlib.image import AxesImage
 
@@ -13,7 +14,7 @@ class Schelling(neworder.Model):
         self,
         timeline: neworder.Timeline,
         gridsize: tuple[int, int],
-        categories: np.ndarray[np.float64, np.dtype[np.float64]],
+        categories: npt.NDArray[np.float64],
         similarity: float,
     ) -> None:
         # NB missing this line can cause memory corruption
@@ -26,7 +27,7 @@ class Schelling(neworder.Model):
         self.sat = np.empty(gridsize, dtype=int)
         self.similarity = similarity
 
-        self.domain = neworder.StateGrid(init_pop, neworder.Edge.CONSTRAIN)
+        self.domain = neworder.StateGrid(init_pop, neworder.Edge.CONSTRAIN)  # ty:ignore[invalid-argument-type]
 
         self.fig, self.img = self.__init_visualisation()
 
@@ -83,7 +84,7 @@ class Schelling(neworder.Model):
         fig = plt.figure(constrained_layout=True, figsize=(8, 6))
         img = plt.imshow(self.domain.state.T, cmap=cmap)
         plt.axis("off")
-        fig.canvas.mpl_connect("key_press_event", lambda event: self.halt() if event.key == "q" else None)
+        fig.canvas.mpl_connect("key_press_event", lambda event: self.halt() if event.key == "q" else None)  # ty:ignore[unresolved-attribute]
         fig.canvas.flush_events()
 
         return fig, img

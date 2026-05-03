@@ -6,7 +6,7 @@ import time
 from datetime import date
 
 from dateutil.relativedelta import relativedelta
-from population import Population
+from population import Population  # ty:ignore[unresolved-import]
 
 import neworder
 

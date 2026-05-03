@@ -17,8 +17,8 @@ https://www.statcan.gc.ca/eng/microsimulation/modgen/new/chap4/chap4
 
 """
 
-from riskpaths import RiskPaths
-from visualisation import plot
+from riskpaths import RiskPaths  # ty:ignore[unresolved-import]
+from visualisation import plot  # ty:ignore[unresolved-import]
 
 import neworder
 

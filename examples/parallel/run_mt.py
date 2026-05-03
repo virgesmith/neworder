@@ -8,7 +8,7 @@ from concurrent.futures import ThreadPoolExecutor
 from threading import Barrier, Lock
 
 import pandas as pd
-from parallel_mt import ParallelThreaded
+from parallel_mt import ParallelThreaded  # ty:ignore[unresolved-import]
 
 import neworder
 
@@ -34,7 +34,17 @@ pop = pd.DataFrame(index=range(N_PEOPLE), data={"state": 0.0})
 lock = Lock()
 barrier = Barrier(N_THREADS, action=sync)
 
-neworder.log(f"neworder FT: {neworder.freethreaded()}, python FT:{not sys._is_gil_enabled()}", sys.version)
+
+def _is_ft() -> bool:
+    if sys.version_info.minor > 12:
+        return sys._is_gil_enabled()
+    return False
+
+
+neworder.log(
+    f"neworder FT: {neworder.freethreaded()}, python FT:{_is_ft()}",
+    sys.version,
+)
 
 t = time.perf_counter()
 with ThreadPoolExecutor() as executor:
