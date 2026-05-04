@@ -1,4 +1,4 @@
-from wolf_sheep import WolfSheep
+from wolf_sheep import WolfSheep  # ty:ignore[unresolved-import]
 
 import neworder as no
 

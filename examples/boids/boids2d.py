@@ -3,8 +3,9 @@ from __future__ import annotations
 from time import sleep
 from typing import Any
 
-import matplotlib.pyplot as plt  # type: ignore
+import matplotlib.pyplot as plt
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 from matplotlib.colors import ListedColormap
 
@@ -18,7 +19,7 @@ class Boids2d(no.Model):
     AVOID_COEFF = 0.05
 
     def __init__(self, N: int, range: float, vision: float, exclusion: float, speed: float) -> None:
-        super().__init__(no.LinearTimeline(0.0, 0.01), no.MonteCarlo.nondeterministic_stream)
+        super().__init__(no.LinearTimeline(0.0, 0.01), no.MonteCarlo.deterministic_independent_stream)
 
         self.N = N
         self.range = range
@@ -44,9 +45,9 @@ class Boids2d(no.Model):
             },
         )
 
-        self.__normalise()
+        self._normalise()
 
-        self.fig, self.g = self.__init_visualisation()
+        self.fig, self.g = self._init_visualisation()
 
         # suppress division by zero warnings
         np.seterr(divide="ignore")
@@ -54,30 +55,30 @@ class Boids2d(no.Model):
     def step(self) -> None:
         if self.paused:
             sleep(0.2)
-            self.__update_visualisation()
+            self._update_visualisation()
             return
 
-        d2, (dx, dy) = self.domain.dists2((self.boids.x, self.boids.y))
+        d2, (dx, dy) = self.domain.dists2((self.boids.x, self.boids.y))  # ty:ignore[invalid-argument-type]
         np.fill_diagonal(d2, np.inf)  # no self-influence
 
         # separate
         too_close = d2 < self.exclusion**2
-        self.__separate(too_close, d2, dx, dy)
+        self._separate(too_close, d2, dx, dy)
 
         # avoid predator
         in_range = d2 < self.vision**2
-        self.__avoid(in_range, d2, dx, dy)
+        self._avoid(in_range, d2, dx, dy)
 
         # mask those that needed to separate
-        in_range = np.logical_and(d2 < self.vision**2, ~too_close).astype(float)
+        in_range = np.logical_and(in_range, ~too_close)
 
-        self.__cohere(in_range, dx, dy)
-        self.__align(in_range)
+        self._cohere(in_range, dx, dy)
+        self._align(in_range)
 
-        self.__normalise()
+        self._normalise()
 
         # set colours
-        self.boids.c = 0.0
+        self.boids.c = 0.0  # ty:ignore[unresolved-attribute]
         self.boids.loc[in_range[0 : self.N_predators].sum(axis=0) != 0, "c"] = 1 / 3
         self.boids.loc[too_close[0 : self.N_predators].sum(axis=0) != 0, "c"] = 2 / 3
         self.boids.loc[0 : self.N_predators - 1, "c"] = 1
@@ -90,19 +91,19 @@ class Boids2d(no.Model):
         )
 
         sleep(0.001)
-        self.__update_visualisation()
+        self._update_visualisation()
 
-    def __align(self, in_range: np.ndarray) -> None:
+    def _align(self, in_range: npt.NDArray[np.bool]) -> None:
         weights = 1.0 / np.sum(in_range, axis=0)
         weights[weights == np.inf] = 0.0
 
-        mean_vx = (in_range * self.boids.vx.values) @ weights
-        mean_vy = (in_range * self.boids.vy.values) @ weights
+        mean_vx = (in_range * self.boids.vx.to_numpy()) @ weights
+        mean_vy = (in_range * self.boids.vy.to_numpy()) @ weights
 
         self.boids.vx += mean_vx * Boids2d.ALIGN_COEFF
         self.boids.vy += mean_vy * Boids2d.ALIGN_COEFF
 
-    def __cohere(self, in_range: np.ndarray, dx: np.ndarray, dy: np.ndarray) -> None:
+    def _cohere(self, in_range: npt.NDArray[np.bool], dx: npt.NDArray[np.float64], dy: npt.NDArray[np.float64]) -> None:
         weights = 1.0 / np.sum(in_range, axis=0)
         weights[weights == np.inf] = 0.0
         x = (in_range * dx) @ weights
@@ -111,19 +112,31 @@ class Boids2d(no.Model):
         self.boids.vx += x * Boids2d.COHERE_COEFF
         self.boids.vy += y * Boids2d.COHERE_COEFF
 
-    def __separate(self, in_range: np.ndarray, d2: np.ndarray, dx: np.ndarray, dy: np.ndarray) -> None:
+    def _separate(
+        self,
+        in_range: npt.NDArray[np.bool],
+        d2: npt.NDArray[np.float64],
+        dx: npt.NDArray[np.float64],
+        dy: npt.NDArray[np.float64],
+    ) -> None:
         # TODO clip d2?
         # impact on v is proportional to 1/f
         f = Boids2d.SEPARATE_COEFF / d2 * in_range
         self.boids.vx += (f * dx).sum(axis=0)
         self.boids.vy += (f * dy).sum(axis=0)
 
-    def __avoid(self, in_range: np.ndarray, d2: np.ndarray, dx: np.ndarray, dy: np.ndarray) -> None:
+    def _avoid(
+        self,
+        in_range: npt.NDArray[np.bool],
+        d2: npt.NDArray[np.float64],
+        dx: npt.NDArray[np.float64],
+        dy: npt.NDArray[np.float64],
+    ) -> None:
         f = Boids2d.AVOID_COEFF / d2[0 : self.N_predators, :] * in_range[0 : self.N_predators, :]
         self.boids.vx += (f * dx[0 : self.N_predators, :]).sum(axis=0)
         self.boids.vy += (f * dy[0 : self.N_predators, :]).sum(axis=0)
 
-    def __normalise(self) -> None:
+    def _normalise(self) -> None:
         norm = np.clip(np.sqrt(self.boids.vx**2 + self.boids.vy**2), a_min=0.00001, a_max=None)
         self.boids.vx *= self.speed / norm
         self.boids.vy *= self.speed / norm
@@ -132,7 +145,7 @@ class Boids2d(no.Model):
         self.boids.loc[0 : self.N_predators - 1, "vx"] *= 1.3
         self.boids.loc[0 : self.N_predators - 1, "vy"] *= 1.3
 
-    def __init_visualisation(self) -> tuple[Any, Any]:
+    def _init_visualisation(self) -> tuple[Any, Any]:
         plt.ion()
 
         fig = plt.figure(constrained_layout=True, figsize=(8, 8))
@@ -165,7 +178,7 @@ class Boids2d(no.Model):
 
         return fig, g
 
-    def __update_visualisation(self) -> None:
+    def _update_visualisation(self) -> None:
         self.g.set_offsets(np.c_[self.boids.x, self.boids.y])
         self.g.set_UVC(self.boids.vx / self.speed, self.boids.vy / self.speed, self.boids.c.values)
         self.fig.canvas.flush_events()

@@ -5,8 +5,8 @@ The main vanishing point of this example is to illustrate how different processe
 can interact within the model, and how to synchronise the random streams in each process
 """
 
-from black_scholes import BlackScholes
-from helpers import Market, Option
+from black_scholes import BlackScholes  # ty:ignore[unresolved-import]
+from helpers import Market, Option  # ty:ignore[unresolved-import]
 
 import neworder
 

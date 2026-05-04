@@ -1,6 +1,7 @@
 from enum import Enum
 
 import numpy as np
+import numpy.typing as npt
 
 
 # classification UNION_STATE
@@ -18,7 +19,7 @@ class Parity(Enum):
     PREGNANT = 1
 
 
-def partition(start: float, finish: float, step: float = 1.0) -> np.ndarray[np.float64, np.dtype[np.float64]]:
+def partition(start: float, finish: float, step: float = 1.0) -> npt.NDArray[np.float64]:
     """Helper function to return an inclusive equal-spaced range, i.e. finish will be the last element"""
     # ensure finish is always included
     return np.append(np.arange(start, finish, step), finish)

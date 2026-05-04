@@ -10,7 +10,7 @@ from typing import Any, ClassVar
 
 import numpy as np
 import numpy.typing as npt
-from scipy import signal  # type: ignore
+from scipy import signal
 
 NPFloatArray = npt.NDArray[np.float64]
 
@@ -123,7 +123,7 @@ class Space(Domain):
         if ungroup:
             p = np.split(p, self.dim, axis=1)
             v = np.split(v, self.dim, axis=1)
-        return p, v
+        return p, v  # ty:ignore[invalid-return-type]
 
     def dists2(
         self,
@@ -133,9 +133,9 @@ class Space(Domain):
         """The squared distance between points and separations along each axis"""
         # group tuples into a single array if necessary
         if isinstance(positions, tuple):
-            positions = np.column_stack(positions)
+            positions = np.column_stack(positions)  # ty:ignore[no-matching-overload]
         if isinstance(to_points, tuple):
-            to_points = np.column_stack(to_points)
+            to_points = np.column_stack(to_points)  # ty:ignore[no-matching-overload]
         # distances w.r.t. self if to_points not explicitly specified
         if to_points is None:
             to_points = positions
@@ -251,7 +251,7 @@ class StateGrid(Domain):
 
         ind: NPFloatArray = np.array([indicator(x) for x in self.state]).astype(int)  # automagically preserves shape
         # pad with boundary according to edge policy
-        bounded = np.pad(ind, pad_width=1, mode=self.__MODE_LOOKUP[self.edge])  # type: ignore # bug?
+        bounded = np.pad(ind, pad_width=1, mode=self.__MODE_LOOKUP[self.edge])  # ty:ignore[no-matching-overload]
 
         # count neighbours, drop padding, covert to int
         count = signal.convolve(bounded, self.kernel, mode="same", method="direct")[(slice(1, -1),) * self.dim].astype(

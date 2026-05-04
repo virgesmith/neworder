@@ -3,10 +3,10 @@ Competing risks - fertility & mortality
 """
 
 # model implementation
-from people import People
+from people import People  # ty:ignore[unresolved-import]
 
 # separate visualisation code
-from visualise import plot
+from visualise import plot  # ty:ignore[unresolved-import]
 
 import neworder
 

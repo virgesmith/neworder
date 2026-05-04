@@ -5,16 +5,16 @@ import pandas as pd
 
 
 class Hist:
-    def __init__(self, data: pd.DataFrame, numbins: int) -> None:
+    def __init__(self, data: pd.Series, numbins: int) -> None:
         fig, ax = plt.subplots()
         # see https://matplotlib.org/api/_as_gen/matplotlib.pyplot.hist.html
         self.n, _bins, self.patches = plt.hist(data, numbins, facecolor="black")
 
-        ax.set_title("Discrete case-based mortality model ({len(data)} people)")
+        ax.set_title(f"Discrete case-based mortality model ({len(data)} people)")
         ax.set_xlabel("Age at Death")
         ax.set_ylabel("Persons")
 
-        self.anim = animation.FuncAnimation(fig, self.__animate, interval=100, frames=numbins, repeat=False)
+        self.anim = animation.FuncAnimation(fig, self._animate, interval=100, frames=numbins, repeat=False)
 
     def save(self, filename: str) -> None:
         # there seems to be no way of preventing passing the loop once setting to the saved gif and it loops forever, which is very annoying
@@ -27,9 +27,9 @@ class Hist:
     def show(self) -> None:
         plt.show()
 
-    def __animate(self, frameno: int) -> list | list[list]:
+    def _animate(self, frameno: int):
         i = 0
-        for rect, h in zip(self.patches, self.n, strict=False):
+        for rect, h in zip(self.patches, self.n, strict=True):  # ty:ignore[not-iterable, invalid-argument-type]
             rect.set_height(h if i <= frameno else 0)
             i = i + 1
         return self.patches

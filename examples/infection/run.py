@@ -1,4 +1,4 @@
-from infection import Infection
+from infection import Infection  # ty:ignore[unresolved-import]
 
 import neworder as no
 

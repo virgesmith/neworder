@@ -5,8 +5,8 @@ population.py: Model implementation for population microsimulation
 from pathlib import Path
 
 import numpy as np
-import pandas as pd  # type: ignore
-import pyramid
+import pandas as pd
+import pyramid  # ty:ignore[unresolved-import]
 
 import neworder
 
@@ -38,8 +38,8 @@ class Population(neworder.Model):
         self.out_migration = pd.read_csv(out_migration_file, index_col=[0, 1, 2])
 
         # make gender and age categorical
-        self.population.DC1117EW_C_AGE = self.population.DC1117EW_C_AGE.astype("category")
-        self.population.DC1117EW_C_SEX = self.population.DC1117EW_C_SEX.astype("category")
+        self.population.DC1117EW_C_AGE = self.population.DC1117EW_C_AGE.astype("category")  # ty:ignore[unresolved-attribute]
+        self.population.DC1117EW_C_SEX = self.population.DC1117EW_C_SEX.astype("category")  # ty:ignore[unresolved-attribute]
 
         # actual age is randomised within the bound of the category (NB category values are age +1)
         self.population["Age"] = self.population.DC1117EW_C_AGE.astype(int) - self.mc.ustream(len(self.population))
@@ -59,11 +59,11 @@ class Population(neworder.Model):
     def age(self) -> None:
         # Increment age by timestep and update census age category (used for ASFR/ASMR lookup)
         # NB census age category max value is 86 (=85 or over)
-        self.population.Age = (
+        self.population.Age = (  # ty:ignore[invalid-assignment]
             self.population.Age + 1
         )  # NB self.timeline.dt wont be exactly 1 as based on an average length year of 365.2475 days
         # reconstruct census age group
-        self.population.DC1117EW_C_AGE = np.clip(np.ceil(self.population.Age), 1, 86).astype(int)
+        self.population.DC1117EW_C_AGE = np.clip(np.ceil(self.population.Age), 1, 86).astype(int)  # ty:ignore[invalid-assignment]
 
     def births(self) -> None:
         # First consider only females
@@ -71,7 +71,9 @@ class Population(neworder.Model):
 
         # Now map the appropriate fertility rate to each female
         # might be a more efficient way of generating this array
-        rates = females.join(self.fertility, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"].values
+        rates = females.join(self.fertility, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])[
+            "Rate"
+        ].to_numpy()
         # Then randomly determine if a birth occurred
         h = self.mc.hazard(rates * self.timeline.dt)
 
@@ -92,7 +94,7 @@ class Population(neworder.Model):
         rates = self.population.join(self.mortality, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"]
 
         # Then randomly determine if a death occurred
-        h = self.mc.hazard(rates.values * self.timeline.dt)
+        h = self.mc.hazard(rates.to_numpy() * self.timeline.dt)
 
         # Finally remove deceased from table
         self.population = self.population[h != 1]
@@ -102,7 +104,7 @@ class Population(neworder.Model):
         # - sample counts of migrants according to intensity
         # - append result to population
 
-        self.in_migration["count"] = self.mc.counts(self.in_migration.Rate.values, self.timeline.dt)
+        self.in_migration["count"] = self.mc.counts(self.in_migration.Rate.to_numpy(), self.timeline.dt)
         h_in = self.in_migration.loc[self.in_migration.index.repeat(self.in_migration["count"])].drop(
             ["Rate", "count"], axis=1
         )
@@ -114,7 +116,7 @@ class Population(neworder.Model):
         # internal emigration:
         out_rates = self.population.join(self.out_migration, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])[
             "Rate"
-        ].values
+        ].to_numpy()
         h_out = self.mc.hazard(out_rates * self.timeline.dt)
         # add incoming & remove outgoing migrants
         self.population = pd.concat((self.population[h_out != 1], h_in))

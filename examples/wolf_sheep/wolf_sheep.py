@@ -1,8 +1,8 @@
 from typing import Any
 
-import matplotlib.pyplot as plt  # type: ignore
+import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd  # type: ignore
+import pandas as pd
 
 import neworder as no
 
@@ -129,7 +129,7 @@ class WolfSheep(no.Model):
 
     def __step_grass(self) -> None:
         # grow grass
-        self.grass.countdown = np.clip(self.grass.countdown - 1, 0, None)
+        self.grass.countdown = np.clip(self.grass.countdown - 1, 0, None)  # ty:ignore[unresolved-attribute]
 
     def __step_wolves(self) -> None:
         # move wolves (wrapped) and update cell
@@ -208,8 +208,8 @@ class WolfSheep(no.Model):
 
         # agent map
         ax_g = ax0.imshow(
-            np.flip(self.grass.countdown.values.reshape(self.height, self.width), axis=0),
-            extent=[0, self.width, 0, self.height],
+            np.flip(self.grass.countdown.to_numpy().reshape(self.height, self.width), axis=0),
+            extent=(0, self.width, 0, self.height),
             cmap="Greens_r",
             alpha=0.5,
         )
@@ -220,15 +220,15 @@ class WolfSheep(no.Model):
         # wolf and sheep population
         ax_wt = ax1.plot(self.t, self.wolf_pop, color=WOLF_COLOUR)
         ax_st = ax1.plot(self.t, self.sheep_pop, color=SHEEP_COLOUR)
-        ax1.set_xlim([0, 100])
-        ax1.set_ylim([0, max(self.wolf_pop[0], self.sheep_pop[0])])
+        ax1.set_xlim((0, 100))
+        ax1.set_ylim((0, max(self.wolf_pop[0], self.sheep_pop[0])))
         ax1.set_ylabel("Population")
         ax1.legend(["Wolves", "Sheep"])
 
         # grass
         ax_gt = ax2.plot(0, self.grass_prop[0], color=GRASS_COLOUR)
-        ax2.set_xlim([0, 100])
-        ax2.set_ylim([0.0, 100.0])
+        ax2.set_xlim((0, 100))
+        ax2.set_ylim((0.0, 100.0))
         ax2.set_ylabel("% fully grown grass")
         ax2.set_xlabel("Step")
 
@@ -249,7 +249,7 @@ class WolfSheep(no.Model):
 
         plt.tight_layout()
 
-        self.figs.canvas.mpl_connect("key_press_event", lambda event: self.halt() if event.key == "q" else None)
+        self.figs.canvas.mpl_connect("key_press_event", lambda event: self.halt() if event.key == "q" else None)  # ty:ignore[unresolved-attribute]
 
         self.figs.canvas.flush_events()
 
@@ -271,17 +271,17 @@ class WolfSheep(no.Model):
         )
 
     def __update_plot(self) -> None:
-        self.ax_g.set_data(np.flip(self.grass.countdown.values.reshape(self.height, self.width), axis=0))
+        self.ax_g.set_data(np.flip(self.grass.countdown.to_numpy().reshape(self.height, self.width), axis=0))
         self.ax_w.set_offsets(np.c_[self.wolves.x, self.wolves.y])
         self.ax_s.set_offsets(np.c_[self.sheep.x, self.sheep.y])
 
         self.ax_wt[0].set_data(self.t, self.wolf_pop)
         self.ax_st[0].set_data(self.t, self.sheep_pop)
-        self.ax_t1.set_xlim([0, self.t[-1]])
-        self.ax_t1.set_ylim([0, max(max(self.wolf_pop), max(self.sheep_pop))])
+        self.ax_t1.set_xlim((0, self.t[-1]))
+        self.ax_t1.set_ylim((0, max(max(self.wolf_pop), max(self.sheep_pop))))
 
         self.ax_gt[0].set_data(self.t, self.grass_prop)
-        self.ax_t2.set_xlim([0, self.t[-1]])
+        self.ax_t2.set_xlim((0, self.t[-1]))
 
         if not self.wolves.empty:
             n, _bins = np.histogram(self.wolves.speed, bins=self.b_ws)

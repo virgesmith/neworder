@@ -10,8 +10,8 @@ This version implements the model using multithreading rather than MPI
 import sys
 from concurrent.futures import ThreadPoolExecutor
 
-from black_scholes_mt import BlackScholesMT, greeks
-from helpers import Market, Option
+from black_scholes_mt import BlackScholesMT, greeks  # ty:ignore[unresolved-import]
+from helpers import Market, Option  # ty:ignore[unresolved-import]
 
 import neworder
 
@@ -32,13 +32,22 @@ option = Option(callput="CALL", strike=100.0, expiry=0.75)
 nsims = 1000000  # number of underlyings to simulate
 
 
+is_ft = sys._is_gil_enabled() if sys.version_info.minor > 12 else True
+
+
+def _is_ft() -> bool:
+    if sys.version_info.minor > 12:
+        return sys._is_gil_enabled()
+    return False
+
+
 def run_thread(index: int) -> BlackScholesMT:
     model = BlackScholesMT(option, market, nsims, index)
     neworder.run(model)
     return model
 
 
-print(f"neworder FT: {neworder.freethreaded()}, python FT:{not sys._is_gil_enabled()}", sys.version)
+print(f"neworder FT: {neworder.freethreaded()}, python FT:{is_ft}", sys.version)
 
 # instantiate and run threads
 with ThreadPoolExecutor() as executor:

@@ -105,19 +105,21 @@ mv stubs/_neworder_core/time-stubs/__init__.pyi neworder/time.pyi
 
 ## Release Checklist
 
-Development should happen on a release branch (NOT on main). Any commit to main triggers a workflow that automatically bumps the version, tags the code, builds a package, publishes it to PyPI, then builds a docker image containing the examples and pushes this to docker hub.
+!!! Note "Development Process"
+    Development follows the typical cycle of issues :material-arrow-right: PR with CI :material-arrow-right: main
+    ensuring code quality/correctness. Remember that type stubs may need to be regenerated if any changes are made to
+    the extension module.
 
-!!! warning "Automatic version bumping"
-    By default the patch version is bumped but this can be changed to minor or major as necessary in `.github/workflows/pypi-release.yml`. Once a specific version has been published, it cannot be modified (only deleted), so if in doubt modify the action to publish a release candidate to `test.pypi.org`.
 
-1. Create some release notes based on commit comments since previous release, e.g.: `git log 1.2.1..HEAD --oneline`
-1. Regenerate type stubs (see above) as necessary
-1. Clean, rebuild, run tests, check type annotations.
-1. Commit changes to release branch
-1. Ensure all checks passing and merge to `main`
-1. Check (fix in patch release if necessary):
-    - pypi release
-    - docker image
-    - documentation
-1. Create release on github, using the tag and the release notes from above
-1. Check zenodo for new DOI and ensure documentation references it.
+When a release is ready:
+
+1. Ensure version in pyproject.toml has been updated (to say `X.Y.Z`)
+1. Create a release in github, using a new tag `vX.Y.Z` and release notes based on commits since previous release, e.g.: `git log 1.2.1..HEAD --oneline`. CI will then:
+    - publish the release to PYPI
+    - generate examples artifacts - these should be copied to the release
+1. [Currently manual] build and push the docker image (NB uses latest published release, but local examples)
+
+Note:
+
+- [neworder.readthedocs.io](https://neworder.readthedocs.io) should default "stable" to the latest tag. ("latest" will point to main)
+- [zenodo](https://zenodo.org/) should automatically see the new tag too

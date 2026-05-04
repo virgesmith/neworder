@@ -1,8 +1,8 @@
 import time
 
 import numpy as np
-import visualisation
-from markov_chain import MarkovChain
+import visualisation  # ty:ignore[unresolved-import]
+from markov_chain import MarkovChain  # ty:ignore[unresolved-import]
 
 import neworder as no
 

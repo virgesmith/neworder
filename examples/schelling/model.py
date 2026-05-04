@@ -1,5 +1,5 @@
 import numpy as np
-from schelling import Schelling
+from schelling import Schelling  # ty:ignore[unresolved-import]
 
 import neworder
 

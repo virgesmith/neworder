@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-import matplotlib.pyplot as plt  # type: ignore
+import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import colors
-from matplotlib.image import AxesImage  # type: ignore
+from matplotlib.image import AxesImage
 
 import neworder as no
 
@@ -66,7 +66,7 @@ class Conway(no.Model):
         plt.axis("off")
 
         fig.canvas.flush_events()
-        fig.canvas.mpl_connect("key_press_event", lambda event: self.halt() if event.key == "q" else None)
+        fig.canvas.mpl_connect("key_press_event", lambda event: self.halt() if event.key == "q" else None)  # ty:ignore[unresolved-attribute]
 
         return fig, g
 

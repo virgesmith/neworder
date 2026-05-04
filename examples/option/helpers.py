@@ -3,7 +3,7 @@ from typing import Literal
 
 import numpy as np
 import numpy.typing as npt
-import scipy.special  # type: ignore
+import scipy.special
 
 
 @dataclass
