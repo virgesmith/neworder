@@ -25,3 +25,18 @@ jobs:
         run: uv build --wheel
       - name: Publish package to PyPI
         run: uv publish
+      - name: zip examples
+        run: |
+          zip -r examples.zip examples/
+          tar czfv examples.tgz examples/
+      - name: upload zip artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: examples.zip
+          path: examples.zip
+          # retention-days: 14
+      - name: upload tgz artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: examples.tgz
+          path: examples.tgz
