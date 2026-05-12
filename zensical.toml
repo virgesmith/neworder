@@ -56,6 +56,7 @@ features = [
     "content.code.copy",
     "content.code.annotate"
 ]
+font.text = "PT Serif"
 
 [project.theme.icon]
 repo = "fontawesome/brands/github"
