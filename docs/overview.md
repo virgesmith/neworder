@@ -1,4 +1,4 @@
-# Overview
+# ![logo](img/favicon-32.png) Overview
 
 ## The Framework
 
