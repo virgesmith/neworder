@@ -67,10 +67,9 @@ def define_env(env):
     @env.macro
     def insert_zenodo_field(*keys: str) -> Any:
         result = get_zenodo_record()
-        # for key in keys:
-        #     result = result[key]
-        # return result
-        return ""
+        for key in keys:
+            result = result[key]
+        return result
 
     @env.macro
     def include_snippet(filename, tag=None, show_filename=True):
