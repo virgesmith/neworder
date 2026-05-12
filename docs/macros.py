@@ -54,11 +54,7 @@ def write_requirements() -> None:
             fd.writelines(
                 f"{dep}=={importlib.metadata.version(dep)}\n"
                 for dep in [
-                    "mkdocs",
-                    "mkdocs-macros-plugin",
-                    "mkdocs-material",
-                    "mkdocs-material-extensions",
-                    "mkdocs-video",
+                    "zensical",
                     "requests",
                 ]
             )
@@ -71,14 +67,15 @@ def define_env(env):
     @env.macro
     def insert_zenodo_field(*keys: str) -> Any:
         result = get_zenodo_record()
-        for key in keys:
-            result = result[key]
-        return result
+        # for key in keys:
+        #     result = result[key]
+        # return result
+        return ""
 
     @env.macro
     def include_snippet(filename, tag=None, show_filename=True):
         """looks for code in <filename> between lines containing "!<tag>!" """
-        full_filename = Path(env.project_dir) / filename
+        full_filename = Path(filename)
 
         file_type = full_filename.suffix
         # default to literal "text" for inline code style
