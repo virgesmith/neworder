@@ -61,7 +61,7 @@ For an explanation of why it's implemented like this, see [here](../tips.md#dead
 As usual, to run the model we just execute the model script, but via MPI, e.g. from the command line, something like
 
 ```bash
-mpiexec -n 8 python examples/parallel/run_mt.py
+mpiexec -n 8 python examples/parallel/run_mpi.py
 ```
 
 adjusting the path as necessary, and optionally changing the number of processes.
