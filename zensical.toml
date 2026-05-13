@@ -4,7 +4,7 @@ site_url = "https://neworder.readthedocs.io"
 repo_url = "https://github.com/virgesmith/neworder"
 site_author = "Andrew P Smith"
 site_description = "Documentation for the neworder microsimulation framework"
-copyright = "Copyright &copy; 2017-2026 Andrew P Smith – <a href=\"#__consent\">Change cookie settings</a>"
+copyright = "Copyright &copy; 2017-2026 Andrew P Smith <a href=\"#__consent\">Change cookie settings</a>"
 
 nav = [
   { Home = "index.md" },
@@ -47,6 +47,15 @@ extra_javascript = [
 
 [project.validation]
 unresolved_references = false
+
+[project.extra.consent]
+title = "Cookie consent"
+description = "This site uses cookies with your permission."
+actions = [
+    "accept",
+    "reject",
+    "manage"
+]
 
 [project.theme]
 favicon = "img/favicon.ico"
