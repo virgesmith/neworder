@@ -28,4 +28,4 @@ jobs:
         run: uv sync --dev --extra parallel
       - name: Test with pytest
         run: |
-          mpiexec -n 2 pytest -s
+          mpiexec -n 2 uv run pytest -s
