@@ -19,26 +19,18 @@ _inline_code_styles = {
     ".md": None,
 }
 
-# this is the overall record id, not a specific version
-_NEWORDER_ZENODO_ID = 4031821  # search using this (or DOI 10.5281/zenodo.4031821) just doesnt work
-
 
 @cache
 def get_zenodo_record() -> dict[str, Any]:
-    try:
-        response = requests.get(
-            "https://zenodo.org/api/records",
-            params={
-                "q": "(virgesmith) AND (neworder)",  # this is the only query that seems to work
-                "access_token": os.getenv("ZENODO_PAT"),
-            },
-        )
-        response.raise_for_status()
-        # with open("zenodo-result.json", "w") as fd:
-        #     fd.write(response.text)
-        return response.json()["hits"]["hits"][0]
-    except Exception as e:
-        return {f"{e.__class__.__name__}": f"{e} while retrieving zenodo record"}
+    response = requests.get(
+        "https://zenodo.org/api/records",
+        params={
+            "q": "(virgesmith) AND (neworder)",  # this is the only query that seems to work
+            "access_token": os.getenv("ZENODO_PAT"),
+        },
+    )
+    response.raise_for_status()
+    return response.json()["hits"]["hits"][0]
 
 
 def write_requirements() -> None:
@@ -66,10 +58,13 @@ def write_requirements() -> None:
 def define_env(env):
     @env.macro
     def insert_zenodo_field(*keys: str) -> Any:
-        result = get_zenodo_record()
-        for key in keys:
-            result = result[key]
-        return result
+        try:
+            result = get_zenodo_record()
+            for key in keys:
+                result = result[key]
+            return result
+        except:  # noqa: E722
+            return "<error retrieving zenodo record>"
 
     @env.macro
     def include_snippet(filename, tag=None, show_filename=True):
