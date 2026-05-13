@@ -21,9 +21,9 @@ jobs:
         python-version: ["3.12", "3.13", "3.14", "3.14t"]
         os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Install
-      uses: astral-sh/setup-uv@v5
+      uses: astral-sh/setup-uv@v8
       with:
         python-version: ${{ matrix.python-version }}
     - name: Build
