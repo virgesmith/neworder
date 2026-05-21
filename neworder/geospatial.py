@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Generator
+from collections.abc import Iterable
 from typing import Any
 
 try:
@@ -60,10 +60,10 @@ class GeospatialGraph:
     def all_edges(self) -> gpd.GeoDataFrame:
         return self.__edges
 
-    def edges_to(self, node: int) -> Generator[list[tuple[int, int]], None, None]:
+    def edges_to(self, node: int) -> Iterable[tuple[int, int]]:
         return self.__graph.in_edges(node)
 
-    def edges_from(self, node: int) -> Generator[list[tuple[int, int]], None, None]:
+    def edges_from(self, node: int) -> Iterable[tuple[int, int]]:
         return self.__graph.out_edges(node)
 
     def shortest_path(self, origin: int, dest: int, **kwargs: Any) -> LineString:
