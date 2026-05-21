@@ -6,11 +6,11 @@ import neworder as no
 
 
 def test_invalid() -> None:
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         no.Space(np.array([]), np.array([]))
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         no.Space(np.array([0.0]), np.array([0.0]))
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         no.Space(np.array([0.0, 1.0]), np.array([1.0, -1.0]))
 
 
