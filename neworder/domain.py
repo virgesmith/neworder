@@ -43,7 +43,7 @@ class Domain:
 
     @property
     def edge(self) -> Edge:
-        """The tyoe of edge constraint"""
+        """The type of edge constraint"""
         return self.__edge
 
     @property
@@ -62,17 +62,20 @@ class Space(Domain):
     @staticmethod
     def unbounded(dim: int) -> Space:
         """Construct an unbounded Space"""
-        assert dim > 0
+        if dim <= 0:
+            raise ValueError("dimension must be positive")
         return Space(np.full(dim, -np.inf), np.full(dim, +np.inf), edge=Edge.UNBOUNDED)
 
     def __init__(self, min: NPFloatArray, max: NPFloatArray, edge: Edge = Edge.CONSTRAIN):
-        assert len(min) and len(min) == len(max)
+        if not len(min) or len(min) != len(max):
+            raise ValueError("min and max must have the same non-zero length")
         super().__init__(len(min), edge, True)
 
-        # Space supports all edge behaviours
-        assert edge in [Edge.UNBOUNDED, Edge.WRAP, Edge.CONSTRAIN, Edge.BOUNCE]
+        if edge not in [Edge.UNBOUNDED, Edge.WRAP, Edge.CONSTRAIN, Edge.BOUNCE]:
+            raise ValueError("edge policy must be one of Edge.UNBOUNDED, Edge.WRAP, Edge.CONSTRAIN, Edge.BOUNCE")
 
-        assert np.all(max > min)
+        if not np.all(max > min):
+            raise ValueError("max must be greater than min in all dimensions")
 
         self.min = min
         self.max = max
@@ -92,9 +95,12 @@ class Space(Domain):
         if isinstance(velocities, tuple):
             velocities = np.column_stack(velocities)
 
-        assert positions.dtype == float
-        assert velocities.dtype == float
-        assert positions.shape[-1] == self.dim and velocities.shape[-1] == self.dim
+        if positions.dtype != float:
+            raise TypeError("positions must have dtype float")
+        if velocities.dtype != float:
+            raise TypeError("velocities must have dtype float")
+        if positions.shape[-1] != self.dim or velocities.shape[-1] != self.dim:
+            raise ValueError(f"positions and velocities must have {self.dim} dimensions")
         if self.edge == Edge.UNBOUNDED:
             p = positions + velocities * delta_t
             v = velocities
@@ -139,8 +145,10 @@ class Space(Domain):
         # distances w.r.t. self if to_points not explicitly specified
         if to_points is None:
             to_points = positions
-        assert positions.dtype == float
-        assert to_points.dtype == float
+        if positions.dtype != float:
+            raise TypeError("positions must have dtype float")
+        if to_points.dtype != float:
+            raise TypeError("to_points must have dtype float")
         n = positions.shape[0]
         m = to_points.shape[0]
         d = positions.shape[1]
@@ -170,11 +178,18 @@ class Space(Domain):
         """Returns distances between the points"""
         return np.sqrt(self.dists2(positions, to_points)[0])
 
-    def in_range(self, distance: Any, positions: Any, count: bool | None = False) -> NPFloatArray:
-        """Returns either indices or counts of points within the specified distance from each point"""
-        ind = np.where(self.dists2(positions)[0] < distance * distance, 1, 0)
-        # fill diagonal so as not to include self - TODO how does this work if to_points!=positions
-        np.fill_diagonal(ind, 0)
+    def in_range(
+        self,
+        distance: Any,
+        positions: Any,
+        to_points: NPFloatArray | None = None,
+        count: bool | None = False,
+    ) -> NPFloatArray:
+        """Returns either indices or counts of points within the specified distance from each point.
+        If to_points is None, compares positions to themselves (excluding self)."""
+        ind = np.where(self.dists2(positions, to_points)[0] < distance * distance, 1, 0)
+        if to_points is None:
+            np.fill_diagonal(ind, 0)
         return ind if not count else np.sum(ind, axis=1)
 
     def __repr__(self) -> str:
@@ -219,7 +234,8 @@ class StateGrid(Domain):
         self.kernel[(1,) * self.dim] = 0
 
     def __get_point(self, p: tuple[int, ...]) -> tuple[int, ...]:
-        assert len(p) == self.state.ndim, f"dimensionality mismatch: {len(p)} but grid has {self.state.ndim}"
+        if len(p) != self.state.ndim:
+            raise ValueError(f"dimensionality mismatch: {len(p)} but grid has {self.state.ndim}")
         match self.edge:
             case Edge.WRAP:
                 p = tuple(p[i] % self.state.shape[i] for i in range(len(p)))
