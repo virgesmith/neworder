@@ -45,7 +45,7 @@ int32_t no::MonteCarlo::nondeterministic_stream() noexcept {
   return rand();
 }
 
-no::MonteCarlo::MonteCarlo(int32_t seed) noexcept : m_seed(seed), m_prng(m_seed) {}
+no::MonteCarlo::MonteCarlo(std::function<int32_t()> seeder) noexcept : m_seeder(std::move(seeder)), m_seed(m_seeder()), m_prng(m_seed) {}
 
 int32_t no::MonteCarlo::seed() const noexcept { return m_seed; }
 
@@ -58,7 +58,7 @@ void no::MonteCarlo::init_bitgen(py::capsule capsule) {
   bitgen->next_raw = [](void* p) { return static_cast<no::MonteCarlo*>(p)->raw(); };
 }
 
-void no::MonteCarlo::reset() noexcept { m_prng.seed(m_seed); }
+void no::MonteCarlo::reset() noexcept { m_seed = m_seeder(); m_prng.seed(m_seed); }
 
 std::string no::MonteCarlo::repr() const noexcept { return "<neworder.MonteCarlo seed=%%>"s % seed(); }
 
