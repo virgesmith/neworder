@@ -10,7 +10,7 @@
 
 no::Model::Model(no::Timeline& timeline, const py::function& seeder)
     : m_runState(no::Model::NOT_STARTED), m_timeline(timeline), m_timeline_handle(py::cast(&timeline)),
-      m_monteCarlo(seeder().cast<int32_t>()) {
+      m_monteCarlo([seeder]() { return seeder().cast<int32_t>(); }) {
   no::log("model init: timeline=%% mc=%%"s % m_timeline.repr() % m_monteCarlo.repr());
 }
 

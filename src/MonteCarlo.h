@@ -23,8 +23,8 @@ public:
 
   static int32_t nondeterministic_stream() noexcept;
 
-  // constructs given a seed
-  MonteCarlo(int32_t seed) noexcept;
+  // constructs given a seeder callable, invoked on construction and on each reset()
+  MonteCarlo(std::function<int32_t()> seeder) noexcept;
 
   void init_bitgen(py::capsule capsule);
 
@@ -77,6 +77,7 @@ private:
   // Use this over std::uniform_real_distribution as can make C++ and rust implementations produce identical streams
   double u01() noexcept;
 
+  std::function<int32_t()> m_seeder;
   int32_t m_seed;
   std::mt19937 m_prng;
 };

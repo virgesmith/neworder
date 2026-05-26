@@ -6,6 +6,24 @@ import pytest
 import neworder as no
 
 
+def test_nondeterministic_reset() -> None:
+    m = no.Model(no.NoTimeline(), no.MonteCarlo.nondeterministic_stream)
+    seeds = {m.mc.seed()}
+    for _ in range(5):
+        m.mc.reset()
+        seeds.add(m.mc.seed())
+    assert len(seeds) == 6
+
+
+def test_deterministic_reset() -> None:
+    m = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
+    seeds = {m.mc.seed()}
+    for _ in range(5):
+        m.mc.reset()
+        seeds.add(m.mc.seed())
+    assert len(seeds) == 1
+
+
 def test_mc_property(base_model: no.Model) -> None:
     base_model.mc.ustream(1)
     base_model.mc.reset()
