@@ -29,19 +29,9 @@
 
 ## System Requirements
 
-*neworder* requires python 3.12 or above and runs on 64-bit linux, OSX and Windows platforms. To take advantage of the optional parallel execution functionality, you may also need to install an MPI implementation, such as [open-mpi](https://www.open-mpi.org/) or [ms-mpi](https://docs.microsoft.com/en-us/message-passing-interface/microsoft-mpi). (As of Nov 2025, [mpich](https://www.mpich.org/) has been noted to cause mpi4py to incorrectly report rank/size).
+*neworder* requires python 3.12 or above and runs on 64-bit linux, OSX and Windows platforms. To take advantage of the optional parallel execution functionality, you will also need an MPI implementation, such as [open-mpi](https://www.open-mpi.org/) or [mpich](https://www.mpich.org/).
 
-For example, to install openmmpi on debian-based linux:
-
-```bash
-sudo apt install -y build-essential openmpi-bin
-```
-
-Or open-mpi on OSX,
-
-```bash
-brew install open-mpi
-```
+Installation is handled automatically using extras, see below.
 
 ## Installation
 
@@ -53,19 +43,21 @@ For a basic (serial only) installation,
 pip install neworder
 ```
 
-or to enable parallel execution using MPI:
+or to enable parallel execution using MPI use one of the following:
 
 ```bash
-pip install neworder[parallel]
+pip install neworder[parallel-openmpi]  # install the openmpi runtime
+pip install neworder[parallel-mpich]  # install the mpich runtime
+pip install neworder[parallel-native]  # use the system's mpi runtime
 ```
 
-or enable the (geo)spatial graph functionality:
+and to enable the (geo)spatial graph functionality:
 
 ```bash
 pip install neworder[geospatial]
 ```
 
-or both:
+or a combination of the two:
 
 ```bash
 pip install neworder[parallel,geospatial]
