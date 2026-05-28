@@ -31,8 +31,6 @@
 
 *neworder* requires python 3.12 or above and runs on 64-bit linux, OSX and Windows platforms. To take advantage of the optional parallel execution functionality, you will also need an MPI implementation, such as [open-mpi](https://www.open-mpi.org/) or [mpich](https://www.mpich.org/). Note that MPI packages are not currently available for Windows via pip — Windows users must install an MPI runtime separately (e.g. [MS-MPI](https://learn.microsoft.com/en-us/message-passing-interface/microsoft-mpi)) and use the `parallel-native` extra.
 
-Installation is handled automatically using extras, see below.
-
 ## Installation
 
 The package can be installed from [pypi](https://pypi.org/project/neworder/).
@@ -46,8 +44,8 @@ pip install neworder
 or to enable parallel execution using MPI use one of the following:
 
 ```bash
-pip install neworder[parallel-openmpi]  # install the openmpi runtime
-pip install neworder[parallel-mpich]  # install the mpich runtime
+pip install neworder[parallel-openmpi]  # install the openmpi runtime in the virtual environment
+pip install neworder[parallel-mpich]  # install the mpich runtime in the virtual environment
 pip install neworder[parallel-native]  # use the system's mpi runtime
 ```
 
@@ -60,7 +58,7 @@ pip install neworder[geospatial]
 or a combination of the two:
 
 ```bash
-pip install neworder[parallel,geospatial]
+pip install neworder[parallel-openmpi,geospatial]
 ```
 
 ### Docker
