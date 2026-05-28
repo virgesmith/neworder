@@ -36,7 +36,7 @@ class ParallelMPI(neworder.Model):
         for s in range(neworder.mpi.SIZE):
             if s != neworder.mpi.RANK:
                 emigrants = self.pop[self.pop.state == s]
-                neworder.log("sending {len(emigrants)} emigrants to {s}")
+                neworder.log(f"sending {len(emigrants)} emigrants to {s}")
                 neworder.mpi.COMM.send(emigrants, dest=s)
 
         # remove the emigrants

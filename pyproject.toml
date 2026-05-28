@@ -60,12 +60,18 @@ geospatial = [
   "geopandas>=0.12.2",
   "shapely>=2.0.0"
 ]
-
-parallel = [
-  "mpi4py>=3.0.3"
+parallel-native = [
+  "mpi4py>=4.1.2"
+]
+parallel-openmpi = [
+  "openmpi>=5.0.10",
+  "mpi4py>=4.1.2"
 ]
 
-
+parallel-mpich = [
+  "mpich>=5.0.1",
+  "mpi4py>=4.1.2"
+]
 
 [project.urls]
 "Homepage" = "https://neworder.readthedocs.io/"
