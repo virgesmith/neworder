@@ -17,8 +17,8 @@ else:
             no.mpi.COMM.send(x, dest=1)
         if no.mpi.RANK == 1:
             y = no.mpi.COMM.recv(source=0)
-            no.log(f"MPI: 0 sent {type(x)}={x} 1 recd {type(y)}={y}")
-            if y != x:
+            no.log(f"MPI: 0 sent {x}({type(x).__name__}) 1 recd {y}({type(y).__name__})")
+            if y != x or type(y) is not type(x):
                 return False
         return True
 
