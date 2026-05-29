@@ -6,7 +6,7 @@
 #include "Model.h"
 #include "MonteCarlo.h"
 #include "NPArray.h"
-#include "SplitMixSampler.h"
+#include "SplitMix64.h"
 #include "Timeline.h"
 
 #include "NewOrder.h"
@@ -171,15 +171,16 @@ PYBIND11_MODULE(_neworder_core, m)
       .finalize();
 
   // Hash-based deterministic sampler
-  py::class_<no::SplitMixSampler>(m, "SplitMixSampler", sms_docstr)
+  py::class_<no::SplitMix64>(m, "SplitMix64", sms_docstr)
       .def(py::init([](const py::function& seeder, bool use_counter) {
-               return no::SplitMixSampler([seeder]() { return seeder().cast<int64_t>(); }, use_counter);
+               return no::SplitMix64([seeder]() { return seeder().cast<int64_t>(); }, use_counter);
            }), "seeder"_a, py::kw_only(), "use_counter"_a = false, sms_init_docstr)
-      .def("seed", &no::SplitMixSampler::seed, sms_seed_docstr)
-      .def("counter", &no::SplitMixSampler::counter, sms_counter_docstr)
-      .def("reset", &no::SplitMixSampler::reset, sms_reset_docstr)
-      .def("uarray", &no::SplitMixSampler::uarray, sms_uarray_docstr)
-      .def("__repr__", &no::SplitMixSampler::repr, sms_repr_docstr);
+      .def("seed", &no::SplitMix64::seed, sms_seed_docstr)
+      .def("counter", &no::SplitMix64::counter, sms_counter_docstr)
+      .def("reset", &no::SplitMix64::reset, sms_reset_docstr)
+      .def("uarray", &no::SplitMix64::uarray, sms_uarray_docstr)
+      .def_static("hash64", &no::SplitMix64::hash64, "s"_a, sms_hash64_docstr)
+      .def("__repr__", &no::SplitMix64::repr, sms_repr_docstr);
 
   // statistical utils
   m.def_submodule("stats", stats_docstr)

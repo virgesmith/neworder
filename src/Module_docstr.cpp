@@ -100,7 +100,7 @@ const char* timeline_repr_docstr = R"""(
     Prints a human-readable representation of the timeline object
 )""";
 
-// SplitMixSampler
+// SplitMix64
 
 const char* sms_docstr = R"""(
     A hash-based sampler that produces U[0,1) variates deterministically from integer keys.
@@ -118,7 +118,7 @@ const char* sms_docstr = R"""(
 )""";
 
 const char* sms_init_docstr = R"""(
-    Constructs a SplitMixSampler with a seeder callable and an optional call counter.
+    Constructs a SplitMix64 with a seeder callable and an optional call counter.
 
     The seeder is called immediately to set the initial seed and again on each reset().
     When use_counter=True, a monotonically increasing counter is mixed into the hash before
@@ -143,6 +143,20 @@ const char* sms_counter_docstr = R"""(
 const char* sms_reset_docstr = R"""(
     Resets the call counter to zero. The seeder is called fresh on each uarray() call,
     so reset() only affects the counter.
+)""";
+
+const char* sms_hash64_docstr = R"""(
+    Returns a deterministic 64-bit integer hash of a string.
+
+    Uses FNV-1a to accumulate the string bytes, then applies the SplitMix64 finalizer
+    to diffuse the bits. The result is stable across platforms and Python versions and
+    can be passed directly as a scalar key to uarray().
+
+    Args:
+        s: The string to hash.
+
+    Returns:
+        A signed 64-bit integer.
 )""";
 
 const char* sms_uarray_docstr = R"""(
@@ -179,7 +193,7 @@ const char* sms_uarray_docstr = R"""(
 )""";
 
 const char* sms_repr_docstr = R"""(
-    Returns a human-readable representation of the SplitMixSampler.
+    Returns a human-readable representation of the SplitMix64.
 )""";
 
 // MonteCarlo

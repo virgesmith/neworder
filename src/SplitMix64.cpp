@@ -1,4 +1,4 @@
-#include "SplitMixSampler.h"
+#include "SplitMix64.h"
 #include "ArrayHelpers.h"
 
 // SplitMix64 finalizer — Stafford Variant 13 mixing constants. Do not change.
@@ -16,18 +16,28 @@ uint64_t splitmix64(uint64_t z) noexcept {
 
 } // namespace
 
-no::SplitMixSampler::SplitMixSampler(std::function<int64_t()> seeder, bool use_counter) noexcept
+no::SplitMix64::SplitMix64(std::function<int64_t()> seeder, bool use_counter) noexcept
     : m_seeder(std::move(seeder)), m_use_counter(use_counter), m_counter(0) {}
 
-int64_t no::SplitMixSampler::seed() const { return m_seeder(); }
+int64_t no::SplitMix64::seed() const { return m_seeder(); }
 
-uint64_t no::SplitMixSampler::counter() const noexcept { return m_counter; }
+uint64_t no::SplitMix64::counter() const noexcept { return m_counter; }
 
-void no::SplitMixSampler::reset() noexcept { m_counter = 0; }
+void no::SplitMix64::reset() noexcept { m_counter = 0; }
 
-std::string no::SplitMixSampler::repr() const { return "SplitMixSampler(seed=" + std::to_string(m_seeder()) + ")"; }
+std::string no::SplitMix64::repr() const { return "SplitMix64(seed=" + std::to_string(m_seeder()) + ")"; }
 
-py::array_t<double> no::SplitMixSampler::uarray(py::args raw_args) const {
+int64_t no::SplitMix64::hash64(std::string_view s) noexcept {
+  // FNV-1a accumulates the string bytes then the SplitMix64 finalizer diffuses the bits.
+  uint64_t h = 14695981039346656037ULL; // FNV-64 offset basis
+  for (unsigned char c : s) {
+    h ^= c;
+    h *= 1099511628211ULL; // FNV-64 prime
+  }
+  return static_cast<int64_t>(splitmix64(h));
+}
+
+py::array_t<double> no::SplitMix64::uarray(py::args raw_args) const {
   if (raw_args.empty())
     throw py::value_error("uarray requires at least one argument");
 
@@ -58,9 +68,7 @@ py::array_t<double> no::SplitMixSampler::uarray(py::args raw_args) const {
   }
 
   // Premix all scalar args (in argument order) into a single salt, computed
-  // once per call. This matches the Python original's structure: scalars form a
-  // "context hash" (module, year, draw index, …) that is independent of which
-  // array elements are present, and the counter (if enabled) is folded in first.
+  // once per call. The counter (if enabled) is folded in last.
   uint64_t salt = static_cast<uint64_t>(m_seeder());
   for (const auto& ax : axes)
     if (!ax.is_array)
