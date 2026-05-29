@@ -28,6 +28,7 @@ __all__: list[str] = [
     "NoTimeline",
     "NumericTimeline",
     "Space",
+    "SplitMixSampler",
     "StateGrid",
     "Timeline",
     "as_np",
@@ -42,6 +43,32 @@ __all__: list[str] = [
     "time",
     "verbose",
 ]
+
+class SplitMixSampler:
+    """
+    A hash-based sampler that produces U[0,1) variates deterministically from integer keys.
+    """
+    def __init__(self, seeder: collections.abc.Callable[[], int], *, use_counter: bool = False) -> None:
+        """
+        Constructs a SplitMixSampler with a seeder callable and an optional call counter.
+        """
+    def seed(self) -> int:
+        """
+        Calls the seeder and returns the current seed value.
+        """
+    def counter(self) -> int:
+        """
+        The current call counter. Incremented by each uarray() call when use_counter=True.
+        """
+    def reset(self) -> None:
+        """
+        Resets the call counter to zero.
+        """
+    def uarray(self, *args: int | numpy.typing.NDArray[numpy.int64]) -> numpy.typing.NDArray[numpy.float64]:
+        """
+        Returns a float64 array of U[0,1) values hashed from the supplied integer keys.
+        """
+    def __repr__(self) -> str: ...
 
 class LinearTimeline(Timeline):
     """

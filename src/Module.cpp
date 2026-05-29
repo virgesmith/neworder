@@ -6,6 +6,7 @@
 #include "Model.h"
 #include "MonteCarlo.h"
 #include "NPArray.h"
+#include "SplitMixSampler.h"
 #include "Timeline.h"
 
 #include "NewOrder.h"
@@ -168,6 +169,17 @@ PYBIND11_MODULE(_neworder_core, m)
       .value("COMPLETED", no::Model::COMPLETED)
       .export_values()
       .finalize();
+
+  // Hash-based deterministic sampler
+  py::class_<no::SplitMixSampler>(m, "SplitMixSampler", sms_docstr)
+      .def(py::init([](const py::function& seeder, bool use_counter) {
+               return no::SplitMixSampler([seeder]() { return seeder().cast<int64_t>(); }, use_counter);
+           }), "seeder"_a, py::kw_only(), "use_counter"_a = false, sms_init_docstr)
+      .def("seed", &no::SplitMixSampler::seed, sms_seed_docstr)
+      .def("counter", &no::SplitMixSampler::counter, sms_counter_docstr)
+      .def("reset", &no::SplitMixSampler::reset, sms_reset_docstr)
+      .def("uarray", &no::SplitMixSampler::uarray, sms_uarray_docstr)
+      .def("__repr__", &no::SplitMixSampler::repr, sms_repr_docstr);
 
   // statistical utils
   m.def_submodule("stats", stats_docstr)
