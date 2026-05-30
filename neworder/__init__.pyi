@@ -52,10 +52,6 @@ class SplitMix64:
         """
         Constructs a SplitMix64 with a seeder callable and an optional call counter.
         """
-    def seed(self) -> int:
-        """
-        Calls the seeder and returns the current seed value.
-        """
     def counter(self) -> int:
         """
         The current call counter. Incremented by each uarray() call when use_counter=True.

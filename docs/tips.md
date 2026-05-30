@@ -32,7 +32,7 @@ If necessary, you can supply your own seeding strategy, for instance if you requ
 ```python
 import neworder
 def hybrid_seeder() -> int:
-  return (neworder.mpi.RANK % 2) + 12345
+    return (neworder.mpi.RANK % 2) + 12345
 ```
 
 or, as a lambda:
@@ -45,8 +45,8 @@ which returns the same seed for all odd-ranked processes and a different seed fo
 
 ```python
 class MyModel(neworder.Model):
-  def __init__(self, timeline: neworder.Timeline) -> None:
-    super().__init__(timeline, lambda: (neworder.mpi.RANK % 2) + 12345)
+    def __init__(self, timeline: neworder.Timeline) -> None:
+        super().__init__(timeline, lambda: (neworder.mpi.RANK % 2) + 12345)
     ...
 ```
 
@@ -54,13 +54,15 @@ If there was a requirement for multiple processes to all have the same nondeterm
 
 ```python
 def nondeterministic_identical_stream() -> int:
-  # only process 0 gets a seed
-  seed = neworder.MonteCarlo.nondeterministic_stream(0) if neworder.mpi.RANK == 0 else None
-  # then broadcasts it to the other processes
-  seed = neworder.mpi.COMM.bcast(seed, root=0)
-  return seed
-
+    # only process 0 gets a seed
+    seed = neworder.MonteCarlo.nondeterministic_stream(0) if neworder.mpi.RANK == 0 else None
+    # then broadcasts it to the other processes
+    seed = neworder.mpi.COMM.bcast(seed, root=0)
+    return seed
 ```
+
+!!! warning "Resetting the random streams"
+    `model.mc.reset()` re-invokes the seeder. For non-deterministic seeders this produces a new seed, so the reset stream will differ from the original.
 
 ## Identical Streams
 
@@ -68,6 +70,49 @@ def nondeterministic_identical_stream() -> int:
     Identically initialised random streams only stay in sync if the same number of samples are taken from each one .
 
 The "option" example relies on parallel processes with identical random streams to reduce noise when computing differences for sensitivity analysis. It implements a `check` step that compares the internal states of the random stream in each process and fails if any are different (see the example code).
+
+## Ultimate Reproducibility
+
+The `MonteCarlo` engine is a sequential stream: every draw advances its internal state, so the value you get depends on how many draws have been taken before it. This couples reproducibility to draw order - if agents are added, removed, or processed in a different sequence, the stream diverges.
+
+`SplitMix64` eliminates this coupling. Each variate is computed by hashing a set of **integer keys** (e.g. person ID, process ID, timestep) together with the seed. There is no state to advance, so:
+
+- the draw for person *i* is the same whether you compute the full population or just person *i* in isolation,
+- draws can be computed in any order, on any thread, without coordination.
+
+### Basic usage
+
+Construct withing you model class passing a seeder (the same callables used by `MonteCarlo`):
+
+```python
+self.rng = neworder.SplitMix64(neworder.MonteCarlo.deterministic_identical_stream)
+```
+
+Call `uarray` with any mix of scalar integers (used as context, adding no output dimension) and integer arrays (each adding one output dimension):
+
+```python
+# 1-D: one variate per person
+draws = self.rng.uarray(person_ids, process_id, self.timeline.index)
+
+# 2-D: one variate per (person, draw_index) pair
+draws = self.rng.uarray(person_ids, process_id, self.timeline.index, draw_indices)
+```
+
+String keys (e.g. the name of a stochastic process) can be converted to stable integers with `SplitMix64.hash64`:
+
+```python
+draws = self.rng.uarray(person_ids, neworder.SplitMix64.hash64("mortality"), self.timeline.index)
+```
+
+### Repeated calls with the same arguments
+
+Because `SplitMix64` has no state, two calls with identical arguments return identical values. To get independent draws across repeated calls, either:
+
+- use a non-deterministic seeder (this is called each time `uarray` is called), or
+- construct with `use_counter=True`, which mixes an auto-incrementing counter into each call. In this case calling `reset()` rewinds the counter and will then replay the same sequence.
+
+!!! note "When to use `SplitMix64` vs `MonteCarlo`"
+    Use `MonteCarlo` for general-purpose sampling (non-uniform distributions, arrival times, categorical transitions). Prefer `SplitMix64` for uniform draws that must be **stable under sub-sampling or reordering** - for example when agents enter or leave the population mid-run, or when stochastic processes execute in a non-deterministic order.
 
 ## External Sources of Randomness
 
@@ -82,14 +127,14 @@ self.nprand = np.random.Generator(np.random.MT19937(ext_seed))
 x = self.nprand.normal(size=5)
 ```
 
-If you've chosen a deterministic seedng strategy, then `ext_seed` will be reproducible, and if you've chosen an independent strategy, then `ext_seed` will be different for each process, thus propagating your chosen seeding strategy to the external generator.
+If you've chosen a deterministic seeding strategy, then `ext_seed` will be reproducible, and if you've chosen an independent strategy, then `ext_seed` will be different for each process, thus propagating your chosen seeding strategy to the external generator.
 
 !!! note "Seeding external generators"
     Wherever possible, explicitly seed any external random generators using *neworder*'s MonteCarlo engine. This will effectively propagate your seeding strategy to the external generator.
 
 ### Using neworder's random generator with numpy
 
-It is now possible to use the RNG from the neworder model's Monte-Carlo engine as a `numpy` generator. In this way all of numpy's functionality is available with neworder's RNG. To achieve this use the adapter function `as_np`. Similarly to the example above, in your model constructor create the numpy generator:
+It is now possible to use the the neworder model's Monte-Carlo engine as a `numpy` generator. In this way all of numpy's functionality is available with neworder's `MonteCarlo` RNG. To achieve this use the adapter function `as_np`. Similarly to the example above, in your model constructor create the numpy generator, then:
 
 ```py
 self.nprand = no.as_np(self.mc)

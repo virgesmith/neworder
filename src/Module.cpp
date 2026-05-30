@@ -175,7 +175,6 @@ PYBIND11_MODULE(_neworder_core, m)
       .def(py::init([](const py::function& seeder, bool use_counter) {
                return no::SplitMix64([seeder]() { return seeder().cast<int64_t>(); }, use_counter);
            }), "seeder"_a, py::kw_only(), "use_counter"_a = false, sms_init_docstr)
-      .def("seed", &no::SplitMix64::seed, sms_seed_docstr)
       .def("counter", &no::SplitMix64::counter, sms_counter_docstr)
       .def("reset", &no::SplitMix64::reset, sms_reset_docstr)
       .def("uarray", &no::SplitMix64::uarray, sms_uarray_docstr)

@@ -13,7 +13,6 @@ class NEWORDER_EXPORT SplitMix64 {
 public:
   explicit SplitMix64(std::function<int64_t()> seeder, bool use_counter = false) noexcept;
 
-  int64_t seed() const;        // calls the seeder; not noexcept as the callable may throw
   uint64_t counter() const noexcept;
   void reset() noexcept;       // resets the counter; seeder is called fresh on each uarray()
 

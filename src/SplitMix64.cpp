@@ -1,7 +1,8 @@
 #include "SplitMix64.h"
 #include "ArrayHelpers.h"
+#include "Log.h"
 
-// SplitMix64 finalizer — Stafford Variant 13 mixing constants. Do not change.
+// SplitMix64 finalizer - Stafford Variant 13 mixing constants. Do not change.
 namespace {
 
 constexpr uint64_t SM_MULT1 = 0xBF58476D1CE4E5B9ULL;
@@ -19,13 +20,16 @@ uint64_t splitmix64(uint64_t z) noexcept {
 no::SplitMix64::SplitMix64(std::function<int64_t()> seeder, bool use_counter) noexcept
     : m_seeder(std::move(seeder)), m_use_counter(use_counter), m_counter(0) {}
 
-int64_t no::SplitMix64::seed() const { return m_seeder(); }
-
 uint64_t no::SplitMix64::counter() const noexcept { return m_counter; }
 
 void no::SplitMix64::reset() noexcept { m_counter = 0; }
 
-std::string no::SplitMix64::repr() const { return "SplitMix64(seed=" + std::to_string(m_seeder()) + ")"; }
+std::string no::SplitMix64::repr() const {
+  using namespace std::literals;
+  if (m_use_counter)
+    return "<neworder.SplitMix64 counter=%%>"s % m_counter;
+  return "<neworder.SplitMix64>"s;
+}
 
 int64_t no::SplitMix64::hash64(std::string_view s) noexcept {
   // FNV-1a accumulates the string bytes then the SplitMix64 finalizer diffuses the bits.
@@ -76,7 +80,7 @@ py::array_t<double> no::SplitMix64::uarray(py::args raw_args) const {
   if (m_use_counter)
     salt = splitmix64(salt ^ m_counter++);
 
-  // Collect the array axes (in argument order) — they define the output shape
+  // Collect the array axes (in argument order) - they define the output shape
   // and the per-element hash steps applied on top of the salt.
   std::vector<const std::vector<uint64_t>*> array_axes;
   std::vector<py::ssize_t> shape;

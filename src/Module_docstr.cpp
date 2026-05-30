@@ -133,6 +133,7 @@ const char* sms_init_docstr = R"""(
 const char* sms_seed_docstr = R"""(
     Calls the seeder and returns the current seed value.
     For deterministic seeders this is constant; for non-deterministic seeders each call may differ.
+    Note: the seed is not shown in repr() - use this method to inspect it directly.
 )""";
 
 const char* sms_counter_docstr = R"""(
@@ -169,7 +170,7 @@ const char* sms_uarray_docstr = R"""(
         each adding one output dimension (outer-product semantics).
 
     The value at any output index depends only on the seed, the call counter (if enabled),
-    and the corresponding input key values — not on position within the array or which other
+    and the corresponding input key values - not on position within the array or which other
     keys are present. This makes draws safe to use under sub-sampling and reordering.
 
     Compatibility note: to reproduce the Python splitmix64.RandomStreams.get_uniforms()
@@ -193,7 +194,8 @@ const char* sms_uarray_docstr = R"""(
 )""";
 
 const char* sms_repr_docstr = R"""(
-    Returns a human-readable representation of the SplitMix64.
+    Returns a human-readable representation of the SplitMix64. Shows the current counter
+    value when use_counter=True; the seed is not displayed.
 )""";
 
 // MonteCarlo
