@@ -55,7 +55,6 @@ void init_env(py::object mpi) {
     // if something other than module not found has occurred, fail
     if (!pyerror.matches(PyExc_ModuleNotFoundError))
       throw;
-    no::warn("neworder installed in serial mode. If necessary, enable MPI with: pip install neworder[parallel]");
   }
 
   mpi.attr("COMM") = comm;
