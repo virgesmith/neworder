@@ -82,13 +82,13 @@ The `MonteCarlo` engine is a sequential stream: every draw advances its internal
 
 ### Basic usage
 
-Construct withing you model class passing a seeder (the same callables used by `MonteCarlo`):
+Construct within your model class, passing a seeder (the same callables used by `MonteCarlo`):
 
 ```python
 self.rng = neworder.SplitMix64(neworder.MonteCarlo.deterministic_identical_stream)
 ```
 
-Call `uarray` with any mix of scalar integers (used as context, adding no output dimension) and integer arrays (each adding one output dimension):
+Call `uarray` with any mix of scalar integers (used as context, adding no output dimension) and **1-D** integer arrays (each adding one output dimension). Multi-dimensional arrays are not supported and will raise a `TypeError`.
 
 ```python
 # 1-D: one variate per person

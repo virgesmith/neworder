@@ -114,7 +114,6 @@ const char* sms_docstr = R"""(
     integer array. All scalar args (regardless of position) are premixed into a shared context
     hash (the "salt") before any array elements are processed. Array args each contribute one
     dimension to the output (outer-product semantics), and are hashed on top of the salt.
-    This matches the Python splitmix64 original: scalars first, arrays last.
 )""";
 
 const char* sms_init_docstr = R"""(
@@ -128,12 +127,6 @@ const char* sms_init_docstr = R"""(
     Args:
         seeder: A zero-argument callable returning an integer seed.
         use_counter: (keyword-only) If True, advance an internal counter on each uarray() call (default False).
-)""";
-
-const char* sms_seed_docstr = R"""(
-    Calls the seeder and returns the current seed value.
-    For deterministic seeders this is constant; for non-deterministic seeders each call may differ.
-    Note: the seed is not shown in repr() - use this method to inspect it directly.
 )""";
 
 const char* sms_counter_docstr = R"""(
@@ -172,14 +165,6 @@ const char* sms_uarray_docstr = R"""(
     The value at any output index depends only on the seed, the call counter (if enabled),
     and the corresponding input key values - not on position within the array or which other
     keys are present. This makes draws safe to use under sub-sampling and reordering.
-
-    Compatibility note: to reproduce the Python splitmix64.RandomStreams.get_uniforms()
-    result exactly, pass all four arguments including draw_index explicitly:
-
-        uarray(person_ids, module_id, year, draw_index)
-
-    Python's get_uniforms always applies a hash round for draw_index (even when it is the
-    default 0), so omitting it leaves the salt one splitmix64 round short.
 
     Args:
         *args: One or more scalar ints or 1-D integer arrays.

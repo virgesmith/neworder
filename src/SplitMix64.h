@@ -9,18 +9,18 @@
 
 namespace no {
 
-class NEWORDER_EXPORT SplitMix64 {
+class NEWORDER_EXPORT SplitMix64 final {
 public:
   explicit SplitMix64(std::function<int64_t()> seeder, bool use_counter = false) noexcept;
 
   uint64_t counter() const noexcept;
-  void reset() noexcept;       // resets the counter; seeder is called fresh on each uarray()
+  void reset() noexcept;       // resets the counter only; seeder is called fresh on each uarray()
 
   py::array_t<double> uarray(py::args args) const;
 
   static int64_t hash64(std::string_view s) noexcept;
 
-  std::string repr() const;    // calls the seeder; not noexcept as the callable may throw
+  std::string repr() const;
 
 private:
   std::function<int64_t()> m_seeder;
