@@ -111,6 +111,9 @@ Because `SplitMix64` has no state, two calls with identical arguments return ide
 - use a non-deterministic seeder (this is called each time `uarray` is called), or
 - construct with `use_counter=True`, which mixes an auto-incrementing counter into each call. In this case calling `reset()` rewinds the counter and will then replay the same sequence.
 
+!!! warning "Multithreaded use with `use_counter=True`"
+    The counter is a plain member variable. If multiple threads call `uarray()` concurrently on the same `SplitMix64` instance, they will race on the increment and the results will be nondeterministic. Either give each thread its own `SplitMix64` instance, or avoid `use_counter=True` in multithreaded contexts and instead incorporate a thread-specific *deterministic* scalar (e.g. task identifier or loop index) as a key argument to `uarray()`.
+
 !!! note "When to use `SplitMix64` vs `MonteCarlo`"
     Use `MonteCarlo` for general-purpose sampling (non-uniform distributions, arrival times, categorical transitions). Prefer `SplitMix64` for uniform draws that must be **stable under sub-sampling or reordering** - for example when agents enter or leave the population mid-run, or when stochastic processes execute in a non-deterministic order.
 
