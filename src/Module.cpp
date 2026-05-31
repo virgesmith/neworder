@@ -11,6 +11,7 @@
 
 #include "NewOrder.h"
 
+#include <memory>
 #include <pybind11/native_enum.h>
 
 using namespace py::literals;
@@ -99,7 +100,6 @@ PYBIND11_MODULE(_neworder_core, m)
       .def_property_readonly("start", &no::Timeline::start, timeline_start_docstr)
       .def_property_readonly("end", &no::Timeline::end, timeline_end_docstr)
       .def_property_readonly("index", &no::Timeline::index, timeline_index_docstr)
-      //.def_property_readonly("nsteps", &no::Timeline::nsteps, timeline_nsteps_docstr)
       .def_property_readonly("dt", &no::Timeline::dt, timeline_dt_docstr)
       .def_property_readonly("at_end", &no::Timeline::at_end, timeline_at_end_docstr)
       .def("__repr__", &no::Timeline::repr, timeline_repr_docstr);
@@ -172,7 +172,7 @@ PYBIND11_MODULE(_neworder_core, m)
   // Hash-based deterministic sampler
   py::class_<no::SplitMix64>(m, "SplitMix64", sms_docstr)
       .def(py::init([](const py::function& seeder, bool use_counter) {
-               return no::SplitMix64([seeder]() { return seeder().cast<int64_t>(); }, use_counter);
+               return std::make_unique<no::SplitMix64>([seeder]() { return seeder().cast<int64_t>(); }, use_counter);
            }), "seeder"_a, py::kw_only(), "use_counter"_a = false, sms_init_docstr)
       .def("counter", &no::SplitMix64::counter, sms_counter_docstr)
       .def("reset", &no::SplitMix64::reset, sms_reset_docstr)

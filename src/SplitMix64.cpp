@@ -20,14 +20,14 @@ uint64_t splitmix64(uint64_t z) noexcept {
 no::SplitMix64::SplitMix64(std::function<int64_t()> seeder, bool use_counter) noexcept
     : m_seeder(std::move(seeder)), m_use_counter(use_counter), m_counter(0) {}
 
-uint64_t no::SplitMix64::counter() const noexcept { return m_counter; }
+uint64_t no::SplitMix64::counter() const noexcept { return m_counter.load(std::memory_order_relaxed); }
 
-void no::SplitMix64::reset() noexcept { m_counter = 0; }
+void no::SplitMix64::reset() noexcept { m_counter.store(0, std::memory_order_relaxed); }
 
 std::string no::SplitMix64::repr() const {
   using namespace std::literals;
   if (m_use_counter)
-    return "<neworder.SplitMix64 counter=%%>"s % m_counter;
+    return "<neworder.SplitMix64 counter=%%>"s % m_counter.load(std::memory_order_relaxed);
   return "<neworder.SplitMix64>"s;
 }
 
@@ -41,7 +41,7 @@ int64_t no::SplitMix64::hash64(std::string_view s) noexcept {
   return static_cast<int64_t>(splitmix64(h));
 }
 
-py::array_t<double> no::SplitMix64::uarray(py::args raw_args) const {
+py::array_t<double> no::SplitMix64::uarray(py::args raw_args) {
   if (raw_args.empty())
     throw py::value_error("uarray requires at least one argument");
 
@@ -78,7 +78,7 @@ py::array_t<double> no::SplitMix64::uarray(py::args raw_args) const {
     if (!ax.is_array)
       salt = splitmix64(salt ^ ax.values[0]);
   if (m_use_counter)
-    salt = splitmix64(salt ^ m_counter++);
+    salt = splitmix64(salt ^ m_counter.fetch_add(1, std::memory_order_relaxed));
 
   // Collect the array axes (in argument order) - they define the output shape
   // and the per-element hash steps applied on top of the salt.

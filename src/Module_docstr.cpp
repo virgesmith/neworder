@@ -49,7 +49,7 @@ const char* lineartimeline_init_docstr = R"""(
 
 const char* lineartimeline_init_open_docstr = R"""(
     Constructs an open-ended timeline give a start value and a step size. NB the model will run until the Model.halt() method is explicitly called
-    (from inside the step() method). Note also that nsteps() will return -1 for timelines constructed this way
+    (from inside the step() method).
 )""";
 
 const char* numerictimeline_docstr = R"""(
@@ -88,10 +88,6 @@ const char* timeline_dt_docstr = R"""(
     Returns the step size size of the timeline
 )""";
 
-const char* timeline_nsteps_docstr = R"""(
-    Returns the number of steps in the timeline (or -1 if open-ended)
-)""";
-
 const char* timeline_at_end_docstr = R"""(
     Returns True if the current step is the end of the timeline
 )""";
@@ -106,9 +102,12 @@ const char* sms_docstr = R"""(
     A hash-based sampler that produces U[0,1) variates deterministically from integer keys.
 
     Uses the SplitMix64 finalizer (Stafford Variant 13) to hash an arbitrary sequence of
-    integer arguments into a float64 value. Unlike a stream-based PRNG, there is no internal
-    state to advance: the output at any index depends only on the seed and the input keys,
-    so draws are independent of call order and safe to use across threads or replications.
+    integer arguments into a float64 value. Unlike a stream-based PRNG, the output at any
+    index depends only on the seed and the input keys, so draws are independent of call order.
+    When use_counter=False (the default), instances are safe to share across threads.
+    When use_counter=True, the internal counter is updated atomically, but concurrent callers
+    will interleave counter values non-deterministically — use one instance per thread if
+    reproducible counter sequencing is required.
 
     uarray() accepts any number of positional arguments, each either a scalar int or a 1-D
     integer array. All scalar args (regardless of position) are premixed into a shared context
