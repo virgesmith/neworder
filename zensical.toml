@@ -25,10 +25,8 @@ nav = [
     { Boids = "examples/boids.md" },
     { Infection = "examples/infection.md" },
   ]},
-  { API = [
-     {"Tips and Tricks" = "tips.md" },
-     {"API Reference" = "api.md" }
-  ]},
+  {"Tips and Tricks" = "tips.md" },
+  {"API Reference" = "api.md" },
   { References = "references.md" },
   { About = [
     { Citing = "citing.md" },
@@ -40,9 +38,8 @@ nav = [
 ]
 
 extra_javascript = [
-  "js/mathjax.js",
-  "https://polyfill.io/v3/polyfill.min.js?features=es6",
-  "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+    "javascripts/mathjax.js",
+    "https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"
 ]
 
 [project.validation]
@@ -66,22 +63,28 @@ features = [
     "content.code.annotate"
 ]
 font.text = "PT Serif"
+palette = [
+  {
+    accent = "green",
+    scheme = "default",
+    toggle = {
+      icon = "lucide/sun",
+      name = "Switch to dark mode"
+    }
+  },
+  {
+    accent = "green",
+    scheme = "slate",
+    toggle = {
+      icon = "lucide/moon",
+      name = "Switch to light mode"
+    }
+  },
+]
 
 [project.theme.icon]
 repo = "fontawesome/brands/github"
 
-
-[[project.theme.palette]]
-accent = "green"
-scheme = "default"
-toggle.icon = "lucide/sun"
-toggle.name = "Switch to dark mode"
-
-[[project.theme.palette]]
-accent = "green"
-scheme = "slate"
-toggle.icon = "lucide/moon"
-toggle.name = "Switch to light mode"
 
 [project.markdown_extensions.abbr]
 [project.markdown_extensions.admonition]

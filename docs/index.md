@@ -7,6 +7,7 @@
     [plugins](https://zensical.org/compatibility/plugins/).
 
     - [X] macros
+    - [X] readthedocs deployment
     - [ ] video
 
 

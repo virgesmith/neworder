@@ -68,7 +68,7 @@ The constructor takes copies of the parameters, and defines a simple timeline \(
 
 ### Modifier
 
-This method defines the 'modifiers' for each process: the perturbations applied to the market data in each process in order to calculate the option price sensitivity to that market data. In this case we bump the spot up and down and the volatility up in the non-root processes allowing, calculation of delta, gamma and vega by finite differencing:
+This method defines the 'modifiers' for each process: the perturbations applied to the market data in each process in order to calculate the option price sensitivity to that market data. In this case we bump the spot up and down and the volatility up in the non-root processes allowing calculation of delta, gamma and vega by finite differencing:
 
 {{ include_snippet("examples/option/black_scholes.py", "modifier") }}
 
@@ -95,7 +95,7 @@ In the below implementation, all samples are sent to a single process (0) for co
 
 The `finalise` method is called at end of the timeline. Again, the calculation detail is omitted for clarity, but the method performs two tasks:
 
-- checks the Monte-Carlo result against the analytic formula and displays the simulated price and the random error, for each process.
+- checks the Monte-Carlo result against the analytic formula and displays the simulated price and the simulation error, for each process.
 - computes the sensitivities: process 0 gathers the results from the other processes and computes the finite-difference formulae.
 
 {{ include_snippet("examples/option/black_scholes.py", "finalise") }}
