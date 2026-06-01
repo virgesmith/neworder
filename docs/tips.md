@@ -29,16 +29,13 @@ If necessary, you can supply your own seeding strategy, for instance if you requ
 !!! note "Seeder function signature"
     The seeder function must take no arguments and return an `int`. When the function is called by the neworder runtime, the "rank" (in MPI parlance) of each process is available to it. For serial execution, the rank will always be zero.
 
+!!! warning "Resetting the random streams"
+    `model.mc.reset()` re-invokes the seeder. For non-deterministic seeders this produces a new seed, so the reset stream will differ from the original.
+
 ```python
 import neworder
 def hybrid_seeder() -> int:
     return (neworder.mpi.RANK % 2) + 12345
-```
-
-or, as a lambda:
-
-```python
-hybrid_seeder: Callable[[], int] = lambda r: (r % 2) + 12345
 ```
 
 which returns the same seed for all odd-ranked processes and a different seed for the even-ranked ones. You can define your seeder inline when you instantiate the `Model`, e.g.
@@ -55,14 +52,11 @@ If there was a requirement for multiple processes to all have the same nondeterm
 ```python
 def nondeterministic_identical_stream() -> int:
     # only process 0 gets a seed
-    seed = neworder.MonteCarlo.nondeterministic_stream(0) if neworder.mpi.RANK == 0 else None
+    seed = neworder.MonteCarlo.nondeterministic_stream() if neworder.mpi.RANK == 0 else None
     # then broadcasts it to the other processes
     seed = neworder.mpi.COMM.bcast(seed, root=0)
     return seed
 ```
-
-!!! warning "Resetting the random streams"
-    `model.mc.reset()` re-invokes the seeder. For non-deterministic seeders this produces a new seed, so the reset stream will differ from the original.
 
 ## Identical Streams
 

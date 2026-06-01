@@ -40,12 +40,13 @@ int32_t no::MonteCarlo::deterministic_independent_stream() noexcept {
 
 int32_t no::MonteCarlo::deterministic_identical_stream() noexcept { return 19937; }
 
-int32_t no::MonteCarlo::nondeterministic_stream() noexcept {
-  std::random_device rand;
+int32_t no::MonteCarlo::nondeterministic_stream() {
+  thread_local std::random_device rand;
   return rand();
 }
 
-no::MonteCarlo::MonteCarlo(std::function<int32_t()> seeder) noexcept : m_seeder(std::move(seeder)), m_seed(m_seeder()), m_prng(m_seed) {}
+no::MonteCarlo::MonteCarlo(std::function<int32_t()> seeder) noexcept
+    : m_seeder(std::move(seeder)), m_seed(m_seeder()), m_prng(m_seed) {}
 
 int32_t no::MonteCarlo::seed() const noexcept { return m_seed; }
 
@@ -58,7 +59,10 @@ void no::MonteCarlo::init_bitgen(py::capsule capsule) {
   bitgen->next_raw = [](void* p) { return static_cast<no::MonteCarlo*>(p)->raw(); };
 }
 
-void no::MonteCarlo::reset() noexcept { m_seed = m_seeder(); m_prng.seed(m_seed); }
+void no::MonteCarlo::reset() noexcept {
+  m_seed = m_seeder();
+  m_prng.seed(m_seed);
+}
 
 std::string no::MonteCarlo::repr() const noexcept { return "<neworder.MonteCarlo seed=%%>"s % seed(); }
 
