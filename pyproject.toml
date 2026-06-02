@@ -11,7 +11,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "neworder"
-version = "1.5.2"
+version = "1.6.0"
 authors = [
   { name="Andrew Smith", email="andrew@friarswood.net" },
 ]
@@ -38,7 +38,7 @@ dev = [
   "pybind11>=2.10.3",
   "pytest>=9.0.3",
   "ruff",
-  "zensical>=0.0.42",
+  "zensical>=0.0.43",
   "requests>=2.34.2",
   "pybind11-stubgen>=2.5.5",
   "pre-commit>=4.5.1",

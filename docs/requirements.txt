@@ -1,5 +1,5 @@
 # DO NOT EDIT
-# auto-generated @ 2026-05-12 09:38:48.123780 by docs/macros.py::write_requirements()
+# auto-generated @ 2026-06-02 16:46:33.957156 by docs/macros.py::write_requirements()
 # required by readthedocs.io
-zensical==0.0.41
-requests==2.33.1
+zensical==0.0.43
+requests==2.34.2

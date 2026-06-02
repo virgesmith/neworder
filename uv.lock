@@ -593,7 +593,7 @@ wheels = [
 
 [[package]]
 name = "neworder"
-version = "1.5.2"
+version = "1.6.0"
 source = { editable = "." }
 dependencies = [
     { name = "matplotlib" },
@@ -662,7 +662,7 @@ dev = [
     { name = "requests", specifier = ">=2.34.2" },
     { name = "ruff" },
     { name = "ty", specifier = ">=0.0.34" },
-    { name = "zensical", specifier = ">=0.0.42" },
+    { name = "zensical", specifier = ">=0.0.43" },
 ]
 
 [[package]]
