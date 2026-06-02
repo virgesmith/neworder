@@ -21,7 +21,7 @@ public:
 
   static int32_t deterministic_identical_stream() noexcept;
 
-  static int32_t nondeterministic_stream() noexcept;
+  static int32_t nondeterministic_stream();
 
   // constructs given a seeder callable, invoked on construction and on each reset()
   MonteCarlo(std::function<int32_t()> seeder) noexcept;

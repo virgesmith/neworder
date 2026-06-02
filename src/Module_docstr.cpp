@@ -49,7 +49,7 @@ const char* lineartimeline_init_docstr = R"""(
 
 const char* lineartimeline_init_open_docstr = R"""(
     Constructs an open-ended timeline give a start value and a step size. NB the model will run until the Model.halt() method is explicitly called
-    (from inside the step() method). Note also that nsteps() will return -1 for timelines constructed this way
+    (from inside the step() method).
 )""";
 
 const char* numerictimeline_docstr = R"""(
@@ -88,16 +88,98 @@ const char* timeline_dt_docstr = R"""(
     Returns the step size size of the timeline
 )""";
 
-const char* timeline_nsteps_docstr = R"""(
-    Returns the number of steps in the timeline (or -1 if open-ended)
-)""";
-
 const char* timeline_at_end_docstr = R"""(
     Returns True if the current step is the end of the timeline
 )""";
 
 const char* timeline_repr_docstr = R"""(
     Prints a human-readable representation of the timeline object
+)""";
+
+// SplitMix64
+
+const char* sms_docstr = R"""(
+    A hash-based sampler that produces U[0,1) variates deterministically from integer keys.
+
+    Uses the SplitMix64 finalizer (Stafford Variant 13) to hash an arbitrary sequence of
+    integer arguments into a float64 value. Unlike a stream-based PRNG, the output at any
+    index depends only on the seed and the input keys, so draws are independent of call order.
+    When use_counter=False (the default), instances are safe to share across threads.
+    When use_counter=True, the internal counter is updated atomically, but concurrent callers
+    will interleave counter values non-deterministically — use one instance per thread if
+    reproducible counter sequencing is required.
+
+    uarray() accepts any number of positional arguments, each either a scalar int or a 1-D
+    integer array. All scalar args (regardless of position) are premixed into a shared context
+    hash (the "salt") before any array elements are processed. Array args each contribute one
+    dimension to the output (outer-product semantics), and are hashed on top of the salt.
+)""";
+
+const char* sms_init_docstr = R"""(
+    Constructs a SplitMix64 with a seeder callable and an optional call counter.
+
+    The seeder is called immediately to set the initial seed and again on each reset().
+    When use_counter=True, a monotonically increasing counter is mixed into the hash before
+    any user-supplied arguments, guaranteeing that successive uarray() calls with identical
+    arguments produce independent draws.
+
+    Args:
+        seeder: A zero-argument callable returning an integer seed.
+        use_counter: (keyword-only) If True, advance an internal counter on each uarray() call (default False).
+)""";
+
+const char* sms_counter_docstr = R"""(
+    The current call counter (uint64). Incremented by each uarray() call when use_counter=True;
+    always 0 otherwise. Reset to 0 by reset().
+)""";
+
+const char* sms_reset_docstr = R"""(
+    Resets the call counter to zero. The seeder is called fresh on each uarray() call,
+    so reset() only affects the counter.
+)""";
+
+const char* sms_hash64_docstr = R"""(
+    Returns a deterministic 64-bit integer hash of a string.
+
+    Uses FNV-1a to accumulate the string bytes, then applies the SplitMix64 finalizer
+    to diffuse the bits. The result is stable across platforms and Python versions and
+    can be passed directly as a scalar key to uarray().
+
+    Args:
+        s: The string to hash.
+
+    Returns:
+        A signed 64-bit integer.
+)""";
+
+const char* sms_uarray_docstr = R"""(
+    Returns a float64 array of U[0,1) values hashed from the supplied integer keys.
+
+    Each positional argument is either a scalar int or a 1-D integer array:
+      - Scalar args (in argument order) are premixed into a shared salt before any array
+        elements are processed. They do not add an output dimension.
+      - Array args (in argument order) are each folded into the hash on top of the salt,
+        each adding one output dimension (outer-product semantics).
+
+    The value at any output index depends only on the seed, the call counter (if enabled),
+    and the corresponding input key values - not on position within the array or which other
+    keys are present. This makes draws safe to use under sub-sampling and reordering.
+
+    Args:
+        *args: One or more scalar ints or 1-D integer arrays.
+
+    Returns:
+        ndarray[float64] with shape (len(arr0), len(arr1), ...) for the array args in order.
+        A 0-d array is returned when all args are scalars.
+
+    Raises:
+        ValueError: If no arguments are supplied.
+        TypeError: If any argument is not a scalar int or a 1-D integer array.
+)""";
+
+const char* sms_repr_docstr = R"""(
+    Returns a human-readable representation of the SplitMix64. Shows the current counter
+    value when use_counter=True; the seed is not displayed.
 )""";
 
 // MonteCarlo

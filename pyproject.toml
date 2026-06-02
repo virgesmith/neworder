@@ -82,9 +82,6 @@ minversion = "6.0"
 testpaths = [
     "test"
 ]
-filterwarnings = [
-    "ignore:neworder installed in serial mode:RuntimeWarning",
-]
 
 [tool.ruff]
 line-length = 120

@@ -6,10 +6,12 @@
 #include "Model.h"
 #include "MonteCarlo.h"
 #include "NPArray.h"
+#include "SplitMix64.h"
 #include "Timeline.h"
 
 #include "NewOrder.h"
 
+#include <memory>
 #include <pybind11/native_enum.h>
 
 using namespace py::literals;
@@ -54,7 +56,6 @@ void init_env(py::object mpi) {
     // if something other than module not found has occurred, fail
     if (!pyerror.matches(PyExc_ModuleNotFoundError))
       throw;
-    no::warn("neworder installed in serial mode. If necessary, enable MPI with: pip install neworder[parallel]");
   }
 
   mpi.attr("COMM") = comm;
@@ -99,7 +100,6 @@ PYBIND11_MODULE(_neworder_core, m)
       .def_property_readonly("start", &no::Timeline::start, timeline_start_docstr)
       .def_property_readonly("end", &no::Timeline::end, timeline_end_docstr)
       .def_property_readonly("index", &no::Timeline::index, timeline_index_docstr)
-      //.def_property_readonly("nsteps", &no::Timeline::nsteps, timeline_nsteps_docstr)
       .def_property_readonly("dt", &no::Timeline::dt, timeline_dt_docstr)
       .def_property_readonly("at_end", &no::Timeline::at_end, timeline_at_end_docstr)
       .def("__repr__", &no::Timeline::repr, timeline_repr_docstr);
@@ -168,6 +168,17 @@ PYBIND11_MODULE(_neworder_core, m)
       .value("COMPLETED", no::Model::COMPLETED)
       .export_values()
       .finalize();
+
+  // Hash-based deterministic sampler
+  py::class_<no::SplitMix64>(m, "SplitMix64", sms_docstr)
+      .def(py::init([](const py::function& seeder, bool use_counter) {
+               return std::make_unique<no::SplitMix64>([seeder]() { return seeder().cast<int64_t>(); }, use_counter);
+           }), "seeder"_a, py::kw_only(), "use_counter"_a = false, sms_init_docstr)
+      .def("counter", &no::SplitMix64::counter, sms_counter_docstr)
+      .def("reset", &no::SplitMix64::reset, sms_reset_docstr)
+      .def("uarray", &no::SplitMix64::uarray, sms_uarray_docstr)
+      .def_static("hash64", &no::SplitMix64::hash64, "s"_a, sms_hash64_docstr)
+      .def("__repr__", &no::SplitMix64::repr, sms_repr_docstr);
 
   // statistical utils
   m.def_submodule("stats", stats_docstr)
