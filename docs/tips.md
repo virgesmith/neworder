@@ -24,10 +24,11 @@ class MyModel(neworder.Model):
 
 *neworder* provides three basic seeding functions which initialise the model's random stream so that they are either non-reproducible (`neworder.MonteCarlo.nondeterministic_stream`), or reproducible and either identical (`neworder.MonteCarlo.deterministic_identical_stream`) or independent across parallel runs (`neworder.MonteCarlo.deterministic_independent_stream`). Typically, a user would select identical streams (and perturbed inputs) for sensitivity analysis, and independent streams (with identical inputs) for convergence analysis.
 
-If necessary, you can supply your own seeding strategy, for instance if you required half the processes to have identical streams:
-
 !!! note "Seeder function signature"
-    The seeder function must take no arguments and return an `int`. When the function is called by the neworder runtime, the "rank" (in MPI parlance) of each process is available to it. For serial execution, the rank will always be zero.
+    The seeder function must take no arguments and return an `int`. The inbuilt `deterministic_independent_stream` uses the MPI rank
+    of the process to create different seeds (for serial execution, the rank will always be zero).
+
+If necessary, you can supply your own seeding strategy, for instance if you required half the processes to have identical streams:
 
 !!! warning "Resetting the random streams"
     `model.mc.reset()` re-invokes the seeder. For non-deterministic seeders this produces a new seed, so the reset stream will differ from the original.
@@ -44,7 +45,7 @@ which returns the same seed for all odd-ranked processes and a different seed fo
 class MyModel(neworder.Model):
     def __init__(self, timeline: neworder.Timeline) -> None:
         super().__init__(timeline, lambda: (neworder.mpi.RANK % 2) + 12345)
-    ...
+        ...
 ```
 
 If there was a requirement for multiple processes to all have the same nondeterministic stream, you could implement a seeding strategy like so:

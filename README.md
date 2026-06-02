@@ -61,24 +61,6 @@ or a combination of the two:
 pip install neworder[parallel-openmpi,geospatial]
 ```
 
-### Docker
-
-The docker image contains all the examples, and should be run interactively. Some of the examples require permission to connect to the host's graphical display.
-
-```bash
-docker pull virgesmith/neworder
-xhost +local:
-docker run --net=host -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=$DISPLAY -it virgesmith/neworder
-```
-
-NB The above works on ubuntu but may require modification on other OSs.
-
-Then in the container, e.g.
-
-```bash
-python examples/mortality/model.py
-```
-
 [//]: # (!readme!)
 
 ## Documentation

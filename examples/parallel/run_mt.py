@@ -37,7 +37,7 @@ barrier = Barrier(N_THREADS, action=sync)
 
 def _is_ft() -> bool:
     if sys.version_info.minor > 12:
-        return sys._is_gil_enabled()
+        return not sys._is_gil_enabled()
     return False
 
 

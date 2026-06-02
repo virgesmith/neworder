@@ -2,11 +2,22 @@
 
 Example of how simple interaction rules can give rise to collective behaviours, based on the [Netlogo model](https://ccl.northwestern.edu/netlogo/models/Flocking).
 
-![type:video](./img/boids2d.webm)
-2-d simulation with two predators
+<div style="display:flex; gap:1em" markdown>
+<div style="flex:1" markdown>
+<video width="100%" controls autoplay loop muted playsinline>
+  <source src="./img/boids2d.webm" type="video/webm">
+</video>
 
-![type:video](./img/boids3d.webm)
+2-d simulation with two predators
+</div>
+<div style="flex:1" markdown>
+<video width="100%" controls autoplay loop muted playsinline>
+  <source src="./img/boids3d.webm" type="video/webm">
+</video>
+
 3-d simulation with one predator
+</div>
+</div>
 
 {{ include_snippet("./docs/examples/src.md", show_filename=False) }}
 
