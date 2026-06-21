@@ -84,7 +84,7 @@ class Schelling(neworder.Model):
         fig = plt.figure(constrained_layout=True, figsize=(8, 6))
         img = plt.imshow(self.domain.state.T, cmap=cmap)
         plt.axis("off")
-        fig.canvas.mpl_connect("key_press_event", lambda event: self.halt() if event.key == "q" else None)  # ty:ignore[unresolved-attribute]
+        fig.canvas.mpl_connect("key_press_event", lambda event: self.halt() if event.key == "q" else None)
         fig.canvas.flush_events()
 
         return fig, img

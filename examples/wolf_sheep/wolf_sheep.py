@@ -249,7 +249,7 @@ class WolfSheep(no.Model):
 
         plt.tight_layout()
 
-        self.figs.canvas.mpl_connect("key_press_event", lambda event: self.halt() if event.key == "q" else None)  # ty:ignore[unresolved-attribute]
+        self.figs.canvas.mpl_connect("key_press_event", lambda event: self.halt() if event.key == "q" else None)
 
         self.figs.canvas.flush_events()
 
