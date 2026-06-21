@@ -239,4 +239,4 @@ def _project(a: pd.Series[np.float64], z: pd.Series[np.float64], c: float) -> pd
 
 
 def _size(z: pd.Series[np.float64]) -> pd.Series[np.float64]:
-    return 5.0 / (0.5 + z)  # np.clip(.5 + z, a_min=0.1, a_max=None)  # ty:ignore[unsupported-operator]
+    return 5.0 / (0.5 + z)  # np.clip(.5 + z, a_min=0.1, a_max=None)  # ty:ignore[invalid-return-type]

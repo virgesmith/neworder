@@ -1,15 +1,17 @@
 repos:
   - repo: https://github.com/astral-sh/uv-pre-commit
     # uv version.
-    rev: 0.11.5
+    rev: 0.11.21
     hooks:
       - id: uv-lock
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.9
+    rev: v0.15.17
     hooks:
       - id: ruff-check
         args: [--fix]
       - id: ruff-format
-# doesn't exist (yet)
-# - repo: https://github.com/astral-sh/ty-pre-commit
-
+  - repo: https://github.com/astral-sh/ty-pre-commit
+    # ty version.
+    rev: v0.0.49
+    hooks:
+      - id: ty

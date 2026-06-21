@@ -191,7 +191,7 @@ class Infection(no.Model):
             edgecolor="k",
         )
         fig.suptitle("[q to quit]")
-        fig.canvas.mpl_connect("key_press_event", lambda event: self.halt() if event.key == "q" else None)  # ty:ignore[unresolved-attribute]
+        fig.canvas.mpl_connect("key_press_event", lambda event: self.halt() if event.key == "q" else None)
         fig.canvas.flush_events()
         return fig, g
 
