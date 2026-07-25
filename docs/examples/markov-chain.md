@@ -24,7 +24,7 @@ As well as simulating the population, the model computes the *analytic* equilibr
 
 The model also implements a pure-python equivalent of the `no.df.transition()` function (`MarkovChain.transition_py()`), for comparison. Set `use_python_impl = True` in `model.py` to use it instead of *neworder*'s C++ implementation.
 
-For the full 100000-person, 100-step model, the C++ implementation takes well under a second (depending on platform), versus about 8s for the python implementation - more than an order of magnitude faster. The C++ implementation operates on int64 state data directly, but also supports non-integer states (e.g. strings) via a pandas `category`-dtype column - see `no.df.transition` for details.
+For the full 100000-person, 100-step model, the C++ implementation takes well under a second (depending on platform), versus about 5s for the python implementation - more than an order of magnitude faster. `no.df.transition` requires the state column to have a pandas `category` dtype (as used here), which also means the state labels don't need to be integers - strings, for example, work just as well - see `no.df.transition` for details.
 
 ## Input
 

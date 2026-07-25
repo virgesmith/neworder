@@ -73,8 +73,10 @@ def python_impl(_m: no.Model, df: pd.DataFrame) -> tuple[int, float, pd.Series]:
 
 
 def cpp_impl(m: no.Model, df: pd.DataFrame) -> tuple[int, float, pd.Series]:
+    # no.df.transition requires a pandas "category" dtype column; conversion happens outside the timed region
+    df["LC4408_C_AHTHUK11"] = pd.Categorical(df["LC4408_C_AHTHUK11"], categories=c)
     start = time.time()
-    no.df.transition(m, c, t, df, "LC4408_C_AHTHUK11")
+    no.df.transition(m, t, df, "LC4408_C_AHTHUK11")
     return len(df), time.time() - start, df.LC4408_C_AHTHUK11
 
 

@@ -35,7 +35,7 @@ class MarkovChain(no.Model):
         self.transition_matrix = transition_matrix
         self.use_python_impl = use_python_impl
 
-        self.pop = pd.DataFrame(data={"state": np.zeros(npeople, dtype=np.int64)})
+        self.pop = pd.DataFrame(data={"state": pd.Categorical(np.zeros(npeople, dtype=np.int64), categories=states)})
 
         self.summary = pd.DataFrame(columns=states, dtype=np.int64)
         self.summary.loc[0] = self._state_counts()
@@ -56,18 +56,20 @@ class MarkovChain(no.Model):
             return lbound
 
         cumprob = np.cumsum(self.transition_matrix, axis=1)
-        lookup = {state: i for i, state in enumerate(self.states)}
 
+        # codes are already indices 0..m-1 into self.states, so (like the C++ implementation) no value -> index
+        # lookup is needed
         u = self.mc.ustream(len(self.pop))
-        row = self.pop[colname].map(lookup).to_numpy()
-        self.pop[colname] = [self.states[_interp(cumprob[r], ui)] for r, ui in zip(row, u, strict=True)]
+        codes = self.pop[colname].cat.codes.to_numpy()
+        new_codes = np.array([_interp(cumprob[c], ui) for c, ui in zip(codes, u, strict=True)])
+        self.pop[colname] = pd.Categorical.from_codes(new_codes, categories=pd.Index(self.states))
 
     def step(self) -> None:
         t0 = time.perf_counter()
         if self.use_python_impl:
             self.transition_py("state")
         else:
-            no.df.transition(self, self.states, self.transition_matrix, self.pop, "state")
+            no.df.transition(self, self.transition_matrix, self.pop, "state")
         self.transition_time_s += time.perf_counter() - t0
 
         self.summary.loc[len(self.summary)] = self._state_counts()
