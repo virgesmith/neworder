@@ -31,6 +31,49 @@ def test_errors() -> None:
     with pytest.raises(TypeError):
         no.df.transition(model, cats, trans, df, "DC2101EW_C_ETHPUK11")
 
+    # a plain (non-categorical) object/string column is not supported either
+    df["strcol"] = "x"
+    with pytest.raises(TypeError):
+        no.df.transition(model, cats, trans, df, "strcol")
+
+
+def test_categorical(base_model: no.Model) -> None:
+    N = 100000
+
+    # string category labels via pandas "category" dtype - categories arg is ignored, only its length matters
+    df = pd.DataFrame({"region": pd.Categorical(["north"] * N, categories=["north", "south", "east", "west"])})
+
+    # deterministic north -> south
+    t = np.identity(4)
+    t[0, 0] = 0.0
+    t[0, 1] = 1.0
+    no.df.transition(base_model, np.arange(4), t, df, "region")
+    assert df["region"].dtype == "category"
+    assert list(df["region"].cat.categories) == ["north", "south", "east", "west"]
+    assert df.region.value_counts()["south"] == N
+    assert df.region.value_counts()["north"] == 0
+
+    # spread evenly among all 4 categories
+    t2 = np.ones((4, 4)) / 4
+    no.df.transition(base_model, np.arange(4), t2, df, "region")
+    for cat in ["north", "south", "east", "west"]:
+        assert df.region.value_counts()[cat] > N / 4 - sqrt(N) and df.region.value_counts()[cat] < N / 4 + sqrt(N)
+
+    # transition matrix size must match the number of pandas categories (the categories arg is ignored/unchecked)
+    with pytest.raises(ValueError):
+        no.df.transition(base_model, np.arange(2), np.identity(2), df, "region")
+
+    # NaN/missing categories (code -1) are left untouched
+    df_nan = pd.DataFrame({"region": pd.Categorical(["north", None, "south", None], categories=["north", "south"])})
+    no.df.transition(base_model, np.arange(2), np.identity(2), df_nan, "region")
+    assert df_nan["region"].cat.codes.tolist() == [0, -1, 1, -1]
+
+    # the ordered flag is preserved
+    df_ord = pd.DataFrame({"grade": pd.Categorical(["A", "B"], categories=["A", "B", "C"], ordered=True)})
+    no.df.transition(base_model, np.arange(3), np.identity(3), df_ord, "grade")
+    assert df_ord["grade"].cat.ordered is True
+    assert list(df_ord["grade"].cat.categories) == ["A", "B", "C"]
+
 
 def test_basic() -> None:
     # test unique index generation

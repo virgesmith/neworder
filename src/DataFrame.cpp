@@ -24,10 +24,48 @@ py::array_t<int64_t> no::df::unique_index(size_t n) {
   return a;
 }
 
-// TODO non-integer categories?
+namespace {
+
+// Runs the transition for a pandas Categorical column. Codes are already indices 0..m-1 (or -1 for NaN/missing),
+// so unlike the generic int64 path below, no value <-> index lookup is required. Operates on a local (possibly
+// copied) int64 buffer rather than relying on `.cat.codes` being an aliased, in-place-writable view of the
+// Categorical's internal storage - that isn't part of pandas' public contract, and codes may be stored as
+// int8/16/32/64 depending on the number of categories - then writes the result back explicitly via
+// pd.Categorical.from_codes.
+void transition_categorical(no::Model& model, py::object& df, const std::string& colname, const py::object& pandas,
+                            const py::object& cat_accessor, const std::vector<std::vector<double>>& cumprobs,
+                            py::ssize_t m) {
+  py::object codes_obj = cat_accessor.attr("codes");
+  py::array_t<int64_t, py::array::c_style | py::array::forcecast> codes_arg = codes_obj;
+  // no::begin/no::at only accept the default-ExtraFlags array_t (see the categories/matrix rebind above) - this
+  // is just a flags reinterpretation of the same (already contiguous, per c_style above) buffer, not a copy.
+  py::array_t<int64_t> codes = codes_arg;
+
+  py::ssize_t n = codes.size();
+  py::array_t<double> rpy = model.mc().ustream(n);
+
+  double* r = no::begin(rpy);
+  int64_t* pcodes = no::begin<int64_t>(codes);
+
+  for (py::ssize_t i = 0; i < n; ++i) {
+    int64_t j = pcodes[i];
+    // codes are -1 for NaN/missing categories - leave any such rows untouched
+    if (j < 0 || j >= m)
+      continue;
+    py::ssize_t k = no::interp(cumprobs[j], r[i]);
+    pcodes[i] = k;
+  }
+
+  py::object from_codes = pandas.attr("Categorical").attr("from_codes");
+  df.attr("__setitem__")(colname, from_codes(codes, cat_accessor.attr("categories"), cat_accessor.attr("ordered")));
+}
+
+} // namespace
+
 // TODO different output column?
-// categories are all possible category labels. Order corresponds to row/col in matrix
-// matrix is a transition matrix
+// categories are all possible category labels, and are ignored for columns with a pandas "category" dtype (the
+// codes are used as indices directly, and the actual labels/order come from the column's own dtype metadata).
+// Order corresponds to row/col in matrix. matrix is a transition matrix
 void no::df::transition(no::Model& model,
                         py::array_t<int64_t, py::array::c_style | py::array::forcecast> categories_arg,
                         py::array_t<double, py::array::c_style | py::array::forcecast> matrix_arg, py::object& df,
@@ -38,37 +76,34 @@ void no::df::transition(no::Model& model,
   py::array_t<int64_t> categories = categories_arg;
   py::array_t<double> matrix = matrix_arg;
 
-  // Extract column from DF as np.array
-  py::array col_untyped = df.attr(colname.c_str());
+  py::object pandas = py::module_::import("pandas");
+  py::object col_series = df.attr(colname.c_str());
+  bool is_categorical = py::isinstance(col_series.attr("dtype"), pandas.attr("CategoricalDtype"));
 
-  // check col is int64
-  if (!col_untyped.dtype().is(py::dtype::of<int64_t>())) {
-    throw py::type_error("dataframe transitions can only be performed on columns containing int64 values");
+  py::object cat_accessor;
+  py::array col_untyped;
+  py::ssize_t m;
+  if (is_categorical) {
+    cat_accessor = col_series.attr("cat");
+    m = static_cast<py::ssize_t>(py::len(cat_accessor.attr("categories")));
+  } else {
+    col_untyped = col_series;
+    if (!col_untyped.dtype().is(py::dtype::of<int64_t>())) {
+      throw py::type_error(
+          "dataframe transitions can only be performed on columns containing int64 values, or with a pandas "
+          "'category' dtype");
+    }
+    m = categories.size();
   }
 
-  // col is modified in place via raw pointer arithmetic below, which assumes a contiguous 1-d buffer with unit
-  // stride. Unlike categories/matrix (read-only, and thus safe to silently force-copy above) we can't just force
-  // a copy here, as writes to a copy wouldn't be reflected back in the dataframe. A column can fail this check if,
-  // e.g., df is a reversed or strided view (df.iloc[::-1], df.iloc[::2], ...) rather than a "plain" dataframe.
-  if (col_untyped.ndim() != 1 || !(col_untyped.flags() & py::array::c_style)) {
-    throw py::value_error(
-        "column '%%' is not a contiguous 1-d array, and cannot be safely modified in place by no.df.transition "
-        "(this can happen if the dataframe is a reversed or strided view); "
-        "pass a plain dataframe, e.g. df.copy() or df.reset_index(drop=True)"s %
-        colname);
-  }
-  py::array_t<int64_t> col = col_untyped;
-
-  py::ssize_t m = categories.size();
-
-  // check matrix is 2d, square & categories len = matrix len
+  // check matrix is 2d, square & number of categories matches matrix size
   if (matrix.ndim() != 2)
     throw py::value_error("cumulative transition matrix dimension is %%"s % matrix.ndim());
   if (matrix.shape(0) != matrix.shape(1))
     throw py::value_error("cumulative transition matrix shape is not square: %% by %%"s % matrix.shape(0) %
                           matrix.shape(1));
   if (m != matrix.shape(0))
-    throw py::value_error("cumulative transition matrix size (%%) is not same as length of categories (%%)"s %
+    throw py::value_error("cumulative transition matrix size (%%) is not same as the number of categories (%%)"s %
                           matrix.shape(0) % m);
 
   // IMPORTANT NOTES:
@@ -96,6 +131,24 @@ void no::df::transition(no::Model& model,
     //   throw py::value_error("probabilities don't sum to unity (%%) in transition matrix row %%"s % cumprobs[i][m-1] %
     //   i);
   }
+
+  if (is_categorical) {
+    transition_categorical(model, df, colname, pandas, cat_accessor, cumprobs, m);
+    return;
+  }
+
+  // col is modified in place via raw pointer arithmetic below, which assumes a contiguous 1-d buffer with unit
+  // stride. Unlike categories/matrix (read-only, and thus safe to silently force-copy above) we can't just force
+  // a copy here, as writes to a copy wouldn't be reflected back in the dataframe. A column can fail this check if,
+  // e.g., df is a reversed or strided view (df.iloc[::-1], df.iloc[::2], ...) rather than a "plain" dataframe.
+  if (col_untyped.ndim() != 1 || !(col_untyped.flags() & py::array::c_style)) {
+    throw py::value_error(
+        "column '%%' is not a contiguous 1-d array, and cannot be safely modified in place by no.df.transition "
+        "(this can happen if the dataframe is a reversed or strided view); "
+        "pass a plain dataframe, e.g. df.copy() or df.reset_index(drop=True)"s %
+        colname);
+  }
+  py::array_t<int64_t> col = col_untyped;
 
   // reverse catgory lookup
   std::map<int64_t, int64_t> lookup;
