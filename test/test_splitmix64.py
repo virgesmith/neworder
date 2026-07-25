@@ -150,6 +150,50 @@ def test_uarray_scalar_vs_single_element_array_values(rs: no.SplitMix64) -> None
     assert not np.allclose(a, b[:, 0, :])
 
 
+# --- known-answer tests (pin exact output so an accidental change to the mixer,
+# --- FNV-1a hash, bit shifts, or hash-chain order is caught even though it would
+# --- still pass the self-consistency checks above) ---
+
+
+def test_hash64_known_values() -> None:
+    assert no.SplitMix64.hash64("mortality") == -1478123874942270908
+    assert no.SplitMix64.hash64("fertility") == 6033008314305789824
+    assert no.SplitMix64.hash64("") == -780787492076525413
+    assert no.SplitMix64.hash64("a") == 198367012849983736
+    assert no.SplitMix64.hash64("neworder") == 4776037540754285116
+
+
+def test_uarray_known_values_scalar(rs: no.SplitMix64) -> None:
+    # seed = MonteCarlo.deterministic_identical_stream() = 19937, all-scalar args
+    out = rs.uarray(42, MORTALITY, 2025)
+    assert float(out) == 0.08906241530700687
+
+
+def test_uarray_known_values_1d(rs: no.SplitMix64) -> None:
+    person_ids = np.arange(5, dtype=np.int64)
+    out = rs.uarray(person_ids, MORTALITY, 2025)
+    expected = [
+        0.9923838745020606,
+        0.9381204852892999,
+        0.5682955953993983,
+        0.9146190525989718,
+        0.3017146894299382,
+    ]
+    np.testing.assert_array_equal(out, expected)
+
+
+def test_uarray_known_values_2d(rs: no.SplitMix64) -> None:
+    person_ids = np.arange(3, dtype=np.int64)
+    times = np.array([2025, 2026, 2027], dtype=np.int64)
+    out = rs.uarray(person_ids, MORTALITY, times)
+    expected = [
+        [0.6774770351821414, 0.8986912581602143, 0.19517906834715837],
+        [0.5460119549181253, 0.25880080967662056, 0.10253620991854417],
+        [0.19389506276408552, 0.06835078439868147, 0.15238655630611198],
+    ]
+    np.testing.assert_array_equal(out, expected)
+
+
 # --- use_counter tests ---
 
 

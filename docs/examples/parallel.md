@@ -91,7 +91,9 @@ Results will vary as the random streams are not deterministic in this example, b
 
 ## Multithreaded Execution
 
-Dividing model execution amongst threads rather than processes can be more tricky than splitting by processes as it is easier to trigger data races or non-deterministic behaviour. But since the python interpreter can now operate without a Global Interpreter Lock (GIL), significantly improving multihreaded performance, it is worth providing support and some guidance.
+Dividing model execution amongst threads rather than processes can be more tricky than splitting by processes as it is easier to trigger data races or non-deterministic behaviour. But since the python interpreter can now operate without a Global Interpreter Lock (GIL), significantly improving multithreaded performance[^1], it is worth providing support and some guidance.
+
+[^1]: Note that `numpy` often disables the GIL internally while running expensive array operations. For this reason you may not always see the expected speedup when switching from GIL to freethreaded python.
 
 !!! warning Third-party dependencies
     Dependencies containing extension modules must declare they can safely run without the GIL. If they don't the python runtime will automatically re-enable the GIL (and emit a warning). This can be seen when e.g. using pandas versions prior to 3.0.0.

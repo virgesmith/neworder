@@ -83,7 +83,7 @@ class Boids2d(no.Model):
         self.boids.loc[too_close[0 : self.N_predators].sum(axis=0) != 0, "c"] = 2 / 3
         self.boids.loc[0 : self.N_predators - 1, "c"] = 1
 
-        (self.boids.x, self.boids.y), (self.boids.vx, self.boids.vy) = self.domain.move(
+        (self.boids.x, self.boids.y), (self.boids.vx, self.boids.vy) = self.domain.move(  # ty:ignore[unresolved-attribute]
             (self.boids.x, self.boids.y),
             (self.boids.vx, self.boids.vy),
             self.timeline.dt,

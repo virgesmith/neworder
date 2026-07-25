@@ -68,6 +68,15 @@ When reviewing a PR or diff, check:
 - If a test is skipped or marked `xfail`, leave a comment explaining why and when it can be removed.
 - **Run the examples.** The test suite does not exercise [examples/](examples/). After any code change, manually run the affected examples (`python examples/<name>/model.py`). Parallel examples require an MPI prefix: `mpiexec -n <N> python examples/<name>/model.py`. The CI release workflow packages the examples as artifacts — they must all work against the published code.
 
+## Task & Design Summaries
+
+Every development task — feature, fix, refactor, or notable design decision — must be recorded in [JOURNAL.md](JOURNAL.md) before the task is considered complete. This is the durable record of *why* the codebase looks the way it does: unlike a diff or a PR description, it survives outside any single conversation or session, so a maintainer (or another agent, with no memory of how the change came about) can understand the intent and the alternatives that were rejected.
+
+- **When**: once the change is implemented and the quality gates pass, before (or as part of) committing.
+- **Where**: prepend a new entry to the top of [JOURNAL.md](JOURNAL.md) — newest entries go first — using the template at the top of that file.
+- **What to capture**: the motivation (*why*), a high-level summary of the change (*what*), any non-obvious design decisions and the alternatives considered, and known follow-ups or limitations.
+- **Scope**: substantive work — new features, bug fixes, refactors, dependency/CI changes, and design decisions. Trivial changes (typo fixes, formatting-only diffs) don't need an entry.
+
 ## Repository Layout
 
 ```
@@ -151,6 +160,7 @@ After generation, check the output manually:
 5. Add or update tests in [test/](test/) in the relevant file.
 6. Run the full gate suite locally.
 7. If the public API changed, update [docs/api.md](docs/api.md) and any affected example.
-8. Commit — pre-commit hooks will auto-fix formatting and re-lock `uv.lock`.
-9. Open a PR targeting `main`; CI must pass before merging.
-10. To release: bump the version in [pyproject.toml](pyproject.toml), merge to `main`, create a GitHub release with a new tag `vX.Y.Z` and release notes (e.g. `git log vX.Y.W..HEAD --oneline`) — PyPI publish triggers automatically. Copy generated example artifacts to the release.
+8. Add an entry to [JOURNAL.md](JOURNAL.md) (see [Task & Design Summaries](#task--design-summaries)).
+9. Commit — pre-commit hooks will auto-fix formatting and re-lock `uv.lock`.
+10. Open a PR targeting `main`; CI must pass before merging.
+11. To release: bump the version in [pyproject.toml](pyproject.toml), merge to `main`, create a GitHub release with a new tag `vX.Y.Z` and release notes (e.g. `git log vX.Y.W..HEAD --oneline`) — PyPI publish triggers automatically. Copy generated example artifacts to the release.

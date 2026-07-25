@@ -97,8 +97,8 @@ class Boids3d(no.Model):
         self.boids.loc[0 : self.N_predators - 1, "c"] = 3
 
         (
-            (self.boids.x, self.boids.y, self.boids.z),
-            (self.boids.vx, self.boids.vy, self.boids.vz),
+            (self.boids.x, self.boids.y, self.boids.z),  # ty:ignore[unresolved-attribute]
+            (self.boids.vx, self.boids.vy, self.boids.vz),  # ty:ignore[unresolved-attribute]
         ) = self.domain.move(
             (self.boids.x, self.boids.y, self.boids.z),
             (self.boids.vx, self.boids.vy, self.boids.vz),

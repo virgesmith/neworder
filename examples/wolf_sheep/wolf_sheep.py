@@ -135,7 +135,7 @@ class WolfSheep(no.Model):
         # move wolves (wrapped) and update cell
         vx = (2 * self.mc.ustream(len(self.wolves)) - 1.0) * self.wolves.speed
         vy = (2 * self.mc.ustream(len(self.wolves)) - 1.0) * self.wolves.speed
-        (self.wolves.x, self.wolves.y), _ = self.domain.move(
+        (self.wolves.x, self.wolves.y), _ = self.domain.move(  # ty:ignore[invalid-assignment]
             (self.wolves.x, self.wolves.y), (vx, vy), 1.0, ungroup=True
         )
 
@@ -164,7 +164,9 @@ class WolfSheep(no.Model):
         # move sheep randomly (wrapped)
         vx = (2 * self.mc.ustream(len(self.sheep)) - 1.0) * self.sheep.speed
         vy = (2 * self.mc.ustream(len(self.sheep)) - 1.0) * self.sheep.speed
-        (self.sheep.x, self.sheep.y), _ = self.domain.move((self.sheep.x, self.sheep.y), (vx, vy), 1.0, ungroup=True)
+        (self.sheep.x, self.sheep.y), _ = self.domain.move(  # ty:ignore[invalid-assignment]
+            (self.sheep.x, self.sheep.y), (vx, vy), 1.0, ungroup=True
+        )
         self.sheep.energy -= 0.5 + 0.5 * self.sheep.speed / self.init_sheep_speed
         self.__assign_cell(self.sheep)
 

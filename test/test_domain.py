@@ -97,7 +97,7 @@ def test_space3d() -> None:
     assert space.dim == 3
 
     dt = 1.0
-    (bodies.x, bodies.y, bodies.z), (bodies.vx, bodies.vy, bodies.vz) = space.move(
+    (bodies.x, bodies.y, bodies.z), (bodies.vx, bodies.vy, bodies.vz) = space.move(  # ty:ignore[unresolved-attribute]
         (bodies.x, bodies.y, bodies.z),
         (bodies.vx, bodies.vy, bodies.vz),
         dt,

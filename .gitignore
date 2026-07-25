@@ -25,3 +25,4 @@ cache/
 package.sh
 
 site/
+.claude/
