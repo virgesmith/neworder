@@ -28,14 +28,34 @@ py::array_t<int64_t> no::df::unique_index(size_t n) {
 // TODO different output column?
 // categories are all possible category labels. Order corresponds to row/col in matrix
 // matrix is a transition matrix
-void no::df::transition(no::Model& model, py::array_t<int64_t> categories, py::array_t<double> matrix, py::object& df,
+void no::df::transition(no::Model& model,
+                        py::array_t<int64_t, py::array::c_style | py::array::forcecast> categories_arg,
+                        py::array_t<double, py::array::c_style | py::array::forcecast> matrix_arg, py::object& df,
                         const std::string& colname) {
+  // categories/matrix are read-only, so (unlike col below) it's safe to just force a contiguous copy if the
+  // caller's array isn't already one - see the ArrayHelpers no::begin/no::cbegin/no::at helpers used below, which
+  // assume a contiguous, unit-stride, default-ExtraFlags array_t.
+  py::array_t<int64_t> categories = categories_arg;
+  py::array_t<double> matrix = matrix_arg;
+
   // Extract column from DF as np.array
   py::array col_untyped = df.attr(colname.c_str());
 
   // check col is int64
   if (!col_untyped.dtype().is(py::dtype::of<int64_t>())) {
     throw py::type_error("dataframe transitions can only be performed on columns containing int64 values");
+  }
+
+  // col is modified in place via raw pointer arithmetic below, which assumes a contiguous 1-d buffer with unit
+  // stride. Unlike categories/matrix (read-only, and thus safe to silently force-copy above) we can't just force
+  // a copy here, as writes to a copy wouldn't be reflected back in the dataframe. A column can fail this check if,
+  // e.g., df is a reversed or strided view (df.iloc[::-1], df.iloc[::2], ...) rather than a "plain" dataframe.
+  if (col_untyped.ndim() != 1 || !(col_untyped.flags() & py::array::c_style)) {
+    throw py::value_error(
+        "column '%%' is not a contiguous 1-d array, and cannot be safely modified in place by no.df.transition "
+        "(this can happen if the dataframe is a reversed or strided view); "
+        "pass a plain dataframe, e.g. df.copy() or df.reset_index(drop=True)"s %
+        colname);
   }
   py::array_t<int64_t> col = col_untyped;
 
