@@ -21,24 +21,22 @@ py::array_t<int64_t> no::df::unique_index(size_t n) {
   return a;
 }
 
-// matrix is a transition matrix. Its row order must correspond to df[colname].cat.categories order
+// matrix is a transition matrix. Its row order must correspond to series.cat.categories order
 py::object no::df::transition(no::Model& model,
                                py::array_t<double, py::array::c_style | py::array::forcecast> matrix_arg,
-                               py::object& df, const std::string& colname) {
+                               py::object& series) {
   // matrix is read-only, so it's safe to just force a contiguous copy if the caller's array isn't already one -
   // see the ArrayHelpers no::begin/no::cbegin/no::at helpers used below, which assume a contiguous, unit-stride,
   // default-ExtraFlags array_t.
   py::array_t<double> matrix = matrix_arg;
 
   py::object pandas = py::module_::import("pandas");
-  py::object col_series = df.attr(colname.c_str());
-  if (!py::isinstance(col_series.attr("dtype"), pandas.attr("CategoricalDtype"))) {
+  if (!py::isinstance(series.attr("dtype"), pandas.attr("CategoricalDtype"))) {
     throw py::type_error(
-        "column '%%' does not have a pandas 'category' dtype; convert it first, e.g. "
-        "df[colname] = df[colname].astype('category')"s %
-        colname);
+        "series does not have a pandas 'category' dtype; convert it first, e.g. "
+        "series = series.astype('category')");
   }
-  py::object cat_accessor = col_series.attr("cat");
+  py::object cat_accessor = series.attr("cat");
   py::ssize_t m = static_cast<py::ssize_t>(py::len(cat_accessor.attr("categories")));
 
   // check matrix is 2d, square & its size matches the number of categories

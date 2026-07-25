@@ -188,8 +188,7 @@ PYBIND11_MODULE(_neworder_core, m)
   // dataframe manipulation
   m.def_submodule("df", df_docstr)
       .def("unique_index", no::df::unique_index, df_unique_index_docstr, "n"_a)
-      .def("transition", no::df::transition, df_transition_docstr, "model"_a, "transition_matrix"_a, "df"_a,
-           "colname"_a)
+      .def("transition", no::df::transition, df_transition_docstr, "model"_a, "transition_matrix"_a, "series"_a)
       .def("testfunc", no::df::testfunc, df_testfunc_docstr, "model"_a, "df"_a, "colname"_a);
   //.def("linked_change", no::df::linked_change, py::return_value_policy::take_ownership);
 

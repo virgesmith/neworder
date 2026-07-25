@@ -399,18 +399,17 @@ const char* df_unique_index_docstr = R"""(
 
 const char* df_transition_docstr = R"""(
     Randomly changes categorical data, according to supplied transition probabilities, and returns the result
-    as a new pandas Categorical - it does not modify df in-place, so the caller is responsible for assigning
-    the result back, e.g. df[colname] = no.df.transition(model, transition_matrix, df, colname).
-    The column must have a pandas "category" dtype (any category label type, e.g. strings, is supported) -
-    convert it first with df[colname] = df[colname].astype("category") if necessary. The row order of
-    transition_matrix must correspond to the column's cat.categories order.
+    as a new pandas Categorical - it does not modify series in-place, so the caller is responsible for
+    assigning the result back, e.g. df[colname] = no.df.transition(model, transition_matrix, df[colname]).
+    The series must have a pandas "category" dtype (any category label type, e.g. strings, is supported) -
+    convert it first with series = series.astype("category") if necessary. The row order of transition_matrix
+    must correspond to the series' cat.categories order.
     Args:
         model: The model (for access to the MonteCarlo engine).
         transition_matrix: The probabilities of transitions between categories
-        df: The dataframe containing the column to transition
-        colname: The name of the column in the dataframe
+        series: The pandas Series (categorical dtype) to transition
     Returns:
-        The transitioned data, as a new pandas Categorical with the same categories/order as df[colname].
+        The transitioned data, as a new pandas Categorical with the same categories/order as series.
 )""";
 
 const char* df_testfunc_docstr = R"""(
