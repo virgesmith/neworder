@@ -24,7 +24,7 @@ As well as simulating the population, the model computes the *analytic* equilibr
 
 The model also implements a pure-python equivalent of the `no.df.transition()` function (`MarkovChain.transition_py()`), for comparison. Set `use_python_impl = True` in `model.py` to use it instead of *neworder*'s C++ implementation.
 
-For the full 100000-person, 100-step model, the C++ implementation takes about 2.5s (depending on platform), versus about 8s for the python implementation - a factor of 3 or so. Note that the C++ implementation can only operate on integer state data - if the state is expressed as another type, e.g. a string, consider changing the format, or just use the python implementation.
+For the full 100000-person, 100-step model, the C++ implementation takes well under a second (depending on platform), versus about 8s for the python implementation - more than an order of magnitude faster. Note that the C++ implementation can only operate on integer state data - if the state is expressed as another type, e.g. a string, consider changing the format, or just use the python implementation.
 
 ## Input
 

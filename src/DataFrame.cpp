@@ -92,16 +92,17 @@ void no::df::transition(no::Model& model, py::array_t<int64_t> categories, py::a
   // possible unsafe access?
   double* r = no::begin(rpy);
   int64_t* pcat = no::begin<int64_t>(categories);
+  int64_t* pcol = no::begin<int64_t>(col);
 
   for (py::ssize_t i = 0; i < n; ++i) {
     // look up the index, ignoring values that haven't been explicitly set in categories (like -1)
-    auto it = lookup.find(no::at<int64_t>(col, Index_t<1>{i}));
+    auto it = lookup.find(pcol[i]);
     if (it == lookup.end())
       continue;
     int64_t j = it->second;
     py::ssize_t k = no::interp(cumprobs[j], r[i] /*no::at(r, Index_t<1>{i})*/);
     // no::log("interp %%:%% -> %%"s % j % r[i] % k);
-    no::at<int64_t>(col, Index_t<1>{i}) = pcat[k]; // no::at<int64_t>(categories, Index_t<1>{k});
+    pcol[i] = pcat[k];
   }
   // no::log("transition %% elapsed: %%"s % n % t.elapsed_s());
 }
