@@ -69,7 +69,7 @@ class MarkovChain(no.Model):
         if self.use_python_impl:
             self.transition_py("state")
         else:
-            no.df.transition(self, self.transition_matrix, self.pop, "state")
+            self.pop["state"] = no.df.transition(self, self.transition_matrix, self.pop, "state")
         self.transition_time_s += time.perf_counter() - t0
 
         self.summary.loc[len(self.summary)] = self._state_counts()

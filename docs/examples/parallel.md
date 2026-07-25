@@ -41,7 +41,7 @@ Here's the model constructor:
 
 {{ include_snippet("examples/parallel/parallel_mpi.py", "constructor") }}
 
-The `step` method, which is called at every timestep performs the state transitions. Note that `neworder.df.transition` modifies the dataframe in-place. Then, sends individuals with changed state to the appropriate process and receives appropriate individuals from the other processes:
+The `step` method, which is called at every timestep performs the state transitions. Note that `neworder.df.transition` returns the transitioned column rather than modifying the dataframe in-place, so the result is assigned back explicitly. Then, sends individuals with changed state to the appropriate process and receives appropriate individuals from the other processes:
 
 {{ include_snippet("examples/parallel/parallel_mpi.py", "step") }}
 

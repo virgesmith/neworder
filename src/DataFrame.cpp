@@ -21,10 +21,10 @@ py::array_t<int64_t> no::df::unique_index(size_t n) {
   return a;
 }
 
-// TODO different output column?
 // matrix is a transition matrix. Its row order must correspond to df[colname].cat.categories order
-void no::df::transition(no::Model& model, py::array_t<double, py::array::c_style | py::array::forcecast> matrix_arg,
-                        py::object& df, const std::string& colname) {
+py::object no::df::transition(no::Model& model,
+                               py::array_t<double, py::array::c_style | py::array::forcecast> matrix_arg,
+                               py::object& df, const std::string& colname) {
   // matrix is read-only, so it's safe to just force a contiguous copy if the caller's array isn't already one -
   // see the ArrayHelpers no::begin/no::cbegin/no::at helpers used below, which assume a contiguous, unit-stride,
   // default-ExtraFlags array_t.
@@ -89,7 +89,7 @@ void no::df::transition(no::Model& model, py::array_t<double, py::array::c_style
   }
 
   py::object from_codes = pandas.attr("Categorical").attr("from_codes");
-  df.attr("__setitem__")(colname, from_codes(codes, cat_accessor.attr("categories"), cat_accessor.attr("ordered")));
+  return from_codes(codes, cat_accessor.attr("categories"), cat_accessor.attr("ordered"));
 }
 
 template <typename T> void dump(const T* p, py::ssize_t n) {
