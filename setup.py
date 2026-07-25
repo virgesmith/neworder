@@ -4,7 +4,7 @@ from pathlib import Path
 
 import numpy
 from pybind11.setup_helpers import ParallelCompile, Pybind11Extension
-from setuptools import setup
+from setuptools import setup  # ty:ignore[unresolved-import]
 
 # see https://github.com/pybind/python_example
 
@@ -16,7 +16,6 @@ def list_files(dirs, exts, exclude=None):
         exclude = [exclude]
     for directory in dirs:
         for ext in exts:
-            # files.extend(glob.glob(os.path.join(directory, "*." + ext)))
             files.extend(Path(directory).glob(f"*.{ext}"))
     [f in files and files.remove(f) for f in exclude]
     return files

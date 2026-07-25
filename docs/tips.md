@@ -17,6 +17,11 @@ class MyModel(neworder.Model):
 
 1.  :material-alert: this line is essential
 
+
+## Parallelisation
+
+*neworder* supports parallel execution via multiple processes (via MPI) and/or multiple threads. See the [parallel](./examples/parallel.md) example for a detailed explanation of how to implement.
+
 ## Custom Seeding Strategies
 
 !!! note "Random number generator"
@@ -35,6 +40,8 @@ If necessary, you can supply your own seeding strategy, for instance if you requ
 
 ```python
 import neworder
+
+
 def hybrid_seeder() -> int:
     return (neworder.mpi.RANK % 2) + 12345
 ```
@@ -111,6 +118,8 @@ Because `SplitMix64` has no state, two calls with identical arguments return ide
 
 !!! note "When to use `SplitMix64` vs `MonteCarlo`"
     Use `MonteCarlo` for general-purpose sampling (non-uniform distributions, arrival times, categorical transitions). Prefer `SplitMix64` for uniform draws that must be **stable under sub-sampling or reordering** - for example when agents enter or leave the population mid-run, or when stochastic processes execute in a non-deterministic order.
+
+See the [Membership](./examples/membership.md) example for a runnable open-population model that demonstrates, and directly asserts, this sub-sampling and reordering invariance - and contrasts it with the equivalent `MonteCarlo` draws.
 
 ## External Sources of Randomness
 
@@ -196,9 +205,10 @@ To compare time values with "never", use the supplied function `isnever()`:
 
 ```python
 import neworder
+
 n = neworder.time.NEVER
-neworder.log(n == n) # False!
-neworder.log(neworder.time.isnever(n)) # True
+neworder.log(n == n)  # False!
+neworder.log(neworder.time.isnever(n))  # True
 ```
 
 ## Data Types
