@@ -14,6 +14,10 @@ npeople = 100000
 tmax = 100
 dt = 1.0
 
+# Set to True to use the much slower pure-python transition implementation instead of neworder's
+# C++ implementation, to compare performance - see MarkovChain.transition_py()
+use_python_impl = False
+
 # params of poisson process transitions (p=lambda.exp(-lambda.x) where lambda=1/mean)
 mu_01 = 13.0
 mu_02 = 23.0
@@ -40,10 +44,15 @@ transition_matrix = np.array(
 
 timeline = no.LinearTimeline(0, tmax, tmax)
 
-model = MarkovChain(timeline, npeople, states, transition_matrix)
+model = MarkovChain(timeline, npeople, states, transition_matrix, use_python_impl)
 
 start = time.time()
 no.run(model)
 no.log("run time = %.2fs" % (time.time() - start))
+
+simulated = model.summary.iloc[-1][states].to_numpy() / npeople
+equilibrium = model.stationary_distribution()
+no.log(f"simulated equilibrium proportions: {np.round(simulated, 4)}")
+no.log(f"analytic equilibrium proportions:  {np.round(equilibrium, 4)}")
 
 visualisation.show(model)

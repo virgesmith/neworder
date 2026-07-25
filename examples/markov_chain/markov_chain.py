@@ -1,3 +1,5 @@
+import time
+
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
@@ -6,65 +8,83 @@ import neworder as no
 
 
 class MarkovChain(no.Model):
+    """
+    Simulates a population of individuals, each independently transitioning between discrete
+    states according to a Markov process, and tracks the size of each state's population over
+    time.
+
+    Also implements a pure-python equivalent of `no.df.transition` (see `transition_py` below),
+    to illustrate the performance gain of neworder's C++ implementation - see `step()`.
+    """
+
     def __init__(
         self,
         timeline: no.Timeline,
         npeople: int,
-        states: np.ndarray,
-        transition_matrix: np.ndarray,
+        states: npt.NDArray[np.int64],
+        transition_matrix: npt.NDArray[np.float64],
+        use_python_impl: bool = False,
     ) -> None:
         super().__init__(timeline, no.MonteCarlo.deterministic_identical_stream)
+
+        if not np.allclose(transition_matrix.sum(axis=1), 1.0):
+            raise ValueError("each row of the transition matrix must sum to 1")
+
         self.npeople = npeople
-
-        self.pop = pd.DataFrame(
-            data={
-                "state": np.full(npeople, 0),
-                "t1": no.time.NEVER,
-                "t2": no.time.NEVER,
-            }
-        )
-
         self.states = states
         self.transition_matrix = transition_matrix
-        self.summary = pd.DataFrame(columns=states)
-        self.summary.loc[0] = self.pop.state.value_counts().transpose()  # ty:ignore[call-non-callable]
+        self.use_python_impl = use_python_impl
 
-    # pure python equivalent implementation of no.df.transition, to illustrate the performance gain
+        self.pop = pd.DataFrame(data={"state": np.zeros(npeople, dtype=np.int64)})
+
+        self.summary = pd.DataFrame(columns=states, dtype=np.int64)
+        self.summary.loc[0] = self._state_counts()
+
+        # cumulative time spent in the transition step, for comparing the python/C++ implementations
+        self.transition_time_s = 0.0
+
+    def _state_counts(self) -> pd.Series:
+        return self.pop.state.value_counts().reindex(self.states, fill_value=0)
+
     def transition_py(self, colname: str) -> None:
+        """Pure-python equivalent of `no.df.transition`, for performance comparison."""
+
         def _interp(cumprob: npt.NDArray[np.float64], x: float) -> int:
             lbound = 0
-            while lbound < len(cumprob) - 1:
-                if cumprob[lbound] > x:
-                    break
+            while lbound < len(cumprob) - 1 and cumprob[lbound] <= x:
                 lbound += 1
             return lbound
 
-        def _sample(u: float, tc: np.ndarray, c: np.ndarray) -> float:
-            return c[_interp(tc, u)]
+        cumprob = np.cumsum(self.transition_matrix, axis=1)
+        lookup = {state: i for i, state in enumerate(self.states)}
 
-        # u = m.mc.ustream(len(df))
-        tc = np.cumsum(self.transition_matrix, axis=1)
-
-        # reverse mapping of category label to index
-        lookup = {self.states[i]: i for i in range(len(self.states))}
-
-        # for i in range(len(df)):
-        #   current = df.loc[i, colname]
-        #   df.loc[i, colname] = sample(u[i], tc[lookup[current]], c)
-        # this is a much faster equivalent of the loop in the commented code immediately above
-        self.pop[colname] = self.pop[colname].apply(
-            lambda current: _sample(self.mc.ustream(1)[0], tc[lookup[current]], self.states)
-        )
+        u = self.mc.ustream(len(self.pop))
+        row = self.pop[colname].map(lookup).to_numpy()
+        self.pop[colname] = [self.states[_interp(cumprob[r], ui)] for r, ui in zip(row, u, strict=True)]
 
     def step(self) -> None:
-        # self.transition_py("state")
-        # comment the above line and uncomment this line to use the faster C++ implementation
-        no.df.transition(self, self.states, self.transition_matrix, self.pop, "state")
-        self.summary.loc[len(self.summary)] = self.pop.state.value_counts().transpose()  # ty:ignore[call-non-callable]
+        t0 = time.perf_counter()
+        if self.use_python_impl:
+            self.transition_py("state")
+        else:
+            no.df.transition(self, self.states, self.transition_matrix, self.pop, "state")
+        self.transition_time_s += time.perf_counter() - t0
+
+        self.summary.loc[len(self.summary)] = self._state_counts()
 
     def finalise(self) -> None:
-        print(self.summary)
-
         self.summary["t"] = np.arange(self.timeline.start, self.timeline.end + 1e-8, self.timeline.dt)
         self.summary.reset_index(drop=True, inplace=True)
-        self.summary.fillna(0, inplace=True)
+
+        impl = "python" if self.use_python_impl else "C++"
+        no.log(f"{impl} transition implementation: {self.transition_time_s:.2f}s over {len(self.summary) - 1} steps")
+
+    def stationary_distribution(self) -> npt.NDArray[np.float64]:
+        """
+        Computes the analytic equilibrium (stationary) distribution of the Markov chain - i.e. the
+        left eigenvector of the transition matrix corresponding to eigenvalue 1 - for comparison
+        against the simulated results.
+        """
+        eigenvalues, eigenvectors = np.linalg.eig(self.transition_matrix.T)
+        pi = np.real(eigenvectors[:, np.argmin(np.abs(eigenvalues - 1.0))])
+        return pi / pi.sum()
