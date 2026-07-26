@@ -22,6 +22,19 @@ Entry template:
 
 ---
 
+## 2026-07-26 — markov_chain example: split into MarkovChain + ConditionalMarkovChain siblings (uncommitted)
+
+**Why** — the group-conditional comparison (see the entry below) had been bolted onto `MarkovChain` behind an optional `group_transition_matrices` constructor argument, which meant `__init__`, `step()`, and `finalise()` all carried an `if self.group_transition_matrices is not None:` branch, and `mixed_stationary_distribution()` needed a defensive `assert` for a case that should have been unreachable by construction. Flagged (correctly) as not liking the shape of that file.
+
+**What** — went through two shapes before landing on the final one. First cut: `ConditionalMarkovChain(MarkovChain)`, calling `super().step()` for the inherited pooled simulation and layering a second `state_conditional`/`summary_conditional` pair alongside it in the same instance. Flagged again (correctly) - `state`/`summary` vs `state_conditional`/`summary_conditional` inside one instance is the same "two things glued into one class" smell as the original flag argument, just moved down a level. Final shape: `MarkovChain` and `ConditionalMarkovChain` are now siblings, both extending a new `MarkovChainBase(no.Model)` that owns exactly the shared scaffolding (population setup, `_state_counts()`, `finalise()`'s `t`-column cleanup, the `_stationary_distribution()` static helper) - nothing pooled-matrix-specific lives there. Each subclass has exactly one `state` column and one `summary`, using the inherited names directly, and provides its own `step()` and its own matrix validation. `model.py` now constructs and runs *two* separate model instances (each needs its own `LinearTimeline` - they're stateful iterators, sharing one across two `no.run()` calls raises `StopIteration` on the second run) and passes both into `visualisation.show(pooled_model, grouped_model)`, which no longer needs an `isinstance` check - it just takes an optional second argument.
+
+**Design decisions**
+- Rejected the `ConditionalMarkovChain(MarkovChain)` subclass shape (first cut above) specifically because it required two parallel state columns/summaries per instance to keep the pooled and grouped simulations from clobbering each other - a sign that one instance was doing two models' worth of work. Splitting into two real instances removes the need for the `_conditional`-suffixed pair entirely.
+- Extracted `MarkovChainBase` rather than either (a) duplicating population/state-counting setup across two unrelated classes or (b) keeping the parent-child relationship - there's genuine shared logic (not just superficially similar lines), so a common base earns its keep here without over-abstracting.
+- Two separate `no.Model` instances necessarily means two independent RNG streams (each seeded via `deterministic_identical_stream`, but consumed independently rather than interleaved within one shared stream as in the first cut) - the logged equilibrium proportions are no longer bit-for-bit identical to earlier runs. Verified this is expected, not a regression: the grouped run's simulated proportions still track its own analytic (mixed) prediction closely and still diverge from the pooled analytic prediction, which is the property that actually matters. Regenerated `docs/examples/img/markov-chain.png` to match.
+
+**Follow-ups** — none.
+
 ## 2026-07-26 — markov_chain example: demonstrate transition_conditional alongside transition (uncommitted)
 
 **Why** — the new `no.df.transition_conditional` (see the entry below) had no example exercising it. `examples/markov_chain` was the natural place, since it already runs the single-matrix `no.df.transition` case with an analytic equilibrium cross-check to validate the simulation.

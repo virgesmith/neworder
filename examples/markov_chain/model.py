@@ -3,7 +3,7 @@ import time
 import numpy as np
 import numpy.typing as npt
 import visualisation  # ty:ignore[unresolved-import]
-from markov_chain import MarkovChain  # ty:ignore[unresolved-import]
+from markov_chain import ConditionalMarkovChain, MarkovChain  # ty:ignore[unresolved-import]
 
 import neworder as no
 
@@ -52,29 +52,29 @@ transition_matrix = transition_matrix_for(mu_01, mu_02, mu_12, mu_20)
 # the two routes out of state 0 (uniformly scaling every rate by the same factor leaves the
 # equilibrium unchanged - it's the ratio between rates, not their magnitude, that matters), to
 # demonstrate no.df.transition_conditional alongside the single-matrix no.df.transition above - see
-# MarkovChain.mixed_stationary_distribution() for why pooling the two groups into one matrix gives a
-# different equilibrium than modelling them separately.
+# ConditionalMarkovChain.mixed_stationary_distribution() for why pooling the two groups into one
+# matrix gives a different equilibrium than modelling them separately.
 group_transition_matrices = {
     "fast_to_1": transition_matrix_for(mu_01 / 2, mu_02 * 2, mu_12, mu_20),
     "fast_to_2": transition_matrix_for(mu_01 * 2, mu_02 / 2, mu_12, mu_20),
 }
 
-timeline = no.LinearTimeline(0, tmax, tmax)
-
-model = MarkovChain(timeline, npeople, states, transition_matrix, use_python_impl, group_transition_matrices)
+pooled_model = MarkovChain(no.LinearTimeline(0, tmax, tmax), npeople, states, transition_matrix, use_python_impl)
+grouped_model = ConditionalMarkovChain(no.LinearTimeline(0, tmax, tmax), npeople, states, group_transition_matrices)
 
 start = time.time()
-no.run(model)
+no.run(pooled_model)
+no.run(grouped_model)
 no.log("run time = %.2fs" % (time.time() - start))
 
-simulated = model.summary.iloc[-1][states].to_numpy() / npeople
-equilibrium = model.stationary_distribution()
+simulated = pooled_model.summary.iloc[-1][states].to_numpy() / npeople
+equilibrium = pooled_model.stationary_distribution()
 no.log(f"pooled simulated equilibrium proportions:  {np.round(simulated, 4)}")
 no.log(f"pooled analytic equilibrium proportions:   {np.round(equilibrium, 4)}")
 
-grouped_simulated = model.summary_conditional.iloc[-1][states].to_numpy() / npeople
-mixed_equilibrium = model.mixed_stationary_distribution()
+grouped_simulated = grouped_model.summary.iloc[-1][states].to_numpy() / npeople
+mixed_equilibrium = grouped_model.mixed_stationary_distribution()
 no.log(f"grouped simulated equilibrium proportions: {np.round(grouped_simulated, 4)}")
 no.log(f"grouped analytic (mixed) equilibrium:      {np.round(mixed_equilibrium, 4)}")
 
-visualisation.show(model)
+visualisation.show(pooled_model, grouped_model)
