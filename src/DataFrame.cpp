@@ -23,8 +23,8 @@ py::array_t<int64_t> no::df::unique_index(size_t n) {
 
 // matrix is a transition matrix. Its row order must correspond to series.cat.categories order
 py::object no::df::transition(no::Model& model,
-                               py::array_t<double, py::array::c_style | py::array::forcecast> matrix_arg,
-                               py::object& series) {
+                              py::array_t<double, py::array::c_style | py::array::forcecast> matrix_arg,
+                              py::object& series) {
   // matrix is read-only, so it's safe to just force a contiguous copy if the caller's array isn't already one -
   // see the ArrayHelpers no::begin/no::cbegin/no::at helpers used below, which assume a contiguous, unit-stride,
   // default-ExtraFlags array_t.
@@ -32,9 +32,8 @@ py::object no::df::transition(no::Model& model,
 
   py::object pandas = py::module_::import("pandas");
   if (!py::isinstance(series.attr("dtype"), pandas.attr("CategoricalDtype"))) {
-    throw py::type_error(
-        "series does not have a pandas 'category' dtype; convert it first, e.g. "
-        "series = series.astype('category')");
+    throw py::type_error("series does not have a pandas 'category' dtype; convert it first, e.g. "
+                         "series = series.astype('category')");
   }
   py::object cat_accessor = series.attr("cat");
   py::ssize_t m = static_cast<py::ssize_t>(py::len(cat_accessor.attr("categories")));
@@ -89,58 +88,3 @@ py::object no::df::transition(no::Model& model,
   py::object from_codes = pandas.attr("Categorical").attr("from_codes");
   return from_codes(codes, cat_accessor.attr("categories"), cat_accessor.attr("ordered"));
 }
-
-template <typename T> void dump(const T* p, py::ssize_t n) {
-  for (py::ssize_t i = 0; i < n; ++i, ++p) {
-    no::log("%%"s % *p);
-    // no::at<std::string>(arr, Index_t<1>{i}) += 1;
-  }
-}
-
-// example of directly modifying a DF testing different dtypes
-void no::df::testfunc(no::Model& model, py::object& df, const std::string& colname) {
-  // .values? pd.Series -> np.array?
-  py::array arr = df.attr(colname.c_str()); //.request();
-
-  // no::log(arr.dtype());
-  py::buffer_info buf = arr.request();
-
-  py::ssize_t n = buf.shape[0];
-
-  if (arr.dtype().is(py::dtype::of<int64_t>())) {
-    dump(static_cast<int64_t*>(buf.ptr), n);
-  } else if (arr.dtype().is(py::dtype::of<double>())) {
-    dump(static_cast<double*>(buf.ptr), n);
-  } else if (arr.dtype().is(py::dtype::of<bool>())) {
-    dump(static_cast<bool*>(buf.ptr), n);
-  }
-  // else if (arr.dtype() == "object")
-  // {
-  //   py::str* p = static_cast<py::str*>(buf.ptr);
-  // }
-  // else if (arr.dtype() == py::object)
-  // {
-  //   py::object* p = static_cast<py::object*>(buf.ptr);
-  //   for (py::ssize_t i = 0; i < n; ++i, ++p)
-  //   {
-  //     no::log(*p);
-  //   }
-  // }
-  else {
-    throw py::type_error("unsupported dtype '%%' in column '%%'"s % /*arr.dtype().cast<std::string>() %*/ colname);
-  }
-}
-
-// TODO implement - see liam2-demo07
-// void no::df::linked_change(py::object& df, const std::string& cat, const std::string& link_cat)
-// {
-//   // .values? pd.Series -> np.array?
-//   py::array arr0 = df.attr(cat.c_str()); // this is a reference
-//   // .values? pd.Series -> np.array?
-//   py::array arr1 = df.attr(link_cat.c_str()); // this is a reference
-
-// for ()
-//   // {
-
-//   // }
-// }

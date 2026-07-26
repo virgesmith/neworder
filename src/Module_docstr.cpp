@@ -412,7 +412,3 @@ const char* df_transition_docstr = R"""(
         The transitioned data, as a new pandas Categorical with the same categories/order as series.
 )""";
 
-const char* df_testfunc_docstr = R"""(
-    Test function for direct dataframe manipulation. Results may vary. Do not use.
-)""";
-

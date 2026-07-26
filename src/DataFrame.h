@@ -13,14 +13,8 @@ namespace df {
 py::array_t<int64_t> unique_index(size_t n);
 
 py::object transition(no::Model& model, py::array_t<double, py::array::c_style | py::array::forcecast> matrix,
-                       py::object &series);
+                      py::object& series);
 
-void testfunc(no::Model& model, py::object& df, const std::string& colname);
+} // namespace df
 
-//void linked_change(py::object& df, const std::string& cat, const std::string& link_cat);
-
-//py::object append(const py::object& df1, const py::object& df2);
-
-}
-
-} //no::df
+} // namespace no
