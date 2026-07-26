@@ -6,20 +6,17 @@
 
 namespace no {
 
-class Model;
+class MonteCarlo;
 
 namespace df {
 
 py::array_t<int64_t> unique_index(size_t n);
 
-void transition(no::Model& model, py::array_t<int64_t> categories, py::array_t<double> matrix, py::object &df, const std::string& colname);
+py::object transition(no::MonteCarlo& mc, py::array_t<double, py::array::c_style | py::array::forcecast> matrix,
+                      py::object& series);
 
-void testfunc(no::Model& model, py::object& df, const std::string& colname);
+py::object transition_conditional(no::MonteCarlo& mc, py::dict matrices, py::object& group, py::object& series);
 
-//void linked_change(py::object& df, const std::string& cat, const std::string& link_cat);
+} // namespace df
 
-//py::object append(const py::object& df1, const py::object& df2);
-
-}
-
-} //no::df
+} // namespace no

@@ -5,11 +5,8 @@
 #include "Log.h"
 #include "Model.h"
 #include "MonteCarlo.h"
-#include "Timer.h"
 
 #include "NewOrder.h"
-
-#include <map>
 
 // uniqueness is - but reproduciblity isn't - guaranteed when multiple threads are used
 py::array_t<int64_t> no::df::unique_index(size_t n) {
@@ -24,31 +21,31 @@ py::array_t<int64_t> no::df::unique_index(size_t n) {
   return a;
 }
 
-// TODO non-integer categories?
-// TODO different output column?
-// categories are all possible category labels. Order corresponds to row/col in matrix
-// matrix is a transition matrix
-void no::df::transition(no::Model& model, py::array_t<int64_t> categories, py::array_t<double> matrix, py::object& df,
-                        const std::string& colname) {
-  // Extract column from DF as np.array
-  py::array col_untyped = df.attr(colname.c_str());
+// matrix is a transition matrix. Its row order must correspond to series.cat.categories order
+py::object no::df::transition(no::MonteCarlo& mc,
+                              py::array_t<double, py::array::c_style | py::array::forcecast> matrix_arg,
+                              py::object& series) {
+  // matrix is read-only, so it's safe to just force a contiguous copy if the caller's array isn't already one -
+  // see the ArrayHelpers no::begin/no::cbegin/no::at helpers used below, which assume a contiguous, unit-stride,
+  // default-ExtraFlags array_t.
+  py::array_t<double> matrix = matrix_arg;
 
-  // check col is int64
-  if (!col_untyped.dtype().is(py::dtype::of<int64_t>())) {
-    throw py::type_error("dataframe transitions can only be performed on columns containing int64 values");
+  py::object pandas = py::module_::import("pandas");
+  if (!py::isinstance(series.attr("dtype"), pandas.attr("CategoricalDtype"))) {
+    throw py::type_error("series does not have a pandas 'category' dtype; convert it first, e.g. "
+                         "series = series.astype('category')");
   }
-  py::array_t<int64_t> col = col_untyped;
+  py::object cat_accessor = series.attr("cat");
+  py::ssize_t m = static_cast<py::ssize_t>(py::len(cat_accessor.attr("categories")));
 
-  py::ssize_t m = categories.size();
-
-  // check matrix is 2d, square & categories len = matrix len
+  // check matrix is 2d, square & its size matches the number of categories
   if (matrix.ndim() != 2)
     throw py::value_error("cumulative transition matrix dimension is %%"s % matrix.ndim());
   if (matrix.shape(0) != matrix.shape(1))
     throw py::value_error("cumulative transition matrix shape is not square: %% by %%"s % matrix.shape(0) %
                           matrix.shape(1));
   if (m != matrix.shape(0))
-    throw py::value_error("cumulative transition matrix size (%%) is not same as length of categories (%%)"s %
+    throw py::value_error("cumulative transition matrix size (%%) is not same as the number of categories (%%)"s %
                           matrix.shape(0) % m);
 
   // IMPORTANT NOTES:
@@ -60,103 +57,117 @@ void no::df::transition(no::Model& model, py::array_t<int64_t> categories, py::a
   std::vector<std::vector<double>> cumprobs(m);
   for (int i = 0; i < m; ++i) {
     cumprobs[i] = no::cumulative(no::cbegin(matrix) + (i * m), m);
-    // // point to beginning of row
-    // double* p = no::begin(matrix) + (i * m);
-    // if (p[0] < 0.0 || p[0] > 1.0)
-    //   throw py::value_error("invalid transition probability %% at (%%, 0)"s % p[0] % i);
-    // cumprobs[i][0] = p[0];
-    // for (int j = 1; j < m; ++j)
-    // {
-    //   if (p[j] < 0.0 || p[j] > 1.0)
-    //     throw py::value_error("invalid transition probability %% at (%%, %%)"s % p[0] % i % j);
-    //   cumprobs[i][j] = cumprobs[i][j-1] + p[j];
-    // }
-    // // check probabilities sum to unity within tolerance
-    // if (fabs(cumprobs[i][m-1] - 1.0) > std::numeric_limits<double>::epsilon())
-    //   throw py::value_error("probabilities don't sum to unity (%%) in transition matrix row %%"s % cumprobs[i][m-1] %
-    //   i);
   }
 
-  // reverse catgory lookup
-  std::map<int64_t, int64_t> lookup;
-  for (py::ssize_t i = 0; i < m; ++i) {
-    lookup[no::at<int64_t>(categories, Index_t<1>{i})] = i;
-  }
+  // Codes are already indices 0..m-1 (or -1 for NaN/missing), so no value <-> index lookup is required. We
+  // operate on a local (possibly copied) int64 buffer rather than relying on `.cat.codes` being an aliased,
+  // in-place-writable view of the Categorical's internal storage - that isn't part of pandas' public contract,
+  // and codes may be stored as int8/16/32/64 depending on the number of categories - then write the result back
+  // explicitly via pd.Categorical.from_codes.
+  py::object codes_obj = cat_accessor.attr("codes");
+  py::array_t<int64_t, py::array::c_style | py::array::forcecast> codes_arg = codes_obj;
+  // no::begin/no::at only accept the default-ExtraFlags array_t (see the matrix rebind above) - this is just a
+  // flags reinterpretation of the same (already contiguous, per c_style above) buffer, not a copy.
+  py::array_t<int64_t> codes = codes_arg;
 
-  py::ssize_t n = col.size();
+  py::ssize_t n = codes.size();
+  py::array_t<double> rpy = mc.ustream(n);
 
-  Timer t;
-  // define a base model to init the MC engine
-  py::array_t<double> rpy = model.mc().ustream(n);
-
-  // possible unsafe access?
   double* r = no::begin(rpy);
-  int64_t* pcat = no::begin<int64_t>(categories);
+  int64_t* pcodes = no::begin<int64_t>(codes);
 
   for (py::ssize_t i = 0; i < n; ++i) {
-    // look up the index, ignoring values that haven't been explicitly set in categories (like -1)
-    auto it = lookup.find(no::at<int64_t>(col, Index_t<1>{i}));
-    if (it == lookup.end())
+    int64_t j = pcodes[i];
+    // codes are -1 for NaN/missing categories - leave any such rows untouched
+    if (j < 0 || j >= m)
       continue;
-    int64_t j = it->second;
-    py::ssize_t k = no::interp(cumprobs[j], r[i] /*no::at(r, Index_t<1>{i})*/);
-    // no::log("interp %%:%% -> %%"s % j % r[i] % k);
-    no::at<int64_t>(col, Index_t<1>{i}) = pcat[k]; // no::at<int64_t>(categories, Index_t<1>{k});
+    py::ssize_t k = no::interp(cumprobs[j], r[i]);
+    pcodes[i] = k;
   }
-  // no::log("transition %% elapsed: %%"s % n % t.elapsed_s());
+
+  py::object from_codes = pandas.attr("Categorical").attr("from_codes");
+  return from_codes(codes, cat_accessor.attr("categories"), cat_accessor.attr("ordered"));
 }
 
-template <typename T> void dump(const T* p, py::ssize_t n) {
-  for (py::ssize_t i = 0; i < n; ++i, ++p) {
-    no::log("%%"s % *p);
-    // no::at<std::string>(arr, Index_t<1>{i}) += 1;
+// matrices maps each of group's category labels to the (square) transition matrix to apply to rows in that
+// group; group and series must be the same length and row-aligned. Unlike transition()'s matrix argument,
+// matrices are looked up by label rather than positionally by group.cat.codes, so the dict need not list its
+// entries in categories order (and may contain unused extra keys).
+py::object no::df::transition_conditional(no::MonteCarlo& mc, py::dict matrices, py::object& group,
+                                          py::object& series) {
+  py::object pandas = py::module_::import("pandas");
+  if (!py::isinstance(series.attr("dtype"), pandas.attr("CategoricalDtype")))
+    throw py::type_error("series does not have a pandas 'category' dtype; convert it first, e.g. "
+                         "series = series.astype('category')");
+  if (!py::isinstance(group.attr("dtype"), pandas.attr("CategoricalDtype")))
+    throw py::type_error("group does not have a pandas 'category' dtype; convert it first, e.g. "
+                         "group = group.astype('category')");
+
+  py::object cat_accessor = series.attr("cat");
+  py::ssize_t m = static_cast<py::ssize_t>(py::len(cat_accessor.attr("categories")));
+
+  py::object group_cat_accessor = group.attr("cat");
+  py::object group_categories = group_cat_accessor.attr("categories");
+  py::ssize_t n_groups = static_cast<py::ssize_t>(py::len(group_categories));
+
+  // per-group cumulative probabilities, indexed positionally by group code (group.cat.categories order) even
+  // though matrices itself is keyed by label - this mirrors the cumprobs[from-state] table built in transition()
+  std::vector<std::vector<std::vector<double>>> cumprobs(n_groups);
+  for (py::ssize_t g = 0; g < n_groups; ++g) {
+    py::object label = group_categories[py::int_(g)];
+    if (!matrices.contains(label))
+      throw py::value_error("no transition matrix supplied for group '%%'"s % label);
+
+    py::object matrix_obj = matrices[label];
+    py::array_t<double, py::array::c_style | py::array::forcecast> matrix_arg = matrix_obj;
+    py::array_t<double> matrix = matrix_arg;
+
+    if (matrix.ndim() != 2)
+      throw py::value_error("transition matrix for group '%%' dimension is %%"s % label % matrix.ndim());
+    if (matrix.shape(0) != matrix.shape(1))
+      throw py::value_error("transition matrix for group '%%' shape is not square: %% by %%"s % label %
+                            matrix.shape(0) % matrix.shape(1));
+    if (m != matrix.shape(0))
+      throw py::value_error(
+          "transition matrix for group '%%' size (%%) is not same as the number of categories (%%)"s % label %
+          matrix.shape(0) % m);
+
+    cumprobs[g].resize(m);
+    for (py::ssize_t i = 0; i < m; ++i) {
+      cumprobs[g][i] = no::cumulative(no::cbegin(matrix) + (i * m), m);
+    }
   }
+
+  py::object codes_obj = cat_accessor.attr("codes");
+  py::array_t<int64_t, py::array::c_style | py::array::forcecast> codes_arg = codes_obj;
+  py::array_t<int64_t> codes = codes_arg;
+
+  py::object group_codes_obj = group_cat_accessor.attr("codes");
+  py::array_t<int64_t, py::array::c_style | py::array::forcecast> group_codes_arg = group_codes_obj;
+  py::array_t<int64_t> group_codes = group_codes_arg;
+
+  py::ssize_t n = codes.size();
+  if (group_codes.size() != n)
+    throw py::value_error("group (%%) and series (%%) must have the same length"s % group_codes.size() % n);
+
+  py::array_t<double> rpy = mc.ustream(n);
+
+  double* r = no::begin(rpy);
+  int64_t* pcodes = no::begin<int64_t>(codes);
+  const int64_t* pgroup = no::cbegin<int64_t>(group_codes);
+
+  for (py::ssize_t i = 0; i < n; ++i) {
+    int64_t g = pgroup[i];
+    // codes are -1 for NaN/missing categories - leave any such rows untouched
+    if (g < 0 || g >= n_groups)
+      continue;
+    int64_t j = pcodes[i];
+    if (j < 0 || j >= m)
+      continue;
+    py::ssize_t k = no::interp(cumprobs[g][j], r[i]);
+    pcodes[i] = k;
+  }
+
+  py::object from_codes = pandas.attr("Categorical").attr("from_codes");
+  return from_codes(codes, cat_accessor.attr("categories"), cat_accessor.attr("ordered"));
 }
-
-// example of directly modifying a DF testing different dtypes
-void no::df::testfunc(no::Model& model, py::object& df, const std::string& colname) {
-  // .values? pd.Series -> np.array?
-  py::array arr = df.attr(colname.c_str()); //.request();
-
-  // no::log(arr.dtype());
-  py::buffer_info buf = arr.request();
-
-  py::ssize_t n = buf.shape[0];
-
-  if (arr.dtype().is(py::dtype::of<int64_t>())) {
-    dump(static_cast<int64_t*>(buf.ptr), n);
-  } else if (arr.dtype().is(py::dtype::of<double>())) {
-    dump(static_cast<double*>(buf.ptr), n);
-  } else if (arr.dtype().is(py::dtype::of<bool>())) {
-    dump(static_cast<bool*>(buf.ptr), n);
-  }
-  // else if (arr.dtype() == "object")
-  // {
-  //   py::str* p = static_cast<py::str*>(buf.ptr);
-  // }
-  // else if (arr.dtype() == py::object)
-  // {
-  //   py::object* p = static_cast<py::object*>(buf.ptr);
-  //   for (py::ssize_t i = 0; i < n; ++i, ++p)
-  //   {
-  //     no::log(*p);
-  //   }
-  // }
-  else {
-    throw py::type_error("unsupported dtype '%%' in column '%%'"s % /*arr.dtype().cast<std::string>() %*/ colname);
-  }
-}
-
-// TODO implement - see liam2-demo07
-// void no::df::linked_change(py::object& df, const std::string& cat, const std::string& link_cat)
-// {
-//   // .values? pd.Series -> np.array?
-//   py::array arr0 = df.attr(cat.c_str()); // this is a reference
-//   // .values? pd.Series -> np.array?
-//   py::array arr1 = df.attr(link_cat.c_str()); // this is a reference
-
-// for ()
-//   // {
-
-//   // }
-// }

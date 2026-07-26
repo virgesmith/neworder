@@ -398,16 +398,39 @@ const char* df_unique_index_docstr = R"""(
 
 
 const char* df_transition_docstr = R"""(
-    Randomly changes categorical data in a dataframe, according to supplied transition probabilities.
+    Randomly changes categorical data, according to supplied transition probabilities, and returns the result
+    as a new pandas Categorical - it does not modify series in-place, so the caller is responsible for
+    assigning the result back, e.g. df[colname] = no.df.transition(model.mc, transition_matrix, df[colname]).
+    The series must have a pandas "category" dtype (any category label type, e.g. strings, is supported) -
+    convert it first with series = series.astype("category") if necessary. The row order of transition_matrix
+    must correspond to the series' cat.categories order.
     Args:
-        model: The model (for access to the MonteCarlo engine).
-        categories: The set of possible categories
+        mc: The model's MonteCarlo engine (e.g. model.mc).
         transition_matrix: The probabilities of transitions between categories
-        df: The dataframe, which is modified in-place
-        colname: The name of the column in the dataframe
+        series: The pandas Series (categorical dtype) to transition
+    Returns:
+        The transitioned data, as a new pandas Categorical with the same categories/order as series.
 )""";
 
-const char* df_testfunc_docstr = R"""(
-    Test function for direct dataframe manipulation. Results may vary. Do not use.
+
+const char* df_transition_conditional_docstr = R"""(
+    Like transition(), but applies a different transition matrix per row depending on the corresponding value
+    of another categorical column (group), e.g. transition probabilities that vary by age band or sex. It does
+    not modify series in-place, so the caller is responsible for assigning the result back, e.g.
+    df[colname] = no.df.transition_conditional(model.mc, matrices, df[groupname], df[colname]).
+    Both series and group must have a pandas "category" dtype, and must be the same length and row-aligned -
+    convert them first with series = series.astype("category") if necessary. matrices is a dict mapping each of
+    group's category labels to the (square) transition matrix to apply to rows in that group; its row order
+    must correspond to series' cat.categories order, as in transition(). Rows whose group value is NaN/missing
+    are left untouched; every other category present in group.cat.categories must have a corresponding entry
+    in matrices.
+    Args:
+        mc: The model's MonteCarlo engine (e.g. model.mc).
+        matrices: dict mapping each category in group to the transition matrix (probabilities of transitions
+            between categories) to apply where group has that value
+        group: The pandas Series (categorical dtype) whose value selects the transition matrix per row
+        series: The pandas Series (categorical dtype) to transition
+    Returns:
+        The transitioned data, as a new pandas Categorical with the same categories/order as series.
 )""";
 

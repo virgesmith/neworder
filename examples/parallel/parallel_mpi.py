@@ -11,26 +11,26 @@ class ParallelMPI(neworder.Model):
         # initialise base model (essential!)
         super().__init__(timeline, neworder.MonteCarlo.nondeterministic_stream)
 
-        # enumerate possible states
-        self.s = np.arange(neworder.mpi.SIZE)
-
         # create transition matrix with all off-diagonal probabilities equal to p
         self.p = np.identity(neworder.mpi.SIZE) * (1 - neworder.mpi.SIZE * p) + p
 
         # record initial population size
         self.n = n
 
-        # individuals get a unique id and their initial state is the MPI rank
-        self.pop = pd.DataFrame({"id": neworder.df.unique_index(n), "state": np.full(n, neworder.mpi.RANK)}).set_index(
-            "id"
-        )
+        # individuals get a unique id and their initial state (one of the possible MPI ranks) is the process rank
+        self.pop = pd.DataFrame(
+            {
+                "id": neworder.df.unique_index(n),
+                "state": pd.Categorical(np.full(n, neworder.mpi.RANK), categories=np.arange(neworder.mpi.SIZE)),
+            }
+        ).set_index("id")
 
     #!constructor!
 
     # !step!
     def step(self) -> None:
         # generate some movement
-        neworder.df.transition(self, self.s, self.p, self.pop, "state")
+        self.pop["state"] = neworder.df.transition(self.mc, self.p, self.pop["state"])
 
         # send emigrants to other processes
         for s in range(neworder.mpi.SIZE):
