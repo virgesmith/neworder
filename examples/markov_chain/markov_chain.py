@@ -86,7 +86,9 @@ class MarkovChain(MarkovChainBase):
         new_codes = np.array([_interp(cumprob[c], ui) for c, ui in zip(codes, u, strict=True)])
         self.pop["state"] = pd.Categorical.from_codes(new_codes, categories=pd.Index(self.states))
 
+    # !step_pooled!
     def step(self) -> None:
+        # switchable implementations that record exec time for comparison
         t0 = time.perf_counter()
         if self.use_python_impl:
             self.transition_py()
@@ -95,6 +97,8 @@ class MarkovChain(MarkovChainBase):
         self.transition_time_s += time.perf_counter() - t0
 
         self.summary.loc[len(self.summary)] = self._state_counts()
+
+    # !step_pooled!
 
     def finalise(self) -> None:
         super().finalise()
@@ -139,11 +143,14 @@ class ConditionalMarkovChain(MarkovChainBase):
         groups = list(group_transition_matrices)
         self.pop["group"] = pd.Categorical([groups[i % len(groups)] for i in range(npeople)], categories=groups)
 
+    # !step_conditional!
     def step(self) -> None:
         self.pop["state"] = no.df.transition_conditional(
             self.mc, self.group_transition_matrices, self.pop["group"], self.pop["state"]
         )
         self.summary.loc[len(self.summary)] = self._state_counts()
+
+    # !step_conditional!
 
     def mixed_stationary_distribution(self) -> npt.NDArray[np.float64]:
         """
