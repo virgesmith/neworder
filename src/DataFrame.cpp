@@ -22,7 +22,7 @@ py::array_t<int64_t> no::df::unique_index(size_t n) {
 }
 
 // matrix is a transition matrix. Its row order must correspond to series.cat.categories order
-py::object no::df::transition(no::Model& model,
+py::object no::df::transition(no::MonteCarlo& mc,
                               py::array_t<double, py::array::c_style | py::array::forcecast> matrix_arg,
                               py::object& series) {
   // matrix is read-only, so it's safe to just force a contiguous copy if the caller's array isn't already one -
@@ -71,7 +71,7 @@ py::object no::df::transition(no::Model& model,
   py::array_t<int64_t> codes = codes_arg;
 
   py::ssize_t n = codes.size();
-  py::array_t<double> rpy = model.mc().ustream(n);
+  py::array_t<double> rpy = mc.ustream(n);
 
   double* r = no::begin(rpy);
   int64_t* pcodes = no::begin<int64_t>(codes);
@@ -82,6 +82,89 @@ py::object no::df::transition(no::Model& model,
     if (j < 0 || j >= m)
       continue;
     py::ssize_t k = no::interp(cumprobs[j], r[i]);
+    pcodes[i] = k;
+  }
+
+  py::object from_codes = pandas.attr("Categorical").attr("from_codes");
+  return from_codes(codes, cat_accessor.attr("categories"), cat_accessor.attr("ordered"));
+}
+
+// matrices maps each of group's category labels to the (square) transition matrix to apply to rows in that
+// group; group and series must be the same length and row-aligned. Unlike transition()'s matrix argument,
+// matrices are looked up by label rather than positionally by group.cat.codes, so the dict need not list its
+// entries in categories order (and may contain unused extra keys).
+py::object no::df::transition_conditional(no::MonteCarlo& mc, py::dict matrices, py::object& group,
+                                          py::object& series) {
+  py::object pandas = py::module_::import("pandas");
+  if (!py::isinstance(series.attr("dtype"), pandas.attr("CategoricalDtype")))
+    throw py::type_error("series does not have a pandas 'category' dtype; convert it first, e.g. "
+                         "series = series.astype('category')");
+  if (!py::isinstance(group.attr("dtype"), pandas.attr("CategoricalDtype")))
+    throw py::type_error("group does not have a pandas 'category' dtype; convert it first, e.g. "
+                         "group = group.astype('category')");
+
+  py::object cat_accessor = series.attr("cat");
+  py::ssize_t m = static_cast<py::ssize_t>(py::len(cat_accessor.attr("categories")));
+
+  py::object group_cat_accessor = group.attr("cat");
+  py::object group_categories = group_cat_accessor.attr("categories");
+  py::ssize_t n_groups = static_cast<py::ssize_t>(py::len(group_categories));
+
+  // per-group cumulative probabilities, indexed positionally by group code (group.cat.categories order) even
+  // though matrices itself is keyed by label - this mirrors the cumprobs[from-state] table built in transition()
+  std::vector<std::vector<std::vector<double>>> cumprobs(n_groups);
+  for (py::ssize_t g = 0; g < n_groups; ++g) {
+    py::object label = group_categories[py::int_(g)];
+    if (!matrices.contains(label))
+      throw py::value_error("no transition matrix supplied for group '%%'"s % label);
+
+    py::object matrix_obj = matrices[label];
+    py::array_t<double, py::array::c_style | py::array::forcecast> matrix_arg = matrix_obj;
+    py::array_t<double> matrix = matrix_arg;
+
+    if (matrix.ndim() != 2)
+      throw py::value_error("transition matrix for group '%%' dimension is %%"s % label % matrix.ndim());
+    if (matrix.shape(0) != matrix.shape(1))
+      throw py::value_error("transition matrix for group '%%' shape is not square: %% by %%"s % label %
+                            matrix.shape(0) % matrix.shape(1));
+    if (m != matrix.shape(0))
+      throw py::value_error(
+          "transition matrix for group '%%' size (%%) is not same as the number of categories (%%)"s % label %
+          matrix.shape(0) % m);
+
+    cumprobs[g].resize(m);
+    for (py::ssize_t i = 0; i < m; ++i) {
+      cumprobs[g][i] = no::cumulative(no::cbegin(matrix) + (i * m), m);
+    }
+  }
+
+  py::object codes_obj = cat_accessor.attr("codes");
+  py::array_t<int64_t, py::array::c_style | py::array::forcecast> codes_arg = codes_obj;
+  py::array_t<int64_t> codes = codes_arg;
+
+  py::object group_codes_obj = group_cat_accessor.attr("codes");
+  py::array_t<int64_t, py::array::c_style | py::array::forcecast> group_codes_arg = group_codes_obj;
+  py::array_t<int64_t> group_codes = group_codes_arg;
+
+  py::ssize_t n = codes.size();
+  if (group_codes.size() != n)
+    throw py::value_error("group (%%) and series (%%) must have the same length"s % group_codes.size() % n);
+
+  py::array_t<double> rpy = mc.ustream(n);
+
+  double* r = no::begin(rpy);
+  int64_t* pcodes = no::begin<int64_t>(codes);
+  const int64_t* pgroup = no::cbegin<int64_t>(group_codes);
+
+  for (py::ssize_t i = 0; i < n; ++i) {
+    int64_t g = pgroup[i];
+    // codes are -1 for NaN/missing categories - leave any such rows untouched
+    if (g < 0 || g >= n_groups)
+      continue;
+    int64_t j = pcodes[i];
+    if (j < 0 || j >= m)
+      continue;
+    py::ssize_t k = no::interp(cumprobs[g][j], r[i]);
     pcodes[i] = k;
   }
 

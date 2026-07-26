@@ -188,7 +188,9 @@ PYBIND11_MODULE(_neworder_core, m)
   // dataframe manipulation
   m.def_submodule("df", df_docstr)
       .def("unique_index", no::df::unique_index, df_unique_index_docstr, "n"_a)
-      .def("transition", no::df::transition, df_transition_docstr, "model"_a, "transition_matrix"_a, "series"_a);
+      .def("transition", no::df::transition, df_transition_docstr, "mc"_a, "transition_matrix"_a, "series"_a)
+      .def("transition_conditional", no::df::transition_conditional, df_transition_conditional_docstr, "mc"_a,
+           "matrices"_a, "group"_a, "series"_a);
 
   // model control plus utility/diagnostics
   m.def("log", log_obj, log_docstr)

@@ -26,6 +26,14 @@ The model also implements a pure-python equivalent of the `no.df.transition()` f
 
 For the full 100000-person, 100-step model, the C++ implementation takes well under a second (depending on platform), versus about 5s for the python implementation - more than an order of magnitude faster. `no.df.transition` requires the state column to have a pandas `category` dtype (as used here), which also means the state labels don't need to be integers - strings, for example, work just as well - see `no.df.transition` for details.
 
+## Conditional transitions
+
+Alongside the single-matrix simulation above, the model also splits the population into two groups - `fast_to_1` and `fast_to_2` - and runs a second, independent simulation using `no.df.transition_conditional()`, which applies a different transition matrix per row depending on each individual's group. The two group matrices share the same topology as the pooled one above, but with the relative rates out of state 0 biased in opposite directions.
+
+This is deliberately *not* the same as scaling every rate in a group's matrix by a constant factor - doing that leaves the group's equilibrium unchanged, since a Markov chain's stationary distribution depends on the *ratios* between rates, not their absolute magnitude. Instead, each group biases the two routes out of state 0 (towards state 1 vs towards state 2) in opposite directions, so each group settles at a genuinely different equilibrium.
+
+Because group membership never changes, the population as a whole converges to the population-share-weighted average of each group's own equilibrium - not the equilibrium computed from a single matrix applied to everyone (`MarkovChain.stationary_distribution()`). `MarkovChain.mixed_stationary_distribution()` computes this weighted-average equilibrium analytically, and the simulated proportions from the grouped run should match it closely - the same cross-check as the pooled case, but it also demonstrates that pooling heterogeneous subpopulations into one transition matrix can give a materially different (and wrong, for either group) answer than modelling them separately.
+
 ## Input
 
 {{ include_snippet("./examples/markov_chain/model.py") }}

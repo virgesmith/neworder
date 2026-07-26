@@ -30,7 +30,7 @@ class ParallelMPI(neworder.Model):
     # !step!
     def step(self) -> None:
         # generate some movement
-        self.pop["state"] = neworder.df.transition(self, self.p, self.pop["state"])
+        self.pop["state"] = neworder.df.transition(self.mc, self.p, self.pop["state"])
 
         # send emigrants to other processes
         for s in range(neworder.mpi.SIZE):
