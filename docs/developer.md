@@ -36,15 +36,6 @@ And a simple test that all is ok:
 python -c "import neworder"
 ```
 
-### Docker
-
-```bash
-docker build -t <image-name> .
-docker run --net=host -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=$DISPLAY -it virgesmith/neworder
-```
-
-Running the graphical examples will almost certainly require setting `xhost +local:` on the host to enable docker to connect to the display manager.
-
 ## Test
 
 Tests use the `pytest` framework and can be invoked serially with either
@@ -117,7 +108,6 @@ When a release is ready:
 1. Create a release in github, using a new tag `vX.Y.Z` and release notes based on commits since previous release, e.g.: `git log 1.2.1..HEAD --oneline`. CI will then:
     - publish the release to PYPI
     - generate examples artifacts - these should be copied to the release
-1. [Currently manual] build and push the docker image (NB uses latest published release, but local examples)
 
 Note:
 

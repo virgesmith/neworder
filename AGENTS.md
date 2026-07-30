@@ -119,7 +119,6 @@ examples/                # runnable microsimulation examples
   pypi-release.yml       # CI: PyPI publish on v* tag
 pyproject.toml
 .pre-commit-config.yaml
-Dockerfile
 ```
 
 ## Regenerating Type Stubs
@@ -149,7 +148,6 @@ After generation, check the output manually:
 - **Releases are triggered by a `v*` tag** (e.g. `v1.2.3`). Pushing such a tag to GitHub runs [pypi-release.yml](.github/workflows/pypi-release.yml), which builds a source distribution and publishes it to PyPI using trusted publishing (OIDC — no API token needed). It also packages and uploads example archives as release artifacts.
 - **Do not push a `v*` tag** unless the release is fully ready, the version in [pyproject.toml](pyproject.toml) matches the tag, and all CI checks pass.
 - Version bumps go in `pyproject.toml` (`version = "x.y.z"`).
-- The Docker image must be rebuilt and pushed manually after a release (see [docs/developer.md](docs/developer.md)).
 
 ## Workflow
 

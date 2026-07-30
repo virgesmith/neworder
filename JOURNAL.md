@@ -22,6 +22,17 @@ Entry template:
 
 ---
 
+## 2026-07-30 — remove Docker image (#118)
+
+**Why** — issue #118: the Docker image added unnecessary complexity (a `Dockerfile` to maintain, a manual rebuild-and-push step tacked onto every release) for a job the release CI already does — packaging and uploading the examples archive as a GitHub release artifact.
+
+**What** — deleted `Dockerfile` and `.dockerignore`. Removed the "Docker" section and the manual docker-push release-checklist step from [docs/developer.md](docs/developer.md), the docker-pull instructions from [docs/index.md](docs/index.md) and [docs/examples/src.md](docs/examples/src.md) (both now just point at the release examples archive), and the `Dockerfile` layout entry / manual-rebuild rule from [AGENTS.md](AGENTS.md).
+
+**Design decisions**
+- Left `paper/paper.md` untouched — it's the JOSS-published paper (frozen since the 2021 review, per its git history), a historical record of what was true at publication rather than living documentation.
+
+**Follow-ups** — the `virgesmith/neworder` image on Docker Hub itself is out of scope for this repo change; it will simply stop being updated.
+
 ## 2026-07-26 — markov_chain example: split into MarkovChain + ConditionalMarkovChain siblings (uncommitted)
 
 **Why** — the group-conditional comparison (see the entry below) had been bolted onto `MarkovChain` behind an optional `group_transition_matrices` constructor argument, which meant `__init__`, `step()`, and `finalise()` all carried an `if self.group_transition_matrices is not None:` branch, and `mixed_stationary_distribution()` needed a defensive `assert` for a case that should have been unreachable by construction. Flagged (correctly) as not liking the shape of that file.
