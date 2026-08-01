@@ -59,7 +59,7 @@ void no::MonteCarlo::init_bitgen(py::capsule capsule) {
   bitgen->next_raw = [](void* p) { return static_cast<no::MonteCarlo*>(p)->raw(); };
 }
 
-void no::MonteCarlo::reset() noexcept {
+void no::MonteCarlo::reset() {
   m_seed = m_seeder();
   m_prng.seed(m_seed);
 }

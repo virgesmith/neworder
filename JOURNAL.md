@@ -22,6 +22,43 @@ Entry template:
 
 ---
 
+## 2026-08-01 — SplitMix64.raw supersedes generate_state (uncommitted)
+
+**Why** — `generate_state` (added earlier the same day, entry below) was shaped by numpy's `ISeedSequence` protocol rather than by how models actually key their draws: it takes a word *count* and derives words from an index, so it can't be keyed on person id / process id / timestep the way `uarray` is. Seeding an external generator is only one use of the underlying hashes; deriving variates `uarray` can't express (a uniform integer over an arbitrary range, say) is another, and neither is served by an index-keyed word stream.
+
+**What** — added `SplitMix64.raw(*keys)` in [src/SplitMix64.cpp](src/SplitMix64.cpp): identical to `uarray` in argument handling, output shape and counter semantics, returning the raw 64-bit hashes as `int64` instead of mapping them onto `U[0,1)`. `generate_state` is removed entirely, along with its declaration, binding, docstring, tests, the `ISeedSequence.register()` call in [neworder/\_\_init\_\_.py](neworder/__init__.py) and the docs section. It was never committed, so it exists in no git history — see the note below if it is ever wanted back.
+
+**Design decisions**
+- **int64 only, no dtype parameter.** SplitMix64 is a 64-bit generator; a dtype selector would have re-introduced `generate_state`'s validation surface (`float64`/`int32` share itemsizes with `uint64`/`uint32`) to save callers an `.astype`. Signed rather than unsigned for consistency with `hash64`, which already returns `int64`.
+- **Extracted `mix_keys`/`hash_at` rather than duplicating the argument parsing.** `raw` and `uarray` now share the salt computation, shape derivation and per-element hashing, differing only in the final mapping. A copy would have let the two drift; `test_raw_matches_uarray` asserts the relationship `uarray == (raw viewed as uint64 >> 11) * 2**-53` holds.
+- **The `ISeedSequence` registration had to go with the method, not just the method.** `raw` cannot substitute for `generate_state` in the numpy interop: `BitGenerator` isinstance-checks `ISeedSequence` and then calls `generate_state` *by name*. Registering without the method converts a clear `TypeError` at construction (`SeedSequence expects int or sequence of ints for entropy`) into an `AttributeError` thrown from inside numpy — verified both ways. Registration is a type assertion only; it carries no behaviour.
+- Docs now seed numpy via `raw(...).view(np.uint64)`. Verified necessary: numpy's `SeedSequence` rejects negative entropy with `ValueError: expected non-negative integer`, and roughly half of `raw`'s output is negative.
+
+**Also: the `MonteCarlo` deprecation is reverted.** The entry below marked `MonteCarlo` deprecated in `mc_docstr` and in a `!!! warning` admonition in [docs/tips.md](docs/tips.md); both are restored to their committed wording (the neutral "When to use `SplitMix64` vs `MonteCarlo`" note). Deprecating it was premature: `hazard`/`stopping`/`arrivals`/`sample`/`counts` have no `SplitMix64` equivalent, so for non-uniform sampling `MonteCarlo` is not merely retained-for-compatibility but the *only* option — telling users it is deprecated points them at a replacement that cannot do the job. The two engines are complementary rather than successive: choose by whether draws must be order-independent, not by which is newer.
+
+**Follow-ups** — if the `ISeedSequence` interop is ever wanted back, reimplement `generate_state` as a thin wrapper over `raw` (keyed on the word index) rather than restoring the separate derivation it had, and re-add `ISeedSequence.register(SplitMix64)`. Note it never reached a commit, so `git log` will not find it; the numbers worth keeping are what each bit generator asks for — `PCG64` 4×uint64, `Philox` 2×uint64, `SFC64` 3×uint64, `MT19937` 624×uint32 — and that numpy's `SeedSequence` rejects negative entropy, so any `int64` words need viewing as `uint64` first.
+
+## 2026-08-01 — SplitMix64.generate_state, and deprecate MonteCarlo (uncommitted)
+
+**Why** — seeding an external generator from neworder previously meant `MonteCarlo.raw()` or the `as_np` bitgen adapter, both of which tie the external generator to the sequential mt19937 stream, so what numpy gets depends on how many draws were taken before it. `SplitMix64` had no equivalent, leaving no order-independent way to initialise numpy.
+
+**What** — added `SplitMix64.generate_state(n_words, dtype=np.uint32)` in [src/SplitMix64.cpp](src/SplitMix64.cpp), implementing numpy's `ISeedSequence` protocol. [neworder/\_\_init\_\_.py](neworder/__init__.py) registers `SplitMix64` as a virtual subclass of `numpy.random.bit_generator.ISeedSequence`, so `np.random.PCG64(sm)` works directly. Documented in [docs/tips.md](docs/tips.md) and marked `MonteCarlo` deprecated there and in its docstring.
+
+**Design decisions**
+- `ISeedSequence.register()` rather than duck-typing — numpy's `BitGenerator.__init__` does an `isinstance` check, not a `hasattr`, so a bare `generate_state` method is rejected with "SeedSequence expects int or sequence of ints". A pybind11 extension type can't inherit the Python-side ABC, so virtual-subclass registration is the only route. Verified against `PCG64`, `Philox`, `SFC64` and `MT19937`, which request 4/2/3 uint64 and 624 uint32 words respectively.
+- Words derived by mixing the word *index* into the salt (`splitmix64(base ^ i)`), not by advancing the counter — keeps the class stateless and makes the uint32 output exactly the low/high halves of the uint64 output, which is asserted in the tests.
+- dtype validated on `kind() == 'u'` **and** itemsize, not itemsize alone — `float64`/`int32` share an itemsize with `uint64`/`uint32` and would otherwise be silently accepted and reinterpreted.
+- **`MonteCarlo` deliberately left untouched.** An earlier cut of this work also changed `MonteCarlo` to seed mt19937 via `std::seed_seq` (a single 32-bit int is a weak mt19937 seed) and updated the golden values in `test_mc.py` to match. Reverted on review: silently changing the stream for a given seed breaks every existing model's reproducibility, which is the one guarantee this framework sells. Deprecation is docs-only for the same reason — a runtime `DeprecationWarning` would fire on every existing model, example and most of the test suite, and there is no replacement yet for `hazard`/`stopping`/`arrivals`/`sample`/`counts`.
+
+**Follow-ups** — `MonteCarlo`'s non-uniform samplers have no `SplitMix64` equivalent, so the class can't actually be retired until those are ported.
+
+Two stub-related snags worth recording, since `AGENTS.md` is misleading on both:
+
+- The command in `AGENTS.md` is stale — `pybind11-stubgen --ignore-invalid all` is now ambiguous (`--ignore-invalid-expressions` / `--ignore-invalid-identifiers`); `--ignore-all-errors` is the current spelling. A full regen also drops the hand-added `CalendarTimeline` and the condensed docstrings, so stubs are better hand-merged than regenerated wholesale.
+- **`stubs/` is gitignored and is not what `ty` reads.** The authoritative, version-controlled stub is [neworder/\_\_init\_\_.pyi](neworder/__init__.pyi); editing `stubs/_neworder_core/__init__.pyi` alone changes nothing (verified by perturbing a signature there and observing `ty`'s output was unaffected). `AGENTS.md` describes a `stubs/_neworder_core-stubs/` layout and a `stubPackages` setting, neither of which exists — there is no `[tool.ty]` section in `pyproject.toml` at all.
+
+Also note `np.random.PCG64(sm)` does not type-check: numpy declares the seed parameter as the concrete `SeedSequence`, not the `ISeedSequence` ABC, so *no* third-party implementation can satisfy it statically. Suppressed at the call site in the test and flagged in the docs.
+
 ## 2026-07-30 — remove Docker image (#118)
 
 **Why** — issue #118: the Docker image added unnecessary complexity (a `Dockerfile` to maintain, a manual rebuild-and-push step tacked onto every release) for a job the release CI already does — packaging and uploading the examples archive as a GitHub release artifact.

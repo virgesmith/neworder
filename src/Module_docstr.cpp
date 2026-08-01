@@ -113,6 +113,9 @@ const char* sms_docstr = R"""(
     integer array. All scalar args (regardless of position) are premixed into a shared context
     hash (the "salt") before any array elements are processed. Array args each contribute one
     dimension to the output (outer-product semantics), and are hashed on top of the salt.
+
+    raw() takes the same arguments and produces the same shape, but returns the underlying
+    64-bit hashes as int64 instead of mapping them onto U[0,1).
 )""";
 
 const char* sms_init_docstr = R"""(
@@ -170,6 +173,33 @@ const char* sms_uarray_docstr = R"""(
 
     Returns:
         ndarray[float64] with shape (len(arr0), len(arr1), ...) for the array args in order.
+        A 0-d array is returned when all args are scalars.
+
+    Raises:
+        ValueError: If no arguments are supplied.
+        TypeError: If any argument is not a scalar int or a 1-D integer array.
+)""";
+
+const char* sms_raw_docstr = R"""(
+    Returns an int64 array of raw 64-bit hashes of the supplied integer keys.
+
+    Identical to uarray() in keying, output shape and counter semantics - the arguments
+    are interpreted the same way and each call consumes one counter increment (if
+    use_counter=True) - but returns the underlying hash rather than mapping it onto
+    U[0,1). Use it to seed another PRNG, or to derive variates that uarray() cannot
+    express (e.g. a uniform integer over an arbitrary range, via a modulo or
+    multiply-shift reduction).
+
+    The full 64 bits are reinterpreted as signed, so values span the whole int64 range
+    including negatives; uarray() instead discards the low 11 bits so the remainder maps
+    exactly onto float64's 53-bit mantissa. Both are derived from the same hash, so
+    uarray(*keys) == (np.uint64(raw(*keys)) >> 11) * 2**-53 for a given seed and counter.
+
+    Args:
+        *args: One or more scalar ints or 1-D integer arrays.
+
+    Returns:
+        ndarray[int64] with shape (len(arr0), len(arr1), ...) for the array args in order.
         A 0-d array is returned when all args are scalars.
 
     Raises:

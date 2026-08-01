@@ -106,6 +106,37 @@ String keys (e.g. the name of a stochastic process) can be converted to stable i
 draws = self.rng.uarray(person_ids, neworder.SplitMix64.hash64("mortality"), self.timeline.index)
 ```
 
+### Raw integer draws
+
+`raw` takes the same arguments as `uarray` and returns the same shape, but gives you the underlying 64-bit hashes as `int64` (spanning the full signed range) instead of mapping them onto `U[0,1)`.
+
+Its main use is seeding. Keying a `MonteCarlo` seed on the model identity and the timestep gives each step its own stream, so a step's draws no longer depend on how many were taken before it:
+
+```python
+class StepwiseStreams(neworder.Model):
+    def __init__(self) -> None:
+        # initialise the seed source deterministically
+        seed_source = neworder.SplitMix64(neworder.MonteCarlo.deterministic_independent_stream)
+        # construct the timeline first so the seeder can capture it
+        timeline = neworder.LinearTimeline(0, 10, 10)
+        # this ensures this model's variates are independent of any other model's
+        id = neworder.SplitMix64.hash64(self.__class__.__name__)
+
+        def seeder() -> np.int32:
+            return seed_source.raw(id, timeline.index).astype(np.int32)
+
+        super().__init__(timeline, seeder)
+
+    def step(self) -> None:
+        self.mc.reset()  # re-seeds from the current timestep
+        ...
+```
+
+Each step's stream is reproducible in isolation - `raw(id, 3)` yields the step-3 seed whether or not the earlier steps ever ran.
+
+!!! note "Narrowing to `int32`"
+    The `Model` seeder must return a value that fits in `int32`, so the `int64` from `raw` needs narrowing - `astype` wraps to the low 32 bits, which is fine for a seed. A type checker will flag the return as `ndarray` rather than `np.int32`; suppress it at the call site.
+
 ### Repeated calls with the same arguments
 
 Because `SplitMix64` has no state, two calls with identical arguments return identical values. To get independent draws across repeated calls, either:
@@ -124,6 +155,22 @@ See the [Membership](./examples/membership.md) example for a runnable open-popul
 ## External Sources of Randomness
 
 Other libraries, such as *numpy*, contain a much broader selection of random number functionality than *neworder* does, and it makes no sense to reimplement such functionality. If you are using a specific seeding strategy within neworder, and are also using an external random generator, it is important to ensure they are also following the same strategy, otherwise reproducibility may be compromised.
+
+### Seeding numpy from `SplitMix64`
+
+Pass words from `raw` as the seed to any numpy bit generator. numpy's `SeedSequence` rejects negative entropy, so view the `int64` output as `uint64` first:
+
+```python
+words = self.rng.raw(np.arange(4), MODEL_ID).view(np.uint64)
+self.nprand = np.random.Generator(np.random.PCG64(words))
+```
+
+This propagates your neworder seeding strategy to numpy without consuming draws from a sequential stream.
+
+!!! note "One seeding per call"
+    Each `raw` call re-invokes the seeder (and consumes a counter increment if `use_counter=True`), exactly as `uarray` does. With a deterministic seeder and `use_counter=False`, repeated calls therefore return the *same* words - construct the numpy generator once, in your model constructor, rather than per timestep.
+
+### Seeding from `MonteCarlo`
 
 In your model constructor, you can seed the *numpy* generator like so
 
