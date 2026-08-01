@@ -7,21 +7,8 @@
 
 ### Examples
 
-Download the examples zipfile/archive can from the [releases](https://github.com/virgesmith/neworder/releases) page,
-or pull the [docker image](https://hub.docker.com/r/virgesmith/neworder).
-
-The docker image should be run interactively. Some of the examples require permission to connect to the host's
-graphical display, e.g.
-
-```bash
-docker pull virgesmith/neworder
-xhost +local:
-docker run --net=host -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=$DISPLAY -it virgesmith/neworder
-```
-
-NB The above works on ubuntu but may require modification on other OSs.
-
-Then in the container, e.g.
+Download the examples zipfile/archive from the [releases](https://github.com/virgesmith/neworder/releases) page, or
+browse the [examples directory](https://github.com/virgesmith/neworder/tree/main/examples) directly on GitHub, e.g.
 
 ```bash
 python examples/mortality/model.py
