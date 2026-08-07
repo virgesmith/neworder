@@ -38,6 +38,22 @@ Entry template:
 
 **Follow-ups** — if the `ISeedSequence` interop is ever wanted back, reimplement `generate_state` as a thin wrapper over `raw` (keyed on the word index) rather than restoring the separate derivation it had, and re-add `ISeedSequence.register(SplitMix64)`. Note it never reached a commit, so `git log` will not find it; the numbers worth keeping are what each bit generator asks for — `PCG64` 4×uint64, `Philox` 2×uint64, `SFC64` 3×uint64, `MT19937` 624×uint32 — and that numpy's `SeedSequence` rejects negative entropy, so any `int64` words need viewing as `uint64` first.
 
+**Follow-up (larger): unify the seeding interface across `MonteCarlo` and `SplitMix64`.** The two engines are seeded through incompatible interfaces, all of them scalar and none of them wide enough:
+
+- `MonteCarlo` takes `std::function<int32_t()>`, `seed()` returns `int32_t`, and the built-in strategies (`deterministic_independent_stream` and friends) are `int32_t` — [src/MonteCarlo.h](src/MonteCarlo.h).
+- `SplitMix64` takes `std::function<int64_t()>` and casts the result to `uint64_t` for the salt — [src/SplitMix64.h](src/SplitMix64.h).
+- `Model` forwards its `py::function` seeder to `MonteCarlo` only, so a model's `SplitMix64` instances have to be seeded separately by hand.
+
+The cost of this today: `int32` is the narrowest link, so [docs/tips.md](docs/tips.md) has to tell users to `astype(np.int32)` the output of `raw` (wrapping, and flagged as a `ty` diagnostic at the call site) to drive a `Model` seeder; and a single `int32` is a weak `mt19937` seed — noted in the entry below, where widening it was tried and reverted.
+
+What a unified interface should provide:
+
+1. **One width and one signedness** — `uint64` words throughout, so no seeder value is unrepresentable and nothing narrows at a boundary.
+2. **Non-scalar seeds** — a seeder may return a sequence/array of words, not just one. `mt19937` has 624×uint32 of state and cannot be seeded to full strength from one scalar (`std::seed_seq` or a `SeedSequence`-derived spread is the route); `SplitMix64`'s salt is one word by construction but should accept a vector and fold it.
+3. **`np.random.SeedSequence` compatibility, both directions** — accept a `SeedSequence` (or its entropy) as a seed, and emit words that seed a numpy bit generator without the `.view(np.uint64)`/`.astype` dance. Constraints already established above: `SeedSequence` rejects negative entropy, and `BitGenerator` isinstance-checks `ISeedSequence` and then calls `generate_state` *by name*, so `generate_state` + `ISeedSequence.register()` is the only route to `np.random.PCG64(rng)` working directly. Note numpy declares the seed parameter as the concrete `SeedSequence`, so no third-party implementation type-checks — suppression at the call site is unavoidable.
+
+**The blocker is reproducibility, not design.** Changing what `MonteCarlo` derives from a given seed changes every existing model's stream, which is the one guarantee the framework sells; that was tried and reverted once already (entry below). Any unification must either keep the current scalar `int32` → `mt19937` path bit-exact and use the wider path only for new-style (vector / `SeedSequence`) seeds, or land as an explicit opt-in with the golden values in `test_mc.py` regenerated in the same commit.
+
 ## 2026-08-01 — SplitMix64.generate_state, and deprecate MonteCarlo (uncommitted)
 
 **Why** — seeding an external generator from neworder previously meant `MonteCarlo.raw()` or the `as_np` bitgen adapter, both of which tie the external generator to the sequential mt19937 stream, so what numpy gets depends on how many draws were taken before it. `SplitMix64` had no equivalent, leaving no order-independent way to initialise numpy.
