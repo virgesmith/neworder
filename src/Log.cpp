@@ -10,13 +10,11 @@ std::string std::to_string(const std::string& v) { return v; }
 std::string std::to_string(const py::object& o) { return py::str(o); }
 
 void no::log(const std::string& msg) {
-  if (no::env::verbose)
-    py::print(no::env::logPrefix[no::env::Context::CPP] % env::thread_id(), msg);
+  py::print(no::env::logPrefix[no::env::Context::CPP] % env::thread_id(), msg);
 }
 
 void no::log(const py::handle& msg) {
-  if (no::env::verbose)
-    py::print(no::env::logPrefix[no::env::Context::CPP] % env::thread_id(), msg);
+  py::print(no::env::logPrefix[no::env::Context::CPP] % env::thread_id(), msg);
 }
 
 void no::warn(const std::string& msg) {

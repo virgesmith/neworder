@@ -22,6 +22,7 @@ from _neworder_core import (  # ty:ignore[unresolved-import]
     verbose,
 )
 
+from . import logging
 from .domain import Domain, Edge, Space, StateGrid
 from .mc import as_np
 from .timeline import CalendarTimeline
@@ -44,6 +45,7 @@ __all__: list[str] = [
     "df",
     "freethreaded",
     "log",
+    "logging",
     "mpi",
     "run",
     "stats",

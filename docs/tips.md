@@ -211,6 +211,51 @@ neworder.log(n == n)  # False!
 neworder.log(neworder.time.isnever(n))  # True
 ```
 
+## Logging
+
+The `neworder.log` function annotates its output with the process rank and size, and the id of the thread it was called from - essential context when a model is running in parallel. The same context is available to the standard library's `logging` module via `neworder.logging.Formatter`, which adds the fields `ctx` (the `no`/`py` source marker, defaulting to `py`), `rank`, `size`, `thread_id` and `elapsed` (seconds since the process started) to every record it formats:
+
+```python
+import logging
+
+import neworder
+
+handler = logging.StreamHandler()
+handler.setFormatter(neworder.logging.Formatter())
+
+logger = logging.getLogger("model")
+logger.addHandler(handler)
+logger.setLevel(logging.INFO)
+
+logger.info("model initialised")
+```
+
+which, running under `mpiexec -n 2`, gives output like
+
+```text
+[py 0/2(1616879)] 0.031s INFO model initialised
+[py 1/2(1616880)] 0.032s INFO model initialised
+```
+
+The default format reports elapsed process time rather than a wall-clock timestamp, which is generally more useful for following a model run and for comparing runs. `elapsed` is a `float`, so the usual format specs apply - e.g. `{elapsed:9.3f}` to align the column, or `%(elapsed).1f` in `%`-style.
+
+The formatter defaults to `{`-style formatting and the format string `neworder.logging.DEFAULT_FORMAT`. Any other format string referring to the above fields (plus the [standard record attributes](https://docs.python.org/3/library/logging.html#logrecord-attributes)) can be supplied, in any style:
+
+```python
+handler.setFormatter(neworder.logging.Formatter("{rank}/{size}: {message}"))
+handler.setFormatter(neworder.logging.Formatter("%(thread_id)d %(message)s", style="%"))
+# a custom source marker in place of the default "py"
+handler.setFormatter(neworder.logging.Formatter(ctx="model"))
+# wall-clock timestamps instead of elapsed time
+handler.setFormatter(neworder.logging.Formatter("[{rank}/{size}] {asctime} {levelname} {message}"))
+```
+
+!!! note "Threads"
+    `thread_id` is resolved when the record is *formatted*, so it identifies the thread that emitted the record only if the handler formats in that thread - which is the case for everything other than a `QueueHandler`/`QueueListener` setup. `elapsed` is resolved when the record is *created*, so is unaffected.
+
+!!! note "Elapsed from when?"
+    `elapsed` is derived from the record's `relativeCreated` attribute, i.e. it is measured from the point at which the `logging` module was initialised - at the latest, when `neworder` itself was imported. It is wall-clock elapsed time, not CPU time, so it is directly comparable with the `exec time` the framework reports at the end of a run.
+
 ## Data Types
 
 !!! warning "Static typing"

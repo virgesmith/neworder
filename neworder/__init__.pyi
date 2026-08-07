@@ -13,7 +13,7 @@ import typing
 import numpy
 import numpy.typing
 
-from . import df, mpi, stats, time
+from . import df, logging, mpi, stats, time
 from .domain import Domain, Edge, Space, StateGrid
 from .mc import as_np
 from .timeline import CalendarTimeline
@@ -36,6 +36,7 @@ __all__: list[str] = [
     "df",
     "freethreaded",
     "log",
+    "logging",
     "mpi",
     "run",
     "stats",

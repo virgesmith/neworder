@@ -6,15 +6,26 @@ It subclasses neworder.Model adds implements a toy model which
 - say hello, which is called at the end of the "simulation".
 """
 
-# !class!
+import logging
+
 import pandas as pd
 
 import neworder
 
+logger = logging.getLogger(__name__)
+console_handler = logging.StreamHandler()
+file_handler = logging.FileHandler("neworder.log", mode="a")
+logger.addHandler(console_handler)
+# logger.addHandler(file_handler)
+formatter = neworder.logging.Formatter("[{ctx} {rank}/{size}({thread_id}) {elapsed:.5f}s {levelname}] {message}")
+console_handler.setFormatter(formatter)
+
 # uncomment for verbose output
 # neworder.verbose()
+logger.setLevel(10)
 
 
+# !class!
 class HelloWorld(neworder.Model):
     """
     This model extends the builtin neworder.Model class by providing
@@ -90,7 +101,8 @@ class HelloWorld(neworder.Model):
         """
         for i, r in self.population.iterrows():
             if r.talkative:
-                neworder.log(f"Hello from {i}")
+                # neworder.log(f"Hello from {i}")
+                logger.info(f"Hello from {i}")
 
     # !finalise!
 

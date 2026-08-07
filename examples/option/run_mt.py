@@ -15,7 +15,7 @@ from helpers import Market, Option  # ty:ignore[unresolved-import]
 
 import neworder
 
-# neworder.verbose()  # uncomment for verbose logging
+neworder.verbose()  # uncomment for verbose logging
 # neworder.checked(False) # uncomment to disable checks
 
 # requires 4 identical sims with perturbations to compute market sensitivities
@@ -32,13 +32,7 @@ option = Option(callput="CALL", strike=100.0, expiry=0.75)
 nsims = 1000000  # number of underlyings to simulate
 
 
-is_ft = sys._is_gil_enabled() if sys.version_info.minor > 12 else True
-
-
-def _is_ft() -> bool:
-    if sys.version_info.minor > 12:
-        return sys._is_gil_enabled()
-    return False
+is_ft = (not sys._is_gil_enabled()) if sys.version_info.minor > 12 else False
 
 
 def run_thread(index: int) -> BlackScholesMT:
@@ -47,7 +41,7 @@ def run_thread(index: int) -> BlackScholesMT:
     return model
 
 
-print(f"neworder FT: {neworder.freethreaded()}, python FT:{is_ft}", sys.version)
+print(f"neworder FT: {neworder.freethreaded()}, python FT: {is_ft}", sys.version)
 
 # instantiate and run threads
 with ThreadPoolExecutor() as executor:

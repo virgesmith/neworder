@@ -22,6 +22,34 @@ Entry template:
 
 ---
 
+## 2026-08-04 — defer the `scipy.signal` import (uncommitted)
+
+**Why** — noticed while looking at why the first log line of `examples/hello_world` reported ~1.7s elapsed: that is import time, not logging cost (a record costs ~6.5µs to emit and format). Profiling `import neworder` with `-X importtime` showed `scipy.signal` accounting for ~0.6s of it, imported eagerly by `neworder/domain.py` — which `neworder/__init__.py` imports unconditionally — for a single call to `signal.convolve`.
+
+**What** — moved `from scipy import signal` from module scope in [neworder/domain.py](neworder/domain.py) into `StateGrid.count_neighbours`, its only consumer. `import neworder` drops from ~0.60s to ~0.09s for models that don't use `StateGrid`.
+
+**Design decisions**
+- A plain function-level import rather than a module-level lazy accessor with a cached global: after the first call the statement is just a `sys.modules` lookup (sub-microsecond), which is nothing next to the convolution it precedes, and there's exactly one call site to keep honest.
+- `scipy` stays a hard runtime dependency — this is about *when* it loads, not whether it's required. Making it optional would be a user-visible change to `StateGrid`.
+- Left the other startup cost alone: `mpi4py.MPI` is ~1.08s, and it is `MPI_Init` rather than module loading (`import mpi4py` alone is ~0ms). [Module.cpp:51](src/Module.cpp#L51) imports it during module init so `mpi.RANK`/`SIZE` can be plain module attributes; deferring it would change that public API for a cost only paid when a `parallel-*` extra is installed.
+
+**Follow-ups** — `examples/conway` and `examples/schelling` are the `StateGrid` users; both verified working. `test_domain.py` already covers `count_neighbours` directly.
+
+## 2026-08-04 — `neworder.logging.Formatter` for stdlib logging (uncommitted)
+
+**Why** — `neworder.log` prefixes its output with the execution context (`[py 0/2(1616879)]` — source, MPI rank/size, thread id), which is what makes output from a parallel or multithreaded run interpretable. Models that use the standard library's `logging` module instead had no way to get that context: `LogRecord` carries `thread` (the Python thread ident) but knows nothing about MPI rank/size, and neworder's `thread_id()` is the *native* thread id, not the ident.
+
+**What** — new module [neworder/logging.py](neworder/logging.py) exporting `Formatter` (a `logging.Formatter` subclass) and `DEFAULT_FORMAT`. It sets `ctx`, `rank`, `size`, `thread_id` and `elapsed` on each record before delegating to the base class, so those fields are usable in any format string. `ctx` is the `no`/`py` source marker the C++ logger uses, defaulting to `"py"` (stdlib records always originate in python code) and overridable per formatter for anyone wanting to distinguish subsystems. Re-exported as `neworder.logging`. Tests in [test/test_logging.py](test/test_logging.py), a "Logging" section in [docs/tips.md](docs/tips.md), and the `hello_world` example's in-progress logging setup now uses it.
+
+**Design decisions**
+- A `Formatter` subclass rather than a `logging.Filter` (or a custom `LogRecord` factory): it works with a single `setFormatter` call and no per-logger wiring, and doesn't mutate global logging state — important for a library. The cost is that `thread_id` reflects the *formatting* thread, which differs from the emitting thread only under `QueueHandler`/`QueueListener`; documented in the class docstring and the docs. A filter-based variant can be added later if a queue-based setup turns out to matter.
+- Defaults to `{`-style formatting (not logging's `%` default) with `DEFAULT_FORMAT` producing a `neworder.log`-like `[rank/size(thread_id)]` prefix, so `Formatter()` with no arguments is immediately useful and consistent with existing framework output. All three styles still work via the pass-through `style` argument.
+- `DEFAULT_FORMAT` shows `elapsed` rather than `asctime`: for following a model run (and comparing runs), time since process start is more informative than a wall-clock timestamp, and it lines up with the `exec time` the framework reports on completion. `asctime` remains available to anyone who wants timestamps. `elapsed` is derived from the record's own `relativeCreated` rather than a `time.monotonic()` reading taken in `format()` — it is then captured at record *creation*, so it stays correct under deferred/queued formatting (unlike `thread_id`, which can't be), and it costs nothing. Exposed as a `float` in seconds rather than a preformatted string so that format specs (`{elapsed:9.3f}`) work.
+- `rank`/`size` are resolved once in `__init__` (they're fixed for the process lifetime, set during module init), mirroring the C++ side, which caches `logPrefix` for the same reason. Only `thread_id` is resolved per record, since it necessarily varies.
+- Named the module `logging` rather than e.g. `log_format`: `neworder.logging.Formatter` reads well at the call site, and it can't shadow the stdlib module for anyone (absolute imports). Avoided `neworder/log.py`, which *would* clash — the submodule attribute would overwrite the exported `neworder.log` function.
+
+**Follow-ups** — the `hello_world` example now mixes `logging` with `neworder.log` (its `finalise` still calls the latter, as [docs/examples/hello-world.md](docs/examples/hello-world.md) describes it) — part of the wider logging migration on this branch, not resolved here. The `# !class!` docs-snippet marker in that example now encloses the logging setup, so the "create our model class" snippet shows it too; move the marker if that's unwanted.
+
 ## 2026-07-30 — remove Docker image (#118)
 
 **Why** — issue #118: the Docker image added unnecessary complexity (a `Dockerfile` to maintain, a manual rebuild-and-push step tacked onto every release) for a job the release CI already does — packaging and uploading the examples archive as a GitHub release artifact.

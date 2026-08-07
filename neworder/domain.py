@@ -10,7 +10,6 @@ from typing import Any, ClassVar
 
 import numpy as np
 import numpy.typing as npt
-from scipy import signal
 
 NPFloatArray = npt.NDArray[np.float64]
 
@@ -264,6 +263,9 @@ class StateGrid(Domain):
 
     def count_neighbours(self, indicator: Callable[[float], bool] = lambda x: x == 1) -> NPFloatArray:
         """Counts neighbouring cells with a state indicated by supplied indicator function"""
+
+        # deferred: this is the only use of scipy in the package, and importing it costs ~0.6s of startup
+        from scipy import signal
 
         ind: NPFloatArray = np.array([indicator(x) for x in self.state]).astype(int)  # automagically preserves shape
         # pad with boundary according to edge policy
