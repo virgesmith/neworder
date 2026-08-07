@@ -82,3 +82,23 @@ line-length = 120
 [tool.ruff.lint]
 select = ["ARG", "B", "C", "E", "F", "I", "N", "PERF", "PTH", "RUF", "SIM", "UP", "W"]
 ignore = ["E501", "N803", "N806"]
+
+[tool.cibuildwheel]
+# the interpreters tested in build-test.yml (free-threaded 3.14 needs no `enable` flag in cibuildwheel 4)
+build = ["cp312-*", "cp313-*", "cp314-*", "cp314t-*"]
+# manylinux only - alpine/musl builds aren't tested anywhere
+skip = ["*-musllinux_*"]
+build-frontend = "build[uv]"
+# copy the tests next to the temporary test venv so the installed wheel, not ./neworder, is imported
+test-sources = ["test", "pyproject.toml"]
+test-requires = "pytest"
+test-command = "pytest test"
+
+[tool.cibuildwheel.linux]
+archs = ["x86_64"]
+
+[tool.cibuildwheel.windows]
+archs = ["AMD64"]
+
+[tool.cibuildwheel.macos]
+archs = ["arm64"]
