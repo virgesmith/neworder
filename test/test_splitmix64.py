@@ -250,3 +250,91 @@ def test_no_counter_unchanged(rs: no.SplitMix64) -> None:
     out2 = rs.uarray(person_ids, MORTALITY, 2025)
     assert rs.counter() == 0
     np.testing.assert_array_equal(out1, out2)
+
+
+# --- raw ---
+
+
+def test_raw_shapes(rs: no.SplitMix64) -> None:
+    person_ids = np.arange(50, dtype=np.int64)
+    times = np.array([2025, 2026, 2027], dtype=np.int64)
+
+    assert rs.raw(person_ids, MORTALITY, 2025).shape == (50,)
+    assert rs.raw(person_ids, FERTILITY, times).shape == (50, 3)
+    assert rs.raw(MORTALITY, 2025).shape == ()
+
+
+def test_raw_dtype_and_range(rs: no.SplitMix64) -> None:
+    out = rs.raw(np.arange(1000, dtype=np.int64), MORTALITY, 2025)
+    assert out.dtype == np.int64
+    # the full 64 bits are reinterpreted as signed, so both signs must occur
+    assert np.any(out < 0)
+    assert np.any(out > 0)
+
+
+def test_raw_matches_uarray(rs: no.SplitMix64) -> None:
+    # uarray() is raw() with the low 11 bits discarded and scaled onto [0,1)
+    person_ids = np.arange(100, dtype=np.int64)
+    raw = rs.raw(person_ids, MORTALITY, 2025).view(np.uint64)
+    np.testing.assert_array_equal(
+        (raw >> np.uint64(11)) * 2.0**-53,
+        rs.uarray(person_ids, MORTALITY, 2025),
+    )
+
+
+def test_raw_reproducible(rs: no.SplitMix64) -> None:
+    other = no.SplitMix64(no.MonteCarlo.deterministic_identical_stream)
+    person_ids = np.arange(20, dtype=np.int64)
+    np.testing.assert_array_equal(rs.raw(person_ids, MORTALITY), other.raw(person_ids, MORTALITY))
+
+
+def test_raw_seed_dependent() -> None:
+    person_ids = np.arange(20, dtype=np.int64)
+    a = no.SplitMix64(lambda: 1).raw(person_ids, MORTALITY)
+    b = no.SplitMix64(lambda: 2).raw(person_ids, MORTALITY)
+    assert not np.array_equal(a, b)
+
+
+def test_raw_key_independence(rs: no.SplitMix64) -> None:
+    # a person's value is unchanged by which other people are drawn, as for uarray
+    all_ids = np.arange(100, dtype=np.int64)
+    subset = np.array([7, 42, 99], dtype=np.int64)
+    full = rs.raw(all_ids, MORTALITY, 2025)
+    np.testing.assert_array_equal(rs.raw(subset, MORTALITY, 2025), full[subset])
+    # and by the process id
+    assert not np.array_equal(rs.raw(all_ids, FERTILITY, 2025), full)
+
+
+def test_raw_counter(rs_counter: no.SplitMix64) -> None:
+    # each call consumes one counter increment, so successive draws differ
+    person_ids = np.arange(20, dtype=np.int64)
+    first = rs_counter.raw(person_ids, MORTALITY)
+    second = rs_counter.raw(person_ids, MORTALITY)
+    assert rs_counter.counter() == 2
+    assert not np.array_equal(first, second)
+    rs_counter.reset()
+    np.testing.assert_array_equal(rs_counter.raw(person_ids, MORTALITY), first)
+
+
+def test_raw_bad_args(rs: no.SplitMix64) -> None:
+    with pytest.raises(TypeError):
+        rs.raw("not_an_int_or_array")  # ty: ignore[invalid-argument-type]
+    with pytest.raises(TypeError):
+        rs.raw(np.zeros((3, 3), dtype=np.int64))
+    with pytest.raises(ValueError):
+        rs.raw()
+
+
+def test_raw_known_values(rs: no.SplitMix64) -> None:
+    # seed = MonteCarlo.deterministic_identical_stream() = 19937
+    assert int(rs.raw(42, MORTALITY, 2025)) == 1642911581754789404
+    np.testing.assert_array_equal(
+        rs.raw(np.arange(5, dtype=np.int64), MORTALITY, 2025),
+        [
+            -140492717893741400,
+            -1141475571273629605,
+            -7963540667160457285,
+            -1575000485477623229,
+            5565653659192831415,
+        ],
+    )

@@ -177,6 +177,7 @@ PYBIND11_MODULE(_neworder_core, m)
       .def("counter", &no::SplitMix64::counter, sms_counter_docstr)
       .def("reset", &no::SplitMix64::reset, sms_reset_docstr)
       .def("uarray", &no::SplitMix64::uarray, sms_uarray_docstr)
+      .def("raw", &no::SplitMix64::raw, sms_raw_docstr)
       .def_static("hash64", &no::SplitMix64::hash64, "s"_a, sms_hash64_docstr)
       .def("__repr__", &no::SplitMix64::repr, sms_repr_docstr);
 

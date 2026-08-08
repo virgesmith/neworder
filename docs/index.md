@@ -8,7 +8,7 @@
 ### Examples
 
 Download the examples zipfile/archive from the [releases](https://github.com/virgesmith/neworder/releases) page, or
-browse the [examples directory](https://github.com/virgesmith/neworder/tree/main/examples) directly on GitHub, e.g.
+browse the [examples directory](https://github.com/virgesmith/neworder/tree/main/examples) directly on GitHub. Each example is self-contained in it's own folder, with an entry-point script named either `model.py` or `run.py`. Run like so:
 
 ```bash
 python examples/mortality/model.py

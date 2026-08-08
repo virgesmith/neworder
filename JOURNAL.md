@@ -22,6 +22,45 @@ Entry template:
 
 ---
 
+## 2026-08-01 — SplitMix64.raw (#120)
+
+**Why** — `SplitMix64` exposed only `uarray`, so the underlying 64-bit hashes were unreachable, and two things needed them. Seeding an external generator previously meant `MonteCarlo.raw()` or the `as_np` bitgen adapter, both of which tie the external generator to the sequential mt19937 stream — what it gets depends on how many draws were taken before it, so there was no order-independent way to initialise one. And variates `uarray` cannot express (a uniform integer over an arbitrary range, say) need the hash itself, not its image in `U[0,1)`.
+
+**What** — added `SplitMix64.raw(*keys)` in [src/SplitMix64.cpp](src/SplitMix64.cpp): identical to `uarray` in argument handling, output shape and counter semantics, returning the raw 64-bit hashes as `int64` instead of mapping them onto `U[0,1)`. Binding, docstrings, the stub entry in [neworder/\_\_init\_\_.pyi](neworder/__init__.pyi) and 9 tests. [docs/tips.md](docs/tips.md) gains two sections: re-seeding a model's `MonteCarlo` per timestep, so a step's draws no longer depend on how many were taken before it, and seeding a numpy bit generator.
+
+**Design decisions**
+- **Keyed like `uarray`, not as numpy's `ISeedSequence`.** The obvious alternative was to implement numpy's protocol — `generate_state(n_words, dtype)` — which would make `np.random.PCG64(sm)` work directly. Rejected because it is shaped by numpy rather than by how models key their draws: it takes a word *count* and derives words from an index, so it cannot be keyed on person id / process id / timestep the way `uarray` is. Seeding an external generator is only one use of the hashes. `raw(np.arange(4), MODEL_ID).view(np.uint64)` covers the numpy case anyway, at the cost of an explicit view.
+- **int64 only, no dtype parameter.** SplitMix64 is a 64-bit generator; a dtype selector would buy callers an `.astype` at the price of a real validation surface — it would have to check `kind()` *and* itemsize, since `float64`/`int32` share itemsizes with `uint64`/`uint32` and would otherwise be silently reinterpreted. Signed rather than unsigned for consistency with `hash64`, which already returns `int64`.
+- **Extracted `mix_keys`/`hash_at` rather than duplicating the argument parsing.** `raw` and `uarray` share the salt computation, shape derivation and per-element hashing, differing only in the final mapping, so the two cannot drift. `test_raw_matches_uarray` pins the relationship `uarray == (raw viewed as uint64 >> 11) * 2**-53`; the pre-existing `test_uarray_known_values_*` goldens are untouched and still pass.
+- **`MonteCarlo::reset()` is no longer `noexcept`.** It invokes a Python callable, so any exception — e.g. a seeder returning a value that doesn't fit `int32` — terminated the process via `std::terminate` instead of propagating. Surfaced by the per-timestep seeding pattern the new docs recommend, which calls `mc.reset()` inside `step()`. Note the constructor is still `noexcept` and carries the same exposure.
+- **`MonteCarlo` is not deprecated, and `docs/tips.md` keeps its neutral "when to use which" note.** `hazard`/`stopping`/`arrivals`/`sample`/`counts` have no `SplitMix64` equivalent, so for non-uniform sampling `MonteCarlo` is not a legacy path but the only option — telling users it is deprecated would point them at a replacement that cannot do the job. The two engines are complementary rather than successive: choose by whether draws must be order-independent, not by which is newer.
+- [docs/index.md](docs/index.md) carries an unrelated drive-by wording fix to the examples section.
+
+**Follow-ups** — `MonteCarlo`'s non-uniform samplers have no `SplitMix64` equivalent, so the class cannot be retired until those are ported.
+
+If the `ISeedSequence` interop is ever wanted, implement `generate_state` as a thin wrapper over `raw` keyed on the word index, and add `ISeedSequence.register(SplitMix64)`. The constraints, all verified: `BitGenerator.__init__` isinstance-checks `ISeedSequence` and *then* calls `generate_state` by name, so registering without the method turns a clear `TypeError` at construction into an `AttributeError` thrown from inside numpy — registration is a type assertion only and carries no behaviour. A pybind11 extension type cannot inherit the Python-side ABC, so virtual-subclass registration is the only route. Each bit generator asks for a different shape of state — `PCG64` 4×uint64, `Philox` 2×uint64, `SFC64` 3×uint64, `MT19937` 624×uint32. And numpy's `SeedSequence` rejects negative entropy (`ValueError: expected non-negative integer`), which is why the docs view `raw`'s output as `uint64` first — roughly half of it is negative.
+
+**Follow-up (larger): unify the seeding interface across `MonteCarlo` and `SplitMix64`.** The two engines are seeded through incompatible interfaces, all of them scalar and none wide enough:
+
+- `MonteCarlo` takes `std::function<int32_t()>`, `seed()` returns `int32_t`, and the built-in strategies (`deterministic_independent_stream` and friends) are `int32_t` — [src/MonteCarlo.h](src/MonteCarlo.h).
+- `SplitMix64` takes `std::function<int64_t()>` and casts the result to `uint64_t` for the salt — [src/SplitMix64.h](src/SplitMix64.h).
+- `Model` forwards its `py::function` seeder to `MonteCarlo` only, so a model's `SplitMix64` instances have to be seeded separately by hand.
+
+The cost today: `int32` is the narrowest link, so [docs/tips.md](docs/tips.md) has to tell users to `astype(np.int32)` the output of `raw` (wrapping, and flagged as a `ty` diagnostic at the call site) to drive a `Model` seeder; and a single `int32` is a weak `mt19937` seed.
+
+What a unified interface should provide:
+
+1. **One width and one signedness** — `uint64` words throughout, so no seeder value is unrepresentable and nothing narrows at a boundary.
+2. **Non-scalar seeds** — a seeder may return a sequence/array of words, not just one. `mt19937` has 624×uint32 of state and cannot be seeded to full strength from one scalar (`std::seed_seq` or a `SeedSequence`-derived spread is the route); `SplitMix64`'s salt is one word by construction but should accept a vector and fold it.
+3. **`np.random.SeedSequence` compatibility, both directions** — accept a `SeedSequence` (or its entropy) as a seed, and emit words that seed a numpy bit generator without the `.view(np.uint64)`/`.astype` dance, subject to the `ISeedSequence` constraints above. Note numpy declares its seed parameter as the concrete `SeedSequence`, not the ABC, so *no* third-party implementation can satisfy it statically — suppression at the call site is unavoidable.
+
+**The blocker is reproducibility, not design.** Changing what `MonteCarlo` derives from a given seed changes every existing model's stream, which is the one guarantee the framework sells — widening it to `std::seed_seq` was tried once and abandoned for exactly this reason. Any unification must either keep the current scalar `int32` → `mt19937` path bit-exact and use the wider path only for new-style (vector / `SeedSequence`) seeds, or land as an explicit opt-in with the golden values in `test_mc.py` regenerated in the same commit.
+
+**Note: `AGENTS.md` is misleading about stubs**, on two counts found while updating them here:
+
+- The stubgen command is stale — `pybind11-stubgen --ignore-invalid all` is now ambiguous (`--ignore-invalid-expressions` / `--ignore-invalid-identifiers`); `--ignore-all-errors` is the current spelling. A full regen also drops the hand-added `CalendarTimeline` and the condensed docstrings, so stubs are better hand-merged than regenerated wholesale.
+- **`stubs/` is gitignored and is not what `ty` reads.** The authoritative, version-controlled stub is [neworder/\_\_init\_\_.pyi](neworder/__init__.pyi); editing `stubs/_neworder_core/__init__.pyi` alone changes nothing (verified by perturbing a signature there and observing `ty`'s output was unaffected). `AGENTS.md` describes a `stubs/_neworder_core-stubs/` layout and a `stubPackages` setting, neither of which exists — there is no `[tool.ty]` section in `pyproject.toml` at all.
+
 ## 2026-07-30 — remove Docker image (#118)
 
 **Why** — issue #118: the Docker image added unnecessary complexity (a `Dockerfile` to maintain, a manual rebuild-and-push step tacked onto every release) for a job the release CI already does — packaging and uploading the examples archive as a GitHub release artifact.

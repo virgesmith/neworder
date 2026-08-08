@@ -30,7 +30,7 @@ public:
 
   int32_t seed() const noexcept;
 
-  void reset() noexcept;
+  void reset();
 
   // used by python __repr__
   std::string repr() const noexcept;

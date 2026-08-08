@@ -66,6 +66,12 @@ class SplitMix64:
         """
         Returns a float64 array of U[0,1) values hashed from the supplied integer keys.
         """
+    def raw(
+        self, *args: int | collections.abc.Sequence[int] | numpy.typing.NDArray[numpy.int64]
+    ) -> numpy.typing.NDArray[numpy.int64]:
+        """
+        Returns an int64 array of raw 64-bit hashes of the supplied integer keys.
+        """
     @staticmethod
     def hash64(s: str) -> int:
         """
