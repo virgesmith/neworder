@@ -24,6 +24,10 @@ jobs:
             platform: macos-arm64
     steps:
       - uses: actions/checkout@v6
+      # build-frontend = "build[uv]" requires uv on the runner. The manylinux
+      # container already provides one, but the native macos/windows builds don't.
+      - name: Install prerequisites
+        uses: astral-sh/setup-uv@v7
       - name: Build wheels
         uses: pypa/cibuildwheel@v4.2.0
       - name: Upload wheels
