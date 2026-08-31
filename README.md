@@ -66,3 +66,9 @@ pip install neworder[parallel-openmpi,geospatial]
 ## Documentation
 
 To get started first see the detailed documentation [here](https://neworder.readthedocs.io). Then, check out "Hello World" and the other examples.
+
+### Using an AI coding agent?
+
+*neworder* ships an installable agent skill - run `neworder-skill --install` and your agent gets a
+built-in reference for writing *neworder* models correctly. See
+[Agent Skill](https://neworder.readthedocs.io/en/stable/agent-skill/).

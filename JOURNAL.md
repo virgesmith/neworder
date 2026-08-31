@@ -22,6 +22,67 @@ Entry template:
 
 ---
 
+## 2026-08-31 — Installable agent skill (`neworder-skill`)
+
+**Why** — Coding agents write *neworder* models much more reliably when given a compact,
+purpose-built reference than when left to infer the framework's shape from source, stubs or a
+partial reading of the docs site. The recurring failures are all framework-specific and cheap to
+prevent in writing: forgetting `super().__init__(timeline, seeder)`, mutating the result of
+`no.df.transition` in place instead of assigning it back, comparing against `NEVER` with `==`,
+looping over agents in python instead of vectorising, and letting `check()` return different
+values per MPI process. Bundling the reference in the package makes it available in any downstream
+project that installs *neworder*, not just in this repo. Modelled on the equivalent change in
+[virgesmith/xenoform-rs#24](https://github.com/virgesmith/xenoform-rs/pull/24).
+
+**What** — Added [neworder/skill/SKILL.md](neworder/skill/SKILL.md), an agent skill covering the
+model lifecycle, the four timeline types, the `MonteCarlo` and `SplitMix64` engines and their
+seeding strategies, the `neworder.df` operations, spatial domains, MPI patterns and the framework's
+recurring pitfalls. Added [neworder/skill_cli.py](neworder/skill_cli.py), a `neworder-skill` console
+script (registered under `[project.scripts]`) with `--install [PATH]` / `--remove [PATH]`, default
+`PATH=.agents`; `package_data` in [setup.py](setup.py) ships the skill in the wheel and sdist. Tests
+in [test/test_skill_cli.py](test/test_skill_cli.py), a new
+[docs/agent-skill.md](docs/agent-skill.md) page with a nav entry in [zensical.toml](zensical.toml),
+and a pointer to it from [README.md](README.md).
+
+**Design decisions**
+- **The skill points at the documentation site rather than restating it.** Its header table links
+  to the overview, tips, examples and developer pages at `neworder.readthedocs.io/en/stable/`, and
+  the body is deliberately a summary an agent can hold in context, not a second copy of the docs
+  that would drift out of sync with them. That is also why the user-facing documentation for the
+  feature is a docs-site page, with only a two-line pointer in `README.md` — the README is
+  inlined into `docs/index.md` via `include_snippet`, so anything longer would duplicate the new
+  page on the site's front page.
+- **Install by symlink where possible, copy where not.** A symlink to `neworder/skill/` inside the
+  installed package always matches the version in use, with nothing to keep up to date — the
+  approach `xenoform-rs` took, and Streamlit's `streamlit skills` before it. That repo could stop
+  there; this one cannot, because CI (and the classifiers) cover Windows, where `symlink_to` needs
+  developer mode or elevation. So `_link_or_copy` catches `OSError` and falls back to
+  `shutil.copytree`, and `--install` over an existing copy refreshes it rather than reporting it
+  up to date, since a copy — unlike a symlink — goes stale on upgrade.
+- **Ownership is checked before anything is overwritten or deleted.** A symlink is ours if it
+  resolves to the bundled directory; a directory is ours only if every entry is a file whose name
+  we ship. Anything else — a user's own file, directory or foreign symlink at the target — is left
+  untouched and the command exits 1. The subset rule means a copy with a user-added file in it is
+  no longer considered ours, which is the safe direction to err in.
+- **`.agents/skills/<name>` as the default target, overridable by `PATH`.** Matches the sibling
+  repo and the emerging cross-harness convention, and `neworder-skill --install .claude` covers a
+  specific harness without needing per-harness detection logic in the installer.
+- **A console-script entry point rather than a loose script.** `Path(__file__).parent / "skill"`
+  resolves from wherever `neworder` is importable, so the script naturally targets the environment
+  it is invoked from with no `.venv` detection. Verified against a built wheel and sdist that
+  `package_data` ships `neworder/skill/SKILL.md` and that the entry point is registered — this
+  matters because `[tool.cibuildwheel]` runs the test suite against the installed wheel, so
+  `test_skill_cli.py` would fail there if the skill were not packaged.
+
+**Follow-ups** — The skill's content is maintained by hand and can drift from the docs site; the
+type-level details it quotes (method signatures, timeline properties) are the most likely to go
+stale, and nothing checks them. If it proves worth it, the tables could be generated from the
+stubs, or a test could assert that every method named in the skill exists on the corresponding
+class. `--install` targets one directory at a time; multi-harness install (writing both `.agents`
+and `.claude`) is deferred until someone asks for it.
+
+---
+
 ## 2026-08-01 — SplitMix64.raw (#120)
 
 **Why** — `SplitMix64` exposed only `uarray`, so the underlying 64-bit hashes were unreachable, and two things needed them. Seeding an external generator previously meant `MonteCarlo.raw()` or the `as_np` bitgen adapter, both of which tie the external generator to the sequential mt19937 stream — what it gets depends on how many draws were taken before it, so there was no order-independent way to initialise one. And variates `uarray` cannot express (a uniform integer over an arbitrary range, say) need the hash itself, not its image in `U[0,1)`.
