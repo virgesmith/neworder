@@ -30,10 +30,18 @@ def _is_ours(target: Path, source: Path) -> bool:
     return False
 
 
+def _link_target(source: Path, target: Path) -> str:
+    """A relative link target, or an absolute one if there is no relative path (different windows drives)."""
+    try:
+        return os.path.relpath(source.resolve(), target.parent.resolve())
+    except ValueError:
+        return str(source.resolve())
+
+
 def _link_or_copy(source: Path, target: Path) -> str:
     # symlinks need developer mode or elevation on Windows, so fall back to copying there
     try:
-        target.symlink_to(os.path.relpath(source.resolve(), target.parent.resolve()), target_is_directory=True)
+        target.symlink_to(_link_target(source, target), target_is_directory=True)
     except OSError:
         shutil.copytree(source, target)
         return "copied"

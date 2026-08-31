@@ -78,6 +78,20 @@ def test_install_copies_when_symlinks_unavailable(monkeypatch: pytest.MonkeyPatc
     assert (target / "SKILL.md").read_text() == (skill_cli._source_dir() / "SKILL.md").read_text()
 
 
+def test_install_across_windows_drives(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    # os.path.relpath raises when the package and the project are on different drives
+    def raise_valueerror(*_args: object, **_kwargs: object) -> str:
+        raise ValueError("path is on mount 'D:', start on mount 'C:'")
+
+    monkeypatch.setattr(skill_cli.os.path, "relpath", raise_valueerror)
+    assert skill_cli.main(["--install", str(tmp_path)]) == 0
+
+    target = tmp_path / "skills" / "neworder"
+    assert (target / "SKILL.md").read_text() == (skill_cli._source_dir() / "SKILL.md").read_text()
+    assert skill_cli.main(["--remove", str(tmp_path)]) == 0
+    assert not target.exists()
+
+
 def test_install_refreshes_stale_copy(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     _no_symlinks(monkeypatch)
     skill_cli.main(["--install", str(tmp_path)])

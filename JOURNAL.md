@@ -58,7 +58,11 @@ and a pointer to it from [README.md](README.md).
   there; this one cannot, because CI (and the classifiers) cover Windows, where `symlink_to` needs
   developer mode or elevation. So `_link_or_copy` catches `OSError` and falls back to
   `shutil.copytree`, and `--install` over an existing copy refreshes it rather than reporting it
-  up to date, since a copy — unlike a symlink — goes stale on upgrade.
+  up to date, since a copy — unlike a symlink — goes stale on upgrade. The link target is relative where a
+  relative path exists, so a symlinked skill survives the project being moved; on Windows there is
+  no relative path between different drives (`os.path.relpath` raises `ValueError`, caught by CI
+  with the package on `D:` and the project's temp dir on `C:`), so the link target falls back to
+  an absolute path there.
 - **Ownership is checked before anything is overwritten or deleted.** A symlink is ours if it
   resolves to the bundled directory; a directory is ours only if every entry is a file whose name
   we ship. Anything else — a user's own file, directory or foreign symlink at the target — is left
