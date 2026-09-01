@@ -36,7 +36,7 @@ ParallelCompile().install()
 setup(
     name="neworder",
     packages=["neworder"],
-    package_data={"neworder": ["py.typed", "*.pyi"]},
+    package_data={"neworder": ["py.typed", "*.pyi", "skill/*.md"]},
     ext_modules=ext_modules,
     zip_safe=False,
 )

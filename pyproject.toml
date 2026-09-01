@@ -66,6 +66,9 @@ parallel-mpich = [
   "mpi4py>=4.1.2"
 ]
 
+[project.scripts]
+neworder-skill = "neworder.skill_cli:main"
+
 [project.urls]
 "Homepage" = "https://neworder.readthedocs.io/"
 "Bug Tracker" = "https://github.com/virgesmith/neworder/issues"

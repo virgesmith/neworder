@@ -28,6 +28,7 @@ nav = [
     { Infection = "examples/infection.md" },
   ]},
   {"Tips and Tricks" = "tips.md" },
+  {"Agent Skill" = "agent-skill.md" },
   {"API Reference" = "api.md" },
   { References = "references.md" },
   { About = [
