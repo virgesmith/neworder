@@ -22,6 +22,43 @@ Entry template:
 
 ---
 
+## 2026-09-02 — abi3 wheels investigated and rejected
+
+**Why** — The release workflow added in #121 builds a wheel per interpreter per platform:
+`cp312`, `cp313`, `cp314` and `cp314t` × linux-x86_64 / windows-amd64 / macos-arm64, twelve wheels
+in total, and a new wheel is needed for every future CPython. A single stable-ABI (`abi3`) wheel per
+platform would collapse that to three and keep working on Python versions released after a given
+*neworder* version, so it was worth establishing whether the publish workflow could be switched to
+`abi3` only.
+
+**What** — No change. `[tool.cibuildwheel]` in [pyproject.toml](pyproject.toml) and
+[pypi-release.yml](.github/workflows/pypi-release.yml) are left as they are.
+
+**Design decisions**
+- **abi3 is not achievable while the bindings are pybind11.** pybind11 cannot be compiled against
+  the limited API; its own `detail/internals.h` says so ("since we cannot use `Py_LIMITED_API`
+  anyway"), and compiling a minimal `PYBIND11_MODULE` with `-DPy_LIMITED_API=0x030C0000` against
+  pybind11 3.0.4 (the current release) fails in `pytypes.h` on `PyGILState_Check` and on
+  `Py_TYPE(...)->tp_name`, `PyTypeObject` being opaque under the limited API. So neither
+  `py_limited_api=True` on the `Pybind11Extension` in [setup.py](setup.py) nor a `cp312-abi3`
+  cibuildwheel target can work — the build would not compile.
+- **Tagging the wheels `abi3` without a limited-API build was rejected outright.** It would produce
+  a `cp312-abi3` wheel that pip installs on 3.13 and 3.14 and that then crashes at import: strictly
+  worse than the current per-version wheels.
+- **The free-threaded build could never have been covered.** `cp314t` needs its own wheel
+  regardless — the limited API has no free-threaded variant — so even a working abi3 build would
+  have left a two-wheel-per-platform matrix, not one.
+- **Porting the bindings to nanobind was not pursued.** nanobind does support abi3 for Python
+  3.12+, which matches `requires-python = ">=3.12"`, but it means rewriting the ~2300 lines in
+  [src/](src/) — the bindings in [src/Module.cpp](src/Module.cpp) and
+  [src/Module_docstr.cpp](src/Module_docstr.cpp), the numpy type casters in
+  [src/ArrayHelpers.h](src/ArrayHelpers.h) — plus regenerating the stubs and re-validating tests and
+  examples. That is a binding-layer migration, not a CI change, and belongs in its own PR.
+
+**Follow-ups** — Revisit if the bindings ever move to nanobind, or if pybind11 gains stable-ABI
+support. Until then the wheel count only shrinks by dropping interpreters from
+`[tool.cibuildwheel] build`.
+
 ## 2026-08-31 — Installable agent skill (`neworder-skill`)
 
 **Why** — Coding agents write *neworder* models much more reliably when given a compact,
