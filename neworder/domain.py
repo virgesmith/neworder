@@ -139,9 +139,9 @@ class Space(Domain):
         """The squared distance between points and separations along each axis"""
         # group tuples into a single array if necessary
         if isinstance(positions, tuple):
-            positions = np.column_stack(positions)  # ty:ignore[no-matching-overload]
+            positions = np.column_stack(positions)
         if isinstance(to_points, tuple):
-            to_points = np.column_stack(to_points)  # ty:ignore[no-matching-overload]
+            to_points = np.column_stack(to_points)
         # distances w.r.t. self if to_points not explicitly specified
         if to_points is None:
             to_points = positions

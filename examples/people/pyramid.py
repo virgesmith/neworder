@@ -18,7 +18,7 @@ def plot(
     xmax = 4000  # max(max(males), max(females))
 
     fig, axes = plt.subplots(ncols=2, sharey=True)
-    plt.gca().set_ylim((min(ages), max(ages) + 1))
+    plt.gca().set_ylim((int(ages.min()), int(ages.max()) + 1))
     fig.suptitle("2011")
     axes[0].set(title="Males")
     axes[0].set(xlim=[0, xmax])

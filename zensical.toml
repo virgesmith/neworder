@@ -129,4 +129,12 @@ custom_checkbox = true
 module_name = "docs/macros"
 on_error_fail = true
 
+[project.plugins.mkdocstrings]
 
+[project.plugins.mkdocstrings.handlers.python.options]
+show_signature_annotations = true
+separate_signature = true
+signature_crossrefs = true
+docstring_style = "google"
+show_root_heading = true
+members_order = "source"

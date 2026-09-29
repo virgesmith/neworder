@@ -29,7 +29,7 @@ class Hist:
 
     def _animate(self, frameno: int):
         i = 0
-        for rect, h in zip(self.patches, self.n, strict=True):  # ty:ignore[not-iterable, invalid-argument-type]
+        for rect, h in zip(self.patches, self.n, strict=True):  # ty:ignore[invalid-argument-type]
             rect.set_height(h if i <= frameno else 0)
             i = i + 1
         return self.patches

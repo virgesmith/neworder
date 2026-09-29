@@ -48,6 +48,7 @@ def write_requirements() -> None:
                 for dep in [
                     "zensical",
                     "requests",
+                    "mkdocstrings-python",
                 ]
             )
     # ignore any error, this should only run in a dev env anyway
