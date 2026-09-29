@@ -83,7 +83,7 @@ class MarkovChain(MarkovChainBase):
         # lookup is needed
         u = self.mc.ustream(len(self.pop))
         codes = self.pop["state"].cat.codes.to_numpy()
-        new_codes = np.array([_interp(cumprob[c], ui) for c, ui in zip(codes, u, strict=True)])
+        new_codes = np.array([_interp(cumprob[c], ui) for c, ui in zip(codes, u.tolist(), strict=True)])
         self.pop["state"] = pd.Categorical.from_codes(new_codes, categories=pd.Index(self.states))
 
     # !step_pooled!

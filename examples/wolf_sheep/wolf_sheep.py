@@ -140,7 +140,7 @@ class WolfSheep(no.Model):
         )
 
         # half of energy (initially) is consumed by moving
-        self.wolves.energy -= 0.5 + 0.5 * self.wolves.speed / self.init_wolf_speed
+        self.wolves.energy -= 0.5 + 0.5 * self.wolves.speed / self.init_wolf_speed  # ty:ignore[invalid-assignment]
         self.__assign_cell(self.wolves)
 
         # eat sheep if available
@@ -167,12 +167,12 @@ class WolfSheep(no.Model):
         (self.sheep.x, self.sheep.y), _ = self.domain.move(  # ty:ignore[invalid-assignment]
             (self.sheep.x, self.sheep.y), (vx, vy), 1.0, ungroup=True
         )
-        self.sheep.energy -= 0.5 + 0.5 * self.sheep.speed / self.init_sheep_speed
+        self.sheep.energy -= 0.5 + 0.5 * self.sheep.speed / self.init_sheep_speed  # ty:ignore[invalid-assignment]
         self.__assign_cell(self.sheep)
 
         # eat grass if available
         grass_available = self.grass.loc[self.sheep.cell]
-        self.sheep.energy += (grass_available.countdown.values == 0) * self.sheep_gain_from_food
+        self.sheep.energy += (grass_available.countdown.values == 0) * self.sheep_gain_from_food  # ty:ignore[invalid-assignment]
         self.grass.loc[self.sheep.cell, "countdown"] = self.grass.loc[self.sheep.cell, "countdown"].apply(
             lambda c: self.grass_regrowth_time if c == 0 else c
         )
