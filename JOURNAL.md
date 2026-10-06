@@ -22,6 +22,29 @@ Entry template:
 
 ---
 
+## 2026-10-06 — Embed example videos via the mkdocs-video shim
+
+**Why** — The boids and infection example pages embedded their animations with raw `<video>` HTML and
+inline flex styles, which is verbose and duplicates playback attributes on every page.
+
+**What** — Enabled Zensical's built-in emulation of the `mkdocs-video` plugin (configured in
+`zensical.toml`: native `<video>` rather than iframe, webm, autoplay, muted) and replaced the raw HTML
+with `![type:video](...)` markup. The two boids videos sit side by side using the theme's `grid` class.
+Bumped `zensical` to 0.0.68.
+
+**Design decisions**
+- Zensical doesn't run MkDocs plugins; it maps the `mkdocs-video` config onto its own media extension,
+  so no extra docs dependency is needed.
+- The shim wraps each video in a block-level `div.video-container`, so styling the image via attr_list
+  can't place two videos on one row — a `grid` (theme built-in, collapses to one column on narrow
+  screens) is used instead of hand-rolled flex styles.
+- `video_type = "webm"` is required: the shim defaults to `mp4` and would mislabel the sources.
+
+**Follow-ups** — The shim nests its `div` inside a `<p>`, which is invalid HTML; browsers tolerate it
+but may add a little vertical space.
+
+---
+
 ## 2026-09-29 — Typed API reference in the docs
 
 **Why** — The API reference page rendered class and method docs from the type stubs, but
