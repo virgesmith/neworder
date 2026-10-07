@@ -22,6 +22,31 @@ Entry template:
 
 ---
 
+## 2026-10-07 — Make geospatial tests independent of the Overpass API
+
+**Why** — `test_geospatial` downloaded a road network from the public Overpass API in every CI matrix job (12
+concurrent requests). Overpass rate-limits and is sometimes overloaded, so CI failed intermittently with
+timeouts and refused connections (e.g. on #124).
+
+**What**
+- Committed the network the test used (drive network within 2km of Coniston, 69 nodes, 110KB) as
+  `test/coniston.graphml`. The tests now build `GeospatialGraph` from it offline and cover every method: CRS
+  projection, nodes/edges, `edges_to`/`edges_from`, `shortest_path`, `subgraph` and `isochrone`.
+- Kept one live test of `from_point`. It only runs when `NEWORDER_NETWORK_TESTS` is set (on the ubuntu/3.13 job
+  in `build-test.yml`), and skips rather than fails on network errors and Overpass error responses.
+- The new `isochrone` test found that it used geopandas' deprecated `unary_union`. It now uses
+  `shapely.union_all`, which needs no bump to the geopandas minimum version (`union_all()` needs geopandas 1.0).
+
+**Design decisions**
+- Rejected: caching osmnx responses in GitHub Actions (a cold cache still means 12 concurrent requests),
+  retries/longer timeouts (failures become rarer, not impossible), and skipping on failure without a fixture
+  (CI would stay green while the code went untested).
+
+**Follow-ups** — The infection example still queries Overpass. CI doesn't run it, but it can fail for users for
+the same reason.
+
+---
+
 ## 2026-10-07 — Deprecate `stats.logistic` and `stats.logit`
 
 **Why** — `neworder.stats.logistic` and `logit` duplicate `scipy.special.expit` and `scipy.special.logit`, and
