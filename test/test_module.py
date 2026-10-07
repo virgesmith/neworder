@@ -23,7 +23,8 @@ def test_basics() -> None:
 
 def test_submodules() -> None:
     assert hasattr(no, "mpi")
-    assert hasattr(no, "stats")
+    with pytest.warns(DeprecationWarning):
+        assert hasattr(no, "stats")
     assert hasattr(no, "df")
 
 

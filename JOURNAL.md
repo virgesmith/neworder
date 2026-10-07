@@ -22,6 +22,32 @@ Entry template:
 
 ---
 
+## 2026-10-07 — Deprecate the `stats` submodule
+
+**Why** — `neworder.stats` (`logistic`, `logit`) duplicates functionality that `scipy.special` already
+provides, and scipy is a runtime dependency.
+
+**What** — Deprecated `neworder.stats` ahead of its removal, in three layers:
+- Runtime: `stats` is no longer imported eagerly in `neworder/__init__.py`. It is served by a module-level
+  `__getattr__` (PEP 562) that emits a `DeprecationWarning` (stacklevel=2, so it points at the caller) and then
+  returns `_neworder_core.stats`. This covers `no.stats`, `from neworder import stats` and `hasattr`.
+- Type checkers/IDEs: `logistic` and `logit` are decorated with `@deprecated` (PEP 702) in `stats.pyi`.
+- Docs: a "Deprecated" admonition in the module docstring gives the `scipy.special` equivalents on the API page.
+
+**Design decisions**
+- Python-side warning instead of C++ (`py::warnings::warn` in each binding): it warns on access rather than
+  only on call, needs no rebuild, and keeps the bindings unchanged.
+- `stats` stays in `__all__`, so `from neworder import *` also warns, rather than silently changing what a star
+  import provides before the removal.
+- `typing_extensions.deprecated` in the stub: `warnings.deprecated` needs Python 3.13, and stubs aren't executed,
+  so this adds no runtime dependency.
+
+**Follow-ups** — Remove the submodule (C++ bindings, `stats.pyi`, `__getattr__`, `test_stats.py`, the
+`docs/api.md` section) in a later release. The C++ module docstring (`stats_docstr`) wasn't changed, to keep
+this Python-only, so `help(no.stats)` doesn't mention the deprecation.
+
+---
+
 ## 2026-10-07 — Document submodules in the API reference
 
 **Why** — The API page rendered only top-level members of `neworder`; the `time`, `mpi`, `stats` and `df`
