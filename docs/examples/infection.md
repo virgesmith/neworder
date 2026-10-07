@@ -2,10 +2,7 @@
 
 An example of individuals moving and interacting on a geospatial network.
 
-<video width="100%" controls autoplay loop muted playsinline>
-  <source src="./img/infection.webm" type="video/webm">
-</video>
-
+![type:video](./img/infection.webm){: style='width: 100%'}
 
 {{ include_snippet("./docs/examples/src.md", show_filename=False) }}
 

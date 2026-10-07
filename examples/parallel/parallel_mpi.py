@@ -29,6 +29,7 @@ class ParallelMPI(neworder.Model):
 
     # !step!
     def step(self) -> None:
+        assert neworder.mpi.COMM is not None, "MPI is not available"
         # generate some movement
         self.pop["state"] = neworder.df.transition(self.mc, self.p, self.pop["state"])
 
@@ -54,6 +55,7 @@ class ParallelMPI(neworder.Model):
 
     # !check!
     def check(self) -> bool:
+        assert neworder.mpi.COMM is not None, "MPI is not available"
         # Ensure we haven't lost (or gained) anybody
         totals = neworder.mpi.COMM.gather(len(self.pop), root=0)
         if totals and sum(totals) != self.n * neworder.mpi.SIZE:
@@ -66,6 +68,7 @@ class ParallelMPI(neworder.Model):
 
     # !finalise!
     def finalise(self) -> None:
+        assert neworder.mpi.COMM is not None, "MPI is not available"
         # process 0 assembles all the data and prints a summary
         pops = neworder.mpi.COMM.gather(self.pop, root=0)
         if pops:

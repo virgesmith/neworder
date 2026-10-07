@@ -138,3 +138,10 @@ signature_crossrefs = true
 docstring_style = "google"
 show_root_heading = true
 members_order = "source"
+
+[project.plugins.mkdocs-video]
+is_video = true
+video_type = "webm"
+video_autoplay = true
+video_loop = false
+video_muted = true

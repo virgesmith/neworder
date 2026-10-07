@@ -47,37 +47,122 @@ __all__: list[str] = [
 class SplitMix64:
     """
     A hash-based sampler that produces U[0,1) variates deterministically from integer keys.
+
+    Uses the SplitMix64 finalizer (Stafford Variant 13) to hash an arbitrary sequence of
+    integer arguments into a float64 value. Unlike a stream-based PRNG, the output at any
+    index depends only on the seed and the input keys, so draws are independent of call order.
+    When use_counter=False (the default), instances are safe to share across threads.
+    When use_counter=True, the internal counter is updated atomically, but concurrent callers
+    will interleave counter values non-deterministically — use one instance per thread if
+    reproducible counter sequencing is required.
+
+    uarray() accepts any number of positional arguments, each either a scalar int or a 1-D
+    integer array. All scalar args (regardless of position) are premixed into a shared context
+    hash (the "salt") before any array elements are processed. Array args each contribute one
+    dimension to the output (outer-product semantics), and are hashed on top of the salt.
+
+    raw() takes the same arguments and produces the same shape, but returns the underlying
+    64-bit hashes as int64 instead of mapping them onto U[0,1).
     """
+    @staticmethod
+    def hash64(s: str) -> int:
+        """
+        Returns a deterministic 64-bit integer hash of a string.
+
+        Uses FNV-1a to accumulate the string bytes, then applies the SplitMix64 finalizer
+        to diffuse the bits. The result is stable across platforms and Python versions and
+        can be passed directly as a scalar key to uarray().
+
+        Args:
+            s: The string to hash.
+
+        Returns:
+            A signed 64-bit integer.
+        """
     def __init__(self, seeder: collections.abc.Callable[[], int], *, use_counter: bool = False) -> None:
         """
         Constructs a SplitMix64 with a seeder callable and an optional call counter.
+
+        The seeder is not called on construction: it is invoked on every uarray() or raw() call.
+        When use_counter=True, a monotonically increasing counter is mixed into the hash before
+        any user-supplied arguments, guaranteeing that successive uarray() calls with identical
+        arguments produce independent draws.
+
+        Args:
+            seeder: A zero-argument callable returning an integer seed.
+            use_counter: (keyword-only) If True, advance an internal counter on each uarray() or raw() call (default False).
+        """
+    def __repr__(self) -> str:
+        """
+        Returns a human-readable representation of the SplitMix64. Shows the current counter
+        value when use_counter=True; the seed is not displayed.
         """
     def counter(self) -> int:
         """
-        The current call counter. Incremented by each uarray() call when use_counter=True.
-        """
-    def reset(self) -> None:
-        """
-        Resets the call counter to zero.
-        """
-    def uarray(
-        self, *args: int | collections.abc.Sequence[int] | numpy.typing.NDArray[numpy.int64]
-    ) -> numpy.typing.NDArray[numpy.float64]:
-        """
-        Returns a float64 array of U[0,1) values hashed from the supplied integer keys.
+        The current call counter (uint64). Incremented by each uarray() or raw() call when use_counter=True;
+        always 0 otherwise. Reset to 0 by reset().
         """
     def raw(
         self, *args: int | collections.abc.Sequence[int] | numpy.typing.NDArray[numpy.int64]
     ) -> numpy.typing.NDArray[numpy.int64]:
         """
         Returns an int64 array of raw 64-bit hashes of the supplied integer keys.
+
+        Identical to uarray() in keying, output shape and counter semantics - the arguments
+        are interpreted the same way and each call consumes one counter increment (if
+        use_counter=True) - but returns the underlying hash rather than mapping it onto
+        U[0,1). Use it to seed another PRNG, or to derive variates that uarray() cannot
+        express (e.g. a uniform integer over an arbitrary range, via a modulo or
+        multiply-shift reduction).
+
+        The full 64 bits are reinterpreted as signed, so values span the whole int64 range
+        including negatives; uarray() instead discards the low 11 bits so the remainder maps
+        exactly onto float64's 53-bit mantissa. Both are derived from the same hash, so
+        uarray(*keys) == (np.uint64(raw(*keys)) >> 11) * 2**-53 for a given seed and counter.
+
+        Args:
+            *args: One or more scalar ints or 1-D integer arrays.
+
+        Returns:
+            ndarray[int64] with shape (len(arr0), len(arr1), ...) for the array args in order.
+            A 0-d array is returned when all args are scalars.
+
+        Raises:
+            ValueError: If no arguments are supplied.
+            TypeError: If any argument is not a scalar int or a 1-D integer array.
         """
-    @staticmethod
-    def hash64(s: str) -> int:
+    def reset(self) -> None:
         """
-        Returns a deterministic 64-bit integer hash of a string.
+        Resets the call counter to zero. The seeder is unaffected, as it is called fresh on each uarray() or
+        raw() call.
         """
-    def __repr__(self) -> str: ...
+    def uarray(
+        self, *args: int | collections.abc.Sequence[int] | numpy.typing.NDArray[numpy.int64]
+    ) -> numpy.typing.NDArray[numpy.float64]:
+        """
+        Returns a float64 array of U[0,1) values hashed from the supplied integer keys.
+
+        Each positional argument is either a scalar int or a 1-D integer array:
+          - Scalar args (in argument order) are premixed into a shared salt before any array
+            elements are processed. They do not add an output dimension.
+          - Array args (in argument order) are each folded into the hash on top of the salt,
+            each adding one output dimension (outer-product semantics).
+
+        The value at any output index depends only on the seed, the call counter (if enabled),
+        and the corresponding input key values - not on position within the array or which other
+        keys are present. This makes draws safe to use under sub-sampling and reordering.
+
+        Args:
+            *args: One or more scalar ints or 1-D integer arrays.
+
+        Returns:
+            ndarray[float64] with shape (len(arr0), len(arr1), ...) for the array args in order.
+            A 0-d array is returned when all args are scalars.
+
+        Raises:
+            ValueError: If no arguments are supplied.
+            TypeError: If any argument is not a scalar int or a 1-D integer array.
+        """
 
 class LinearTimeline(Timeline):
     """
@@ -93,7 +178,7 @@ class LinearTimeline(Timeline):
     def __init__(self, start: typing.SupportsFloat, step: typing.SupportsFloat) -> None:
         """
         Constructs an open-ended timeline give a start value and a step size. NB the model will run until the Model.halt() method is explicitly called
-        (from inside the step() method). Note also that nsteps() will return -1 for timelines constructed this way
+        (from inside the step() method).
         """
 
 class Model:
@@ -141,6 +226,13 @@ class Model:
         User-overridable method used to modify state in a per-process basis for multiprocess model runs.
         Default behaviour is to do nothing.
         This function should not be called directly, it is used by the Model.run() function
+        """
+    def run(self) -> bool:
+        """
+        Convenience instance method to start or resume model execution. Equivalent to `neworder.run(model)`.
+
+        Returns:
+            True if model succeeded, False otherwise
         """
     def step(self) -> None:
         """
@@ -337,11 +429,6 @@ class Timeline:
     def index(self) -> int:
         """
         Returns the index of the current step in the timeline
-        """
-    @property
-    def nsteps(self) -> int:
-        """
-        Returns the number of steps in the timeline (or -1 if open-ended)
         """
     @property
     def start(self) -> typing.Any:

@@ -22,6 +22,77 @@ Entry template:
 
 ---
 
+## 2026-10-07 — Document submodules in the API reference
+
+**Why** — The API page rendered only top-level members of `neworder`; the `time`, `mpi`, `stats` and `df`
+submodules were missing entirely.
+
+**What** — Added explicit `::: neworder.<submodule>` directives to `docs/api.md`. Fixed three further gaps in
+the hand-maintained stubs that kept members out of the rendered docs:
+- `stats.logistic` was declared as three `@overload`s with no implementation. Griffe silently drops overloads
+  that have no implementation signature. The overloads were also wrong: the `(x, k)` form doesn't exist, and a
+  positional second argument is `x0`. They are replaced by the real binding signature
+  `logistic(x, x0=0.0, k=1.0)`.
+- `time.isnever` really is overloaded in C++ (scalar/array), so an implementation signature was added after
+  the overloads, purely so griffe picks it up.
+- Constants in `time` and `mpi` had no docstrings, so mkdocstrings (`show_if_no_docstring = false`) hid
+  them. Added attribute docstrings.
+
+**Design decisions**
+- Explicit directives rather than `show_submodules = true`: the latter also renders internal modules
+  (`skill_cli`, `logging`) and duplicates classes already re-exported at the top level.
+- Attribute docstrings rather than a per-directive `show_if_no_docstring`, so constants get descriptions.
+
+Also merged a fresh `pybind11-stubgen _neworder_core` run into `neworder/__init__.pyi`. It added the
+`Model.run()` instance method, removed the non-existent `Timeline.nsteps`, and brought in the fuller
+`SplitMix64` docstrings. The generated output was not copied over wholesale, because it would have lost the
+hand-typed signatures (`SplitMix64` args, pandas types in `df`) and the pure-Python re-exports.
+
+`mpi.COMM` is now typed `mpi4py.MPI.Intracomm | None`. This is accurate, because it is `None` without
+`mpi4py`, but it broke type checking wherever `COMM` is used. All of those call sites are already guarded at
+runtime by `SIZE > 1` or an MPI-only entry point, so each function that uses `COMM` now starts with
+`assert ... COMM is not None` to narrow the type. Alternatives considered: keeping `COMM` non-optional (wrong
+in serial mode), or casting (hides real misuse).
+
+**Follow-ups** — Regenerating stubs with `pybind11-stubgen` overwrites these manual edits; reapply them, or
+consider a griffe extension that promotes implementation-less overloads.
+
+Also corrected the `SplitMix64` docstrings in `Module_docstr.cpp` and the stub. The old `__init__` text claimed
+the seeder was called on construction and on `reset()`. In fact the constructor only stores it, it is called on
+every `uarray()`/`raw()` call, and `reset()` only zeroes the counter. `raw()` also increments the counter.
+
+Rewrote the stub-regeneration section of `AGENTS.md`. It had a flag that current pybind11-stubgen rejects as
+ambiguous (`--ignore-invalid all`, now `--ignore-all-errors`), a wrong output path, and a non-existent
+`stubPackages` setting. It now documents the merge-don't-copy workflow, the manual corrections to preserve, and
+that `uv sync` drops extras not named on the command line. Brought `docs/developer.md` up to date in the same way. It was
+still on `pip install -e .[dev]`, and now covers the `uv` workflow and quality gates, building the docs, and how
+the hand-maintained stubs relate to `pybind11-stubgen` output.
+
+---
+
+## 2026-10-06 — Embed example videos via the mkdocs-video shim
+
+**Why** — The boids and infection example pages embedded their animations with raw `<video>` HTML and
+inline flex styles, which is verbose and duplicates playback attributes on every page.
+
+**What** — Enabled Zensical's built-in emulation of the `mkdocs-video` plugin (configured in
+`zensical.toml`: native `<video>` rather than iframe, webm, autoplay, muted) and replaced the raw HTML
+with `![type:video](...)` markup. The two boids videos sit side by side using the theme's `grid` class.
+Bumped `zensical` to 0.0.68.
+
+**Design decisions**
+- Zensical doesn't run MkDocs plugins; it maps the `mkdocs-video` config onto its own media extension,
+  so no extra docs dependency is needed.
+- The shim wraps each video in a block-level `div.video-container`, so styling the image via attr_list
+  can't place two videos on one row — a `grid` (theme built-in, collapses to one column on narrow
+  screens) is used instead of hand-rolled flex styles.
+- `video_type = "webm"` is required: the shim defaults to `mp4` and would mislabel the sources.
+
+**Follow-ups** — The shim nests its `div` inside a `<p>`, which is invalid HTML; browsers tolerate it
+but may add a little vertical space.
+
+---
+
 ## 2026-09-29 — Typed API reference in the docs
 
 **Why** — The API reference page rendered class and method docs from the type stubs, but

@@ -1,6 +1,6 @@
 # DO NOT EDIT
-# auto-generated @ 2026-09-29 08:43:07.186846 by docs/macros.py::write_requirements()
+# auto-generated @ 2026-10-06 08:49:28.404686 by docs/macros.py::write_requirements()
 # required by readthedocs.io
-zensical==0.0.66
+zensical==0.0.68
 requests==2.34.2
 mkdocstrings-python==2.0.9

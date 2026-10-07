@@ -46,6 +46,7 @@ class BlackScholes(neworder.Model):
         # comparing, and broadcasting the result. If one process fails the
         # check and exits without notifying the others, deadlocks can result.
         # send the state representation to process 0 (others will get None)
+        assert neworder.mpi.COMM is not None, "MPI is not available"
         states = neworder.mpi.COMM.gather(self.mc.state(), 0)
         # process 0 checks the values
         ok = all(s == states[0] for s in states) if states else True
@@ -93,6 +94,7 @@ class BlackScholes(neworder.Model):
 
     def greeks(self) -> None:
         # get all the results
+        assert neworder.mpi.COMM is not None, "MPI is not available"
         pvs = neworder.mpi.COMM.gather(self.pv, 0)
         # compute sensitivities on rank 0
         if pvs:
