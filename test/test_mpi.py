@@ -13,6 +13,7 @@ else:
     no.log("Parallel mode enabled, running MPI tests")
 
     def send_recv(x: Any) -> bool:
+        assert no.mpi.COMM is not None
         if no.mpi.RANK == 0:
             no.mpi.COMM.send(x, dest=1)
         if no.mpi.RANK == 1:
@@ -31,6 +32,7 @@ else:
         assert send_recv({"a": "fghdfkgh"})
 
     def test_arrays() -> None:
+        assert no.mpi.COMM is not None
         x = np.array([1, 4, 9, 16])
         if no.mpi.RANK == 0:
             no.mpi.COMM.send(x, dest=1)

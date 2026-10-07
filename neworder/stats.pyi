@@ -12,39 +12,17 @@ import numpy.typing
 
 __all__: list[str] = ["logistic", "logit"]
 
-@typing.overload
 def logistic(
-    x: typing.Annotated[numpy.typing.ArrayLike, numpy.float64], x0: typing.SupportsFloat, k: typing.SupportsFloat
+    x: typing.Annotated[numpy.typing.ArrayLike, numpy.float64],
+    x0: typing.SupportsFloat = 0.0,
+    k: typing.SupportsFloat = 1.0,
 ) -> numpy.typing.NDArray[numpy.float64]:
     """
     Computes the logistic function on the supplied values.
     Args:
         x: The input values.
-        k: The growth rate
-        x0: the midpoint location
-    Returns:
-        The function values
-    """
-
-@typing.overload
-def logistic(
-    x: typing.Annotated[numpy.typing.ArrayLike, numpy.float64], k: typing.SupportsFloat
-) -> numpy.typing.NDArray[numpy.float64]:
-    """
-    Computes the logistic function with x0=0 on the supplied values.
-    Args:
-        x: The input values.
-        k: The growth rate
-    Returns:
-        The function values
-    """
-
-@typing.overload
-def logistic(x: typing.Annotated[numpy.typing.ArrayLike, numpy.float64]) -> numpy.typing.NDArray[numpy.float64]:
-    """
-    Computes the logistic function with k=1 and x0=0 on the supplied values.
-    Args:
-        x: The input values.
+        x0: the midpoint location (default 0)
+        k: The growth rate (1/scale, default 1)
     Returns:
         The function values
     """

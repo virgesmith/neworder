@@ -123,24 +123,26 @@ pyproject.toml
 
 ## Regenerating Type Stubs
 
-Type stubs for the C++ extension are generated with `pybind11-stubgen` (a dev dependency). Run this after any change to the pybind11 bindings in [src/Module.cpp](src/Module.cpp):
+The stubs that matter are the hand-maintained files in [neworder/](neworder/): `__init__.pyi` (the C++ API plus the pure-Python re-exports) and `time.pyi`, `mpi.pyi`, `stats.pyi`, `df.pyi`. `ty`, IDEs and the API docs (mkdocstrings/griffe) all read these. They are seeded from `pybind11-stubgen` output but carry manual corrections, so **merge** regenerated output into them — never copy it over wholesale.
+
+After any change to the bindings in [src/Module.cpp](src/Module.cpp) or the docstrings in [src/Module_docstr.cpp](src/Module_docstr.cpp), rebuild the extension and regenerate:
 
 ```sh
-# Regenerate top-level stubs (output goes to stubs/)
-pybind11-stubgen _neworder_core --ignore-invalid all
-
-# Regenerate a submodule stub, then move it into the package
-pybind11-stubgen _neworder_core.time
-mv stubs/_neworder_core/time-stubs/__init__.pyi neworder/time.pyi
-# Repeat for other submodules: mpi, stats, df
+uv sync --dev --reinstall-package neworder   # plain `uv sync` may not rebuild the C++ extension
+pybind11-stubgen _neworder_core --ignore-all-errors   # writes stubs/_neworder_core/{__init__,time,mpi,stats,df}.pyi
 ```
 
-`--ignore-invalid all` is required because pybind11-stubgen cannot parse default arguments that are functions (a pattern used in `_neworder_core`).
+- Run it on `_neworder_core`, **not** `neworder`. Stubs generated for the Python package would shadow the `.py` sources (`domain.py`, `mc.py`, `timeline.py`) and replace the hand-written `__init__.pyi`.
+- `--ignore-all-errors` is required because pybind11-stubgen cannot parse default arguments that are functions (a pattern used in `_neworder_core`).
+- `stubs/` is gitignored scratch output. Diff it against `neworder/*.pyi` and port only real API changes (new or removed members, changed signatures, updated docstrings). Class order differs between the two, so compare symbol by symbol rather than with a plain `diff`.
 
-After generation, check the output manually:
-- Numpy array types often come out as `Any` — fix them to `np.ndarray` with appropriate dtype annotations.
-- The top-level stub lands in [stubs/\_neworder\_core-stubs/](stubs/) and is picked up by `ty` via the `stubPackages` setting.
-- Submodule stubs go directly into [neworder/](neworder/) as `*.pyi` files alongside the package.
+Manual corrections to preserve when merging:
+- Precise types where stubgen emits `Any` or bare containers, e.g. pandas `Series`/`Categorical` in `df.pyi`, typed `*args` and `Callable[[], int]` on `SplitMix64`, `RunState` return types.
+- `__all__` and imports in `__init__.pyi` that re-export the pure-Python API (`Domain`, `CalendarTimeline`, `as_np`, ...).
+- An implementation signature after any module-level `@overload` group (e.g. `time.isnever`). Without one, griffe drops the function and it disappears from the API docs.
+- Docstrings on module constants (e.g. `time.NEVER`, `mpi.RANK`), so mkdocstrings renders them.
+
+Stub docstrings must agree with the C++ docstrings and behaviour. Fix the wording in `Module_docstr.cpp` first, then mirror it in the stub.
 
 ## Branch and Release Policy
 
@@ -153,7 +155,7 @@ After generation, check the output manually:
 
 1. Create a feature branch off `main` — never commit directly to `main`.
 2. Make C++ changes in [src/](src/) and/or Python changes in [neworder/](neworder/).
-3. Rebuild the extension: `uv sync --dev`. Add `--extra geospatial` if touching geospatial code, or the appropriate `--extra parallel-*` if testing MPI functionality.
+3. Rebuild the extension: `uv sync --dev`. Add `--extra geospatial` if touching geospatial code, or the appropriate `--extra parallel-*` if testing MPI functionality. Note that `uv sync` removes any extras not named on the command line, so repeat whichever ones the environment already has.
 4. If the extension API changed, regenerate type stubs (see [Regenerating Type Stubs](#regenerating-type-stubs)).
 5. Add or update tests in [test/](test/) in the relevant file.
 6. Run the full gate suite locally.

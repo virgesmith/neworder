@@ -319,6 +319,7 @@ def test_mc_serial(base_model: no.Model) -> None:
 def test_mc_parallel(base_model: no.Model, base_indep_model: no.Model) -> None:
     if no.mpi.SIZE == 1:
         return
+    assert no.mpi.COMM is not None
 
     # test model has identical streams
     mc = base_model.mc

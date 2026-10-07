@@ -29,6 +29,22 @@ def isnever(t: typing.Annotated[numpy.typing.ArrayLike, numpy.float64]) -> numpy
     implemented as a floating-point NaN, direct comparison will always fails, since NaN != NaN.
     """
 
+# Not generated: griffe drops overloads that have no implementation signature, which hides them from the API docs
+def isnever(
+    t: typing.SupportsFloat | typing.Annotated[numpy.typing.ArrayLike, numpy.float64],
+) -> bool | numpy.typing.NDArray[numpy.bool]:
+    """
+    Returns whether the value of t (scalar or array) corresponds to "never". As "never" is implemented as a
+    floating-point NaN, direct comparison will always fail, since NaN != NaN.
+    Args:
+        t: The time value(s) to test.
+    Returns:
+        A bool for scalar input, or an array of bools for array input.
+    """
+
 DISTANT_PAST: float  # value = -inf
+"""A value that compares less than any other value but itself and NEVER"""
 FAR_FUTURE: float  # value = inf
+"""A value that compares greater than any other value but itself and NEVER"""
 NEVER: float  # value = nan
+"""A value that compares unequal to any value, including itself. Use isnever() to test for it"""

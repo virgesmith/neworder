@@ -12,6 +12,9 @@ from __future__ import annotations
 import mpi4py.MPI  # ty:ignore[unresolved-import]
 
 __all__: list[str] = ["COMM", "RANK", "SIZE"]
-COMM: mpi4py.MPI.Intracomm  # value = <mpi4py.MPI.Intracomm object>
+COMM: mpi4py.MPI.Intracomm | None  # value = <mpi4py.MPI.Intracomm object>
+"""The MPI communicator (None in serial mode)"""
 RANK: int = 0
+"""The process rank (0 in serial mode)"""
 SIZE: int = 1
+"""The number of processes (1 in serial mode)"""

@@ -24,6 +24,7 @@ def test_unique_index() -> None:
     assert len(set(result)) == n1 * N_THREADS
 
     if no.mpi.SIZE > 1:
+        assert no.mpi.COMM is not None
         all_results = no.mpi.COMM.gather(result, root=0)
         if all_results is not None:
             result = np.concat(all_results)

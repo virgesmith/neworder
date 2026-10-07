@@ -121,24 +121,24 @@ const char* sms_docstr = R"""(
 const char* sms_init_docstr = R"""(
     Constructs a SplitMix64 with a seeder callable and an optional call counter.
 
-    The seeder is called immediately to set the initial seed and again on each reset().
+    The seeder is not called on construction: it is invoked on every uarray() or raw() call.
     When use_counter=True, a monotonically increasing counter is mixed into the hash before
     any user-supplied arguments, guaranteeing that successive uarray() calls with identical
     arguments produce independent draws.
 
     Args:
         seeder: A zero-argument callable returning an integer seed.
-        use_counter: (keyword-only) If True, advance an internal counter on each uarray() call (default False).
+        use_counter: (keyword-only) If True, advance an internal counter on each uarray() or raw() call (default False).
 )""";
 
 const char* sms_counter_docstr = R"""(
-    The current call counter (uint64). Incremented by each uarray() call when use_counter=True;
+    The current call counter (uint64). Incremented by each uarray() or raw() call when use_counter=True;
     always 0 otherwise. Reset to 0 by reset().
 )""";
 
 const char* sms_reset_docstr = R"""(
-    Resets the call counter to zero. The seeder is called fresh on each uarray() call,
-    so reset() only affects the counter.
+    Resets the call counter to zero. The seeder is unaffected, as it is called fresh on each uarray() or
+    raw() call.
 )""";
 
 const char* sms_hash64_docstr = R"""(
