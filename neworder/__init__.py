@@ -22,9 +22,13 @@ from _neworder_core import (  # ty:ignore[unresolved-import]
     verbose,
 )
 
+from ._deprecation import deprecate
 from .domain import Domain, Edge, Space, StateGrid
 from .mc import as_np
 from .timeline import CalendarTimeline
+
+deprecate(stats, "logistic", "scipy.special.expit(k * (x - x0))")
+deprecate(stats, "logit", "scipy.special.logit")
 
 __all__: list[str] = [
     "CalendarTimeline",

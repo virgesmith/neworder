@@ -33,5 +33,8 @@ jobs:
         uv run ruff check
         uv run ty check
     - name: Test
+      env:
+        # only one job queries the live Overpass API, to stay within its rate limits
+        NEWORDER_NETWORK_TESTS: ${{ (matrix.os == 'ubuntu-latest' && matrix.python-version == '3.13') && '1' || '' }}
       run: |
         uv run pytest
