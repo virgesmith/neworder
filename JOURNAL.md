@@ -22,6 +22,35 @@ Entry template:
 
 ---
 
+## 2026-10-07 — Deprecate `stats.logistic` and `stats.logit`
+
+**Why** — `neworder.stats.logistic` and `logit` duplicate `scipy.special.expit` and `scipy.special.logit`, and
+scipy is already a runtime dependency.
+
+**What** — Deprecated both functions ahead of their removal, without touching the C++ bindings:
+- Runtime: `neworder/_deprecation.py` has a `deprecate(module, name, replacement)` helper. It replaces a function
+  in an extension submodule with a `functools.wraps` wrapper that emits a `DeprecationWarning` on each call.
+  `stacklevel=2` makes the warning point at the caller. `__init__.py` applies it to `stats.logistic` and
+  `stats.logit` on import.
+- Type checkers/IDEs: both functions are decorated with `@deprecated` (PEP 702) in `stats.pyi`.
+- Docs: each function's docstring in `stats.pyi` has a "Deprecated" admonition giving its scipy equivalent,
+  shown on the API page.
+
+**Design decisions**
+- Deprecate the functions, not the module. A module-level `__getattr__` (PEP 562) that warned on any access to
+  `neworder.stats` was implemented first and dropped: it warned on access rather than use (including `hasattr`
+  and star imports), and changed how `stats` is imported.
+- Python wrapper rather than C++ (`py::warnings::warn` in each binding): no rebuild, and the bindings are left
+  unchanged until they are removed.
+- `typing_extensions.deprecated` in the stub: `warnings.deprecated` needs Python 3.13, and stubs aren't executed,
+  so this adds no runtime dependency.
+
+**Follow-ups** — Remove the functions, along with the C++ bindings, `stats.pyi`, the `deprecate()` calls,
+`test_stats.py` and the `docs/api.md` section, in a later release. The C++ docstrings weren't changed, but
+`help(no.stats.logistic)` still shows them via `functools.wraps`, and they don't mention the deprecation.
+
+---
+
 ## 2026-10-08 — Drop Python 3.12; add 3.15 to CI (#126)
 
 **Why** — 3.12 support was due to be dropped. Doing it now unblocks `warnings.deprecated` (3.13+) for the
