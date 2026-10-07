@@ -22,29 +22,32 @@ Entry template:
 
 ---
 
-## 2026-10-07 — Deprecate the `stats` submodule
+## 2026-10-07 — Deprecate `stats.logistic` and `stats.logit`
 
-**Why** — `neworder.stats` (`logistic`, `logit`) duplicates functionality that `scipy.special` already
-provides, and scipy is a runtime dependency.
+**Why** — `neworder.stats.logistic` and `logit` duplicate `scipy.special.expit` and `scipy.special.logit`, and
+scipy is already a runtime dependency.
 
-**What** — Deprecated `neworder.stats` ahead of its removal, in three layers:
-- Runtime: `stats` is no longer imported eagerly in `neworder/__init__.py`. It is served by a module-level
-  `__getattr__` (PEP 562) that emits a `DeprecationWarning` (stacklevel=2, so it points at the caller) and then
-  returns `_neworder_core.stats`. This covers `no.stats`, `from neworder import stats` and `hasattr`.
-- Type checkers/IDEs: `logistic` and `logit` are decorated with `@deprecated` (PEP 702) in `stats.pyi`.
-- Docs: a "Deprecated" admonition in the module docstring gives the `scipy.special` equivalents on the API page.
+**What** — Deprecated both functions ahead of their removal, without touching the C++ bindings:
+- Runtime: `neworder/_deprecation.py` has a `deprecate(module, name, replacement)` helper. It replaces a function
+  in an extension submodule with a `functools.wraps` wrapper that emits a `DeprecationWarning` on each call.
+  `stacklevel=2` makes the warning point at the caller. `__init__.py` applies it to `stats.logistic` and
+  `stats.logit` on import.
+- Type checkers/IDEs: both functions are decorated with `@deprecated` (PEP 702) in `stats.pyi`.
+- Docs: each function's docstring in `stats.pyi` has a "Deprecated" admonition giving its scipy equivalent,
+  shown on the API page.
 
 **Design decisions**
-- Python-side warning instead of C++ (`py::warnings::warn` in each binding): it warns on access rather than
-  only on call, needs no rebuild, and keeps the bindings unchanged.
-- `stats` stays in `__all__`, so `from neworder import *` also warns, rather than silently changing what a star
-  import provides before the removal.
+- Deprecate the functions, not the module. A module-level `__getattr__` (PEP 562) that warned on any access to
+  `neworder.stats` was implemented first and dropped: it warned on access rather than use (including `hasattr`
+  and star imports), and changed how `stats` is imported.
+- Python wrapper rather than C++ (`py::warnings::warn` in each binding): no rebuild, and the bindings are left
+  unchanged until they are removed.
 - `typing_extensions.deprecated` in the stub: `warnings.deprecated` needs Python 3.13, and stubs aren't executed,
   so this adds no runtime dependency.
 
-**Follow-ups** — Remove the submodule (C++ bindings, `stats.pyi`, `__getattr__`, `test_stats.py`, the
-`docs/api.md` section) in a later release. The C++ module docstring (`stats_docstr`) wasn't changed, to keep
-this Python-only, so `help(no.stats)` doesn't mention the deprecation.
+**Follow-ups** — Remove the functions, along with the C++ bindings, `stats.pyi`, the `deprecate()` calls,
+`test_stats.py` and the `docs/api.md` section, in a later release. The C++ docstrings weren't changed, but
+`help(no.stats.logistic)` still shows them via `functools.wraps`, and they don't mention the deprecation.
 
 ---
 
