@@ -44,6 +44,21 @@ deprecated bash uploader, and collected no Python coverage, despite `AGENTS.md` 
 - `gcovr` and `pytest-cov` are run with `uvx`/`--with` rather than added as dev dependencies, since only the
   coverage workflow needs them.
 
+
+**Follow-ups (before the next release)** — The first CI run reported 60.8% (C++ 52.8%, Python 78.2%), against
+95.6% before, so the project target in `codecov.yml` was temporarily lowered from 90% to 60%. The drop has two
+causes:
+- gcovr's Cobertura report includes branch data, which the old uploader never sent. Codecov scores any line with
+  an untaken branch as partial, not hit, and C++ has many (exception paths, inlined std library code). Setting
+  `parsers: cobertura: partials_as_hits: true` in `codecov.yml` restores line-coverage scoring. gcovr's
+  `--exclude-unreachable-branches --exclude-throw-branches` would reduce the noise in the branch data.
+- Python coverage is now included, and is lower (78%; the coverage job doesn't install the geospatial extra, so
+  `geospatial.py` counts as uncovered). Use separate per-flag project statuses (`flags: [cpp]` with 90%,
+  `flags: [python]` with `target: auto`), and install the geospatial extra once its tests no longer need
+  Overpass (#125).
+Then restore the 90% target. The per-flag config above was validated with Codecov's validator, but not yet run
+in CI.
+
 ---
 
 ## 2026-10-07 — Document submodules in the API reference
