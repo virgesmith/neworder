@@ -22,6 +22,30 @@ Entry template:
 
 ---
 
+## 2026-10-08 — Coverage workflow: uv, codecov-action and Python coverage
+
+**Why** — `coverage.yml` was never converted to uv when the rest of CI was. It also uploaded with Codecov's
+deprecated bash uploader, and collected no Python coverage, despite `AGENTS.md` saying it did.
+
+**What**
+- The workflow uses `setup-uv`. After `uv sync --dev`, it rebuilds the extension in place with
+  `CXXFLAGS=--coverage` (`setup.py build_ext --inplace`, with setuptools supplied by `--with`). Tests then run
+  with `uv run --no-sync`, so uv doesn't replace the instrumented build.
+- C++ coverage is turned into Cobertura XML with `gcovr` (run via `uvx`). Python coverage comes from
+  `pytest-cov` (via `--with`).
+- Both reports are uploaded with `codecov/codecov-action@v7.1.1`, flagged `cpp` and `python`, with its file
+  search and plugins disabled so only these two reports are sent.
+- Updated the "Test Coverage" section of `docs/developer.md` with the commands to reproduce it locally.
+
+**Design decisions**
+- An in-place rebuild, rather than `CXXFLAGS=--coverage uv sync`: uv builds in a temporary directory that is
+  deleted afterwards, and gcov writes `.gcda` files next to the object files, so a uv build leaves no coverage
+  data. Verified locally: the in-place build gives 94.9% C++ line coverage, and Python coverage is 78%.
+- `gcovr` and `pytest-cov` are run with `uvx`/`--with` rather than added as dev dependencies, since only the
+  coverage workflow needs them.
+
+---
+
 ## 2026-10-07 — Document submodules in the API reference
 
 **Why** — The API page rendered only top-level members of `neworder`; the `time`, `mpi`, `stats` and `df`
