@@ -35,6 +35,7 @@ for 3.15.
   examples, and a `ty: ignore` on `types.CapsuleType` (new in 3.13) in `__init__.pyi`.
 - Fixed the option example, which reported "python FT" inverted (`sys._is_gil_enabled()` without `not`).
 - Bumped GitHub Actions: `actions/checkout` v6 → v7 in all workflows, `astral-sh/setup-uv` v8.1.0 → v10.2.0.
+- Removed the `draft-pdf.yml` workflow, which built the JOSS paper PDF on every push. The `paper/` sources are kept.
 
 **Design decisions**
 - 3.15 is tested but not gating: on 3.15.0rc2, numpy/scipy/pandas/matplotlib all have wheels, the extension
