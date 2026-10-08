@@ -36,6 +36,10 @@ for 3.15.
 - Fixed the option example, which reported "python FT" inverted (`sys._is_gil_enabled()` without `not`).
 - Bumped GitHub Actions: `actions/checkout` v6 → v7 in all workflows, `astral-sh/setup-uv` v8.1.0 → v10.2.0.
 - Removed the `draft-pdf.yml` workflow, which built the JOSS paper PDF on every push. The `paper/` sources are kept.
+- Moved the docs toolchain (`zensical`, `mkdocstrings-python`, `requests`) from the `dev` dependency group to a new
+  `docs` group. zensical only ships `abi3` wheels, which free-threaded builds can't use, so every 3.14t CI job
+  compiled its Rust core from source. No CI job builds the docs, and ReadTheDocs installs from
+  `docs/requirements.txt`. Build the docs locally with `uv run --group docs zensical serve`.
 
 **Design decisions**
 - 3.15 is tested but not gating: on 3.15.0rc2, numpy/scipy/pandas/matplotlib all have wheels, the extension

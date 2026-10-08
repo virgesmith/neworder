@@ -777,14 +777,16 @@ parallel-openmpi = [
 
 [package.dev-dependencies]
 dev = [
-    { name = "mkdocstrings-python" },
     { name = "pre-commit" },
     { name = "pybind11" },
     { name = "pybind11-stubgen" },
     { name = "pytest" },
-    { name = "requests" },
     { name = "ruff" },
     { name = "ty" },
+]
+docs = [
+    { name = "mkdocstrings-python" },
+    { name = "requests" },
     { name = "zensical" },
 ]
 
@@ -809,14 +811,16 @@ provides-extras = ["geospatial", "parallel-native", "parallel-openmpi", "paralle
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "mkdocstrings-python", specifier = ">=2.0.9" },
     { name = "pre-commit", specifier = ">=4.5.1" },
     { name = "pybind11", specifier = ">=2.10.3" },
     { name = "pybind11-stubgen", specifier = ">=2.5.5" },
     { name = "pytest", specifier = ">=9.0.3" },
-    { name = "requests", specifier = ">=2.34.2" },
     { name = "ruff" },
     { name = "ty", specifier = ">=0.0.34" },
+]
+docs = [
+    { name = "mkdocstrings-python", specifier = ">=2.0.9" },
+    { name = "requests", specifier = ">=2.34.2" },
     { name = "zensical", specifier = ">=0.0.68" },
 ]
 

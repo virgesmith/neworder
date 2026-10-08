@@ -38,11 +38,14 @@ dev = [
   "pybind11>=2.10.3",
   "pytest>=9.0.3",
   "ruff",
-  "zensical>=0.0.68",
-  "requests>=2.34.2",
   "pybind11-stubgen>=2.5.5",
   "pre-commit>=4.5.1",
   "ty>=0.0.34",
+]
+# separate from dev because zensical has no free-threaded wheels, so would be built from source on 3.14t
+docs = [
+  "zensical>=0.0.68",
+  "requests>=2.34.2",
   "mkdocstrings-python>=2.0.9",
 ]
 
