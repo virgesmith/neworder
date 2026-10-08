@@ -15,19 +15,22 @@ on:
 jobs:
   build:
     runs-on: ${{ matrix.os }}
+    # 3.15 is experimental: many dependencies don't support it yet, so failures are reported but don't fail the run
+    continue-on-error: ${{ matrix.python-version == '3.15' }}
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.12", "3.13", "3.14", "3.14t"]
+        python-version: ["3.13", "3.14", "3.14t", "3.15"]
         os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
     - name: Install
-      uses: astral-sh/setup-uv@v8.1.0
+      uses: astral-sh/setup-uv@v10.2.0
       with:
         python-version: ${{ matrix.python-version }}
     - name: Build
-      run: uv sync --dev --extra geospatial
+      # shapely has no 3.15 wheels yet, so test the core package there without the geospatial extra
+      run: uv sync --dev ${{ matrix.python-version != '3.15' && '--extra geospatial' || '' }}
     - name: Lint
       run: |
         uv run ruff check

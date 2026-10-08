@@ -22,6 +22,30 @@ Entry template:
 
 ---
 
+## 2026-10-08 — Drop Python 3.12; add experimental 3.15 to CI
+
+**Why** — 3.12 support was due to be dropped. Doing it now unblocks `warnings.deprecated` (3.13+) for the
+`stats` deprecation without a `typing_extensions` dependency, and lets CI show how ready the dependencies are
+for 3.15.
+
+**What**
+- `requires-python >= 3.13`; classifiers drop 3.12 and add 3.15; cibuildwheel no longer builds cp312 wheels.
+- CI matrix: 3.13, 3.14, 3.14t, 3.15. The 3.15 jobs are `continue-on-error` and skip the geospatial extra.
+- Removed code that only existed for 3.12: the `sys.version_info.minor > 12` guards in the multithreaded
+  examples, and a `ty: ignore` on `types.CapsuleType` (new in 3.13) in `__init__.pyi`.
+- Fixed the option example, which reported "python FT" inverted (`sys._is_gil_enabled()` without `not`).
+- Bumped GitHub Actions: `actions/checkout` v6 → v7 in all workflows, `astral-sh/setup-uv` v8.1.0 → v10.2.0.
+
+**Design decisions**
+- 3.15 is tested but not gating: on 3.15.0rc2, numpy/scipy/pandas/matplotlib all have wheels, the extension
+  builds and the test suite passes, but `shapely` has no cp315 wheel. So the 3.15 job runs without the
+  geospatial extra, to report the core package's status rather than a known shapely build failure.
+- No cp315 wheels are built for release yet. Add them once the 3.15 job is reliably green.
+
+**Follow-ups** — Make 3.15 gating, add 3.15t, and restore the geospatial extra once shapely ships 3.15 wheels.
+
+---
+
 ## 2026-10-08 — Coverage workflow: uv, codecov-action and Python coverage
 
 **Why** — `coverage.yml` was never converted to uv when the rest of CI was. It also uploaded with Codecov's
