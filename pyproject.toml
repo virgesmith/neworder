@@ -55,7 +55,7 @@ geospatial = [
   "networkx>3.0",
   "osmnx>=2.0.0",
   "geopandas>=0.12.2",
-  "shapely>=2.0.0"
+  "shapely>=2.2.0"
 ]
 parallel-native = [
   "mpi4py>=4.1.2"

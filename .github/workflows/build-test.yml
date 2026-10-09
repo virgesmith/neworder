@@ -29,8 +29,7 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
     - name: Build
-      # shapely has no 3.15 wheels yet, so test the core package there without the geospatial extra
-      run: uv sync --dev ${{ matrix.python-version != '3.15' && '--extra geospatial' || '' }}
+      run: uv sync --dev --group docs --extra geospatial
     - name: Lint
       run: |
         uv run ruff check
