@@ -23,11 +23,11 @@ jobs:
           - os: macos-latest
             platform: macos-arm64
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       # build-frontend = "build[uv]" requires uv on the runner. The manylinux
       # container already provides one, but the native macos/windows builds don't.
       - name: Install prerequisites
-        uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@v10.2.0
       - name: Build wheels
         uses: pypa/cibuildwheel@v4.2.0
       - name: Upload wheels
@@ -40,9 +40,9 @@ jobs:
     name: Build sdist
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Install prerequisites
-        uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@v10.2.0
       - name: Build sdist
         run: uv build --sdist
       - name: Upload sdist
@@ -62,9 +62,9 @@ jobs:
       id-token: write
       contents: read
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Install prerequisites
-        uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@v10.2.0
       - name: Collect wheels and sdist
         uses: actions/download-artifact@v8
         with:

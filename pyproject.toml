@@ -19,11 +19,11 @@ license = "MIT"
 license-files = ["LICENCE.md"]
 description = "A dynamic microsimulation framework"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 classifiers = [
-    "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
     "Operating System :: OS Independent",
 ]
 dependencies = [
@@ -38,11 +38,14 @@ dev = [
   "pybind11>=2.10.3",
   "pytest>=9.0.3",
   "ruff",
-  "zensical>=0.0.68",
-  "requests>=2.34.2",
   "pybind11-stubgen>=2.5.5",
   "pre-commit>=4.5.1",
   "ty>=0.0.34",
+  "requests>=2.34.2",  # only needed by docs, but in dev to prevent ty from complaining about docs/macros.py
+]
+# separate from dev because zensical has no free-threaded wheels, so would be built from source on 3.14t
+docs = [
+  "zensical>=0.0.68",
   "mkdocstrings-python>=2.0.9",
 ]
 
@@ -52,7 +55,7 @@ geospatial = [
   "networkx>3.0",
   "osmnx>=2.0.0",
   "geopandas>=0.12.2",
-  "shapely>=2.0.0"
+  "shapely>=2.2.0"
 ]
 parallel-native = [
   "mpi4py>=4.1.2"
@@ -88,8 +91,8 @@ select = ["ARG", "B", "C", "E", "F", "I", "N", "PERF", "PTH", "RUF", "SIM", "UP"
 ignore = ["E501", "N803", "N806"]
 
 [tool.cibuildwheel]
-# the interpreters tested in build-test.yml (free-threaded 3.14 needs no `enable` flag in cibuildwheel 4)
-build = ["cp312-*", "cp313-*", "cp314-*", "cp314t-*"]
+# the interpreters tested in build-test.yml (free-threaded 3.14 and 3.15 need no `enable` flag in cibuildwheel 4)
+build = ["cp313-*", "cp314-*", "cp314t-*", "cp315-*"]
 # manylinux only - alpine/musl builds aren't tested anywhere
 skip = ["*-musllinux_*"]
 build-frontend = "build[uv]"
