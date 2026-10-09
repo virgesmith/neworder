@@ -57,7 +57,7 @@ uv run python -c "import neworder"
 
 ## Quality checks
 
-All of these must pass before a PR can be merged (CI runs them on Python 3.13-3.14, including the free-threaded 3.14t build, on linux, macOS and Windows. Python 3.15 is also tested, but is experimental and allowed to fail):
+All of these must pass before a PR can be merged (CI runs them on Python 3.13-3.15, including the free-threaded 3.14t build, on linux, macOS and Windows):
 
 ```bash
 uv run ruff check

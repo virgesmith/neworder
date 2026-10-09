@@ -22,15 +22,16 @@ Entry template:
 
 ---
 
-## 2026-10-08 — Drop Python 3.12; add experimental 3.15 to CI
+## 2026-10-08 — Drop Python 3.12; add 3.15 to CI (#126)
 
 **Why** — 3.12 support was due to be dropped. Doing it now unblocks `warnings.deprecated` (3.13+) for the
 `stats` deprecation without a `typing_extensions` dependency, and lets CI show how ready the dependencies are
 for 3.15.
 
 **What**
-- `requires-python >= 3.13`; classifiers drop 3.12 and add 3.15; cibuildwheel no longer builds cp312 wheels.
-- CI matrix: 3.13, 3.14, 3.14t, 3.15. The 3.15 jobs are `continue-on-error` and skip the geospatial extra.
+- `requires-python >= 3.13`; classifiers drop 3.12 and add 3.15; cibuildwheel builds cp315 wheels and no longer builds cp312 wheels.
+- CI matrix: 3.13, 3.14, 3.14t, 3.15, all gating and all with the geospatial extra. The geospatial extra now
+  requires `shapely>=2.2.0`, the first release with cp315 wheels.
 - Removed code that only existed for 3.12: the `sys.version_info.minor > 12` guards in the multithreaded
   examples, and a `ty: ignore` on `types.CapsuleType` (new in 3.13) in `__init__.pyi`.
 - Fixed the option example, which reported "python FT" inverted (`sys._is_gil_enabled()` without `not`).
@@ -42,12 +43,14 @@ for 3.15.
   `docs/requirements.txt`. Build the docs locally with `uv run --group docs zensical serve`.
 
 **Design decisions**
-- 3.15 is tested but not gating: on 3.15.0rc2, numpy/scipy/pandas/matplotlib all have wheels, the extension
-  builds and the test suite passes, but `shapely` has no cp315 wheel. So the 3.15 job runs without the
-  geospatial extra, to report the core package's status rather than a known shapely build failure.
-- No cp315 wheels are built for release yet. Add them once the 3.15 job is reliably green.
+- 3.15 started out experimental (`continue-on-error`, no geospatial extra) because `shapely` had no cp315
+  wheel. shapely 2.2.0 added them, and with it every 3.15 job passed, so 3.15 is now gating. The `shapely`
+  floor was raised to 2.2.0, rather than relying on the lockfile alone, so a re-lock or a plain pip install
+  can't select a version without 3.15 support.
+- cp315 wheels are built for release, since 3.15 is tested in CI. cp315t wheels are not: cibuildwheel only
+  builds the interpreters tested in `build-test.yml`, and 3.15t isn't in that matrix yet.
 
-**Follow-ups** — Make 3.15 gating, add 3.15t, and restore the geospatial extra once shapely ships 3.15 wheels.
+**Follow-ups** — Add 3.15t to the CI matrix and cp315t wheels to the release build, together.
 
 ---
 
