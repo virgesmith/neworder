@@ -41,11 +41,11 @@ dev = [
   "pybind11-stubgen>=2.5.5",
   "pre-commit>=4.5.1",
   "ty>=0.0.34",
+  "requests>=2.34.2",  # only needed by docs, but in dev to prevent ty from complaining about docs/macros.py
 ]
 # separate from dev because zensical has no free-threaded wheels, so would be built from source on 3.14t
 docs = [
   "zensical>=0.0.68",
-  "requests>=2.34.2",
   "mkdocstrings-python>=2.0.9",
 ]
 

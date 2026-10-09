@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = ">=3.13"
 resolution-markers = [
     "python_full_version >= '3.14' and sys_platform == 'win32'",
@@ -827,12 +827,12 @@ dev = [
     { name = "pybind11" },
     { name = "pybind11-stubgen" },
     { name = "pytest" },
+    { name = "requests" },
     { name = "ruff" },
     { name = "ty" },
 ]
 docs = [
     { name = "mkdocstrings-python" },
-    { name = "requests" },
     { name = "zensical" },
 ]
 
@@ -861,12 +861,12 @@ dev = [
     { name = "pybind11", specifier = ">=2.10.3" },
     { name = "pybind11-stubgen", specifier = ">=2.5.5" },
     { name = "pytest", specifier = ">=9.0.3" },
+    { name = "requests", specifier = ">=2.34.2" },
     { name = "ruff" },
     { name = "ty", specifier = ">=0.0.34" },
 ]
 docs = [
     { name = "mkdocstrings-python", specifier = ">=2.0.9" },
-    { name = "requests", specifier = ">=2.34.2" },
     { name = "zensical", specifier = ">=0.0.68" },
 ]
 
