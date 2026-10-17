@@ -326,7 +326,7 @@ class MonteCarlo:
         """
         Returns an array of ones (with hazard rate lambda[i]) or zeros for each element in p
         """
-    def init_bitgen(self, arg0: types.CapsuleType) -> None:  # ty:ignore[unresolved-attribute]
+    def init_bitgen(self, arg0: types.CapsuleType) -> None:
         """
         internal helper function used by as_np
         """

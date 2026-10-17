@@ -35,14 +35,8 @@ lock = Lock()
 barrier = Barrier(N_THREADS, action=sync)
 
 
-def _is_ft() -> bool:
-    if sys.version_info.minor > 12:
-        return not sys._is_gil_enabled()
-    return False
-
-
 neworder.log(
-    f"neworder FT: {neworder.freethreaded()}, python FT:{_is_ft()}",
+    f"neworder FT: {neworder.freethreaded()}, python FT: {not sys._is_gil_enabled()}",
     sys.version,
 )
 
