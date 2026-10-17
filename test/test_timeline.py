@@ -199,19 +199,13 @@ def test_incomplete_timeline() -> None:
 
     t = IncompleteTimeline()
     for attr in ["time", "start", "end", "dt", "at_end"]:
-        with pytest.raises(RuntimeError, match="pure virtual"):
+        with pytest.raises(AttributeError):
             getattr(t, attr)
 
     class NoNextTimeline(no.Timeline):
         time = start = end = 0.0
         dt = 1.0
         at_end = False
-
-    # the base class properties defer to the subclass's
-    t = NoNextTimeline()
-    assert no.Timeline.time.__get__(t) == 0.0
-    assert no.Timeline.dt.__get__(t) == 1.0
-    assert no.Timeline.at_end.__get__(t) is False
 
     class M(no.Model):
         def step(self) -> None:

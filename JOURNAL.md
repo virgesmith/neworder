@@ -40,11 +40,11 @@ pending fixes before the next release. The aim is now 95%.
   `mc.sample`; verbose logging during a model run; a failed `check()` raised as an error under
   `warnings.simplefilter("error")`; and `freethreaded()`.
 - Fixed `test_space2d`, whose "bounce" section moved points with the WRAP space, so BOUNCE was never exercised.
-- Fixed the `Timeline` trampolines for `time`, `start`, `end`, `dt` and `at_end`. These are bound as properties, and
-  `PYBIND11_OVERRIDE_PURE` looks the override up on the instance, so a subclass that didn't define one found the base
-  property again and recursed until the stack overflowed (a crash on Windows' 1MB stack, found by the new
-  incomplete-timeline test). They now walk the MRO and raise the usual "pure virtual" error unless a subclass
-  shadows the base property.
+- Fixed a stack overflow when a python `Timeline` subclass doesn't define `time`, `start`, `end`, `dt` or `at_end`
+  (found by the new incomplete-timeline test, which crashed on Windows' 1MB stack). These were bound as properties on
+  the abstract base, and `PYBIND11_OVERRIDE_PURE` looks overrides up on the instance, so the lookup found the base
+  property itself and recursed. They are now bound on the concrete C++ timelines only, so a missing one is a plain
+  `AttributeError`. The stubs still declare them on `Timeline`, as the interface subclasses must implement.
 - Widened the `to_points` annotation of `Space.dists2`/`dists`/`in_range` to accept a tuple of coordinate arrays,
   which the code already handled.
 
@@ -59,6 +59,12 @@ pending fixes before the next release. The aim is now 95%.
   uncovered line can drop it below 95%. Some lines also can't be covered in the coverage job: MPI-only paths,
   and the closing braces and destructors that gcov reports as missed.
 
+- Timeline properties: rejected working around the pybind11 lookup in the trampolines (walking the MRO to see whether
+  a subclass shadows the base property) as too intrusive. C++ only reads timeline properties as python attributes, so
+  the trampolines for them are never reached once the base class doesn't bind them. Implementing all the timelines in
+  python is a cleaner long-term option, but too large for this PR.
+
+**Follow-ups**
 **Follow-ups**
 - The remaining C++ misses: the mpi4py branch of `init_env` (runs only under MPI, which the coverage job doesn't
   use); `std::to_string(char)` and `no::log(const py::handle&)` in `Log.cpp` (no callers, could be deleted); and

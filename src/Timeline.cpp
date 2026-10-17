@@ -3,22 +3,6 @@
 
 #include <algorithm>
 
-py::object no::PyTimeline::property_override(const char* name) const {
-  py::gil_scoped_acquire gil;
-  py::object self = py::cast(this);
-  py::object base = py::type::of<Timeline>().attr("__dict__")[name];
-  for (py::handle cls : py::type::handle_of(self).attr("__mro__")) {
-    py::object attrs = cls.attr("__dict__");
-    if (attrs.contains(name)) {
-      if (py::object(attrs[name]).is(base)) {
-        break;
-      }
-      return self.attr(name);
-    }
-  }
-  py::pybind11_fail("Tried to call pure virtual function \"Timeline::%%\""s % name);
-}
-
 py::object no::NoTimeline::time() const { return py::float_(time::never()); }
 py::object no::NoTimeline::start() const { return py::float_(time::never()); }
 py::object no::NoTimeline::end() const { return py::float_(time::never()); }
