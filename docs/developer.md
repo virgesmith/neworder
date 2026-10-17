@@ -126,7 +126,7 @@ The extension is rebuilt in place because gcov writes its output (`*.gcda` files
 
 ## Type stubs
 
-The type stubs for the C++ extension module are maintained by hand in `neworder/`: `__init__.pyi` (the core API plus the pure-python re-exports) and `time.pyi`, `mpi.pyi`, `stats.pyi` and `df.pyi`. These are what type checkers, IDEs and the API documentation see, so they must be kept in sync with the bindings in `src/Module.cpp` and the docstrings in `src/Module_docstr.cpp`.
+The type stubs for the C++ extension module are maintained by hand in `neworder/`: `__init__.pyi` (the core API plus the pure-python re-exports) and `time.pyi`, `mpi.pyi` and `df.pyi`. The `stats` submodule is wrapped by the pure-python `neworder/stats.py` instead. These are what type checkers, IDEs and the API documentation see, so they must be kept in sync with the bindings in `src/Module.cpp` and the docstrings in `src/Module_docstr.cpp`.
 
 They are seeded from the output of `pybind11-stubgen`, which can be regenerated (after rebuilding the extension) with:
 

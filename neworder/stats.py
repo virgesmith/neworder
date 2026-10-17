@@ -1,24 +1,22 @@
 """
-
 Submodule for statistical functions
+
+!!! warning "Deprecated"
+    This module will be removed in a future release. Use the `scipy.special` equivalents instead.
 """
 
-from __future__ import annotations
+from typing import SupportsFloat
+from warnings import deprecated
 
-import typing
-
-import numpy
-import numpy.typing
-from typing_extensions import deprecated
+import numpy as np
+import numpy.typing as npt
+from _neworder_core import stats as _stats  # ty:ignore[unresolved-import]
 
 __all__: list[str] = ["logistic", "logit"]
 
+
 @deprecated("neworder.stats.logistic is deprecated, use scipy.special.expit(k * (x - x0)) instead")
-def logistic(
-    x: typing.Annotated[numpy.typing.ArrayLike, numpy.float64],
-    x0: typing.SupportsFloat = 0.0,
-    k: typing.SupportsFloat = 1.0,
-) -> numpy.typing.NDArray[numpy.float64]:
+def logistic(x: npt.ArrayLike, x0: SupportsFloat = 0.0, k: SupportsFloat = 1.0) -> npt.NDArray[np.float64]:
     """
     Computes the logistic function on the supplied values.
 
@@ -32,9 +30,11 @@ def logistic(
     Returns:
         The function values
     """
+    return _stats.logistic(x, x0, k)
+
 
 @deprecated("neworder.stats.logit is deprecated, use scipy.special.logit instead")
-def logit(x: typing.Annotated[numpy.typing.ArrayLike, numpy.float64]) -> numpy.typing.NDArray[numpy.float64]:
+def logit(x: npt.ArrayLike) -> npt.NDArray[np.float64]:
     """
     Computes the logit function on the supplied values.
 
@@ -46,3 +46,4 @@ def logit(x: typing.Annotated[numpy.typing.ArrayLike, numpy.float64]) -> numpy.t
     Returns:
         The function values (log-odds)
     """
+    return _stats.logit(x)

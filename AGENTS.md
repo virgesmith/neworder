@@ -90,7 +90,8 @@ neworder/                # Python package
   domain.py              # Domain, Edge, Space, StateGrid
   mc.py                  # as_np helper
   timeline.py            # CalendarTimeline
-  *.pyi                  # type stubs for C++ submodules (time, mpi, stats, df)
+  stats.py               # deprecated wrappers for the C++ stats submodule
+  *.pyi                  # type stubs for C++ submodules (time, mpi, df)
   py.typed               # PEP 561 marker
 stubs/
   _neworder_core-stubs/  # generated type stubs for the extension module
@@ -123,7 +124,7 @@ pyproject.toml
 
 ## Regenerating Type Stubs
 
-The stubs that matter are the hand-maintained files in [neworder/](neworder/): `__init__.pyi` (the C++ API plus the pure-Python re-exports) and `time.pyi`, `mpi.pyi`, `stats.pyi`, `df.pyi`. `ty`, IDEs and the API docs (mkdocstrings/griffe) all read these. They are seeded from `pybind11-stubgen` output but carry manual corrections, so **merge** regenerated output into them — never copy it over wholesale.
+The stubs that matter are the hand-maintained files in [neworder/](neworder/): `__init__.pyi` (the C++ API plus the pure-Python re-exports) and `time.pyi`, `mpi.pyi`, `df.pyi`. (`stats` is wrapped by the pure-Python `neworder/stats.py`, which carries its own annotations and docstrings.) `ty`, IDEs and the API docs (mkdocstrings/griffe) all read these. They are seeded from `pybind11-stubgen` output but carry manual corrections, so **merge** regenerated output into them — never copy it over wholesale.
 
 After any change to the bindings in [src/Module.cpp](src/Module.cpp) or the docstrings in [src/Module_docstr.cpp](src/Module_docstr.cpp), rebuild the extension and regenerate:
 

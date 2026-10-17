@@ -47,32 +47,32 @@ the same reason.
 
 ---
 
-## 2026-10-07 — Deprecate `stats.logistic` and `stats.logit`
+## 2026-10-17 — Deprecate `stats.logistic` and `stats.logit` (#125)
 
 **Why** — `neworder.stats.logistic` and `logit` duplicate `scipy.special.expit` and `scipy.special.logit`, and
 scipy is already a runtime dependency.
 
-**What** — Deprecated both functions ahead of their removal, without touching the C++ bindings:
-- Runtime: `neworder/_deprecation.py` has a `deprecate(module, name, replacement)` helper. It replaces a function
-  in an extension submodule with a `functools.wraps` wrapper that emits a `DeprecationWarning` on each call.
-  `stacklevel=2` makes the warning point at the caller. `__init__.py` applies it to `stats.logistic` and
-  `stats.logit` on import.
-- Type checkers/IDEs: both functions are decorated with `@deprecated` (PEP 702) in `stats.pyi`.
-- Docs: each function's docstring in `stats.pyi` has a "Deprecated" admonition giving its scipy equivalent,
-  shown on the API page.
+**What** — Deprecated both functions ahead of their removal, without touching the C++ bindings.
+`neworder/stats.py` replaces `stats.pyi`: a pure-Python module whose `logistic` and `logit` call
+`_neworder_core.stats` and are decorated with `warnings.deprecated` (PEP 702). That one decorator emits a
+`DeprecationWarning` pointing at the caller on each call, and makes `ty`, pyright and IDEs flag the calls. Each
+docstring has a "Deprecated" admonition giving its scipy equivalent, shown on the API page.
 
 **Design decisions**
 - Deprecate the functions, not the module. A module-level `__getattr__` (PEP 562) that warned on any access to
-  `neworder.stats` was implemented first and dropped: it warned on access rather than use (including `hasattr`
-  and star imports), and changed how `stats` is imported.
-- Python wrapper rather than C++ (`py::warnings::warn` in each binding): no rebuild, and the bindings are left
+  `neworder.stats` was tried first and dropped: it warned on access rather than use (including `hasattr` and
+  star imports), and changed how `stats` is imported.
+- A Python module rather than wrapping the extension functions in place. `warnings.deprecated` can't decorate a
+  pybind11 function directly (it sets `__deprecated__` on it, and builtins have no `__dict__`). An earlier
+  version used a custom `functools.wraps` helper to replace the functions in `_neworder_core.stats`, plus
+  `typing_extensions.deprecated` in the stub. Dropping Python 3.12 (#126) made `warnings.deprecated`
+  available, so runtime and static deprecation now come from one decorator, with no helper, no monkeypatching
+  of the extension module, and no `typing_extensions` import.
+- Python rather than C++ (`py::warnings::warn` in each binding): no rebuild, and the bindings are left
   unchanged until they are removed.
-- `typing_extensions.deprecated` in the stub: `warnings.deprecated` needs Python 3.13, and stubs aren't executed,
-  so this adds no runtime dependency.
 
-**Follow-ups** — Remove the functions, along with the C++ bindings, `stats.pyi`, the `deprecate()` calls,
-`test_stats.py` and the `docs/api.md` section, in a later release. The C++ docstrings weren't changed, but
-`help(no.stats.logistic)` still shows them via `functools.wraps`, and they don't mention the deprecation.
+**Follow-ups** — Remove the functions, along with the C++ bindings, `neworder/stats.py`, `test_stats.py` and
+the `docs/api.md` section, in a later release.
 
 ---
 

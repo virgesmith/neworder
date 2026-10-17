@@ -16,19 +16,15 @@ from _neworder_core import (  # ty:ignore[unresolved-import]
     log,
     mpi,
     run,
-    stats,
     thread_id,
     time,
     verbose,
 )
 
-from ._deprecation import deprecate
+from . import stats
 from .domain import Domain, Edge, Space, StateGrid
 from .mc import as_np
 from .timeline import CalendarTimeline
-
-deprecate(stats, "logistic", "scipy.special.expit(k * (x - x0))")
-deprecate(stats, "logit", "scipy.special.logit")
 
 __all__: list[str] = [
     "CalendarTimeline",

@@ -52,3 +52,4 @@ def test_deprecation_warnings() -> None:
 
         assert stats.logistic.__name__ == "logistic"  # ty: ignore[deprecated]
         assert "logistic function" in (stats.logistic.__doc__ or "")  # ty: ignore[deprecated]
+        assert getattr(stats.logit, "__deprecated__", "").startswith("neworder.stats.logit is deprecated")  # ty: ignore[deprecated]
