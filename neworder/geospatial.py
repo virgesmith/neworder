@@ -7,6 +7,7 @@ try:
     import geopandas as gpd
     import networkx as nx
     import osmnx as ox
+    from shapely import union_all
     from shapely.geometry import (
         LineString,
         MultiLineString,
@@ -77,4 +78,4 @@ class GeospatialGraph:
     def isochrone(self, origin: int, **kwargs: Any) -> Polygon:
         subgraph = nx.ego_graph(self.__graph, origin, **kwargs)
         nodes, _ = ox.graph_to_gdfs(subgraph)
-        return nodes.geometry.unary_union.convex_hull
+        return union_all(nodes.geometry).convex_hull

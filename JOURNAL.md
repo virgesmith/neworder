@@ -22,6 +22,60 @@ Entry template:
 
 ---
 
+## 2026-10-07 — Make geospatial tests independent of the Overpass API
+
+**Why** — `test_geospatial` downloaded a road network from the public Overpass API in every CI matrix job (12
+concurrent requests). Overpass rate-limits and is sometimes overloaded, so CI failed intermittently with
+timeouts and refused connections (e.g. on #124).
+
+**What**
+- Committed the network the test used (drive network within 2km of Coniston, 69 nodes, 110KB) as
+  `test/coniston.graphml`. The tests now build `GeospatialGraph` from it offline and cover every method: CRS
+  projection, nodes/edges, `edges_to`/`edges_from`, `shortest_path`, `subgraph` and `isochrone`.
+- Kept one live test of `from_point`. It only runs when `NEWORDER_NETWORK_TESTS` is set (on the ubuntu/3.13 job
+  in `build-test.yml`), and skips rather than fails on network errors and Overpass error responses.
+- The new `isochrone` test found that it used geopandas' deprecated `unary_union`. It now uses
+  `shapely.union_all`, which needs no bump to the geopandas minimum version (`union_all()` needs geopandas 1.0).
+
+**Design decisions**
+- Rejected: caching osmnx responses in GitHub Actions (a cold cache still means 12 concurrent requests),
+  retries/longer timeouts (failures become rarer, not impossible), and skipping on failure without a fixture
+  (CI would stay green while the code went untested).
+
+**Follow-ups** — The infection example still queries Overpass. CI doesn't run it, but it can fail for users for
+the same reason.
+
+---
+
+## 2026-10-17 — Deprecate `stats.logistic` and `stats.logit` (#125)
+
+**Why** — `neworder.stats.logistic` and `logit` duplicate `scipy.special.expit` and `scipy.special.logit`, and
+scipy is already a runtime dependency.
+
+**What** — Deprecated both functions ahead of their removal, without touching the C++ bindings.
+`neworder/stats.py` replaces `stats.pyi`: a pure-Python module whose `logistic` and `logit` call
+`_neworder_core.stats` and are decorated with `warnings.deprecated` (PEP 702). That one decorator emits a
+`DeprecationWarning` pointing at the caller on each call, and makes `ty`, pyright and IDEs flag the calls. Each
+docstring has a "Deprecated" admonition giving its scipy equivalent, shown on the API page.
+
+**Design decisions**
+- Deprecate the functions, not the module. A module-level `__getattr__` (PEP 562) that warned on any access to
+  `neworder.stats` was tried first and dropped: it warned on access rather than use (including `hasattr` and
+  star imports), and changed how `stats` is imported.
+- A Python module rather than wrapping the extension functions in place. `warnings.deprecated` can't decorate a
+  pybind11 function directly (it sets `__deprecated__` on it, and builtins have no `__dict__`). An earlier
+  version used a custom `functools.wraps` helper to replace the functions in `_neworder_core.stats`, plus
+  `typing_extensions.deprecated` in the stub. Dropping Python 3.12 (#126) made `warnings.deprecated`
+  available, so runtime and static deprecation now come from one decorator, with no helper, no monkeypatching
+  of the extension module, and no `typing_extensions` import.
+- Python rather than C++ (`py::warnings::warn` in each binding): no rebuild, and the bindings are left
+  unchanged until they are removed.
+
+**Follow-ups** — Remove the functions, along with the C++ bindings, `neworder/stats.py`, `test_stats.py` and
+the `docs/api.md` section, in a later release.
+
+---
+
 ## 2026-10-08 — Drop Python 3.12; add 3.15 to CI (#126)
 
 **Why** — 3.12 support was due to be dropped. Doing it now unblocks `warnings.deprecated` (3.13+) for the

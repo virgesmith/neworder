@@ -16,12 +16,12 @@ from _neworder_core import (  # ty:ignore[unresolved-import]
     log,
     mpi,
     run,
-    stats,
     thread_id,
     time,
     verbose,
 )
 
+from . import stats
 from .domain import Domain, Edge, Space, StateGrid
 from .mc import as_np
 from .timeline import CalendarTimeline
