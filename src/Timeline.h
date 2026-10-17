@@ -50,16 +50,21 @@ class PyTimeline : public Timeline {
   using Timeline::operator=;
 
   // trampoline methods
-  py::object time() const override { PYBIND11_OVERRIDE_PURE(py::object, Timeline, time); }
-  py::object start() const override { PYBIND11_OVERRIDE_PURE(py::object, Timeline, start); }
-  py::object end() const override { PYBIND11_OVERRIDE_PURE(py::object, Timeline, end); }
+  py::object time() const override { return property_override("time"); }
+  py::object start() const override { return property_override("start"); }
+  py::object end() const override { return property_override("end"); }
 
-  double dt() const override { PYBIND11_OVERRIDE_PURE(double, Timeline, dt); }
+  double dt() const override { return property_override("dt").cast<double>(); }
 
   void _next() override { PYBIND11_OVERRIDE_PURE(void, Timeline, _next); }
 
-  bool at_end() const override { PYBIND11_OVERRIDE_PURE(bool, Timeline, at_end); }
+  bool at_end() const override { return property_override("at_end").cast<bool>(); }
   std::string repr() const override { PYBIND11_OVERRIDE_NAME(std::string, Timeline, "__repr__", repr); }
+
+private:
+  // These are bound as python properties, so PYBIND11_OVERRIDE_PURE (which looks the override up on the instance)
+  // finds the base class property itself when a subclass doesn't define it, and recurses until the stack overflows
+  py::object property_override(const char* name) const;
 };
 
 // An empty (one arbitrary step) timeline. The model's step method will each be called once only

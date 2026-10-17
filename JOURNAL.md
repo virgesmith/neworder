@@ -40,6 +40,11 @@ pending fixes before the next release. The aim is now 95%.
   `mc.sample`; verbose logging during a model run; a failed `check()` raised as an error under
   `warnings.simplefilter("error")`; and `freethreaded()`.
 - Fixed `test_space2d`, whose "bounce" section moved points with the WRAP space, so BOUNCE was never exercised.
+- Fixed the `Timeline` trampolines for `time`, `start`, `end`, `dt` and `at_end`. These are bound as properties, and
+  `PYBIND11_OVERRIDE_PURE` looks the override up on the instance, so a subclass that didn't define one found the base
+  property again and recursed until the stack overflowed (a crash on Windows' 1MB stack, found by the new
+  incomplete-timeline test). They now walk the MRO and raise the usual "pure virtual" error unless a subclass
+  shadows the base property.
 - Widened the `to_points` annotation of `Space.dists2`/`dists`/`in_range` to accept a tuple of coordinate arrays,
   which the code already handled.
 
