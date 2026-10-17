@@ -50,6 +50,25 @@ def test_geospatial_routing(domain: "geospatial.GeospatialGraph") -> None:
     assert isochrone.area > 0
 
 
+def test_geospatial_native_crs() -> None:
+    domain = geospatial.GeospatialGraph(ox.load_graphml(GRAPH_FILE))
+    assert domain.crs == "epsg:4326"
+    assert len(domain.graph) == len(domain.all_nodes) == 69
+
+
+def test_geospatial_from_point_offline(monkeypatch: pytest.MonkeyPatch) -> None:
+    def graph_from_point(point: tuple[float, float], *args: object, **kwargs: object) -> nx.MultiDiGraph:
+        assert point == ORIGIN
+        assert args == (2000,)
+        assert kwargs == {"network_type": "drive"}
+        return ox.load_graphml(GRAPH_FILE)
+
+    monkeypatch.setattr(ox, "graph_from_point", graph_from_point)
+    domain = geospatial.GeospatialGraph.from_point(ORIGIN, 2000, network_type="drive", crs="epsg:27700")
+    assert domain.crs == "epsg:27700"
+    assert len(domain.graph) == 69
+
+
 # Queries the live Overpass API, which rate-limits and is sometimes unavailable, so this only runs when explicitly
 # enabled (on a single CI job) and skips rather than fails on network errors
 @pytest.mark.skipif(not os.getenv("NEWORDER_NETWORK_TESTS"), reason="set NEWORDER_NETWORK_TESTS=1 to enable")

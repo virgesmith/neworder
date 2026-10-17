@@ -182,6 +182,39 @@ def test_timeline_validation() -> None:
         no.CalendarTimeline(date(2021, 1, 1), end=date(2020, 1, 1), step=relativedelta(months=1))
 
 
+def test_calendar_timeline_stepping() -> None:
+    t = no.CalendarTimeline(date(2020, 1, 1), relativedelta(months=1), end=date(2020, 2, 1))
+    assert t.start == date(2020, 1, 1)
+    assert t.end == date(2020, 2, 1)
+    assert not t.at_end
+    assert t._next() == date(2020, 2, 1)
+    assert t.at_end
+    with pytest.raises(StopIteration):
+        t._next()
+
+
+def test_incomplete_timeline() -> None:
+    class IncompleteTimeline(no.Timeline):
+        pass
+
+    t = IncompleteTimeline()
+    for attr in ["time", "start", "end", "dt", "at_end"]:
+        with pytest.raises(RuntimeError, match="pure virtual"):
+            getattr(t, attr)
+
+    class NoNextTimeline(no.Timeline):
+        time = start = end = 0.0
+        dt = 1.0
+        at_end = False
+
+    class M(no.Model):
+        def step(self) -> None:
+            pass
+
+    with pytest.raises(RuntimeError, match="pure virtual"):
+        no.run(M(NoNextTimeline()))
+
+
 def test_linear_timeline() -> None:
     # 40 years annual steps
     m = _TestModel2(2011, 2051, 40)
@@ -193,6 +226,7 @@ def test_linear_timeline() -> None:
     no.run(m)
     assert m.timeline.index == 40
     assert m.timeline.time == 2051
+    assert m.timeline.start == 2011
 
 
 def test_numeric_timeline() -> None:
@@ -212,8 +246,10 @@ def test_numeric_timeline() -> None:
     # 16 steps to avoid rounding errors
     m = NumericTimelineModel(no.NumericTimeline(np.linspace(0.0, 1.0, 17).tolist()))
     assert m.timeline.time == 0.0
+    assert m.timeline.start == 0.0
     assert m.timeline.index == 0
     no.run(m)
+    assert m.timeline.dt == 0.0
 
 
 def test_calendar_timeline() -> None:

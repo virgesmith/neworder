@@ -64,11 +64,11 @@ def test_space2d() -> None:
 
     # move points
     for _ in range(100):
-        points, deltas = space2dw.move(points, deltas, 1.0)
+        points, deltas = space2db.move(points, deltas, 1.0)
 
     # check points still in domain and absolute speed unchanged
-    assert np.all(points[:, 0] >= -1.0) and np.all(points[:, 0] < 2.0)
-    assert np.all(points[:, 1] >= -3.0) and np.all(points[:, 1] < 5.0)
+    assert np.all(points[:, 0] >= -1.0) and np.all(points[:, 0] <= 2.0)
+    assert np.all(points[:, 1] >= -3.0) and np.all(points[:, 1] <= 5.0)
     assert np.all(np.abs(deltas[:, 0]) == 0.6)
     assert np.all(np.abs(deltas[:, 1]) == 0.7)
 
@@ -139,3 +139,74 @@ def test_grid() -> None:
 
     g = no.StateGrid(state, no.Edge.BOUNCE)
     assert g.shift((0, 0, 0), (-1, -1, -1)) == (1, 1, 1)
+
+
+def test_space_validation() -> None:
+    with pytest.raises(ValueError):
+        no.Space.unbounded(0)
+    with pytest.raises(ValueError):
+        no.Space(np.zeros(2), np.ones(2), edge="wrap")  # ty:ignore[invalid-argument-type]
+
+    space = no.Space(np.zeros(2), np.ones(2))
+    assert space.continuous
+    assert space.edge == no.Edge.CONSTRAIN
+    lo, hi = space.extent
+    assert np.array_equal(lo, np.zeros(2)) and np.array_equal(hi, np.ones(2))
+    assert repr(space) == "Space dim=2 min=[0. 0.] max=[1. 1.] edge=Edge.CONSTRAIN"
+
+    ints = np.zeros((1, 2), dtype=int)
+    with pytest.raises(TypeError):
+        space.move(ints, np.zeros((1, 2)), 1.0)
+    with pytest.raises(TypeError):
+        space.move(np.zeros((1, 2)), ints, 1.0)
+    with pytest.raises(ValueError):
+        space.move(np.zeros((1, 3)), np.zeros((1, 3)), 1.0)
+    with pytest.raises(TypeError):
+        space.dists2(ints)
+    with pytest.raises(TypeError):
+        space.dists2(np.zeros((1, 2)), ints)
+
+
+def test_space_bounce() -> None:
+    space = no.Space(np.zeros(2), np.ones(2), no.Edge.BOUNCE)
+
+    # crosses the max edge in x and the min edge in y
+    p, v = space.move(np.array([[0.9, 0.1]]), np.array([[0.2, -0.3]]), 1.0)
+    assert np.allclose(p, [[0.9, 0.2]])
+    assert np.allclose(v, [[-0.2, 0.3]])
+
+
+def test_space_in_range() -> None:
+    space = no.Space(np.zeros(2), np.full(2, 10.0))
+    x = np.array([1.0, 2.0, 5.0])
+    y = np.ones(3)
+
+    d2, (dx, dy) = space.dists2((x, y), (x[:1], y[:1]))
+    assert np.array_equal(d2, [[0.0, 1.0, 16.0]])
+    assert np.array_equal(dx, [[0.0, 1.0, 4.0]])
+    assert np.array_equal(dy, np.zeros((1, 3)))
+
+    points = np.column_stack((x, y))
+    # excludes each point itself
+    assert np.array_equal(space.in_range(2.0, points), [[0, 1, 0], [1, 0, 0], [0, 0, 0]])
+    assert np.array_equal(space.in_range(2.0, points, count=True), [1, 1, 0])
+    # explicit to_points are not excluded
+    assert np.array_equal(space.in_range(2.0, points, points[:1]), [[1, 1, 0]])
+    assert np.array_equal(space.in_range(2.0, points, points[:1], count=True), [2])
+
+
+def test_grid_access() -> None:
+    g = no.StateGrid(np.zeros((3, 4)))
+    assert not g.continuous
+    assert g.extent == (3, 4)
+
+    g[1, 2] = 5
+    assert g[1, 2] == 5
+    assert g.state[1, 2] == 5
+    # out-of-range points are clipped to the edge
+    g[5, 9] = 7
+    assert g.state[2, 3] == 7
+    assert g[-1, -1] == g.state[0, 0]
+
+    with pytest.raises(ValueError):
+        _ = g[1, 2, 3]

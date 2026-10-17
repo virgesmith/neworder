@@ -26,14 +26,14 @@ jobs:
       # uv builds in a temporary directory that is deleted afterwards, but gcov writes its data next to the object
       # files. So rebuild the extension in place with instrumentation, leaving the object files in ./build
       run: |
-        uv sync --dev
+        uv sync --dev --extra geospatial
         CXXFLAGS=--coverage uv run --no-sync --with setuptools python setup.py build_ext --inplace --force
     - name: Test
       run: |
         uv run --no-sync --with pytest-cov pytest --cov=neworder --cov-report=xml:coverage-py.xml
     - name: Report
       run: |
-        uvx gcovr --root . --filter src/ --xml coverage-cpp.xml --print-summary build
+        uvx gcovr --root . --filter src/ --exclude-unreachable-branches --exclude-throw-branches --xml coverage-cpp.xml --print-summary build
     - name: Upload C++ coverage
       uses: codecov/codecov-action@v7.1.1
       with:

@@ -22,6 +22,44 @@ Entry template:
 
 ---
 
+## 2026-10-17 — Raise the coverage target to 95%
+
+**Why** — The coverage-workflow change (2026-10-08, below) temporarily lowered the Codecov project target to 60%,
+pending fixes before the next release. The aim is now 95%.
+
+**What**
+- `codecov.yml`: `parsers: cobertura: partials_as_hits: true`. Separate `cpp` and `python` flag statuses alongside
+  the overall one, all with a 95% target (validated with Codecov's validator).
+- `coverage.yml`: install the `geospatial` extra (its tests no longer need Overpass, #125). Pass
+  `--exclude-unreachable-branches --exclude-throw-branches` to gcovr. Mirrored in `docs/developer.md`.
+- New tests. These cover `Space` validation, `repr`, `extent`, BOUNCE movement, tuple `to_points` and
+  `in_range`; `StateGrid` item access; `CalendarTimeline` stepping past its end; `GeospatialGraph` without a CRS
+  and `from_point` (offline, with `ox.graph_from_point` monkeypatched). On the C++ side they cover pure-virtual
+  trampolines for incomplete Python timelines; `start`/`dt` of the linear and numeric timelines; 1d and
+  non-square matrices and missing series categories in `df`; an invalid non-leading probability in
+  `mc.sample`; verbose logging during a model run; a failed `check()` raised as an error under
+  `warnings.simplefilter("error")`; and `freethreaded()`.
+- Fixed `test_space2d`, whose "bounce" section moved points with the WRAP space, so BOUNCE was never exercised.
+- Widened the `to_points` annotation of `Space.dists2`/`dists`/`in_range` to accept a tuple of coordinate arrays,
+  which the code already handled.
+
+**Design decisions**
+- Most of the drop to 60.8% was Codecov's scoring, not missing tests. C++ line coverage was already 94.9%, but
+  any line with an untaken branch counted as a miss. Scoring a local gcovr report the way Codecov does gives:
+  originally about 53%; 89.7% with the gcovr exclusions; 95.3% with `partials_as_hits`; 97.3% with the new tests.
+  Python goes from 89% to 98%. Line coverage measured locally: C++ 97.0%, Python 98%.
+- Per-flag statuses, so that high C++ coverage can't hide a Python regression (or vice versa). Both flags use 95%
+  rather than the `target: auto` suggested earlier for Python, which now has enough margin.
+
+**Follow-ups**
+- The remaining C++ misses: the mpi4py branch of `init_env` (runs only under MPI, which the coverage job doesn't
+  use); `std::to_string(char)` and `no::log(const py::handle&)` in `Log.cpp` (no callers, could be deleted); and
+  gcov artefacts on closing braces and defaulted destructors.
+- `test_check_flag` in `test_module.py` leaves `no.checked(False)` set for any later tests. The new check-failure
+  test re-enables it explicitly.
+
+---
+
 ## 2026-10-07 — Make geospatial tests independent of the Overpass API
 
 **Why** — `test_geospatial` downloaded a road network from the public Overpass API in every CI matrix job (12

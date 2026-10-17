@@ -2,9 +2,22 @@ coverage:
   status:
     project:
       default:
-        # TODO restore to 90% before the next release, see JOURNAL.md (coverage workflow entry)
-        target: 60%
+        target: 95%
         threshold: 1%  # leeway
+      cpp:
+        flags: [cpp]
+        target: 95%
+        threshold: 1%
+      python:
+        flags: [python]
+        target: 95%
+        threshold: 1%
     patch:
       default:
         target: 75%
+
+parsers:
+  cobertura:
+    # gcovr reports branch data, and C++ has many untakeable branches (exception paths, inlined std library code).
+    # Without this Codecov scores any line with an untaken branch as a miss
+    partials_as_hits: true

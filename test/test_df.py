@@ -20,6 +20,8 @@ def test_errors() -> None:
 
     # invalid transition matrices
     with pytest.raises(ValueError):
+        no.df.transition(model.mc, np.ones(m), df["DC2101EW_C_ETHPUK11"])
+    with pytest.raises(ValueError):
         no.df.transition(model.mc, np.ones((1, 2)), df["DC2101EW_C_ETHPUK11"])
     with pytest.raises(ValueError):
         no.df.transition(model.mc, np.ones((1, 1)), df["DC2101EW_C_ETHPUK11"])
@@ -56,7 +58,11 @@ def test_transition_conditional_errors() -> None:
     with pytest.raises(ValueError):
         no.df.transition_conditional(model.mc, {"M": trans}, group, series)
 
-    # a group's matrix must be square and match the number of series categories
+    # a group's matrix must be 2d, square and match the number of series categories
+    with pytest.raises(ValueError):
+        no.df.transition_conditional(model.mc, {"M": trans, "F": np.ones(2)}, group, series)
+    with pytest.raises(ValueError):
+        no.df.transition_conditional(model.mc, {"M": trans, "F": np.ones((2, 3))}, group, series)
     with pytest.raises(ValueError):
         no.df.transition_conditional(model.mc, {"M": trans, "F": np.identity(3)}, group, series)
 
@@ -88,17 +94,17 @@ def test_transition_conditional(base_model: no.Model) -> None:
     assert (df.loc[df.sex == "M", "region"] == "south").all()
     assert (df.loc[df.sex == "F", "region"] == "north").all()
 
-    # rows with a missing group value are left untouched
+    # rows with a missing group or series value are left untouched
     df_nan = pd.DataFrame(
         {
-            "region": pd.Categorical(["north", "north"], categories=["north", "south"]),
-            "sex": pd.Categorical(["M", None], categories=["M", "F"]),
+            "region": pd.Categorical(["north", "north", None], categories=["north", "south"]),
+            "sex": pd.Categorical(["M", None, "M"], categories=["M", "F"]),
         }
     )
     df_nan["region"] = no.df.transition_conditional(
         base_model.mc, {"M": matrices["M"], "F": matrices["F"]}, df_nan["sex"], df_nan["region"]
     )
-    assert df_nan["region"].tolist() == ["south", "north"]
+    assert df_nan["region"].cat.codes.tolist() == [1, 0, -1]
 
 
 def test_categorical(base_model: no.Model) -> None:
