@@ -46,6 +46,7 @@ classDiagram
 
   class Timeline {
     +int index
+    +bool at_end*
     +float dt*
     +Any end*
     +Any start*
@@ -55,6 +56,7 @@ classDiagram
   }
 
   class NoTimeline {
+    +bool at_end
     +float dt
     +Any end
     +Any start
@@ -64,6 +66,7 @@ classDiagram
   }
 
   class LinearTimeline {
+    +bool at_end
     +float dt
     +Any end
     +Any start
@@ -73,6 +76,7 @@ classDiagram
   }
 
   class NumericTimeline {
+    +bool at_end
     +float dt
     +Any end
     +Any start
@@ -82,6 +86,7 @@ classDiagram
   }
 
   class CalendarTimeline {
+    +bool at_end
     +float dt
     +date end
     +date start
@@ -110,12 +115,16 @@ The following properties and methods must be overridden in the subclass:
 
 symbol     | type              | description
 -----------|-------------------|---
+`at_end`   | `bool` property   | whether the timeline has reached its end
 `dt`       | `float` property  | the size of the current timestep
 `end`      | `Any` property    | the end time of the timeline
 `_next`    | `None` method     | move to the next timestep (for internal use by model, should not normally be called in client code)
 `start`    | `Any` property    | the start time of the timeline
 `time`     | `Any` property    | the current time of the timeline
 `__repr__` | `str` method      | (optional) a string representation of the object, defaults to the name of the class
+
+!!! note "Timeline properties"
+    The base class only declares these properties (in its type stubs); they are implemented by each of the supplied timelines rather than by `neworder.Timeline` itself. So a subclass that doesn't implement one raises `AttributeError` when it's accessed, as for any missing attribute (previously this caused an infinite recursion that could crash the interpreter). A missing `_next` raises `RuntimeError` when the model runs.
 
 
 ### Spatial Domain

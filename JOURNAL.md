@@ -45,6 +45,7 @@ pending fixes before the next release. The aim is now 95%.
   the abstract base, and `PYBIND11_OVERRIDE_PURE` looks overrides up on the instance, so the lookup found the base
   property itself and recursed. They are now bound on the concrete C++ timelines only, so a missing one is a plain
   `AttributeError`. The stubs still declare them on `Timeline`, as the interface subclasses must implement.
+  Documented in the custom timelines section of `docs/overview.md`, which also gained the missing `at_end`.
 - Widened the `to_points` annotation of `Space.dists2`/`dists`/`in_range` to accept a tuple of coordinate arrays,
   which the code already handled.
 
