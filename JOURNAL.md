@@ -50,6 +50,9 @@ pending fixes before the next release. The aim is now 95%.
   Python goes from 89% to 98%. Line coverage measured locally: C++ 97.0%, Python 98%.
 - Per-flag statuses, so that high C++ coverage can't hide a Python regression (or vice versa). Both flags use 95%
   rather than the `target: auto` suggested earlier for Python, which now has enough margin.
+- Patch target raised from 75% to 90%, not 95%. A 95% patch target is too strict: in a small patch, one
+  uncovered line can drop it below 95%. Some lines also can't be covered in the coverage job: MPI-only paths,
+  and the closing braces and destructors that gcov reports as missed.
 
 **Follow-ups**
 - The remaining C++ misses: the mpi4py branch of `init_env` (runs only under MPI, which the coverage job doesn't
