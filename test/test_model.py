@@ -1,3 +1,5 @@
+import warnings
+
 import pytest
 
 import neworder as no
@@ -102,3 +104,42 @@ def test_runstate() -> None:
     no.run(m)
     assert m.run_state == no.Model.HALTED
     assert not m.finalised
+
+
+def test_verbose(capsys: pytest.CaptureFixture[str]) -> None:
+    class TestModel(no.Model):
+        def __init__(self) -> None:
+            super().__init__(no.LinearTimeline(0, 2, 2))
+
+        def step(self) -> None:
+            pass
+
+    no.verbose()
+    try:
+        assert TestModel().run()
+    finally:
+        no.verbose(False)
+
+    out = capsys.readouterr().out
+    assert "starting TestModel model run" in out
+    assert "TestModel.step()" in out
+    assert "defaulted to no-op Model::finalise()" in out
+
+
+def test_check_failure_as_error() -> None:
+    class FailingModel(no.Model):
+        def __init__(self) -> None:
+            super().__init__(no.NoTimeline())
+
+        def step(self) -> None:
+            pass
+
+        def check(self) -> bool:
+            return False
+
+    # another test may have disabled checking
+    no.checked()
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        with pytest.raises(RuntimeWarning, match="check\\(\\) FAILED"):
+            no.run(FailingModel())

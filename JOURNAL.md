@@ -22,6 +22,56 @@ Entry template:
 
 ---
 
+## 2026-10-17 — Raise the coverage target to 95%
+
+**Why** — The coverage-workflow change (2026-10-08, below) temporarily lowered the Codecov project target to 60%,
+pending fixes before the next release. The aim is now 95%.
+
+**What**
+- `codecov.yml`: `parsers: cobertura: partials_as_hits: true`. Separate `cpp` and `python` flag statuses alongside
+  the overall one, all with a 95% target (validated with Codecov's validator).
+- `coverage.yml`: install the `geospatial` extra (its tests no longer need Overpass, #125). Pass
+  `--exclude-unreachable-branches --exclude-throw-branches` to gcovr. Mirrored in `docs/developer.md`.
+- New tests. These cover `Space` validation, `repr`, `extent`, BOUNCE movement, tuple `to_points` and
+  `in_range`; `StateGrid` item access; and `GeospatialGraph` without a CRS and `from_point` (offline, with
+  `ox.graph_from_point` monkeypatched). On the C++ side they cover 1d and non-square matrices and missing series
+  categories in `df`; an invalid non-leading probability in `mc.sample`; verbose logging during a model run; a
+  failed `check()` raised as an error under `warnings.simplefilter("error")`; and `freethreaded()`.
+- `docs/overview.md`: added the missing `at_end` to the custom timeline table and class diagram. Added a warning
+  that a Python `Timeline` subclass missing a property can crash with a stack overflow (see Follow-ups).
+  Mirrored in the bundled skill (`neworder/skill/SKILL.md`), which also lacked `at_end` in its override list.
+- Fixed `test_space2d`, whose "bounce" section moved points with the WRAP space, so BOUNCE was never exercised.
+- Widened the `to_points` annotation of `Space.dists2`/`dists`/`in_range` to accept a tuple of coordinate arrays,
+  which the code already handled.
+
+**Design decisions**
+- Most of the drop to 60.8% was Codecov's scoring, not missing tests. C++ line coverage was already 94.9%, but
+  any line with an untaken branch counted as a miss. Scoring a local gcovr report the way Codecov does gives:
+  originally about 53%; 89.7% with the gcovr exclusions; 95.3% with `partials_as_hits`; above that with the new
+  tests. Python goes from 89% to about 98%.
+- Timeline tests were dropped from this change. A test for incomplete Python timelines crashed CI on Windows by
+  exposing the stack overflow below. A fix (binding the timeline properties on the concrete timelines rather than
+  the abstract base) was tried on this branch and reverted, to keep this change to coverage only.
+- Per-flag statuses, so that high C++ coverage can't hide a Python regression (or vice versa). Both flags use 95%
+  rather than the `target: auto` suggested earlier for Python, which now has enough margin.
+- Patch target raised from 75% to 90%, not 95%. A 95% patch target is too strict: in a small patch, one
+  uncovered line can drop it below 95%. Some lines also can't be covered in the coverage job: MPI-only paths,
+  and the closing braces and destructors that gcov reports as missed.
+
+**Follow-ups**
+- The remaining C++ misses: the mpi4py branch of `init_env` (runs only under MPI, which the coverage job doesn't
+  use); `std::to_string(char)` and `no::log(const py::handle&)` in `Log.cpp` (no callers, could be deleted); and
+  gcov artefacts on closing braces and defaulted destructors.
+- `test_check_flag` in `test_module.py` leaves `no.checked(False)` set for any later tests. The new check-failure
+  test re-enables it explicitly.
+- Known bug, documented rather than fixed for now: a Python `Timeline` subclass that doesn't implement `time`,
+  `start`, `end`, `dt` or `at_end` recurses when that property is accessed. `PYBIND11_OVERRIDE_PURE` looks the
+  override up on the instance and finds the base class property again. On Linux this ends in a `RuntimeError`,
+  but on Windows it overflows the stack and crashes. Fixing it would also let the `Timeline.h` trampolines and
+  `CalendarTimeline` stepping be tested.
+
+---
+
 ## 2026-10-07 — Make geospatial tests independent of the Overpass API
 
 **Why** — `test_geospatial` downloaded a road network from the public Overpass API in every CI matrix job (12

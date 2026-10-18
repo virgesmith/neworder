@@ -134,7 +134,7 @@ class Space(Domain):
     def dists2(
         self,
         positions: tuple[NPFloatArray, ...] | NPFloatArray,
-        to_points: NPFloatArray | None = None,
+        to_points: tuple[NPFloatArray, ...] | NPFloatArray | None = None,
     ) -> tuple[NPFloatArray, Any]:
         """The squared distance between points and separations along each axis"""
         # group tuples into a single array if necessary
@@ -173,7 +173,7 @@ class Space(Domain):
     def dists(
         self,
         positions: tuple[NPFloatArray, ...] | NPFloatArray,
-        to_points: NPFloatArray | None = None,
+        to_points: tuple[NPFloatArray, ...] | NPFloatArray | None = None,
     ) -> NPFloatArray:
         """Returns distances between the points"""
         return np.sqrt(self.dists2(positions, to_points)[0])
@@ -182,7 +182,7 @@ class Space(Domain):
         self,
         distance: Any,
         positions: Any,
-        to_points: NPFloatArray | None = None,
+        to_points: tuple[NPFloatArray, ...] | NPFloatArray | None = None,
         count: bool | None = False,
     ) -> NPFloatArray:
         """Returns either indices or counts of points within the specified distance from each point.

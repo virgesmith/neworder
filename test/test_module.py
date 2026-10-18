@@ -13,6 +13,7 @@ def test_basics() -> None:
     assert hasattr(no, "verbose")
     assert hasattr(no, "checked")
     assert hasattr(no, "__version__")
+    assert isinstance(no.freethreaded(), bool)
     no.log("testing")
     no.log(1)
     no.log(no)
