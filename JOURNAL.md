@@ -37,11 +37,8 @@ pending fixes before the next release. The aim is now 95%.
   `ox.graph_from_point` monkeypatched). On the C++ side they cover 1d and non-square matrices and missing series
   categories in `df`; an invalid non-leading probability in `mc.sample`; verbose logging during a model run; a
   failed `check()` raised as an error under `warnings.simplefilter("error")`; and `freethreaded()`.
-- `neworder.run` (C++ `Model::run`) checks, before it starts, that a Python `Timeline` subclass implements
-  `time`, `start`, `end`, `dt`, `at_end` and `_next`. If any are missing it raises `NotImplementedError` naming
-  them. Without this, a missing property recursed when the run accessed it, and could overflow the stack.
-  Documented in the `run` docstrings and stubs, and in `docs/overview.md`, which also gains the missing `at_end`
-  in the custom timeline table and class diagram.
+- `docs/overview.md`: added the missing `at_end` to the custom timeline table and class diagram. Added a warning
+  that a Python `Timeline` subclass missing a property can crash with a stack overflow (see Follow-ups).
 - Fixed `test_space2d`, whose "bounce" section moved points with the WRAP space, so BOUNCE was never exercised.
 - Widened the `to_points` annotation of `Space.dists2`/`dists`/`in_range` to accept a tuple of coordinate arrays,
   which the code already handled.
@@ -51,13 +48,9 @@ pending fixes before the next release. The aim is now 95%.
   any line with an untaken branch counted as a miss. Scoring a local gcovr report the way Codecov does gives:
   originally about 53%; 89.7% with the gcovr exclusions; 95.3% with `partials_as_hits`; above that with the new
   tests. Python goes from 89% to about 98%.
-- Incomplete timelines are caught in `Model::run` rather than fixed at the source. A first test for them accessed
-  the missing properties directly, which crashed CI on Windows. A fix that bound the timeline properties on the
-  concrete timelines rather than the abstract base was tried on this branch and reverted, to keep the change
-  small. The check looks each member up in the class dicts along the MRO, so it never calls the recursing
-  property. It only applies to Python subclasses (`PyTimeline`): the supplied C++ timelines inherit their property
-  bindings from the base class, so the same lookup would wrongly report them as missing.
-- `NotImplementedError` because it's the usual Python error for an abstract member that hasn't been implemented.
+- Timeline tests were dropped from this change. A test for incomplete Python timelines crashed CI on Windows by
+  exposing the stack overflow below. A fix (binding the timeline properties on the concrete timelines rather than
+  the abstract base) was tried on this branch and reverted, to keep this change to coverage only.
 - Per-flag statuses, so that high C++ coverage can't hide a Python regression (or vice versa). Both flags use 95%
   rather than the `target: auto` suggested earlier for Python, which now has enough margin.
 - Patch target raised from 75% to 90%, not 95%. A 95% patch target is too strict: in a small patch, one
@@ -70,10 +63,10 @@ pending fixes before the next release. The aim is now 95%.
   gcov artefacts on closing braces and defaulted destructors.
 - `test_check_flag` in `test_module.py` leaves `no.checked(False)` set for any later tests. The new check-failure
   test re-enables it explicitly.
-- Known bug, only partly addressed: outside `neworder.run`, accessing a property that a Python `Timeline` subclass
-  doesn't implement still recurses. `PYBIND11_OVERRIDE_PURE` looks the override up on the instance and finds the
-  base class property again. On Linux this ends in a `RuntimeError`, but on Windows it overflows the stack and
-  crashes. Documented in `docs/overview.md`. A full fix would also let the `Timeline.h` trampolines and
+- Known bug, documented rather than fixed for now: a Python `Timeline` subclass that doesn't implement `time`,
+  `start`, `end`, `dt` or `at_end` recurses when that property is accessed. `PYBIND11_OVERRIDE_PURE` looks the
+  override up on the instance and finds the base class property again. On Linux this ends in a `RuntimeError`,
+  but on Windows it overflows the stack and crashes. Fixing it would also let the `Timeline.h` trampolines and
   `CalendarTimeline` stepping be tested.
 
 ---

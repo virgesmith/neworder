@@ -124,9 +124,7 @@ symbol     | type              | description
 `__repr__` | `str` method      | (optional) a string representation of the object, defaults to the name of the class
 
 !!! warning "Implement every property"
-    A subclass must implement all of these (`__repr__` aside); they may be inherited from another python class. `neworder.run` checks this before it starts, and raises `NotImplementedError` naming any missing members.
-
-    Outside a model run, accessing a missing property doesn't raise `AttributeError`: the lookup finds the base class property again and recurses. On Linux this ends in a `RuntimeError` ("Tried to call pure virtual function"), but on Windows, which has a smaller default stack, it can overflow the stack and crash the interpreter.
+    A subclass must implement all of these properties. If one is missing, accessing it doesn't raise an `AttributeError`: the lookup finds the base class property again and recurses. On Linux this ends in a `RuntimeError` ("Tried to call pure virtual function"), but on Windows, which has a smaller default stack, it can overflow the stack and crash the interpreter. A missing `_next` raises `RuntimeError` when the model runs.
 
 
 ### Spatial Domain

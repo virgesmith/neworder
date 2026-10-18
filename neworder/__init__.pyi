@@ -233,8 +233,6 @@ class Model:
 
         Returns:
             True if model succeeded, False otherwise
-        Raises:
-            NotImplementedError: if the model's timeline is a python subclass of Timeline that doesn't implement all of time, start, end, dt, at_end and _next
         """
     def step(self) -> None:
         """
@@ -468,8 +466,6 @@ def run(model: Model) -> bool:
     function will have no effect. To re-run the model from the start, you must construct a new model object.
     Returns:
         True if model succeeded, False otherwise
-    Raises:
-        NotImplementedError: if the model's timeline is a python subclass of Timeline that doesn't implement all of time, start, end, dt, at_end and _next
     """
 
 def thread_id() -> int:

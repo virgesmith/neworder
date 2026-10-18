@@ -182,35 +182,6 @@ def test_timeline_validation() -> None:
         no.CalendarTimeline(date(2021, 1, 1), end=date(2020, 1, 1), step=relativedelta(months=1))
 
 
-def test_incomplete_timeline() -> None:
-    # NB only test via run: accessing a missing property directly recurses, and can overflow the stack on Windows
-    class IncompleteTimeline(no.Timeline):
-        pass
-
-    class PartialTimeline(no.Timeline):
-        time = start = end = 0.0
-        dt = 1.0
-        at_end = False
-
-    class InheritedTimeline(PartialTimeline):
-        def _next(self) -> None:
-            pass
-
-    class M(no.Model):
-        def step(self) -> None:
-            self.halt()
-
-    with pytest.raises(
-        NotImplementedError,
-        match=r"IncompleteTimeline does not implement Timeline member\(s\): time, start, end, dt, at_end, _next$",
-    ):
-        no.run(M(IncompleteTimeline()))
-    with pytest.raises(NotImplementedError, match=r"PartialTimeline does not implement Timeline member\(s\): _next$"):
-        no.run(M(PartialTimeline()))
-    # members may be inherited from a python base class
-    assert no.run(M(InheritedTimeline()))
-
-
 def test_linear_timeline() -> None:
     # 40 years annual steps
     m = _TestModel2(2011, 2051, 40)

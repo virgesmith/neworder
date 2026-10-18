@@ -35,8 +35,6 @@ const char* run_docstr = R"""(
     function will have no effect. To re-run the model from the start, you must construct a new model object.
     Returns:
         True if model succeeded, False otherwise
-    Raises:
-        NotImplementedError: if the model's timeline is a python subclass of Timeline that doesn't implement all of time, start, end, dt, at_end and _next
 )""";
 
 // Timeline
@@ -359,8 +357,6 @@ const char* model_run_docstr = R"""(
 
     Returns:
         True if model succeeded, False otherwise
-    Raises:
-        NotImplementedError: if the model's timeline is a python subclass of Timeline that doesn't implement all of time, start, end, dt, at_end and _next
     )""";
 
 // MPI
