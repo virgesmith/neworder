@@ -90,9 +90,16 @@ class. Vectorise: prefer whole-array `mc`/`numpy`/`pandas` operations over per-a
 | `CalendarTimeline(start, relativedelta(...), end=...)` | calendar dates (day/month/year steps, ACT/365 year fractions) |
 
 Properties: `index`, `time`, `dt`, `start`, `end`, `nsteps`, `at_end`. Custom timelines subclass
-`no.Timeline` and override `start`, `end`, `time`, `dt`, `_next` (and optionally `__repr__`);
-`index` is provided and must not be overridden. `CalendarTimeline` (pure Python, in
+`no.Timeline` and override `start`, `end`, `time`, `dt`, `at_end`, `_next` (and optionally
+`__repr__`); `index` is provided and must not be overridden. `CalendarTimeline` (pure Python, in
 `neworder/timeline.py`) is the reference implementation to copy.
+
+**Implement every one of those properties.** The base class doesn't implement them, and a missing
+one doesn't raise `AttributeError`: accessing it finds the base class property again and recurses.
+On Linux that ends in `RuntimeError: Tried to call pure virtual function`; on Windows (smaller
+default stack) it can overflow the stack and crash the interpreter with no Python traceback. A
+missing `_next` raises `RuntimeError` when the model runs. If you see either symptom with a custom
+timeline, check for a missing or misspelled property first.
 
 Open-ended timelines stop via `model.halt()` from within `step()`. Note that `halt()` does *not*
 return immediately — the rest of `step()` and `check()` still run — and `finalise()` is **not**
@@ -191,6 +198,8 @@ one of the `parallel-native`/`parallel-openmpi`/`parallel-mpich` extras and `mpi
   `py.typed`, so a type checker catches most of this — use one.
 - **`transition`/`transition_conditional` return new data**, they do not mutate the series.
 - **Never advance the timeline yourself**; the runtime does it between steps.
+- **A custom timeline missing a property recurses** instead of raising `AttributeError` — a
+  "pure virtual function" `RuntimeError` on Linux, a hard crash on Windows. Implement them all.
 - **`NEVER` is NaN** — `NEVER == NEVER` is `False`; use `no.time.isnever`.
 - **`mc.reset()` re-invokes the seeder**, so a non-deterministic seeder gives a *different* stream
   after reset, not the original one.

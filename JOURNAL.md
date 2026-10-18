@@ -39,6 +39,7 @@ pending fixes before the next release. The aim is now 95%.
   failed `check()` raised as an error under `warnings.simplefilter("error")`; and `freethreaded()`.
 - `docs/overview.md`: added the missing `at_end` to the custom timeline table and class diagram. Added a warning
   that a Python `Timeline` subclass missing a property can crash with a stack overflow (see Follow-ups).
+  Mirrored in the bundled skill (`neworder/skill/SKILL.md`), which also lacked `at_end` in its override list.
 - Fixed `test_space2d`, whose "bounce" section moved points with the WRAP space, so BOUNCE was never exercised.
 - Widened the `to_points` annotation of `Space.dists2`/`dists`/`in_range` to accept a tuple of coordinate arrays,
   which the code already handled.
