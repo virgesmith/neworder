@@ -8,6 +8,38 @@
 
 #include <pybind11/pybind11.h>
 
+namespace {
+
+// A python subclass of Timeline that doesn't implement one of these properties inherits the base class property,
+// whose trampoline looks the override up on the instance, finds the base property again and recurses (which can
+// overflow the stack). So check the class dicts, which doesn't access the properties.
+void check_timeline_implemented(no::Timeline& timeline) {
+  // the supplied C++ timelines implement everything
+  if (!dynamic_cast<no::PyTimeline*>(&timeline))
+    return;
+
+  py::object self = py::cast(&timeline);
+  py::handle base = py::type::of<no::Timeline>();
+  std::string missing;
+  for (const char* name : {"time", "start", "end", "dt", "at_end", "_next"}) {
+    for (py::handle cls : self.get_type().attr("__mro__")) {
+      if (cls.is(base)) {
+        missing += (missing.empty() ? ""s : ", "s) + name;
+        break;
+      }
+      if (cls.attr("__dict__").contains(name))
+        break;
+    }
+  }
+  if (!missing.empty()) {
+    const std::string& timeline_name = self.get_type().attr("__name__").cast<std::string>();
+    py::set_error(PyExc_NotImplementedError, ("%% does not implement Timeline member(s): %%"s % timeline_name % missing).c_str());
+    throw py::error_already_set();
+  }
+}
+
+} // namespace
+
 no::Model::Model(no::Timeline& timeline, const py::function& seeder)
     : m_runState(no::Model::NOT_STARTED), m_timeline(timeline), m_timeline_handle(py::cast(&timeline)),
       m_monteCarlo([seeder]() { return seeder().cast<int32_t>(); }) {
@@ -41,6 +73,8 @@ bool no::Model::run(Model& model) {
   if (rank < 0) {
     throw std::runtime_error("environment is not correctly initialised, model will not be run");
   }
+
+  check_timeline_implemented(model.timeline());
 
   // access the timeline properties via the python object for consistency
   // (we can use the methods for C++ implementations, but not for python implementations)
