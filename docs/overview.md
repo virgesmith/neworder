@@ -123,8 +123,8 @@ symbol     | type              | description
 `time`     | `Any` property    | the current time of the timeline
 `__repr__` | `str` method      | (optional) a string representation of the object, defaults to the name of the class
 
-!!! note "Timeline properties"
-    The base class only declares these properties (in its type stubs); they are implemented by each of the supplied timelines rather than by `neworder.Timeline` itself. So a subclass that doesn't implement one raises `AttributeError` when it's accessed, as for any missing attribute (previously this caused an infinite recursion that could crash the interpreter). A missing `_next` raises `RuntimeError` when the model runs.
+!!! warning "Implement every property"
+    A subclass must implement all of these properties. If one is missing, accessing it doesn't raise an `AttributeError`: the lookup finds the base class property again and recurses. On Linux this ends in a `RuntimeError` ("Tried to call pure virtual function"), but on Windows, which has a smaller default stack, it can overflow the stack and crash the interpreter. A missing `_next` raises `RuntimeError` when the model runs.
 
 
 ### Spatial Domain

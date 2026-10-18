@@ -93,34 +93,26 @@ PYBIND11_MODULE(_neworder_core, m)
   time.attr("FAR_FUTURE") = no::time::far_future();
   time.attr("NEVER") = no::time::never();
 
-  // register abstract base class. The pure virtual properties are bound on the concrete classes only: pybind11 looks
-  // up python overrides on the instance, so for a python subclass that doesn't define one, a property bound here would
-  // find itself and recurse until the stack overflows
+  // register abstract base class
   py::class_<no::Timeline, no::PyTimeline>(m, "Timeline")
       .def(py::init<>())
+      .def_property_readonly("time", &no::Timeline::time, timeline_time_docstr)
+      .def_property_readonly("start", &no::Timeline::start, timeline_start_docstr)
+      .def_property_readonly("end", &no::Timeline::end, timeline_end_docstr)
       .def_property_readonly("index", &no::Timeline::index, timeline_index_docstr)
+      .def_property_readonly("dt", &no::Timeline::dt, timeline_dt_docstr)
+      .def_property_readonly("at_end", &no::Timeline::at_end, timeline_at_end_docstr)
       .def("__repr__", &no::Timeline::repr, timeline_repr_docstr);
 
-  auto def_timeline_properties = [&](auto& cls) {
-    cls.def_property_readonly("time", &no::Timeline::time, timeline_time_docstr)
-        .def_property_readonly("start", &no::Timeline::start, timeline_start_docstr)
-        .def_property_readonly("end", &no::Timeline::end, timeline_end_docstr)
-        .def_property_readonly("dt", &no::Timeline::dt, timeline_dt_docstr)
-        .def_property_readonly("at_end", &no::Timeline::at_end, timeline_at_end_docstr);
-  };
+  py::class_<no::NoTimeline, no::Timeline>(m, "NoTimeline", notimeline_docstr)
+      .def(py::init<>(), notimeline_init_docstr);
 
-  py::class_<no::NoTimeline, no::Timeline> notimeline(m, "NoTimeline", notimeline_docstr);
-  notimeline.def(py::init<>(), notimeline_init_docstr);
-  def_timeline_properties(notimeline);
-
-  py::class_<no::LinearTimeline, no::Timeline> lineartimeline(m, "LinearTimeline", lineartimeline_docstr);
-  lineartimeline.def(py::init<double, double, size_t>(), lineartimeline_init_docstr, "start"_a, "end"_a, "nsteps"_a)
+  py::class_<no::LinearTimeline, no::Timeline>(m, "LinearTimeline", lineartimeline_docstr)
+      .def(py::init<double, double, size_t>(), lineartimeline_init_docstr, "start"_a, "end"_a, "nsteps"_a)
       .def(py::init<double, double>(), lineartimeline_init_open_docstr, "start"_a, "step"_a);
-  def_timeline_properties(lineartimeline);
 
-  py::class_<no::NumericTimeline, no::Timeline> numerictimeline(m, "NumericTimeline", numerictimeline_docstr);
-  numerictimeline.def(py::init<const std::vector<double>&>(), numerictimeline_init_docstr, "times"_a);
-  def_timeline_properties(numerictimeline);
+  py::class_<no::NumericTimeline, no::Timeline>(m, "NumericTimeline", numerictimeline_docstr)
+      .def(py::init<const std::vector<double>&>(), numerictimeline_init_docstr, "times"_a);
 
   // MC
   py::class_<no::MonteCarlo>(m, "MonteCarlo", mc_docstr)
