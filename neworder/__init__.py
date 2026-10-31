@@ -3,13 +3,9 @@ import importlib.metadata
 __version__ = importlib.metadata.version("neworder")
 
 from _neworder_core import (  # ty:ignore[import-not-found]
-    LinearTimeline,
     Model,
     MonteCarlo,
-    NoTimeline,
-    NumericTimeline,
     SplitMix64,
-    Timeline,
     checked,
     df,
     freethreaded,
@@ -21,24 +17,20 @@ from _neworder_core import (  # ty:ignore[import-not-found]
     verbose,
 )
 
-from . import stats
+from . import stats, timeline
 from .domain import Domain, Edge, Space, StateGrid
 from .mc import as_np
-from .timeline import CalendarTimeline
+from .timeline import Timestep
 
 __all__: list[str] = [
-    "CalendarTimeline",
     "Domain",
     "Edge",
-    "LinearTimeline",
     "Model",
     "MonteCarlo",
-    "NoTimeline",
-    "NumericTimeline",
     "Space",
     "SplitMix64",
     "StateGrid",
-    "Timeline",
+    "Timestep",
     "as_np",
     "checked",
     "df",
@@ -49,5 +41,6 @@ __all__: list[str] = [
     "stats",
     "thread_id",
     "time",
+    "timeline",
     "verbose",
 ]

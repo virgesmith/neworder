@@ -1,4 +1,6 @@
 # !constructor! this is a tag for inserting code snippets into the documentation
+from collections.abc import Iterable
+
 import numpy as np
 import pandas as pd
 
@@ -6,7 +8,7 @@ import neworder
 
 
 class ParallelMPI(neworder.Model):
-    def __init__(self, timeline: neworder.Timeline, p: float, n: int):
+    def __init__(self, timeline: Iterable[neworder.timeline.Timestep], p: float, n: int):
         """This model uses MPI to run parallel process that synchronise timesteps and exchange data with each other"""
         # initialise base model (essential!)
         super().__init__(timeline, neworder.MonteCarlo.nondeterministic_stream)

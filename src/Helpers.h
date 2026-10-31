@@ -13,6 +13,8 @@ template <typename T> constexpr const char* type_description() {
     return "an int32";
   else if constexpr (std::is_same_v<T, int64_t>)
     return "an int64";
+  else if constexpr (std::is_same_v<T, double>)
+    return "a float";
   else
     static_assert(sizeof(T) == 0, "add a description for this type");
 }
@@ -31,32 +33,3 @@ template <typename T> T checked_cast(nb::handle value, const char* what) {
 }
 
 } // namespace no
-
-// helper class for accessing the python attributes of a C++ class with python bindings
-template<typename T>
-class PyAccessor final
-{
-public:
-  typedef T cpp_type;
-  explicit PyAccessor(cpp_type& object) : ref(nb::find(object)) { }
-
-  nb::object get(const char* name) const
-  {
-    return ref.attr(name);
-  }
-
-  template<typename U>
-  U get_as(const char* name) const
-  {
-    return no::checked_cast<U>(ref.attr(name),
-                               [this, name]() { return std::to_string(nb::type_name(ref.type())) + "." + name; });
-  }
-
-  bool get_truthy(const char* name) const
-  {
-    return no::truthy(get(name));
-  }
-
-private:
-  nb::object ref;
-};

@@ -13,7 +13,7 @@ import neworder
 # !ctor!
 class RiskPaths(neworder.Model):
     def __init__(self, n: int):
-        super().__init__(neworder.NoTimeline(), neworder.MonteCarlo.deterministic_identical_stream)
+        super().__init__(neworder.timeline.null(), neworder.MonteCarlo.deterministic_identical_stream)
 
         # initialise population - time of death only
         self.population = pd.DataFrame(
