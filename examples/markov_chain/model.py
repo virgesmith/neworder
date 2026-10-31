@@ -59,8 +59,8 @@ group_transition_matrices = {
     "fast_to_2": transition_matrix_for(mu_01 * 2, mu_02 / 2, mu_12, mu_20),
 }
 
-pooled_model = MarkovChain(no.LinearTimeline(0, tmax, tmax), npeople, states, transition_matrix, use_python_impl)
-grouped_model = ConditionalMarkovChain(no.LinearTimeline(0, tmax, tmax), npeople, states, group_transition_matrices)
+pooled_model = MarkovChain(no.LinearTimeline(0, tmax), npeople, states, transition_matrix, use_python_impl)
+grouped_model = ConditionalMarkovChain(no.LinearTimeline(0, tmax), npeople, states, group_transition_matrices)
 
 start = time.time()
 no.run(pooled_model)

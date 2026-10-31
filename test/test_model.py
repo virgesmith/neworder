@@ -52,7 +52,7 @@ def test_multimodel() -> None:
     class TestModel(no.Model):
         def __init__(self) -> None:
             super().__init__(
-                no.LinearTimeline(0, 10, 10),
+                no.LinearTimeline(0, 10),
                 no.MonteCarlo.deterministic_identical_stream,
             )
             self.x = 0.0
@@ -109,7 +109,7 @@ def test_runstate() -> None:
 def test_verbose(capsys: pytest.CaptureFixture[str]) -> None:
     class TestModel(no.Model):
         def __init__(self) -> None:
-            super().__init__(no.LinearTimeline(0, 2, 2))
+            super().__init__(no.LinearTimeline(0, 2))
 
         def step(self) -> None:
             pass

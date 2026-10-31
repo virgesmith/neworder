@@ -18,7 +18,7 @@ class ParallelThreaded(neworder.Model):
         pop: the overall population
         indices: the chunk of the population that this thread deals with
         """
-        super().__init__(neworder.LinearTimeline(0, 10, 10), lambda: indices[0])  # deterministic, independent
+        super().__init__(neworder.LinearTimeline(0, 10), lambda: indices[0])  # deterministic, independent
         self.lock = lock
         self.barrier = barrier
         self.pop = pop  # ref not copy

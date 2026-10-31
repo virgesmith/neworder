@@ -44,7 +44,7 @@ class Infection(no.Model):
         recovery_time: int,
         mortality: float,
     ) -> None:
-        super().__init__(no.LinearTimeline(0.0, 1.0), no.MonteCarlo.deterministic_independent_stream)
+        super().__init__(no.LinearTimeline(), no.MonteCarlo.deterministic_independent_stream)
         # expose the model's MC engine to numpy
         self.nprand = no.as_np(self.mc)
         # create the spatial domain

@@ -4,44 +4,33 @@
 
 #include "Log.h"
 
-#include <cstddef>
-#include <vector>
+#include <cstdint>
 
 namespace no {
 
-// Abstract base class for timelines - implements the basic stepping functionality
+// Abstract base class for timelines. Implementations (in python) are iterators over the timeline's steps, each step
+// being a (start, end) interval of the implementation's native type (e.g. date). Regardless of the native type, time
+// and dt are always floats so they can be used in computations, e.g. with the MonteCarlo functions
 class Timeline {
 public:
-  Timeline() : m_index(0) {}
+  Timeline() = default;
 
   virtual ~Timeline() = default;
 
-  // times may have different types, depending on implementation
-  virtual py::object time() const = 0;
-  virtual py::object start() const = 0;
-  virtual py::object end() const = 0;
+  virtual int64_t index() const = 0;
 
-  int64_t index() { return m_index; };
+  // the start, before any steps are taken, then the end of the most recent step
+  virtual double time() const = 0;
+
+  // the length of the most recent step
   virtual double dt() const = 0;
 
-  virtual void _next() = 0;
-
-  virtual bool at_end() const = 0;
+  // takes the next step and returns it as a (start, end) tuple of native values, or raises StopIteration
+  virtual py::object next() = 0;
 
   // used by python __repr__, default implementation
   virtual std::string repr() const {
-    return "<%% index=%%>"s % py::cast(this).attr("__class__").attr("__name__").cast<std::string>() % m_index;
-  }
-
-protected:
-  size_t m_index;
-
-private:
-  friend class Model;
-  // this is called internally to ensure index is incremented
-  void next() {
-    ++m_index;
-    _next();
+    return "<%% index=%%>"s % py::cast(this).attr("__class__").attr("__name__").cast<std::string>() % index();
   }
 };
 
@@ -49,105 +38,41 @@ class PyTimeline : public Timeline {
   using Timeline::Timeline;
   using Timeline::operator=;
 
+  // PYBIND11_OVERRIDE can't be used for properties: it would fetch the property's value rather than a callable, and
+  // would recurse infinitely if the property isn't overridden. So check explicitly that the python subclass overrides
+  // the (abstract) attribute. NB caller must hold the GIL
+  py::handle overriding_self(const char* name) const {
+    py::handle self =
+        py::detail::get_object_handle(static_cast<const Timeline*>(this), py::detail::get_type_info(typeid(Timeline)));
+    if (py::type::handle_of(self).attr(name).is(py::type::of<Timeline>().attr(name))) {
+      throw py::type_error("%% must implement the abstract member '%%'"s %
+                           py::type::handle_of(self).attr("__name__").cast<std::string>() % name);
+    }
+    return self;
+  }
+
   // trampoline methods
-  py::object time() const override { PYBIND11_OVERRIDE_PURE(py::object, Timeline, time); }
-  py::object start() const override { PYBIND11_OVERRIDE_PURE(py::object, Timeline, start); }
-  py::object end() const override { PYBIND11_OVERRIDE_PURE(py::object, Timeline, end); }
+  int64_t index() const override {
+    py::gil_scoped_acquire gil;
+    return overriding_self("index").attr("index").cast<int64_t>();
+  }
 
-  double dt() const override { PYBIND11_OVERRIDE_PURE(double, Timeline, dt); }
+  double time() const override {
+    py::gil_scoped_acquire gil;
+    return overriding_self("time").attr("time").cast<double>();
+  }
 
-  void _next() override { PYBIND11_OVERRIDE_PURE(void, Timeline, _next); }
+  double dt() const override {
+    py::gil_scoped_acquire gil;
+    return overriding_self("dt").attr("dt").cast<double>();
+  }
 
-  bool at_end() const override { PYBIND11_OVERRIDE_PURE(bool, Timeline, at_end); }
+  py::object next() override {
+    py::gil_scoped_acquire gil;
+    return overriding_self("__next__").attr("__next__")();
+  }
+
   std::string repr() const override { PYBIND11_OVERRIDE_NAME(std::string, Timeline, "__repr__", repr); }
-};
-
-// An empty (one arbitrary step) timeline. The model's step method will each be called once only
-class NEWORDER_EXPORT NoTimeline final : public Timeline {
-public:
-  NoTimeline() {}
-
-  ~NoTimeline() override = default;
-  NoTimeline(const NoTimeline&) = default;
-  NoTimeline& operator=(const NoTimeline&) = default;
-  NoTimeline(NoTimeline&&) = default;
-  NoTimeline& operator=(NoTimeline&&) = default;
-
-  // the actual types may differ in derived classes
-  py::object time() const override;
-  py::object start() const override;
-  py::object end() const override;
-
-  double dt() const override;
-
-  void _next() override;
-
-  bool at_end() const override;
-
-  std::string repr() const override;
-};
-
-// An equally-spaced timeline between 2 numeric time points
-class NEWORDER_EXPORT LinearTimeline final : public Timeline {
-public:
-  // Fixed length timeline
-  LinearTimeline(double start, double end, size_t steps);
-
-  // Open-ended timeline. Requires a call to halt() in the step() method to terminate the model run
-  LinearTimeline(double start, double step);
-
-  ~LinearTimeline() override = default;
-
-  LinearTimeline(const LinearTimeline&) = default;
-  LinearTimeline& operator=(const LinearTimeline&) = default;
-  LinearTimeline(LinearTimeline&&) = default;
-  LinearTimeline& operator=(LinearTimeline&&) = default;
-
-  py::object time() const override;
-  py::object start() const override;
-  py::object end() const override;
-
-  double dt() const override;
-
-  void _next() override;
-
-  bool at_end() const override;
-
-  std::string repr() const override;
-
-private:
-  double m_start;
-  double m_end;
-  double m_dt; // store both dt and steps as (re)computing steps from dt is prone to rounding errors
-  size_t m_steps;
-};
-
-// A generic numeric timeline, the model developer supplies the entire timeline
-class NEWORDER_EXPORT NumericTimeline final : public Timeline {
-public:
-  NumericTimeline(const std::vector<double>& times);
-
-  ~NumericTimeline() override = default;
-
-  NumericTimeline(const NumericTimeline&) = default;
-  NumericTimeline& operator=(const NumericTimeline&) = default;
-  NumericTimeline(NumericTimeline&&) = default;
-  NumericTimeline& operator=(NumericTimeline&&) = default;
-
-  py::object time() const override;
-  py::object start() const override;
-  py::object end() const override;
-
-  double dt() const override;
-
-  void _next() override;
-
-  bool at_end() const override;
-
-  std::string repr() const override;
-
-private:
-  std::vector<double> m_times;
 };
 
 namespace time {

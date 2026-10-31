@@ -22,6 +22,92 @@ Entry template:
 
 ---
 
+## 2026-10-31 — Timelines as clock-like iterators over native steps, with float time; implementations moved to Python (v2.0.0)
+
+**Why** — The old `Timeline` interface was large and awkward: `start`, `end`, `time`, `dt`, `at_end`, `_next`,
+plus an `index` managed by the C++ base class. You couldn't iterate it outside a model, and `time` meant the start of
+the step in `step()` but the end of it in `check()` (after the timeline had advanced). A Python subclass missing a
+property recursed infinitely, which crashed the interpreter on Windows. Implementing the concrete timelines in C++
+gained nothing, as each access goes through Python anyway. The design follows the maintainer's prototype (`t.py`,
+not committed), with its bugs fixed (see below).
+
+**What** — Breaking change, so a major version bump to 2.0.0.
+- `neworder.Timeline` is still the C++ abstract base class, and `Model` still takes a `no::Timeline&`. Its
+  abstract interface is now `index` (int), `time` and `dt` (both `double`), and `__next__`. It also has a concrete
+  `__iter__` (which returns self) and a default `__repr__`. `start`, `end`, `at_end` and `_next` are gone.
+- A timeline behaves like a clock:
+  - Before the run, `index` is 0 and `time` is the start.
+  - Each `__next__` takes a step: it increments `index`, sets `time` to the end of the step, and returns the step as
+    a `(start, end)` tuple of the timeline's native type.
+  - `time` and `dt` are always floats. `dt` is the length of the most recent step. Before the first step, `dt` is
+    the step size if that's fixed, and `NEVER` otherwise.
+- `NoTimeline`, `LinearTimeline` and `NumericTimeline` moved from C++ to `neworder/timeline.py`, alongside
+  `CalendarTimeline`, and share a private `_SteppedTimeline[T]` base. Subclasses give each point's native value
+  (`_point`) and its float value (`_numeric`):
+  - `NoTimeline()`: native `(None, None)`; `time` is `NEVER` and `dt` is 0.
+  - `LinearTimeline(start=0, end=None)`: native `int`, unit steps, open-ended if `end` is omitted.
+  - `NumericTimeline(start=..., step=..., end=None)`: native `float`, equal steps, open-ended if `end` is omitted;
+    `end - start` must be a whole number of steps.
+  - `NumericTimeline(times)`: native `float`, explicit (possibly unequal) points.
+  - `CalendarTimeline(start=..., step=..., end=None)`: native `date`, keyword-only arguments; `time` is days since
+    the start and `dt` is in days.
+  - Reprs follow the prototype (`<ClassName start=... end=... step=...>`).
+- `Model::run` logs the start and calls `modify` (which sees the start). It then takes the first step, raising
+  `StopIteration` if the timeline is already exhausted, and loops step → check → halt test → advance. `finalise`
+  runs when advancing raises `StopIteration`. It calls the C++ virtuals directly, which made `PyAccessor`
+  (`src/Helpers.h`, previously used to read Python timelines' properties) redundant, so it was deleted.
+- Examples updated:
+  - Clock semantics: conway's glider is placed when `index == 1`, mortality looks up hazards by the age at the
+    start of the step (`time - dt`), and markov_chain, membership and wolf_sheep take the start from `time` before
+    the run.
+  - people: `Population` takes the start date, to turn the float time back into a date for its labels, and converts
+    `dt` from days to years for its annual rates.
+  - option uses `NumericTimeline([0.0, expiry])`, and boids an open-ended `NumericTimeline`.
+  - Every `LinearTimeline` lost its `nsteps`/step argument, and mortality's `max_age` is now an int.
+  - Docs (overview, hello-world, tips) and the bundled skill were updated to match.
+
+**Design decisions**
+- *Native values via iteration; float `time`/`dt` on the timeline.* Model code always gets a number it can compute
+  with, pass to the MonteCarlo functions and compare with `no.time.NEVER`/`FAR_FUTURE`/`DISTANT_PAST`. Those
+  constants don't work with `None` or `date`. Rejected along the way:
+  - `time` as the native `(start, end)` tuple: this broke those constants for `NoTimeline` and calendar dates.
+  - No `dt` at all: models need step lengths for hazards and ageing.
+- *Clock semantics, as in the prototype.* `index` counts the steps taken, and `modify` sees the start. Rejected: a
+  timeline "positioned at" its first step, with index 0 during the first step. That kept existing `index` usage
+  unchanged, but it made the state before the run (which `modify` sees) the end of the first step, which is
+  unintuitive.
+- *Calendar float time is in days* (the prototype's choice). This is exact, and doesn't build in a year-length
+  convention: models with annual rates convert, as the people example does with ACT/365. Rejected: years since
+  the start on an ACT/365 basis, and decimal years.
+- *Bugs fixed relative to the prototype*:
+  - `Numeric.dt` returned the start of the step.
+  - `if self._end and ...` treated an end of 0 as open-ended.
+  - Accumulating `+= step` drifted (floats) and lost the day of the month (calendar).
+  - The calendar `dt` was computed as `t - (t - step)`, which is wrong for month-end steps.
+  - `start + n * step` falling just short of `end` gave an extra step. Equal-step `NumericTimeline` now fixes the
+    number of steps up front, and rejects an `end` that isn't a whole number of steps away.
+  
+  Points are computed from the start (`start + i * step`).
+- *Halting doesn't advance the timeline.* A resumed run calls `modify` again, then continues with the next step.
+- *Abstract members are enforced in the trampoline.* `PYBIND11_OVERRIDE` can't dispatch to Python properties: it
+  fetches their value rather than a callable, and an un-overridden one recurses. So `PyTimeline` checks that the
+  subclass's attribute isn't the base's own, and raises a `TypeError` that names the missing member. This replaces
+  the "missing property crashes on Windows" warning.
+- *Missing members are reported on first use, not at instantiation.* `Timeline` can't be a true Python ABC:
+  CPython's abstract check is in `object.__new__`, which pybind11's own `__new__` bypasses, so even `ABCMeta`'s
+  `__abstractmethods__` is ignored. A metaclass whose `__call__` checks for overrides was shown to work, but
+  wasn't adopted: the runtime `TypeError` (raised at the latest when a `Model` is constructed) plus static
+  checking via the stub's `@abstractmethod`s is enough.
+- *`LinearTimeline` is integer with unit steps*, so it's an exact counter. Anything else goes through
+  `NumericTimeline`, so float handling lives in one place.
+
+**Follow-ups**
+- `Model::run` calls `modify` before discovering that a timeline is already exhausted (there's no way to peek at an
+  iterator).
+- A Python subclass that implements `index`/`time`/`dt` as methods rather than properties gets an unhelpful
+  pybind11 cast error.
+- The examples weren't run (per project preference); they're covered by `ty` only.
+
 ## 2026-10-17 — Raise the coverage target to 95%
 
 **Why** — The coverage-workflow change (2026-10-08, below) temporarily lowered the Codecov project target to 60%,

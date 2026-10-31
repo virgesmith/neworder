@@ -39,57 +39,34 @@ const char* run_docstr = R"""(
 
 // Timeline
 
-const char* lineartimeline_docstr = R"""(
-    An equally-spaced non-calendar timeline .
-)""";
-
-const char* lineartimeline_init_docstr = R"""(
-    Constructs a timeline from start to end, with the given number of steps.
-)""";
-
-const char* lineartimeline_init_open_docstr = R"""(
-    Constructs an open-ended timeline give a start value and a step size. NB the model will run until the Model.halt() method is explicitly called
-    (from inside the step() method).
-)""";
-
-const char* numerictimeline_docstr = R"""(
-    An custom non-calendar timeline where the user explicitly specifies the time points, which must be monotonically increasing.
-)""";
-
-const char* numerictimeline_init_docstr = R"""(
-    Constructs a timeline from an array of time points.
-)""";
-
-const char* notimeline_docstr = R"""(
-    An arbitrary one step timeline, for continuous-time models with no explicit (discrete) timeline
-)""";
-
-const char* notimeline_init_docstr = R"""(
-    Constructs an arbitrary one step timeline, where the start and end times are undefined and there is a single step of size zero. Useful for continuous-time models
-)""";
-
-const char* timeline_start_docstr = R"""(
-    Returns the time of the start of the timeline
-)""";
-
-const char* timeline_end_docstr = R"""(
-    Returns the time of the end of the timeline
+const char* timeline_docstr = R"""(
+    Abstract base class for timelines. A timeline is an iterator over a sequence of steps, each of which is a
+    (start, end) interval of the timeline's native type (e.g. int, float or date). Before iteration the timeline is at
+    its start (index 0), and each call to __next__ advances it by one step. Regardless of the native type, the time
+    and dt properties are floats. Implementations must provide the index, time and dt properties and the __next__
+    method.
 )""";
 
 const char* timeline_index_docstr = R"""(
-    Returns the index of the current step in the timeline
+    Returns the number of steps taken
 )""";
 
 const char* timeline_time_docstr = R"""(
-    Returns the time of the current step in the timeline
+    Returns the current time, as a float: the start before any steps are taken, and the end of the most recent step
+    thereafter (in days since the start for calendar timelines)
 )""";
 
 const char* timeline_dt_docstr = R"""(
-    Returns the step size size of the timeline
+    Returns the length of the most recent step, as a float (in days for calendar timelines)
 )""";
 
-const char* timeline_at_end_docstr = R"""(
-    Returns True if the current step is the end of the timeline
+const char* timeline_next_docstr = R"""(
+    Takes the next step in the timeline and returns it as a (start, end) tuple of native values, raising
+    StopIteration if there are no more steps
+)""";
+
+const char* timeline_iter_docstr = R"""(
+    Returns the timeline itself, which is its own iterator
 )""";
 
 const char* timeline_repr_docstr = R"""(

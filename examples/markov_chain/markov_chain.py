@@ -24,12 +24,13 @@ class MarkovChainBase(no.Model):
 
         self.summary = pd.DataFrame(columns=states, dtype=np.int64)
         self.summary.loc[0] = self._state_counts()
+        self.t0 = timeline.time
 
     def _state_counts(self) -> pd.Series:
         return self.pop.state.value_counts().reindex(self.states, fill_value=0)
 
     def finalise(self) -> None:
-        self.summary["t"] = np.arange(self.timeline.start, self.timeline.end + 1e-8, self.timeline.dt)
+        self.summary["t"] = np.linspace(self.t0, self.timeline.time, len(self.summary))
         self.summary.reset_index(drop=True, inplace=True)
 
     @staticmethod

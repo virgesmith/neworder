@@ -13,7 +13,7 @@ GRASS_COLOUR = "green"
 
 class WolfSheep(no.Model):
     def __init__(self, params: dict[str, Any]) -> None:
-        super().__init__(no.LinearTimeline(0.0, 1.0), no.MonteCarlo.deterministic_independent_stream)
+        super().__init__(no.LinearTimeline(), no.MonteCarlo.deterministic_independent_stream)
         # hard-coded to unit timestep
         self.width = params["grid"]["width"]
         self.height = params["grid"]["height"]
@@ -76,7 +76,7 @@ class WolfSheep(no.Model):
         self.sheep_speed = [self.sheep.speed.mean()]
         self.wolf_speed_var = [self.wolves.speed.var()]
         self.sheep_speed_var = [self.sheep.speed.var()]
-        self.t = [self.timeline.index]
+        self.t = [self.timeline.time]
 
         (
             self.ax_g,
@@ -111,7 +111,7 @@ class WolfSheep(no.Model):
 
     def check(self) -> bool:
         # record data
-        self.t.append(self.timeline.index)
+        self.t.append(self.timeline.time)
         self.wolf_pop.append(len(self.wolves))
         self.sheep_pop.append(len(self.sheep))
         self.grass_prop.append(100.0 * len(self.grass[self.grass.countdown == 0]) / len(self.grass))

@@ -41,16 +41,17 @@ class Membership(no.Model):
         self.p_churn = p_churn
         self.avg_joiners = round(n0 * p_join)
 
-        self.members = pd.DataFrame(index=no.df.unique_index(n0), data={"joined": timeline.start})
+        self.members = pd.DataFrame(index=no.df.unique_index(n0), data={"joined": timeline.time})
         self.members.index.name = "id"
 
-        self.history: list[tuple[float, int]] = [(timeline.start, len(self.members))]
+        self.history: list[tuple[float, int]] = [(timeline.time, len(self.members))]
 
     # !constructor!
 
     # !step!
     def step(self) -> None:
-        year = self.timeline.time
+        next_year = self.timeline.time
+        year = next_year - self.timeline.dt
 
         # One SplitMix64 draw per member *id*, keyed on the process and the
         # year - not on a member's position in self.members, or on how many
@@ -66,7 +67,7 @@ class Membership(no.Model):
         self.members = pd.concat([self.members, pd.DataFrame(index=new_ids, data={"joined": year})])
         self.members.index.name = "id"
 
-        self.history.append((year + self.timeline.dt, len(self.members)))
+        self.history.append((next_year, len(self.members)))
 
     # !step!
 

@@ -5,6 +5,7 @@ A dynamic microsimulation framework";
 
 from __future__ import annotations
 
+import abc
 import collections.abc
 import enum
 import types
@@ -16,7 +17,7 @@ import numpy.typing
 from . import df, mpi, stats, time
 from .domain import Domain, Edge, Space, StateGrid
 from .mc import as_np
-from .timeline import CalendarTimeline
+from .timeline import CalendarTimeline, LinearTimeline, NoTimeline, NumericTimeline
 
 __all__: list[str] = [
     "CalendarTimeline",
@@ -162,23 +163,6 @@ class SplitMix64:
         Raises:
             ValueError: If no arguments are supplied.
             TypeError: If any argument is not a scalar int or a 1-D integer array.
-        """
-
-class LinearTimeline(Timeline):
-    """
-
-    An equally-spaced non-calendar timeline .
-    """
-    @typing.overload
-    def __init__(self, start: typing.SupportsFloat, end: typing.SupportsFloat, nsteps: typing.SupportsInt) -> None:
-        """
-        Constructs a timeline from start to end, with the given number of steps.
-        """
-    @typing.overload
-    def __init__(self, start: typing.SupportsFloat, step: typing.SupportsFloat) -> None:
-        """
-        Constructs an open-ended timeline give a start value and a step size. NB the model will run until the Model.halt() method is explicitly called
-        (from inside the step() method).
         """
 
 class Model:
@@ -384,61 +368,48 @@ class MonteCarlo:
         Returns an array of uniform random [0,1) variates of length n
         """
 
-class NoTimeline(Timeline):
+class Timeline(collections.abc.Iterator[tuple[typing.Any, typing.Any]]):
     """
 
-    An arbitrary one step timeline, for continuous-time models with no explicit (discrete) timeline
+    Abstract base class for timelines. A timeline is an iterator over a sequence of steps, each of which is a
+    (start, end) interval of the timeline's native type (e.g. int, float or date). Before iteration the timeline is at
+    its start (index 0), and each call to __next__ advances it by one step. Regardless of the native type, the time
+    and dt properties are floats. Implementations must provide the index, time and dt properties and the __next__
+    method.
     """
-    def __init__(self) -> None:
-        """
-        Constructs an arbitrary one step timeline, where the start and end times are undefined and there is a single step of size zero. Useful for continuous-time models
-        """
-
-class NumericTimeline(Timeline):
-    """
-
-    An custom non-calendar timeline where the user explicitly specifies the time points, which must be monotonically increasing.
-    """
-    def __init__(self, times: collections.abc.Sequence[typing.SupportsFloat]) -> None:
-        """
-        Constructs a timeline from an array of time points.
-        """
-
-class Timeline:
     def __init__(self) -> None: ...
+    def __iter__(self) -> typing.Self:
+        """
+        Returns the timeline itself, which is its own iterator
+        """
+    @abc.abstractmethod
+    def __next__(self) -> tuple[typing.Any, typing.Any]:
+        """
+        Takes the next step in the timeline and returns it as a (start, end) tuple of native values, raising
+        StopIteration if there are no more steps
+        """
     def __repr__(self) -> str:
         """
         Prints a human-readable representation of the timeline object
         """
     @property
-    def at_end(self) -> bool:
-        """
-        Returns True if the current step is the end of the timeline
-        """
-    @property
+    @abc.abstractmethod
     def dt(self) -> float:
         """
-        Returns the step size size of the timeline
+        Returns the length of the most recent step, as a float (in days for calendar timelines)
         """
     @property
-    def end(self) -> typing.Any:
-        """
-        Returns the time of the end of the timeline
-        """
-    @property
+    @abc.abstractmethod
     def index(self) -> int:
         """
-        Returns the index of the current step in the timeline
+        Returns the number of steps taken
         """
     @property
-    def start(self) -> typing.Any:
+    @abc.abstractmethod
+    def time(self) -> float:
         """
-        Returns the time of the start of the timeline
-        """
-    @property
-    def time(self) -> typing.Any:
-        """
-        Returns the time of the current step in the timeline
+        Returns the current time, as a float: the start before any steps are taken, and the end of the most recent step
+        thereafter (in days since the start for calendar timelines)
         """
 
 def checked(checked: bool = True) -> None:
