@@ -13,7 +13,7 @@ import neworder
 neworder.checked(False)
 
 # the max value in the timeline
-max_age = 100.0
+max_age = 100
 # The mortality rate data
 mortality_hazard_file = "examples/mortality/mortality-wbi.csv"
 population_size = 100000

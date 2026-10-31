@@ -34,7 +34,7 @@ def test_unique_index() -> None:
 def test_rng_independence() -> None:
     class TestModel(no.Model):
         def __init__(self, n: int, seeder: Callable[[], int]) -> None:
-            super().__init__(no.NoTimeline(), seeder)
+            super().__init__(no.timeline.null(), seeder)
             self.n = n
 
         def step(self) -> None:

@@ -7,7 +7,7 @@ import neworder as no
 
 
 def test_nondeterministic_reset() -> None:
-    m = no.Model(no.NoTimeline(), no.MonteCarlo.nondeterministic_stream)
+    m = no.Model(no.timeline.null(), no.MonteCarlo.nondeterministic_stream)
     seeds = {m.mc.seed()}
     for _ in range(5):
         m.mc.reset()
@@ -16,7 +16,7 @@ def test_nondeterministic_reset() -> None:
 
 
 def test_deterministic_reset() -> None:
-    m = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
+    m = no.Model(no.timeline.null(), no.MonteCarlo.deterministic_identical_stream)
     seeds = {m.mc.seed()}
     for _ in range(5):
         m.mc.reset()
@@ -79,7 +79,7 @@ def test_seeders() -> None:
     def seeder() -> int:
         return no.mpi.RANK + 1
 
-    m = no.Model(no.NoTimeline(), seeder)
+    m = no.Model(no.timeline.null(), seeder)
     assert m.mc.seed() == no.mpi.RANK + 1
 
 
@@ -366,7 +366,7 @@ def test_mc_parallel(base_model: no.Model, base_indep_model: no.Model) -> None:
 
 
 def test_bitgen(base_model: no.Model) -> None:
-    base_model2 = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
+    base_model2 = no.Model(no.timeline.null(), no.MonteCarlo.deterministic_identical_stream)
     gen = no.as_np(base_model.mc)
 
     n = gen.bit_generator.random_raw()
@@ -378,7 +378,7 @@ def test_bitgen(base_model: no.Model) -> None:
     assert n == gen.bit_generator.random_raw()
 
     base_model.mc.reset()
-    base_model_different_seed = no.Model(no.NoTimeline(), lambda: 1234)
+    base_model_different_seed = no.Model(no.timeline.null(), lambda: 1234)
     gen2 = no.as_np(base_model_different_seed.mc)
     assert gen2.bit_generator.random_raw() != base_model.mc.raw()
     assert (gen2.uniform(size=100) != base_model.mc.ustream(100)).all()

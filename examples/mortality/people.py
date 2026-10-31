@@ -8,9 +8,9 @@ import neworder
 class PeopleDiscrete(neworder.Model):
     """Persons sampled each represented as a row in a data frame"""
 
-    def __init__(self, mortality_hazard_file: str, n: int, max_age: float) -> None:
+    def __init__(self, mortality_hazard_file: str, n: int, max_age: int) -> None:
         # This is case-based model the timeline refers to the age of the cohort
-        timeline = neworder.LinearTimeline(0.0, max_age, int(max_age))
+        timeline = neworder.timeline.linear(0, end=max_age)
         super().__init__(timeline, neworder.MonteCarlo.deterministic_identical_stream)
 
         # initialise cohort
@@ -35,7 +35,7 @@ class PeopleDiscrete(neworder.Model):
         self.die()
         # age the living only
         alive = self.population.loc[self.population.alive].index
-        self.population.loc[alive, "age"] = self.population.loc[alive, "age"] + self.timeline.dt
+        self.population.loc[alive, "age"] = self.population.loc[alive, "age"] + self.timestep.dt
 
     # !disc_step!
 
@@ -46,28 +46,25 @@ class PeopleDiscrete(neworder.Model):
     # !disc_finalise!
     def finalise(self) -> None:
         # kill off any survivors
-        self.die()
+        self.die(final=True)
         assert np.sum(self.population.alive) == 0
         # the calc life expectancy
         self.life_expectancy = np.mean(self.population.age_at_death)
 
     # !disc_finalise!
 
-    def die(self) -> None:
+    def die(self, final: bool = False) -> None:
         # using indexes to subset data as cannot store a reference to a subset of the dataframe (it just copies)
 
         # first filter out the already dead
         alive = self.population.loc[self.population.alive].index
+        # the age at the start of the step, or in finalise the age the survivors have reached
+        age = int(self.timestep.end if final else self.timestep.start)
         # sample time of death
-        r = self.mc.stopping(
-            self.mortality_hazard.Rate.values[min(self.timeline.index, self.max_rate_age)],
-            len(alive),
-        )
+        r = self.mc.stopping(self.mortality_hazard.Rate.values[min(age, self.max_rate_age)], len(alive))
         # select if death happens before next timestep...
-        dt = self.timeline.dt
-        # at final timestep everybody dies (at some later time) so dt is infinite
-        if self.timeline.time == self.max_age:
-            dt = neworder.time.FAR_FUTURE
+        # ...unless at the end of the timeline, when everybody dies (at some later time) so dt is infinite
+        dt = neworder.time.FAR_FUTURE if final else self.timestep.dt
         newly_dead = alive[r < dt]
 
         # kill off those who die before next timestep
@@ -82,7 +79,7 @@ class PeopleContinuous(neworder.Model):
 
     def __init__(self, mortality_hazard_file: str, n: int, dt: float) -> None:
         # Direct sampling doesnt require a timeline
-        super().__init__(neworder.NoTimeline(), neworder.MonteCarlo.deterministic_identical_stream)
+        super().__init__(neworder.timeline.null(), neworder.MonteCarlo.deterministic_identical_stream)
         # initialise cohort
         self.mortality_hazard = pd.read_csv(mortality_hazard_file)
 

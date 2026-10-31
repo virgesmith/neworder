@@ -151,7 +151,6 @@ The output goes to `stubs/_neworder_core/` (which isn't under version control). 
 - re-exports of the pure-python API in `__init__.pyi`
 - an implementation signature following module-level `@overload`s (e.g. `time.isnever`). Without it the function is omitted from the API documentation.
 - docstrings for module constants (e.g. `time.NEVER`, `mpi.RANK`), so they appear in the API documentation
-- no `__repr__` on the concrete timelines, which is an implementation detail covered by `Timeline.__repr__`
 
 ## Release Checklist
 

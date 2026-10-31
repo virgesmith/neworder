@@ -3,7 +3,6 @@
 #include "Module.h"
 #include "MonteCarlo.h"
 #include "NewOrder.h"
-#include "Timeline.h"
 
 #include <nanobind/trampoline.h>
 
@@ -21,7 +20,8 @@ public:
     COMPLETED // reached end of timeline, finalise called
   };
 
-  Model(no::Timeline& timeline, const nb::callable& seeder);
+  // timeline is any iterable of steps
+  Model(const nb::object& timeline, const nb::callable& seeder);
 
   virtual ~Model() = default;
 
@@ -33,7 +33,9 @@ public:
   static bool run(Model& model);
 
   // getters
-  Timeline& timeline() { return m_timeline; }
+  nb::object timeline() const { return m_timeline; }
+  // None before the first step
+  nb::object timestep() const { return m_timestep; }
   MonteCarlo& mc() { return m_monteCarlo; }
 
   // functions to override
@@ -50,8 +52,10 @@ public:
 
 private:
   RunState m_runState;
-  Timeline& m_timeline;
-  nb::object m_timeline_handle; // ensures above ref isnt deleted during the lifetime of this object
+  nb::object m_timeline;
+  // kept between runs, so that a halted model resumes at the next step
+  nb::object m_steps;
+  nb::object m_timestep;
   MonteCarlo m_monteCarlo;
 };
 

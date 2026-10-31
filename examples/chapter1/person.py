@@ -47,7 +47,7 @@ class People(neworder.Model):
 
     def __init__(self, mortality_hazard: float, n: int) -> None:
         # initialise base model with a nondeterministic seed results will vary (slightly)
-        super().__init__(neworder.NoTimeline(), neworder.MonteCarlo.nondeterministic_stream)
+        super().__init__(neworder.timeline.null(), neworder.MonteCarlo.nondeterministic_stream)
 
         # initialise population
         self.population = [Person(mortality_hazard) for _ in range(n)]

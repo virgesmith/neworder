@@ -28,121 +28,78 @@ This is provided by:
 
 ### Timeline
 
-!!! warning "Timelines are changing in v2.0"
-    The current implementation of the `neworder.Timeline` interface has some issues, e.g. ambiguities over the exact point in time `step()` occurs and not supporting iteration outside a model which complicates testing. neworder v2 completely redesigns timelines.
+*neworder*'s timeline is a sequence of steps, each with an index, a start and an end, and a length. It's just data: an iterator of `neworder.timeline.Timestep`s (or any iterable of them). The model run takes each step in turn, calling the Model's `step` and (optionally) `check` methods, plus the `finalise` method after the last step, which is commonly used to post-process the raw model data at the end of the model run.
 
-    A timeline will no longer be an object holding the current position: it will be plain data, an iterator (or any iterable) of timesteps, and the model will track the current step. This makes timelines easier to write and test, since they can be iterated outside a model.
+Inside the model, `self.timestep` is the current step, a `Timestep(index, start, end, dt)`:
 
-    - The timeline classes are replaced by `Iterable` or `Iterator` over `neworder.Timestep`. The `neworder.timeline` provides equivalents of the existing classes: `NoTimeline` becomes `null`, `LinearTimeline` becomes `linear` (integer unit steps) or `numeric`, `NumericTimeline` becomes `sequence`, and `CalendarTimeline` becomes `calendar`.
-    - Model code reads the current step from `self.timestep`, not `self.timeline`. It's `None` before the first step, i.e. in `__init__` and `modify`.
-    - `time` is replaced by `self.timestep.start` or `self.timestep.end`. In 1.x it was the start of the step in `step`, but its end in `check` and `finalise`.
-    - `start`, `end` and `at_end` have no equivalent, as a step knows nothing about the rest of its timeline.
+- `index` counts the steps, from 1
+- `start` and `end` are in the timeline's *native* type, e.g. `int` or `date`
+- `dt` is the length of the step as a `float` (e.g. in years for calendar steps), so that it can be used directly in computations such as hazard rates
 
-    Some changes are silent, so check for them in your model:
+Before the first step, i.e. in the model's constructor and in `modify`, `self.timestep` is `None`. A model that needs the start time can take it from its first step, `self.timestep.start`.
 
-    - The step index starts at 1 and is constant throughout the step. In 1.x it was 0 in the first `step` and 1 by the first `check`.
-    - `calendar` shortens the final step to finish at `end`, where 1.x overshot.
-    - `dt` for the `null` timeline is `neworder.time.NEVER` (NaN), not 0.0.
-    - `modify` is called once only, not each time a halted model is resumed, and a `halt` in `modify` stops the run before any steps are taken.
-    - A model halted on its final step calls `finalise` when it's resumed.
-    - Iterating `self.timeline` in model code takes steps from the run.
+The `neworder.timeline` module provides factories for common timelines. Each returns an iterator (a generator) of timesteps, which is open-ended if `end` is omitted:
 
-    If you can't migrate yet, pin `neworder<2`. A pre-release of v2.0.0 will be provided in due course for evaluation.
+factory | native type | `dt` | use for
+--------|-------------|------|---
+`null()` | `None` | `NEVER` (undefined) | continuous-time models in which the model evolution is computed in a single step
+`linear(start=0, *, end=None)` | `int` | 1.0 | integer time with unit steps
+`numeric(start=..., step=..., end=None)` | `float` | `step` | non-integer time with equal steps (`end - start` must be a whole number of steps)
+`numeric(times)` | `float` | the difference of consecutive times | non-integer time from a list or array of (strictly increasing) time points, allowing for unequally-spaced steps
+`calendar(start=..., step=..., end=None)` | `date` | years (ACT/365) | calendar dates with steps defined daily, monthly or annually (as a `relativedelta`). Monthly steps preserve the day of the month where possible, and if `end` isn't a whole number of steps from `start` the final step is shortened to end at it
 
+For example, `list(neworder.timeline.linear(2020, end=2023))` is
 
-*neworder*'s timeline is conceptually a sequence of steps that are iterated over (calling the Model's `step` and (optionally) `check` methods at each iteration, plus the `finalise` method at the last time point, which is commonly used to post-process the raw model data at the end of the model run. Timelines should not be incremented in client code, this happens automatically within the model.
-
-The framework is extensible but provides four types of timeline (3 implemented in C++, one in python):
-
-- `NoTimeline`: an arbitrary one-step timeline which is designed for continuous-time models in which the model evolution is computed in a single step
-- `LinearTimeline`: a set of equally-spaced intervals in non-calendar time
-- `NumericTimeline`: a fully-customisable non-calendar timeline allowing for unequally-spaced intervals
-- `CalendarTimeline`: a timeline based on calendar dates with steps defined daily, monthly or annually
-
-``` mermaid
-classDiagram
-  Timeline <|-- NoTimeline
-  Timeline <|-- LinearTimeline
-  Timeline <|-- NumericTimeline
-  Timeline <|-- CalendarTimeline
-
-  class Timeline {
-    +int index
-    +bool at_end*
-    +float dt*
-    +Any end*
-    +Any start*
-    +Any time*
-    +_next() None*
-    +__repr__() str*
-  }
-
-  class NoTimeline {
-    +bool at_end
-    +float dt
-    +Any end
-    +Any start
-    +Any time
-    +_next()
-    +__repr__() str
-  }
-
-  class LinearTimeline {
-    +bool at_end
-    +float dt
-    +Any end
-    +Any start
-    +Any time
-    +_next()
-    +__repr__() str
-  }
-
-  class NumericTimeline {
-    +bool at_end
-    +float dt
-    +Any end
-    +Any start
-    +Any time
-    +_next()
-    +__repr__() str
-  }
-
-  class CalendarTimeline {
-    +bool at_end
-    +float dt
-    +date end
-    +date start
-    +date time
-    +_next()
-    +__repr__() str
-  }
+```python
+[
+    Timestep(index=1, start=2020, end=2021, dt=1.0),
+    Timestep(index=2, start=2021, end=2022, dt=1.0),
+    Timestep(index=3, start=2022, end=2023, dt=1.0),
+]
 ```
+
+The neworder convention is that the first timestep has index 1. `dt` must be a floating-point type and it is up to the timeline author to determine how to express the interval, e.g. for dates, `dt` could be a number of days, or a year fraction using some custom convention (the builtin `neworder.timeline.calendar` uses ACT/365).
 
 #### Custom timelines
 
-If none of the supplied timelines are suitable, users can implement their own, deriving from the abstract `neworder.Timeline` base class, which provides an `index` property that should not be overidden.
+As a timeline is any iterable of `Timestep`, a custom timeline can be a list, or a generator function, e.g. steps that halve in length:
 
-!!! example "CalendarTimeline"
-    `neworder.CalendarTimeline` is now implemented in python and can be used as an example of how to implement a custom timeline:
+```python
+from neworder import Timestep
 
-    - Steps are defined in terms of `date` (not `datetime`)
-    - Monthly increments preserve the day of the month (where possible)
-    - Time intervals are computed in years, using an ACT/365 basis.
 
-The following properties and methods must be overridden in the subclass:
+def halving() -> Iterator[neworder.Timestep]:
+    i, t = 1, 0.0
+    while True:
+        tnew = t + 2**-i
+        yield neworder.Timestep(index=i, start=t, end=tnew, dt=tnew - t)
+        i, t = i + 1, tnew
+```
 
-symbol     | type              | description
------------|-------------------|---
-`at_end`   | `bool` property   | whether the timeline has reached its end
-`dt`       | `float` property  | the size of the current timestep
-`end`      | `Any` property    | the end time of the timeline
-`_next`    | `None` method     | move to the next timestep (for internal use by model, should not normally be called in client code)
-`start`    | `Any` property    | the start time of the timeline
-`time`     | `Any` property    | the current time of the timeline
-`__repr__` | `str` method      | (optional) a string representation of the object, defaults to the name of the class
+Iterators are consumed by the model. To use the same timeline in several models, convert to a list, e.g. `list(neworder.timeline.linear(0, end=10))`, or call the factory for each model.
 
-!!! warning "Implement every property"
-    A subclass must implement all of these properties. If one is missing, accessing it raises a `RuntimeError` ("tried to call a pure virtual function"), rather than an `AttributeError`. A missing `_next` raises a `RuntimeError` when the model runs.
+!!! warning "Migrating from neworder 1.x"
+    Timelines are no longer classes. Replace `NoTimeline()`, `LinearTimeline(...)`, `NumericTimeline(...)` and `CalendarTimeline(...)` with the factories `neworder.timeline.null()`, `linear(...)`, `numeric(...)` and `calendar(...)`, and read the current step from `self.timestep` rather than `self.timeline`:
+
+    1.x | 2.0
+    ----|----
+    `self.timeline.index` | `self.timestep.index`, but it's 1 in the first step (it was 0)
+    `self.timeline.time` | `self.timestep.start`, the start of the step
+    `self.timeline.dt` | `self.timestep.dt`
+    `self.timeline.start`, `.end` | the first step's `start`, and the last step's `end`
+
+    Random streams keyed on the step index (e.g. with `SplitMix64`) are shifted by one, so results won't match 1.x exactly. `LinearTimeline(start, step)` was open-ended in 1.x; `end` is now keyword-only, so the equivalent `linear(start, 1)` raises `TypeError`.
+
+#### Controlling the model
+
+The model can be conditionally stopped using the `halt` method - this is essential for open-ended timelines, but can also be useful in situations where you may want to run other code when some condition has been satisfied - the model can be subsequently resumed from where it left off - just call `run` again.
+
+!!! note "Halting and resuming"
+
+    - If a model calls `halt()`, the run stops *after* the current step (including any check), so a subsequent call to `neworder.run` resumes at the next step.
+    - Resuming doesn't call `modify` again. If the model was halted on the final step, resuming it just calls `finalise`.
+    - `halt` does not trigger `finalise` - so models with open-ended timelines never call `finalise`.
+    - Calling `halt()` from `modify` stops the run before any steps are taken. Running a model that has completed raises `StopIteration`.
 
 ### Spatial Domain
 
@@ -178,8 +135,7 @@ In order to construct a functioning model, the minimal requirements of the model
 
 the following can also be optionally implemented in the model:
 
-- set a seeding policy for the random stream (3 are provided, but you can create your own)
-- a `modify` method, which is called at the start of the model run and can be used for instance to modify the input data for different processes in a parallel run, for batch processing or sensitivity analysis.
+- a `modify` method, which is called once, at the start of the first model run (not when a halted model is resumed), and can be used for instance to modify the input data for different processes in a parallel run, for batch processing or sensitivity analysis.
 - a `check` method, which is run at every timestep, to e.g. perform checks simulation remains plausible.
 
 !!! note "Additional class methods"
@@ -187,7 +143,7 @@ the following can also be optionally implemented in the model:
 
 Pretty much everything else is entirely up to the model developer. While the module is completely agnostic about the format of data, the library functions accept and return *numpy* arrays, and it is recommended to use *pandas* dataframes where appropriate in order to be able to use the fast data manipulation functionality provided.
 
-Like MODGEN, both time-based and case-based models are supported. In the latter, the timeline refers not to absolute time but the age of the cohort. Additionally continuous-time models can be implemented, using a `NoTimeline` (see above) with only a single transition, and the Monte-Carlo library specifically provides functions for continuous sampling, e.g. from non-homogeneous Poisson processes.
+Like MODGEN, both time-based and case-based models are supported. In the latter, the timeline refers not to absolute time but the age of the cohort. Additionally continuous-time models can be implemented, using a null timeline (see above) with only a single transition, and the Monte-Carlo library specifically provides functions for continuous sampling, e.g. from non-homogeneous Poisson processes.
 
 New users should take a look at the examples, which cover a range of applications including implementations of some MODGEN teaching models.
 

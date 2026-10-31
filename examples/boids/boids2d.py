@@ -19,7 +19,7 @@ class Boids2d(no.Model):
     AVOID_COEFF = 0.05
 
     def __init__(self, N: int, range: float, vision: float, exclusion: float, speed: float) -> None:
-        super().__init__(no.LinearTimeline(0.0, 0.01), no.MonteCarlo.deterministic_independent_stream)
+        super().__init__(no.timeline.numeric(start=0.0, step=0.01), no.MonteCarlo.deterministic_independent_stream)
 
         self.N = N
         self.range = range
@@ -86,7 +86,7 @@ class Boids2d(no.Model):
         (self.boids.x, self.boids.y), (self.boids.vx, self.boids.vy) = self.domain.move(  # ty:ignore[unresolved-attribute]
             (self.boids.x, self.boids.y),
             (self.boids.vx, self.boids.vy),
-            self.timeline.dt,
+            self.timestep.dt,
             ungroup=True,
         )
 

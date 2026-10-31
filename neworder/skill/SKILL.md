@@ -5,15 +5,15 @@ description: >
   framework — subclassing neworder.Model, defining a timeline, sampling from the MonteCarlo or
   SplitMix64 engines, transitioning pandas categorical data with neworder.df, spatial domains, and
   MPI/multithreaded parallel runs. Triggers: "neworder", "no.Model", "neworder.run",
-  "microsimulation", NoTimeline/LinearTimeline/NumericTimeline/CalendarTimeline, mc.hazard,
+  "microsimulation", no.timeline.linear/numeric/calendar, self.timestep, mc.hazard,
   mc.stopping, mc.arrivals, no.df.transition, SplitMix64, StateGrid, neworder.mpi.
 ---
 
 # Building models with neworder
 
 `neworder` is a dynamic microsimulation framework: a C++ core (via nanobind) exposed as a Python
-module. You supply a `Model` subclass and a timeline; the runtime iterates the timeline, calling
-your methods at each step. It is data-agnostic — populations are normally `pandas` DataFrames and
+module. You supply a `Model` subclass and a timeline; the runtime takes each step of the timeline,
+calling your methods at each step. It is data-agnostic — populations are normally `pandas` DataFrames and
 the library functions operate directly on them (and on `numpy` arrays) without copying.
 
 **The canonical documentation is the project site, <https://neworder.readthedocs.io>.** This skill
@@ -33,12 +33,12 @@ Use `/en/stable/` for the released version (what `pip install neworder` gives yo
 
 ## Model lifecycle
 
-`neworder.run(model)` drives this sequence, and nothing else should advance the timeline:
+`neworder.run(model)` drives this sequence:
 
-1. `modify()` — once, before the run. Optional; typically used to perturb inputs per MPI process.
+1. `modify()` — once, before the first run (not when resuming). Optional; typically used to perturb inputs per MPI process.
 2. `step()` — once per timestep. **Required.**
 3. `check()` — after each `step()`, if implemented. Returning `False` aborts the run.
-4. `finalise()` — once, on reaching the end of the timeline. Optional.
+4. `finalise()` — once, after the last step. Optional.
 
 `run` returns `False` if the model failed — check it. Disable `check()` calls globally with
 `neworder.checked(False)`; turn on runtime logging with `neworder.verbose()`. Log from a model
@@ -55,14 +55,14 @@ class MyModel(no.Model):
     def __init__(self, n: int, mortality_rate: float) -> None:
         # ESSENTIAL: initialise the base class with a timeline (and optionally a seeder).
         # Omitting this is the single most common error — it fails at runtime.
-        super().__init__(no.LinearTimeline(0.0, 100.0, 100), no.MonteCarlo.deterministic_identical_stream)
+        super().__init__(no.timeline.linear(0, end=100), no.MonteCarlo.deterministic_identical_stream)
         self.population = pd.DataFrame(index=no.df.unique_index(n), data={"age": 0.0, "alive": True})
         self.mortality_rate = mortality_rate
 
     def step(self) -> None:
         died = self.mc.hazard(self.mortality_rate, len(self.population)).astype(bool)
         self.population.loc[died, "alive"] = False
-        self.population.age += self.timeline.dt
+        self.population.age += self.timestep.dt
 
     def check(self) -> bool:
         return bool((self.population.age >= 0.0).all())
@@ -77,32 +77,42 @@ if __name__ == "__main__":
         no.log("model failed")
 ```
 
-`self.mc` (the `MonteCarlo` engine), `self.timeline` and `self.run_state` are provided by the base
+`self.mc` (the `MonteCarlo` engine), `self.timeline`, `self.timestep` and `self.run_state` are provided by the base
 class. Vectorise: prefer whole-array `mc`/`numpy`/`pandas` operations over per-agent Python loops.
 
 ## Timelines
 
-| Class | Use for |
-|-------|---------|
-| `NoTimeline()` | continuous-time / case-based models evaluated in one instantaneous step |
-| `LinearTimeline(start, end, nsteps)` | equally-spaced non-calendar steps; `LinearTimeline(start, step)` is open-ended |
-| `NumericTimeline(times)` | explicit, unequally-spaced non-calendar times |
-| `CalendarTimeline(start, relativedelta(...), end=...)` | calendar dates (day/month/year steps, ACT/365 year fractions) |
+A timeline is just data: an iterator of `no.timeline.Timestep(index, start, end, dt)`s. The run takes
+each step in turn, and inside the model `self.timestep` is the current step:
 
-Properties: `index`, `time`, `dt`, `start`, `end`, `nsteps`, `at_end`. Custom timelines subclass
-`no.Timeline` and override `start`, `end`, `time`, `dt`, `at_end`, `_next` (and optionally
-`__repr__`); `index` is provided and must not be overridden. `CalendarTimeline` (pure Python, in
-`neworder/timeline.py`) is the reference implementation to copy.
+- `index` counts the steps from 1
+- `start` and `end` are in the timeline's *native* type (`None`, `int`, `float` or `date`)
+- `dt` is the step's length as a **float** (*years* for calendar steps, on an ACT/365 basis, so annual
+  rates can be used directly), e.g. `self.mc.hazard(rate * self.timestep.dt)`
 
-**Implement every one of those properties.** The base class doesn't implement them, and a missing
-one doesn't raise `AttributeError`: accessing it raises `RuntimeError` ("tried to call a pure virtual
-function"). A missing `_next` raises `RuntimeError` when the model runs. If you see this with a custom
-timeline, check for a missing or misspelled property first.
+`self.timestep` is `None` before the first step, i.e. in the constructor and `modify()`.
+`step()`, `check()` and `finalise()` all see the same step (`finalise()` sees the last one). If the
+model needs the start time, take it from the first step, `self.timestep.start`.
+
+The `no.timeline` factories return an iterator of timesteps, open-ended if `end` is omitted:
+
+| Factory | Use for |
+|---------|---------|
+| `null()` | continuous-time / case-based models evaluated in one step (start, end and `dt` undefined) |
+| `linear(start=0, *, end=None)` | integer times, unit steps |
+| `numeric(start=..., step=..., end=None)` | equally-spaced non-integer times; `end - start` must be a whole number of steps |
+| `numeric(times)` | explicit (possibly unequally-spaced) non-integer times |
+| `calendar(start=..., step=relativedelta(...), end=None)` | calendar dates (day/month/year steps); a final step that would overshoot `end` is shortened to end at it |
+
+A custom timeline is any iterable of `Timestep`s, e.g. a list or a generator function. An iterator
+can only be used by one model; a list can be shared.
 
 Open-ended timelines stop via `model.halt()` from within `step()`. Note that `halt()` does *not*
 return immediately — the rest of `step()` and `check()` still run — and `finalise()` is **not**
 called for a halted model; call it explicitly if needed. A halted model can be resumed by passing
-it to `no.run` again.
+it to `no.run` again, and resumes at the next step, without calling `modify()` again (if it was
+halted on the final step, resuming just calls `finalise()`). `halt()` can also be called from `modify()`, in which case
+no steps are taken.
 
 ## Randomness
 
@@ -139,7 +149,7 @@ the draw for agent *i* is the same whether or not any other agent was drawn:
 
 ```py
 self.rng = no.SplitMix64(no.MonteCarlo.deterministic_identical_stream)
-draws = self.rng.uarray(person_ids, no.SplitMix64.hash64("mortality"), self.timeline.index)
+draws = self.rng.uarray(person_ids, no.SplitMix64.hash64("mortality"), self.timestep.index)
 ```
 
 Keys are scalars (context, adding no dimension) or **1-D** integer arrays (each adding one output
@@ -196,8 +206,8 @@ one of the `parallel-native`/`parallel-openmpi`/`parallel-mpich` extras and `mpi
   `py.typed`, so a type checker catches most of this — use one.
 - **`transition`/`transition_conditional` return new data**, they do not mutate the series.
 - **Never advance the timeline yourself**; the runtime does it between steps.
-- **A custom timeline missing a property** raises a "pure virtual function" `RuntimeError`, not an
-  `AttributeError`. Implement them all.
+- **`timeline.time` is the end of the step**, not the start — the start is `time - dt`. The first
+  `step()` sees `index == 1`.
 - **`NEVER` is NaN** — `NEVER == NEVER` is `False`; use `no.time.isnever`.
 - **`mc.reset()` re-invokes the seeder**, so a non-deterministic seeder gives a *different* stream
   after reset, not the original one.

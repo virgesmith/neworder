@@ -8,6 +8,8 @@ individuals join and leave over time and per-individual reproducibility
 must survive changes in population size, membership or row order.
 """
 
+from collections.abc import Iterable
+
 import numpy as np
 import pandas as pd
 
@@ -24,7 +26,7 @@ class Membership(no.Model):
     - finalise
     """
 
-    def __init__(self, timeline: no.Timeline, n0: int, p_churn: float, p_join: float) -> None:
+    def __init__(self, timeline: Iterable[no.timeline.Timestep], n0: int, p_churn: float, p_join: float) -> None:
         super().__init__(timeline, no.MonteCarlo.deterministic_identical_stream)
 
         # Stateless (use_counter=False, the default): calling uarray() twice
@@ -41,16 +43,19 @@ class Membership(no.Model):
         self.p_churn = p_churn
         self.avg_joiners = round(n0 * p_join)
 
-        self.members = pd.DataFrame(index=no.df.unique_index(n0), data={"joined": timeline.start})
+        # the founding members joined before the timeline starts
+        self.members = pd.DataFrame(index=no.df.unique_index(n0), data={"joined": np.nan})
         self.members.index.name = "id"
 
-        self.history: list[tuple[float, int]] = [(timeline.start, len(self.members))]
+        self.history: list[tuple[float, int]] = []
 
     # !constructor!
 
     # !step!
     def step(self) -> None:
-        year = self.timeline.time
+        year, next_year = self.timestep.start, self.timestep.end
+        if not self.history:
+            self.history.append((year, len(self.members)))
 
         # One SplitMix64 draw per member *id*, keyed on the process and the
         # year - not on a member's position in self.members, or on how many
@@ -66,7 +71,7 @@ class Membership(no.Model):
         self.members = pd.concat([self.members, pd.DataFrame(index=new_ids, data={"joined": year})])
         self.members.index.name = "id"
 
-        self.history.append((year + self.timeline.dt, len(self.members)))
+        self.history.append((next_year, len(self.members)))
 
     # !step!
 
@@ -87,7 +92,7 @@ class Membership(no.Model):
         never on population size, membership or row order.
         """
         ids = self.members.index.to_numpy()
-        year = int(self.timeline.time)
+        year = int(self.timestep.end)
 
         # 1. sub-population invariance: drawing for the whole population and
         #    drawing for a single member in isolation agree for that member.

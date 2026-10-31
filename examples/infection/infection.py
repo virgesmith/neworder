@@ -36,7 +36,7 @@ class Infection(no.Model):
         recovery_time: int,
         mortality: float,
     ) -> None:
-        super().__init__(no.LinearTimeline(0.0, 1.0), no.MonteCarlo.deterministic_independent_stream)
+        super().__init__(no.timeline.linear(), no.MonteCarlo.deterministic_independent_stream)
         # expose the model's MC engine to numpy
         self.nprand = no.as_np(self.mc)
         # create the spatial domain
@@ -67,7 +67,7 @@ class Infection(no.Model):
         agents["offset"] = 0.0
         infected = self.nprand.choice(agents.index, n_infected, replace=False)
         agents.loc[infected, "status"] = Status.INFECTED
-        agents.loc[infected, "t_infect"] = self.timeline.index
+        agents.loc[infected, "t_infect"] = 0
 
         self.agents = gpd.GeoDataFrame(
             agents,
@@ -90,7 +90,7 @@ class Infection(no.Model):
             self.finalise()
 
     def finalise(self) -> None:
-        no.log(f"total steps: {self.timeline.index}")
+        no.log(f"total steps: {self.timestep.index}")
         no.log(f"infections: {len(self.agents.t_infect.dropna())}")
         no.log(f"recoveries: {(self.agents.status == Status.IMMUNE).sum()}")
         no.log(f"deaths: {(self.agents.status == Status.DEAD).sum()}")
@@ -147,10 +147,10 @@ class Infection(no.Model):
                 if new.any():
                     new_infections.append(i)
         self.agents.loc[new_infections, "status"] = Status.INFECTED
-        self.agents.loc[new_infections, "t_infect"] = self.timeline.index
+        self.agents.loc[new_infections, "t_infect"] = self.timestep.index
 
     def __recover(self) -> None:
-        t = self.timeline.index
+        t = self.timestep.index
         self.agents.loc[
             (t - self.agents.t_infect >= self.recovery_time) & (self.agents.status == Status.INFECTED),
             "status",
@@ -193,7 +193,7 @@ class Infection(no.Model):
         self.g.set_offsets(offsets)
         self.g.set_facecolors(colours)
         self.fig.suptitle(
-            f"step {self.timeline.index}: inf={num_infected} imm={num_immune} dead={num_dead} / {len(self.agents)} [q to quit]"
+            f"step {self.timestep.index}: inf={num_infected} imm={num_immune} dead={num_dead} / {len(self.agents)} [q to quit]"
         )
 
         self.fig.canvas.flush_events()
