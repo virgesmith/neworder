@@ -38,7 +38,7 @@ Use `/en/stable/` for the released version (what `pip install neworder` gives yo
 1. `modify()` — once, before the run. Optional; typically used to perturb inputs per MPI process.
 2. `step()` — once per timestep. **Required.**
 3. `check()` — after each `step()`, if implemented. Returning `False` aborts the run.
-4. `finalise()` — once, on reaching the end of the timeline. Optional.
+4. `finalise()` — once, after the last step. Optional.
 
 `run` returns `False` if the model failed — check it. Disable `check()` calls globally with
 `neworder.checked(False)`; turn on runtime logging with `neworder.verbose()`. Log from a model
@@ -55,7 +55,7 @@ class MyModel(no.Model):
     def __init__(self, n: int, mortality_rate: float) -> None:
         # ESSENTIAL: initialise the base class with a timeline (and optionally a seeder).
         # Omitting this is the single most common error — it fails at runtime.
-        super().__init__(no.LinearTimeline(0.0, 100.0, 100), no.MonteCarlo.deterministic_identical_stream)
+        super().__init__(no.LinearTimeline(0, 100), no.MonteCarlo.deterministic_identical_stream)
         self.population = pd.DataFrame(index=no.df.unique_index(n), data={"age": 0.0, "alive": True})
         self.mortality_rate = mortality_rate
 
@@ -85,26 +85,29 @@ class. Vectorise: prefer whole-array `mc`/`numpy`/`pandas` operations over per-a
 | Class | Use for |
 |-------|---------|
 | `NoTimeline()` | continuous-time / case-based models evaluated in one instantaneous step |
-| `LinearTimeline(start, end, nsteps)` | equally-spaced non-calendar steps; `LinearTimeline(start, step)` is open-ended |
-| `NumericTimeline(times)` | explicit, unequally-spaced non-calendar times |
-| `CalendarTimeline(start, relativedelta(...), end=...)` | calendar dates (day/month/year steps, ACT/365 year fractions) |
+| `LinearTimeline(start=0, end=None)` | integer times, unit steps; open-ended if `end` is omitted |
+| `NumericTimeline(start=..., step=..., end=None)` | equally-spaced non-integer times; `end - start` must be a whole number of steps |
+| `NumericTimeline(times)` | explicit (possibly unequally-spaced) non-integer times |
+| `CalendarTimeline(start=..., step=relativedelta(...), end=None)` | calendar dates (day/month/year steps) |
 
-Properties: `index`, `time`, `dt`, `start`, `end`, `nsteps`, `at_end`. Custom timelines subclass
-`no.Timeline` and override `start`, `end`, `time`, `dt`, `at_end`, `_next` (and optionally
-`__repr__`); `index` is provided and must not be overridden. `CalendarTimeline` (pure Python, in
-`neworder/timeline.py`) is the reference implementation to copy.
+A timeline is a clock and an iterator over steps, each a `(start, end)` pair of its *native* type
+(`None`, `int`, `float` or `date`) — `list(no.LinearTimeline(0, 3))` shows them. Before the run
+`index` is 0 and `time` is the start, which is what `modify()` sees; each step advances both, so
+during the first `step()` the index is 1. Inside a model `self.timeline.time` is always a
+**float**: the end of the most recent step (*days* since the start for `CalendarTimeline`, so
+divide by 365 for annual rates; `NEVER` for `NoTimeline`). `self.timeline.dt` is that step's length
+as a float, and `self.timeline.index` is the number of steps taken. `step()`, `check()` and
+`finalise()` all see the same state.
 
-**Implement every one of those properties.** The base class doesn't implement them, and a missing
-one doesn't raise `AttributeError`: accessing it finds the base class property again and recurses.
-On Linux that ends in `RuntimeError: Tried to call pure virtual function`; on Windows (smaller
-default stack) it can overflow the stack and crash the interpreter with no Python traceback. A
-missing `_next` raises `RuntimeError` when the model runs. If you see either symptom with a custom
-timeline, check for a missing or misspelled property first.
+Custom timelines subclass `no.Timeline` and implement the `index`, `time` and `dt` properties
+and `__next__` (and optionally `__repr__`). `__next__` takes a step and returns it as a native
+`(start, end)` pair, raising `StopIteration` at the end. The implementations in `neworder/timeline.py` are the reference to copy. A missing abstract member
+raises `TypeError` when it's accessed (at the latest when the timeline is passed to a `Model`).
 
 Open-ended timelines stop via `model.halt()` from within `step()`. Note that `halt()` does *not*
 return immediately — the rest of `step()` and `check()` still run — and `finalise()` is **not**
 called for a halted model; call it explicitly if needed. A halted model can be resumed by passing
-it to `no.run` again.
+it to `no.run` again: the timeline isn't advanced on halting, so it resumes at the next step.
 
 ## Randomness
 
@@ -198,8 +201,8 @@ one of the `parallel-native`/`parallel-openmpi`/`parallel-mpich` extras and `mpi
   `py.typed`, so a type checker catches most of this — use one.
 - **`transition`/`transition_conditional` return new data**, they do not mutate the series.
 - **Never advance the timeline yourself**; the runtime does it between steps.
-- **A custom timeline missing a property recurses** instead of raising `AttributeError` — a
-  "pure virtual function" `RuntimeError` on Linux, a hard crash on Windows. Implement them all.
+- **`timeline.time` is the end of the step**, not the start — the start is `time - dt`. The first
+  `step()` sees `index == 1`.
 - **`NEVER` is NaN** — `NEVER == NEVER` is `False`; use `no.time.isnever`.
 - **`mc.reset()` re-invokes the seeder**, so a non-deterministic seeder gives a *different* stream
   after reset, not the original one.

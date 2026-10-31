@@ -82,11 +82,11 @@ To get a better idea of what's going on, uncomment the line containing `neworder
 First we get some information about the model initialisation parameters:
 
 ```text
-[no 0/1]  model init: timeline=<NoTimeline stepped=False> mc=<neworder.MonteCarlo seed=874991939>
+[no 0/1]  model init: timeline=<NoTimeline> mc=<neworder.MonteCarlo seed=874991939>
 [no 0/1]  starting model run. start time=nan
 ```
 
-When using `NoTimeline()` the start time, end time are undefined and the timestep is zero - i.e. a single arbitrary step in which all computation is done.
+When using `NoTimeline()` the time is undefined and the step has zero length - i.e. a single arbitrary step in which all computation is done.
 
 The RNG seed is displayed for reproducibility, although in this configuration we explicitly requested a random seed using the `neworder.MonteCarlo.nondeterministic_stream` parameter, so each time you run the model you will get a different seed, and different results. The next output concerns the modify method which is explained in the [Option](./option.md) example.
 
@@ -95,7 +95,7 @@ The RNG seed is displayed for reproducibility, although in this configuration we
 [no 0/1]  defaulted to no-op Model::modify()
 ```
 
-Note that the time value is NaN (not-a-number) since absolute time is not important in this implementation, but the index is zero. Now the `step` method is called, which applies our single random transition - making some individuals "talkative":
+Note that the time value is NaN (`neworder.time.NEVER`) since absolute time is not important in this implementation, but the index is zero as no steps have been taken. Now the timeline takes its single step (so the index is 1) and the `step` method is called, which applies our single random transition - making some individuals "talkative":
 
 ```text
 [no 0/1]  t=nan(1) HelloWorld.step()
@@ -107,7 +107,6 @@ and this is followed by the `check` method, which is optional and we haven't imp
 [no 0/1]  defaulted to no-op Model::check()
 [no 0/1]  t=nan(1) HelloWorld.check() [ok]
 ```
-and the time index has updated to 1.
 
 !!! note "Checks"
     Custom data sanity checks can be run after each timestep by overriding the `check` method. The default implementation does nothing. A typical pattern would be to implement checks for debugging a model during development, then disable them entirely to improve performance using `neworder.checked(False)`. See the other examples.

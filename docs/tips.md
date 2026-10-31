@@ -118,7 +118,7 @@ class StepwiseStreams(neworder.Model):
         # initialise the seed source deterministically
         seed_source = neworder.SplitMix64(neworder.MonteCarlo.deterministic_independent_stream)
         # construct the timeline first so the seeder can capture it
-        timeline = neworder.LinearTimeline(0, 10, 10)
+        timeline = neworder.LinearTimeline(0, 10)
         # this ensures this model's variates are independent of any other model's
         id = neworder.SplitMix64.hash64(self.__class__.__name__)
 

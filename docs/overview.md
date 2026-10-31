@@ -28,103 +28,78 @@ This is provided by:
 
 ### Timeline
 
-*neworder*'s timeline is conceptually a sequence of steps that are iterated over (calling the Model's `step` and (optionally) `check` methods at each iteration, plus the `finalise` method at the last time point, which is commonly used to post-process the raw model data at the end of the model run. Timelines should not be incremented in client code, this happens automatically within the model.
+*neworder*'s timeline is an iterator over a sequence of steps, each of which is an interval with a start and an end. The model iterates over it, calling the Model's `step` and (optionally) `check` methods after each step is taken, plus the `finalise` method after the last step, which is commonly used to post-process the raw model data at the end of the model run. Timelines should not be advanced in client code, this happens automatically within the model.
 
-The framework is extensible but provides four types of timeline (3 implemented in C++, one in python):
+A timeline behaves like a clock. Before the model runs it is at its start, with `index` 0, and the model's `modify` method sees this state. Each step advances the clock, so during the first call to `step` the index is 1 and the time is the end of the first step. Each timeline has a *native* type for its time points (e.g. `int` or `date`), and iterating over it yields each step as a `(start, end)` tuple of native values. Inside the model, though, time is always a `float`, so that it can be used directly in computations (e.g. with the Monte-Carlo functions) and compared with the `neworder.time` constants:
 
-- `NoTimeline`: an arbitrary one-step timeline which is designed for continuous-time models in which the model evolution is computed in a single step
-- `LinearTimeline`: a set of equally-spaced intervals in non-calendar time
-- `NumericTimeline`: a fully-customisable non-calendar timeline allowing for unequally-spaced intervals
-- `CalendarTimeline`: a timeline based on calendar dates with steps defined daily, monthly or annually
+- `timeline.index` is the number of steps taken
+- `timeline.time` is the current time: the start before any steps, and the end of the most recent step thereafter
+- `timeline.dt` is the length of the most recent step, so the step started at `timeline.time - timeline.dt`. Before the first step it's the step size for timelines with fixed steps, and `NEVER` otherwise
+
+The framework is extensible but provides four types of timeline (all implemented in python):
+
+Timeline | native type | float time | use for
+---------|-------------|------------|---
+`NoTimeline()` | `None` | `NEVER`, with `dt` zero | continuous-time models in which the model evolution is computed in a single step
+`LinearTimeline(start=0, end=None)` | `int` | the native value | integer time with unit steps, either fixed or open-ended (if `end` is omitted)
+`NumericTimeline(start=..., step=..., end=None)` | `float` | the native value | non-integer time with equal steps, either fixed (`end - start` must be a whole number of steps) or open-ended
+`NumericTimeline(times)` | `float` | the native value | non-integer time from a list or array of (strictly increasing) time points, allowing for unequally-spaced steps
+`CalendarTimeline(start=..., step=..., end=None)` | `date` | days since `start` | calendar dates with steps defined daily, monthly or annually (as a `relativedelta`), either fixed or open-ended. Monthly steps preserve the day of the month where possible
 
 ``` mermaid
 classDiagram
+  Iterator <|-- Timeline
   Timeline <|-- NoTimeline
   Timeline <|-- LinearTimeline
   Timeline <|-- NumericTimeline
   Timeline <|-- CalendarTimeline
 
   class Timeline {
-    +int index
-    +bool at_end*
+    +int index*
+    +float time*
     +float dt*
-    +Any end*
-    +Any start*
-    +Any time*
-    +_next() None*
-    +__repr__() str*
+    +__next__() tuple[Any, Any]*
+    +__iter__() Timeline
+    +__repr__() str
   }
 
   class NoTimeline {
-    +bool at_end
-    +float dt
-    +Any end
-    +Any start
-    +Any time
-    +_next()
-    +__repr__() str
+    +__next__() tuple[None, None]
   }
 
   class LinearTimeline {
-    +bool at_end
-    +float dt
-    +Any end
-    +Any start
-    +Any time
-    +_next()
-    +__repr__() str
+    +__next__() tuple[int, int]
   }
 
   class NumericTimeline {
-    +bool at_end
-    +float dt
-    +Any end
-    +Any start
-    +Any time
-    +_next()
-    +__repr__() str
+    +__next__() tuple[float, float]
   }
 
   class CalendarTimeline {
-    +bool at_end
-    +float dt
-    +date end
-    +date start
-    +date time
-    +_next()
-    +__repr__() str
+    +__next__() tuple[date, date]
   }
 ```
 
-!!! warning Timeline Limitations
-
-    The current implementation of the `neworder.Timeline` interface does not support iteration outside a model. For now, testing a custom implementation requires creating a dummy model to iterate the timeline. A future `neworder` release may refactor timelines in terms of iterables to make development easier.
+As timelines are ordinary python iterators they can be inspected outside a model, e.g. `list(neworder.LinearTimeline(0, 3))` returns `[(0, 1), (1, 2), (2, 3)]`.
 
 #### Custom timelines
 
-If none of the supplied timelines are suitable, users can implement their own, deriving from the abstract `neworder.Timeline` base class, which provides an `index` property that should not be overidden.
-
-!!! example "CalendarTimeline"
-    `neworder.CalendarTimeline` is now implemented in python and can be used as an example of how to implement a custom timeline:
-
-    - Steps are defined in terms of `date` (not `datetime`)
-    - Monthly increments preserve the day of the month (where possible)
-    - Time intervals are computed in years, using an ACT/365 basis.
+If none of the supplied timelines are suitable, users can implement their own, deriving from the abstract `neworder.Timeline` base class (which is implemented in C++). The supplied timelines, in `neworder/timeline.py`, can be used as examples.
 
 The following properties and methods must be overridden in the subclass:
 
 symbol     | type              | description
 -----------|-------------------|---
-`at_end`   | `bool` property   | whether the timeline has reached its end
-`dt`       | `float` property  | the size of the current timestep
-`end`      | `Any` property    | the end time of the timeline
-`_next`    | `None` method     | move to the next timestep (for internal use by model, should not normally be called in client code)
-`start`    | `Any` property    | the start time of the timeline
-`time`     | `Any` property    | the current time of the timeline
-`__repr__` | `str` method      | (optional) a string representation of the object, defaults to the name of the class
+`index`    | `int` property    | the number of steps taken
+`time`     | `float` property  | the current time: the start, then the end of the most recent step
+`dt`       | `float` property  | the length of the most recent step
+`__next__` | method            | take the next step and return it as a `(start, end)` tuple of native values, or raise `StopIteration` if there are no more steps
+`__repr__` | `str` method      | (optional) a string representation of the object, defaults to the name of the class and the index
 
-!!! warning "Implement every property"
-    A subclass must implement all of these properties. If one is missing, accessing it doesn't raise an `AttributeError`: the lookup finds the base class property again and recurses. On Linux this ends in a `RuntimeError` ("Tried to call pure virtual function"), but on Windows, which has a smaller default stack, it can overflow the stack and crash the interpreter. A missing `_next` raises `RuntimeError` when the model runs.
+A subclass that doesn't implement one of the abstract members raises a `TypeError` when it is accessed, which happens at the latest when the timeline is passed to a model.
+
+!!! note "Halting and resuming"
+    If a model calls `halt()`, the timeline is not advanced, so a subsequent call to `neworder.run` resumes at the next step. Running a model whose timeline is exhausted raises `StopIteration`.
 
 
 ### Spatial Domain

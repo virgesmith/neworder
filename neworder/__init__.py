@@ -3,11 +3,8 @@ import importlib.metadata
 __version__ = importlib.metadata.version("neworder")
 
 from _neworder_core import (  # ty:ignore[unresolved-import]
-    LinearTimeline,
     Model,
     MonteCarlo,
-    NoTimeline,
-    NumericTimeline,
     SplitMix64,
     Timeline,
     checked,
@@ -24,7 +21,7 @@ from _neworder_core import (  # ty:ignore[unresolved-import]
 from . import stats
 from .domain import Domain, Edge, Space, StateGrid
 from .mc import as_np
-from .timeline import CalendarTimeline
+from .timeline import CalendarTimeline, LinearTimeline, NoTimeline, NumericTimeline
 
 __all__: list[str] = [
     "CalendarTimeline",

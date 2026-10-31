@@ -94,25 +94,14 @@ PYBIND11_MODULE(_neworder_core, m)
   time.attr("NEVER") = no::time::never();
 
   // register abstract base class
-  py::class_<no::Timeline, no::PyTimeline>(m, "Timeline")
+  py::class_<no::Timeline, no::PyTimeline>(m, "Timeline", timeline_docstr)
       .def(py::init<>())
-      .def_property_readonly("time", &no::Timeline::time, timeline_time_docstr)
-      .def_property_readonly("start", &no::Timeline::start, timeline_start_docstr)
-      .def_property_readonly("end", &no::Timeline::end, timeline_end_docstr)
       .def_property_readonly("index", &no::Timeline::index, timeline_index_docstr)
+      .def_property_readonly("time", &no::Timeline::time, timeline_time_docstr)
       .def_property_readonly("dt", &no::Timeline::dt, timeline_dt_docstr)
-      .def_property_readonly("at_end", &no::Timeline::at_end, timeline_at_end_docstr)
+      .def("__next__", &no::Timeline::next, timeline_next_docstr)
+      .def("__iter__", [](py::object self) { return self; }, timeline_iter_docstr)
       .def("__repr__", &no::Timeline::repr, timeline_repr_docstr);
-
-  py::class_<no::NoTimeline, no::Timeline>(m, "NoTimeline", notimeline_docstr)
-      .def(py::init<>(), notimeline_init_docstr);
-
-  py::class_<no::LinearTimeline, no::Timeline>(m, "LinearTimeline", lineartimeline_docstr)
-      .def(py::init<double, double, size_t>(), lineartimeline_init_docstr, "start"_a, "end"_a, "nsteps"_a)
-      .def(py::init<double, double>(), lineartimeline_init_open_docstr, "start"_a, "step"_a);
-
-  py::class_<no::NumericTimeline, no::Timeline>(m, "NumericTimeline", numerictimeline_docstr)
-      .def(py::init<const std::vector<double>&>(), numerictimeline_init_docstr, "times"_a);
 
   // MC
   py::class_<no::MonteCarlo>(m, "MonteCarlo", mc_docstr)

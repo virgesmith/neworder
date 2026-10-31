@@ -13,7 +13,7 @@ assert neworder.mpi.SIZE > 1, "This configuration requires MPI with >1 process"
 # !run!
 population_size = 100
 p = 0.01
-timeline = neworder.LinearTimeline(0, 10, 10)
+timeline = neworder.LinearTimeline(0, 10)
 model = ParallelMPI(timeline, p, population_size)
 neworder.run(model)
 #!run!

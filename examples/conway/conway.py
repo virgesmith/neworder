@@ -12,7 +12,7 @@ class Conway(no.Model):
     __glider = np.array([[0, 0, 1], [1, 0, 1], [0, 1, 1]], dtype=int)
 
     def __init__(self, nx: int, ny: int, edge: no.Edge = no.Edge.WRAP) -> None:
-        super().__init__(no.LinearTimeline(0, 1), no.MonteCarlo.nondeterministic_stream)
+        super().__init__(no.LinearTimeline(), no.MonteCarlo.nondeterministic_stream)
 
         # create n automata at regular positions
         init_state = np.zeros(nx * ny)
@@ -40,7 +40,7 @@ class Conway(no.Model):
 
     def check(self) -> bool:
         # randomly place a glider (not across edge)
-        if self.timeline.index == 0:
+        if self.timeline.index == 1:
             x = self.mc.raw() % (self.domain.state.shape[0] - 2)
             y = self.mc.raw() % (self.domain.state.shape[1] - 2)
             self.domain.state[x : x + 3, y : y + 3] = np.rot90(Conway.__glider, self.mc.raw() % 4)

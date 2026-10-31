@@ -26,7 +26,7 @@ class Boids3d(no.Model):
     REVERT_COEFF = 0.05
 
     def __init__(self, N: int, range: float, vision: float, exclusion: float, speed: float) -> None:
-        super().__init__(no.LinearTimeline(0.0, 0.01), no.MonteCarlo.nondeterministic_stream)
+        super().__init__(no.NumericTimeline(start=0.0, step=0.01), no.MonteCarlo.nondeterministic_stream)
 
         self.N = N
         self.range = range
