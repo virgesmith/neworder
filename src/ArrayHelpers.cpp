@@ -1,4 +1,3 @@
-#include "NPArray.h"
 #include "ArrayHelpers.h"
 #include "Timeline.h"
 
@@ -42,7 +41,8 @@ nb::object no::numpy::empty(std::span<const Py_ssize_t> shape, DType dtype) {
     PyObject* extent = PyLong_FromSsize_t(shape[i]);
     if (!extent)
       throw nb::python_error();
-    PyTuple_SET_ITEM(shape_tuple.ptr(), static_cast<Py_ssize_t>(i), extent);
+    if (PyTuple_SetItem(shape_tuple.ptr(), static_cast<Py_ssize_t>(i), extent) != 0)
+      throw nb::python_error();
   }
   return nb::handle(np_empty)(shape_tuple, dtype_handle(dtype));
 }

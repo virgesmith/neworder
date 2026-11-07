@@ -9,7 +9,7 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "neworder"
-version = "1.7.2"
+version = "2.0.0"
 authors = [
   { name="Andrew Smith", email="andrew@friarswood.net" },
 ]
@@ -79,6 +79,7 @@ minimum-version = "build-system.requires"
 # keep the build tree, so that rebuilds are incremental and gcov can find its data
 build-dir = "build/{wheel_tag}"
 wheel.packages = ["neworder"]
+wheel.py-api = "cp313"
 sdist.exclude = ["/.agents", "/.github", "/docs", "/examples", "/paper", "/test"]
 
 [tool.uv]
@@ -103,8 +104,9 @@ select = ["ARG", "B", "C", "E", "F", "I", "N", "PERF", "PTH", "RUF", "SIM", "UP"
 ignore = ["E501", "N803", "N806"]
 
 [tool.cibuildwheel]
-# the interpreters tested in build-test.yml (free-threaded 3.14 and 3.15 need no `enable` flag in cibuildwheel 4)
-build = ["cp313-*", "cp314-*", "cp314t-*", "cp315-*"]
+# no free-threaded wheels: abi3 can't cover them, so they're tested from source in build-test.yml instead.
+# The abi3 wheel is built on the first of these, then reused and tested on the others
+build = ["cp313-*", "cp314-*", "cp315-*"]
 # manylinux only - alpine/musl builds aren't tested anywhere
 skip = ["*-musllinux_*"]
 build-frontend = "build[uv]"

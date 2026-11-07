@@ -63,6 +63,7 @@ When reviewing a PR or diff, check:
 
 - Run the full gate suite (`ruff check`, `ruff format --check`, `ty check`, `pytest`) before declaring any task done.
 - CI runs the matrix: Python 3.13, 3.14, 3.14t, 3.15 × ubuntu, windows, macos. Flag anything that might be platform- or version-specific (e.g. freethreaded 3.14t, compiler flags).
+- Wheels are `abi3`: one per platform, built on Python 3.13 and tested on 3.13, 3.14 and 3.15. No wheels are published for free-threaded interpreters, which build from source. C++ code must stay within the limited API, so CPython macros such as `PyTuple_SET_ITEM` won't compile.
 - MPI tests run separately via [mpi-test.yml](.github/workflows/mpi-test.yml). If touching parallel functionality, ensure `mpiexec -n 2 uv run pytest` passes locally.
 - Coverage (C++ via gcov + Python) is reported to [codecov.io](https://codecov.io/gh/virgesmith/neworder). Ensure `gcc` and `gcov` versions are consistent if building coverage locally.
 - If a test is skipped or marked `xfail`, leave a comment explaining why and when it can be removed.

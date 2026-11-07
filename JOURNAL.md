@@ -63,6 +63,81 @@ value, so colours are looked up for the whole column in one step: `COLOURS[self.
 **Follow-ups** — osmnx's defaults (180s timeout, unlimited 55s retries on 429/504, logging off) make an overloaded
 Overpass server look like a hang; the example could enable `ox.settings.log_console` and use a shorter timeout.
 
+## 2026-11-07 — Merge `NPArray` into `ArrayHelpers`
+
+**Why** — The split didn't follow the code. `ArrayHelpers.h` declared the numpy helpers, but `NPArray.cpp` implemented
+them, and `NPArray.h` only declared `isnever_a`, `logistic` and `logit`, which only `Module.cpp` uses.
+
+**What** — `NPArray.cpp` renamed to `ArrayHelpers.cpp`, with the declarations from `NPArray.h` moved to
+`ArrayHelpers.h` and `NPArray.h` removed. No functional change.
+
+**Design decisions**
+- *Kept the `ArrayHelpers` name*, as 7 files already include it, against 1 for `NPArray.h`.
+- *Left the three functions in `ArrayHelpers`* rather than moving `isnever_a` to `Timeline` and the other two to a
+  stats file. That would also be reasonable, but it's a separate change.
+
+---
+
+## 2026-11-07 — Inline the element functions in `make_array` and `unary_op`
+
+**Why** — Both took a `std::function`, so every element of every array they filled cost an indirect call that the
+compiler couldn't inline. They underlie most of `MonteCarlo`, `isnever`, `logistic`, `logit` and `df.unique_index`.
+
+**What** — `src/ArrayHelpers.h`: the function is now a template parameter. Callers are unchanged. Measured per element
+on 1M-element arrays, against a build of the same source using `std::function` (abi3, Linux, CPython 3.15):
+`df.unique_index` -86%, `isnever` -39%, `ustream` -19%, `hazard(p, n)` -18%, `sample` -10%, `hazard(array)` -7%,
+`stopping(p, n)` -6%, `stopping(array)` -3%. `ustream(1)` per call -3%. The random streams are unchanged
+(`test_bindings.py`).
+
+**Design decisions**
+- *Corrected the comment on `NpArray`.* It said that wrapping memory allocated in C++ was several times slower than
+  `np.empty`, but a stock nanobind module measured 318 ns vs 289 ns for a 1-element array, and the same for 1000
+  elements. The 2026-11-06 entry's "about 3x slower" was relative to pybind11. The reason to keep `np.empty` is that the
+  result owns its data, which `test_bindings.py` checks.
+- *Kept `ArrayLike` and its caster.* The same module showed that a plain `nb::ndarray` argument converts dtypes and
+  strided arrays, but rejects lists, tuples and `pandas.Series`, and takes `numpy.float64` ahead of a `double`
+  overload. The tests require all of those to work.
+
+---
+
+## 2026-11-07 — Publish abi3 wheels, and stop publishing free-threaded wheels
+
+**Why** — The release built a wheel per interpreter per platform: 12 wheels, with more for every new CPython. The
+2026-09-02 investigation on `claude/publish-ci-abi3-builds-ely7z4` found abi3 impossible with pybind11, and nanobind
+removes that blocker. One abi3 wheel per platform takes the total to 3.
+
+**What**
+- `CMakeLists.txt`: `STABLE_ABI` and `${SKBUILD_SABI_COMPONENT}`. `pyproject.toml`: `wheel.py-api = "cp313"`, which
+  sets the wheel tag. Both are needed: `STABLE_ABI` alone gives an abi3 binary in a version-specific wheel, and
+  `wheel.py-api` alone gives a version-specific binary in a wheel claiming to be abi3.
+- `src/NPArray.cpp`: `PyTuple_SET_ITEM` isn't in the limited API, so it's now `PyTuple_SetItem`.
+- `cp314t-*` removed from the cibuildwheel build list. `3.14t` stays in the `build-test.yml` matrix.
+
+**Design decisions**
+- *Accept the per-call cost.* Measured on Linux with CPython 3.15, against native wheels from the same source:
+  `isnever(float)` unchanged, `mc.ustream(1)` +8%, `isnever` on a 1-element array +9%, `mc.sample(1, weights)` +11%,
+  `Model.run` per step +2%, `mc.ustream(1000000)` -7%. 3.13 and 3.14 were similar, except `isnever` on a 1000-element
+  array, which was +22% on 3.13 and +1-2% on the others. Neither that outlier nor the large `ustream` gain is explained.
+- *Linked mode rather than split mode.* In nanobind 3.1, `abi3t` (PEP 803, Python 3.15+) is only available in split
+  mode, so linked mode has no stable ABI for free-threaded builds. Split mode wasn't tried, as it adds a runtime
+  dependency on a backend package.
+- *Stop publishing free-threaded wheels, but keep testing free-threaded builds.* Publishing them would need 3 more
+  wheels for each free-threaded version, which is the matrix growth this change removes. Free-threading is still a
+  supported feature, so `FREE_THREADED` stays in `CMakeLists.txt` and the `3.14t` jobs in `build-test.yml` keep testing
+  it, using a source build. `pip install neworder` on a free-threaded interpreter now builds from source too, which
+  needs a C++ toolchain. Wheels built on 3.14t and 3.15t also passed the tests locally, on Linux.
+- *Keep cp314 and cp315 in the cibuildwheel build list.* cibuildwheel 4.2.0 reuses the cp313 abi3 wheel for them rather
+  than rebuilding, and still runs the tests on each, so the wheel is tested on every interpreter it's published for.
+- *Tag `cp313` rather than `cp312`.* nanobind's linked mode targets the 3.12 limited API, but the tag matches
+  `requires-python`.
+
+**Follow-ups**
+- Windows and macOS are untested: run `pypi-release.yml` manually to check those wheels, and the wheel reuse, before
+  releasing.
+- Revisit free-threaded wheels if nanobind's linked mode gains `abi3t`, or split mode becomes worthwhile.
+
+---
+
 ## 2026-11-06 — Migrate from pybind11 to nanobind, and from setuptools to scikit-build-core
 
 **Why** — nanobind produces smaller, faster bindings. Measured against pybind11 on Linux with CPython 3.14: the
@@ -122,8 +197,8 @@ time isn't in the bindings. The public Python API is unchanged, and the random s
 - *Leak warnings are off by default* (set `NEWORDER_LEAK_WARNINGS` to enable), as a model can legitimately hold a cycle
   that the garbage collector can't see through C++, e.g. a seeder bound to the model. The test suite reports no leaks.
   `NB_DOMAIN` isolates this global flag from other nanobind extensions.
-- *Split mode/stable ABI not adopted.* It could shrink the wheel matrix, but adds a runtime dependency on a backend
-  package. Worth considering separately.
+- *Split mode not adopted.* It adds a runtime dependency on a backend package. The stable ABI doesn't need split mode,
+  and was adopted separately (see the 2026-11-07 entry).
 - *One PR rather than class by class.* The two libraries don't share types, and `Model`, `MonteCarlo` and the array
   helpers cross every file.
 

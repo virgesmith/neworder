@@ -1,11 +1,11 @@
 
 #include "Module.h"
 
+#include "ArrayHelpers.h"
 #include "DataFrame.h"
 #include "Log.h"
 #include "Model.h"
 #include "MonteCarlo.h"
-#include "NPArray.h"
 #include "SplitMix64.h"
 #include "Timeline.h"
 

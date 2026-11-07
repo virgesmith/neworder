@@ -9,7 +9,6 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
-#include <functional>
 #include <span>
 #include <type_traits>
 #include <utility>
@@ -19,8 +18,8 @@ namespace no {
 
 template <size_t D> using Index_t = std::array<Py_ssize_t, D>;
 
-// A writable numpy array. Create new ones with allocate: wrapping memory allocated in C++ is several times slower,
-// which is significant for the small arrays returned to case-based models, and leaves the result not owning its data.
+// A writable numpy array. Create new ones with allocate, which uses np.empty so that the result owns its data. Wrapping
+// memory allocated in C++ in a capsule gives an array that doesn't, and is no faster.
 template <typename T> using NpArray = nb::ndarray<nb::numpy, T, nb::c_contig, nb::device::cpu>;
 
 namespace numpy {
@@ -90,15 +89,15 @@ template <typename T> NpArray<T> allocate(std::span<const Py_ssize_t> shape) {
 template <typename T> NpArray<T> allocate(Py_ssize_t size) { return allocate<T>(std::span<const Py_ssize_t>(&size, 1)); }
 
 // Create an array, initialising with a function
-// e.g. "ones" is make_array<double>(n, [](){ return 1.0; })
-template <typename T, size_t D = 1> NpArray<T> make_array(const Index_t<D>& n, const std::function<T()>& f) {
+// e.g. "ones" is make_array<double>({n}, [](){ return 1.0; })
+template <typename T, size_t D = 1, typename F> NpArray<T> make_array(const Index_t<D>& n, F f) {
   NpArray<T> a = allocate<T>(std::span<const Py_ssize_t>(n));
   std::generate(a.data(), a.data() + a.size(), f);
   return a;
 }
 
 // "nullary"/scalar unary op implemented as make_array
-template <typename R, typename A> NpArray<R> unary_op(const ArrayLike<A>& arg, const std::function<R(A)>& f) {
+template <typename R, typename A, typename F> NpArray<R> unary_op(const ArrayLike<A>& arg, F f) {
   std::vector<Py_ssize_t> shape(arg.ndim());
   for (size_t i = 0; i < arg.ndim(); ++i)
     shape[i] = static_cast<Py_ssize_t>(arg.shape(i));
@@ -112,6 +111,16 @@ template <typename R, typename A> NpArray<R> unary_op(const ArrayLike<A>& arg, c
   }
   return result;
 }
+
+namespace time {
+NEWORDER_EXPORT NpArray<bool> isnever_a(const ArrayLike<double>& x);
+}
+
+// logistic function f(x; x0, k)
+NEWORDER_EXPORT NpArray<double> logistic(const ArrayLike<double>& x, double x0, double k);
+
+// logit function
+NEWORDER_EXPORT NpArray<double> logit(const ArrayLike<double>& x);
 
 } // namespace no
 

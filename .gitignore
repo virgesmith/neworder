@@ -26,3 +26,5 @@ package.sh
 
 site/
 .claude/
+.agents/
+.coverage
