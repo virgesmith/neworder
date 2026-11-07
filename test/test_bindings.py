@@ -265,6 +265,28 @@ def test_python_override_calling_pure_base_raises() -> None:
     assert m.steps == 1
 
 
+def test_instance_assigned_override_needs_class_override() -> None:
+    # nanobind (unlike pybind11) first checks the class for an override, and only then fetches the method from the
+    # instance, so a method assigned to an instance is ignored by C++ unless the class also overrides it
+    class StepOnly(no.Model):
+        def __init__(self) -> None:
+            super().__init__(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
+            self.called: list[str] = []
+
+        def step(self) -> None:
+            self.called.append("step")
+
+    class WithFinalise(StepOnly):
+        def finalise(self) -> None:
+            self.called.append("class finalise")
+
+    for cls, expected in ((StepOnly, ["step"]), (WithFinalise, ["step", "instance finalise"])):
+        m = cls()
+        m.finalise = lambda m=m: m.called.append("instance finalise")  # ty: ignore[invalid-assignment]
+        assert no.run(m)
+        assert m.called == expected
+
+
 def test_timeline_repr() -> None:
     class Timeline(_NumpyBoolTimeline):
         calls = 0

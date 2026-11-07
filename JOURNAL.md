@@ -165,8 +165,9 @@ time isn't in the bindings. The public Python API is unchanged, and the random s
   raises a `RuntimeError`. The trampoline's re-entrancy guard stops the recursion after one round.
 - A subclass that doesn't call `super().__init__` now raises a `TypeError` (and a `RuntimeWarning`) when first used
   rather than on construction, as nanobind has no metaclass in which to check.
-- A virtual method assigned to an instance (`m.step = f`) is no longer called, as nanobind looks up overrides on the
-  type. Overriding in a subclass is unaffected.
+- A virtual method assigned to an instance (`m.step = f`) is only called from C++ if the class also overrides it, as
+  nanobind checks the class for an override before fetching it from the instance. Overriding in a subclass is
+  unaffected, and so is `check()`, which `Model::run` calls via Python.
 - `bool` parameters (`relative`, `use_counter`, `verbose`, `checked`) now accept only `True`/`False`, so e.g. a
   `numpy.bool` raises `TypeError`. Values returned from `check()` and `at_end` still only need to be truthy.
 - The wording of argument errors differs; the exception types don't.
