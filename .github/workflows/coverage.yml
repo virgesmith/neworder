@@ -23,11 +23,13 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
     - name: Build
-      # uv builds in a temporary directory that is deleted afterwards, but gcov writes its data next to the object
-      # files. So rebuild the extension in place with instrumentation, leaving the object files in ./build
+      # uv normally builds in a temporary environment that is deleted afterwards, but gcov needs the nanobind headers
+      # at the paths they were compiled from. So rebuild the extension with instrumentation in the project environment.
+      # Its data is written next to the object files, in ./build
       run: |
         uv sync --dev --extra geospatial
-        CXXFLAGS=--coverage uv run --no-sync --with setuptools python setup.py build_ext --inplace --force
+        uv pip install scikit-build-core
+        CXXFLAGS=--coverage SKBUILD_CMAKE_BUILD_TYPE=Debug uv pip install --no-build-isolation --reinstall --no-deps -e .
     - name: Test
       run: |
         uv run --no-sync --with pytest-cov pytest --cov=neworder --cov-report=xml:coverage-py.xml

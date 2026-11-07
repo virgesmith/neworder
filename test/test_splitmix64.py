@@ -338,3 +338,9 @@ def test_raw_known_values(rs: no.SplitMix64) -> None:
             5565653659192831415,
         ],
     )
+
+
+def test_strided_arrays(rs: no.SplitMix64) -> None:
+    a = np.arange(6, dtype=np.int64)
+    assert (rs.raw(a[::2]) == rs.raw(np.array([0, 2, 4]))).all()
+    assert (rs.raw(a[::-1]) == rs.raw(np.array([5, 4, 3, 2, 1, 0]))).all()

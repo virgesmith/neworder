@@ -1,11 +1,12 @@
 #pragma once
 
+#include "ArrayHelpers.h"
 #include "NewOrder.h"
-#include <pybind11/numpy.h>
 
 #include <atomic>
 #include <cstdint>
 #include <functional>
+#include <string>
 #include <string_view>
 #include <vector>
 
@@ -18,12 +19,12 @@ public:
   uint64_t counter() const noexcept;
   void reset() noexcept; // resets the counter only; seeder is called fresh on each uarray()/raw()
 
-  py::array_t<double> uarray(py::args args);
+  NpArray<double> uarray(nb::args args);
 
   // The unmapped 64-bit hashes underlying uarray(), for seeding other generators or
   // deriving variates uarray() can't express. Identical keying, shape and counter
   // semantics to uarray(); only the mapping of the hash to the output type differs.
-  py::array_t<int64_t> raw(py::args args);
+  NpArray<int64_t> raw(nb::args args);
 
   static int64_t hash64(std::string_view s) noexcept;
 
@@ -35,14 +36,14 @@ private:
   struct KeyMix {
     uint64_t salt;
     std::vector<std::vector<uint64_t>> axes;
-    std::vector<py::ssize_t> shape;
-    std::vector<py::ssize_t> strides;
-    py::ssize_t size;
+    std::vector<Py_ssize_t> shape;
+    std::vector<Py_ssize_t> strides;
+    Py_ssize_t size;
   };
 
   // Invokes the seeder and consumes a counter increment, so call exactly once per call.
-  KeyMix mix_keys(const py::args& args, const char* caller);
-  static uint64_t hash_at(const KeyMix& mix, py::ssize_t flat) noexcept;
+  KeyMix mix_keys(const nb::args& args, const char* caller);
+  static uint64_t hash_at(const KeyMix& mix, Py_ssize_t flat) noexcept;
 
   std::function<int64_t()> m_seeder;
   bool m_use_counter;

@@ -371,3 +371,10 @@ def test_bitgen(base_model: no.Model) -> None:
     gen2 = no.as_np(base_model_different_seed.mc)
     assert gen2.bit_generator.random_raw() != base_model.mc.raw()
     assert (gen2.uniform(size=100) != base_model.mc.ustream(100)).all()
+
+
+def test_strided_arrays(base_model: no.Model) -> None:
+    p = np.array([0.0, 1.0, 0.0, 1.0])
+    assert (base_model.mc.hazard(p[::2]) == 0.0).all()
+    assert (base_model.mc.hazard(p[1::2]) == 1.0).all()
+    assert (base_model.mc.hazard(p[::-1]) == [1.0, 0.0, 1.0, 0.0]).all()

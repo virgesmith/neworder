@@ -11,7 +11,7 @@ description: >
 
 # Building models with neworder
 
-`neworder` is a dynamic microsimulation framework: a C++ core (via pybind11) exposed as a Python
+`neworder` is a dynamic microsimulation framework: a C++ core (via nanobind) exposed as a Python
 module. You supply a `Model` subclass and a timeline; the runtime iterates the timeline, calling
 your methods at each step. It is data-agnostic — populations are normally `pandas` DataFrames and
 the library functions operate directly on them (and on `numpy` arrays) without copying.
@@ -95,10 +95,8 @@ Properties: `index`, `time`, `dt`, `start`, `end`, `nsteps`, `at_end`. Custom ti
 `neworder/timeline.py`) is the reference implementation to copy.
 
 **Implement every one of those properties.** The base class doesn't implement them, and a missing
-one doesn't raise `AttributeError`: accessing it finds the base class property again and recurses.
-On Linux that ends in `RuntimeError: Tried to call pure virtual function`; on Windows (smaller
-default stack) it can overflow the stack and crash the interpreter with no Python traceback. A
-missing `_next` raises `RuntimeError` when the model runs. If you see either symptom with a custom
+one doesn't raise `AttributeError`: accessing it raises `RuntimeError` ("tried to call a pure virtual
+function"). A missing `_next` raises `RuntimeError` when the model runs. If you see this with a custom
 timeline, check for a missing or misspelled property first.
 
 Open-ended timelines stop via `model.halt()` from within `step()`. Note that `halt()` does *not*
@@ -192,14 +190,14 @@ one of the `parallel-native`/`parallel-openmpi`/`parallel-mpich` extras and `mpi
 ## Gotchas
 
 - **The base class must be initialised** — `super().__init__(timeline, seeder)`. Skipping it is a
-  runtime error, not a quiet one.
+  runtime error when the instance is first used, not a quiet one.
 - **The C++ core is statically typed.** Passing `3.0` where an `int` is expected raises `TypeError`
   immediately, and `dtype` matters as much as the outer type. The package ships annotations and
   `py.typed`, so a type checker catches most of this — use one.
 - **`transition`/`transition_conditional` return new data**, they do not mutate the series.
 - **Never advance the timeline yourself**; the runtime does it between steps.
-- **A custom timeline missing a property recurses** instead of raising `AttributeError` — a
-  "pure virtual function" `RuntimeError` on Linux, a hard crash on Windows. Implement them all.
+- **A custom timeline missing a property** raises a "pure virtual function" `RuntimeError`, not an
+  `AttributeError`. Implement them all.
 - **`NEVER` is NaN** — `NEVER == NEVER` is `False`; use `no.time.isnever`.
 - **`mc.reset()` re-invokes the seeder**, so a non-deterministic seeder gives a *different* stream
   after reset, not the original one.
@@ -219,7 +217,7 @@ mpiexec -n 2 python examples/parallel/model.py   # parallel examples
 
 If you are changing this framework rather than using it, the repository's `AGENTS.md` governs the
 workflow: C++ core in `src/`, Python package in `neworder/`, type stubs regenerated with
-`pybind11-stubgen` whenever the pybind11 bindings change, the full gate suite
+`nanobind.stubgen` whenever the nanobind bindings change, the full gate suite
 (`uv run ruff check`, `uv run ruff format --check`, `uv run ty check neworder examples test`,
 `uv run pytest`) green before anything is called done, the affected `examples/` run by hand, docs
 under `docs/` updated, and a `JOURNAL.md` entry for every substantive change.

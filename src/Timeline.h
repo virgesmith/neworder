@@ -4,7 +4,11 @@
 
 #include "Log.h"
 
+#include <nanobind/trampoline.h>
+
 #include <cstddef>
+#include <cstdint>
+#include <string>
 #include <vector>
 
 namespace no {
@@ -17,9 +21,9 @@ public:
   virtual ~Timeline() = default;
 
   // times may have different types, depending on implementation
-  virtual py::object time() const = 0;
-  virtual py::object start() const = 0;
-  virtual py::object end() const = 0;
+  virtual nb::object time() const = 0;
+  virtual nb::object start() const = 0;
+  virtual nb::object end() const = 0;
 
   int64_t index() { return m_index; };
   virtual double dt() const = 0;
@@ -30,7 +34,7 @@ public:
 
   // used by python __repr__, default implementation
   virtual std::string repr() const {
-    return "<%% index=%%>"s % py::cast(this).attr("__class__").attr("__name__").cast<std::string>() % m_index;
+    return "<%% index=%%>"s % nb::cast<std::string>(nb::find(*this).attr("__class__").attr("__name__")) % m_index;
   }
 
 protected:
@@ -45,21 +49,21 @@ private:
   }
 };
 
-class PyTimeline : public Timeline {
-  using Timeline::Timeline;
+class PyTimeline : private Timeline {
+  NB_TRAMPOLINE(Timeline);
   using Timeline::operator=;
 
   // trampoline methods
-  py::object time() const override { PYBIND11_OVERRIDE_PURE(py::object, Timeline, time); }
-  py::object start() const override { PYBIND11_OVERRIDE_PURE(py::object, Timeline, start); }
-  py::object end() const override { PYBIND11_OVERRIDE_PURE(py::object, Timeline, end); }
+  nb::object time() const override { NB_OVERRIDE_PURE(time); }
+  nb::object start() const override { NB_OVERRIDE_PURE(start); }
+  nb::object end() const override { NB_OVERRIDE_PURE(end); }
 
-  double dt() const override { PYBIND11_OVERRIDE_PURE(double, Timeline, dt); }
+  double dt() const override { NB_OVERRIDE_PURE(dt); }
 
-  void _next() override { PYBIND11_OVERRIDE_PURE(void, Timeline, _next); }
+  void _next() override { NB_OVERRIDE_PURE(_next); }
 
-  bool at_end() const override { PYBIND11_OVERRIDE_PURE(bool, Timeline, at_end); }
-  std::string repr() const override { PYBIND11_OVERRIDE_NAME(std::string, Timeline, "__repr__", repr); }
+  bool at_end() const override { NB_OVERRIDE_PURE(at_end); }
+  std::string repr() const override { NB_OVERRIDE_NAME("__repr__", repr); }
 };
 
 // An empty (one arbitrary step) timeline. The model's step method will each be called once only
@@ -74,9 +78,9 @@ public:
   NoTimeline& operator=(NoTimeline&&) = default;
 
   // the actual types may differ in derived classes
-  py::object time() const override;
-  py::object start() const override;
-  py::object end() const override;
+  nb::object time() const override;
+  nb::object start() const override;
+  nb::object end() const override;
 
   double dt() const override;
 
@@ -103,9 +107,9 @@ public:
   LinearTimeline(LinearTimeline&&) = default;
   LinearTimeline& operator=(LinearTimeline&&) = default;
 
-  py::object time() const override;
-  py::object start() const override;
-  py::object end() const override;
+  nb::object time() const override;
+  nb::object start() const override;
+  nb::object end() const override;
 
   double dt() const override;
 
@@ -134,9 +138,9 @@ public:
   NumericTimeline(NumericTimeline&&) = default;
   NumericTimeline& operator=(NumericTimeline&&) = default;
 
-  py::object time() const override;
-  py::object start() const override;
-  py::object end() const override;
+  nb::object time() const override;
+  nb::object start() const override;
+  nb::object end() const override;
 
   double dt() const override;
 

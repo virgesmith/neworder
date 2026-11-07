@@ -41,9 +41,9 @@ int64_t no::SplitMix64::hash64(std::string_view s) noexcept {
   return static_cast<int64_t>(splitmix64(h));
 }
 
-no::SplitMix64::KeyMix no::SplitMix64::mix_keys(const py::args& args, const char* caller) {
+no::SplitMix64::KeyMix no::SplitMix64::mix_keys(const nb::args& args, const char* caller) {
   if (args.empty())
-    throw py::value_error(std::string(caller) + " requires at least one argument");
+    throw no::value_error(std::string(caller) + " requires at least one argument");
 
   // Parse each arg into a flat value buffer. Array args also record their size
   // so we can build the output shape and compute multi-dimensional indices.
@@ -55,17 +55,23 @@ no::SplitMix64::KeyMix no::SplitMix64::mix_keys(const py::args& args, const char
   std::vector<Arg> parsed;
   parsed.reserve(args.size());
 
-  for (size_t i = 0; i < args.size(); ++i) {
-    py::handle obj = args[i];
-    if (py::isinstance<py::int_>(obj)) {
-      parsed.push_back({{static_cast<uint64_t>(obj.cast<int64_t>())}, false});
+  const std::string invalid_arg = std::string(caller) + ": each argument must be a scalar int or a 1-D integer array";
+
+  for (nb::handle obj : args) {
+    if (nb::isinstance<nb::int_>(obj)) {
+      parsed.push_back({{static_cast<uint64_t>(nb::cast<int64_t>(obj))}, false});
     } else {
-      auto arr = py::array_t<int64_t, py::array::forcecast>::ensure(obj);
-      if (!arr || arr.ndim() != 1)
-        throw py::type_error(std::string(caller) + ": each argument must be a scalar int or a 1-D integer array");
+      no::ArrayLike<int64_t> arr;
+      try {
+        arr = no::as_array<int64_t>(obj);
+      } catch (const nb::python_error&) {
+        throw no::type_error(invalid_arg);
+      }
+      if (arr.ndim() != 1)
+        throw no::type_error(invalid_arg);
       std::vector<uint64_t> vals(arr.size());
       const int64_t* ptr = arr.data();
-      for (py::ssize_t j = 0; j < arr.size(); ++j)
+      for (size_t j = 0; j < arr.size(); ++j)
         vals[j] = static_cast<uint64_t>(ptr[j]);
       parsed.push_back({std::move(vals), true});
     }
@@ -86,7 +92,7 @@ no::SplitMix64::KeyMix no::SplitMix64::mix_keys(const py::args& args, const char
   // and the per-element hash steps applied on top of the salt.
   for (auto& arg : parsed) {
     if (arg.is_array) {
-      mix.shape.push_back(static_cast<py::ssize_t>(arg.values.size()));
+      mix.shape.push_back(static_cast<Py_ssize_t>(arg.values.size()));
       mix.axes.push_back(std::move(arg.values));
     }
   }
@@ -104,36 +110,36 @@ no::SplitMix64::KeyMix no::SplitMix64::mix_keys(const py::args& args, const char
   return mix;
 }
 
-uint64_t no::SplitMix64::hash_at(const KeyMix& mix, py::ssize_t flat) noexcept {
+uint64_t no::SplitMix64::hash_at(const KeyMix& mix, Py_ssize_t flat) noexcept {
   uint64_t h = mix.salt;
   for (size_t k = 0; k < mix.shape.size(); ++k) {
-    const py::ssize_t ik = (flat / mix.strides[k]) % mix.shape[k];
+    const Py_ssize_t ik = (flat / mix.strides[k]) % mix.shape[k];
     h = splitmix64(h ^ mix.axes[k][static_cast<size_t>(ik)]);
   }
   return h;
 }
 
-py::array_t<double> no::SplitMix64::uarray(py::args raw_args) {
+no::NpArray<double> no::SplitMix64::uarray(nb::args raw_args) {
   const KeyMix mix = mix_keys(raw_args, "uarray");
 
-  py::array_t<double> result(mix.shape); // shape={} produces a 0-d array for all-scalar args
-  double* out = result.mutable_data();
+  NpArray<double> result = no::allocate<double>(mix.shape); // shape={} produces a 0-d array for all-scalar args
+  double* out = result.data();
 
-  for (py::ssize_t flat = 0; flat < mix.size; ++flat)
+  for (Py_ssize_t flat = 0; flat < mix.size; ++flat)
     out[flat] = static_cast<double>(hash_at(mix, flat) >> 11) * INV_2_53;
 
   return result;
 }
 
-py::array_t<int64_t> no::SplitMix64::raw(py::args raw_args) {
+no::NpArray<int64_t> no::SplitMix64::raw(nb::args raw_args) {
   const KeyMix mix = mix_keys(raw_args, "raw");
 
-  py::array_t<int64_t> result(mix.shape); // shape={} produces a 0-d array for all-scalar args
-  int64_t* out = result.mutable_data();
+  NpArray<int64_t> result = no::allocate<int64_t>(mix.shape); // shape={} produces a 0-d array for all-scalar args
+  int64_t* out = result.data();
 
   // The full 64 bits, reinterpreted (not clamped) as signed - uarray() discards the
   // low 11 in exchange for a uniform mapping onto float64's 53-bit mantissa.
-  for (py::ssize_t flat = 0; flat < mix.size; ++flat)
+  for (Py_ssize_t flat = 0; flat < mix.size; ++flat)
     out[flat] = static_cast<int64_t>(hash_at(mix, flat));
 
   return result;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <pybind11/pybind11.h>
+#include "NewOrder.h"
 
 // helper class for accessing the python attributes of a C++ class with python bindings
 template<typename T>
@@ -8,9 +8,9 @@ class PyAccessor final
 {
 public:
   typedef T cpp_type;
-  explicit PyAccessor(cpp_type& object) : ref(py::cast(&object)) { }
+  explicit PyAccessor(cpp_type& object) : ref(nb::find(object)) { }
 
-  py::object get(const char* name) const
+  nb::object get(const char* name) const
   {
     return ref.attr(name);
   }
@@ -18,9 +18,14 @@ public:
   template<typename U>
   U get_as(const char* name) const
   {
-    return ref.attr(name).template cast<U>();
+    return nb::cast<U>(ref.attr(name));
+  }
+
+  bool get_truthy(const char* name) const
+  {
+    return no::truthy(get(name));
   }
 
 private:
-  py::object ref;
+  nb::object ref;
 };

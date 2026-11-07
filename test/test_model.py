@@ -15,8 +15,10 @@ def test_base_not_initialised() -> None:
         def __init__(self) -> None:
             pass
 
-    with pytest.raises(TypeError):
-        _ = TestModel()
+    # there's no error until the instance is used: nanobind has no metaclass to check this on construction
+    m = TestModel()
+    with pytest.warns(RuntimeWarning, match="uninitialized"), pytest.raises(TypeError):
+        no.run(m)
 
 
 def test_step_not_implemented() -> None:

@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <functional>
 #include <random>
+#include <string>
 #include <vector>
 
 void test_mc();
@@ -26,7 +27,7 @@ public:
   // constructs given a seeder callable, invoked on construction and on each reset()
   MonteCarlo(std::function<int32_t()> seeder) noexcept;
 
-  void init_bitgen(py::capsule capsule);
+  void init_bitgen(nb::capsule capsule);
 
   int32_t seed() const noexcept;
 
@@ -36,7 +37,7 @@ public:
   std::string repr() const noexcept;
 
   // Uniform random [0,1) fed from the environment's PRNG stream
-  py::array_t<double> ustream(py::ssize_t n);
+  NpArray<double> ustream(Py_ssize_t n);
 
   // returns a hash of the internal state. (The raw string representation's length varies, making MPI comms trickier)
   size_t state() const noexcept;
@@ -45,33 +46,33 @@ public:
   uint64_t raw() noexcept;
 
   // randomly sample categories with weights
-  py::array_t<int64_t> sample(py::ssize_t n, const py::array_t<double>& cat_weights);
+  NpArray<int64_t> sample(Py_ssize_t n, const ArrayLike<double>& cat_weights);
 
   // single-prob hazard
-  py::array_t<double> hazard(double prob, py::ssize_t n);
+  NpArray<double> hazard(double prob, Py_ssize_t n);
 
   // vector hazard
-  py::array_t<double> hazard(const py::array_t<double>& prob);
+  NpArray<double> hazard(const ArrayLike<double>& prob);
 
   // compute stopping times
-  py::array_t<double> stopping(double prob, py::ssize_t n);
+  NpArray<double> stopping(double prob, Py_ssize_t n);
 
   // vector stopping
-  py::array_t<double> stopping(const py::array_t<double>& prob);
+  NpArray<double> stopping(const ArrayLike<double>& prob);
 
   // multiple-arrival (0+) process (requires that final hazard rate is zero)
-  py::array_t<double> arrivals(const py::array_t<double>& lambda_t, double dt, py::ssize_t n, double gap);
+  NpArray<double> arrivals(const ArrayLike<double>& lambda_t, double dt, Py_ssize_t n, double gap);
 
   // compute arrival times given a nonhomogeneous Poisson process specified by lambda
-  py::array_t<double> first_arrival(const py::array_t<double>& lambda_t, double dt, py::ssize_t n, double minval);
+  NpArray<double> first_arrival(const ArrayLike<double>& lambda_t, double dt, Py_ssize_t n, double minval);
 
   // given an array of arrival times at one state, sample times of arrival of subsequent event optionally with a minumum
   // separation minsep relative = true means lambda_t is relative to the starting point *plus minsep*
-  py::array_t<double> next_arrival(const py::array_t<double>& startingpoints, const py::array_t<double>& lambda_t,
-                                   double dt, bool relative, double minsep);
+  NpArray<double> next_arrival(const ArrayLike<double>& startingpoints, const ArrayLike<double>& lambda_t, double dt,
+                               bool relative, double minsep);
 
   // returns sampled arrival counts (within time interval dt) for each intensity lambda
-  py::array_t<int64_t> counts(const py::array_t<double>& lambda, double dt);
+  NpArray<int64_t> counts(const ArrayLike<double>& lambda, double dt);
 
 private:
   // Use this over std::uniform_real_distribution as can make C++ and rust implementations produce identical streams

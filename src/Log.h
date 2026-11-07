@@ -6,6 +6,7 @@
 #include <sstream>
 #include <string>
 #include <type_traits>
+#include <vector>
 // #include <chrono>
 #include <iomanip>
 
@@ -17,7 +18,7 @@ std::string to_string(char c);
 
 std::string to_string(const std::string& str);
 
-std::string to_string(const py::object& o);
+std::string to_string(const nb::object& o);
 
 template <typename T> std::string to_string(const std::vector<T>& v) {
   if (v.empty())
@@ -87,9 +88,6 @@ inline std::string boolean(bool x) { return x ? "true" : "false"; }
 } // namespace format
 
 namespace no {
-
-// msg is forcibly coerced to a string
-NEWORDER_EXPORT void log(const py::handle& msg);
 
 void log(const std::string& msg);
 void warn(const std::string& msg);
