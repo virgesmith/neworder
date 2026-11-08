@@ -411,6 +411,6 @@ def test_custom_timeline_missing_next() -> None:
 
 def test_strided_arrays() -> None:
     a = np.array([1.0, no.time.NEVER, 2.0, no.time.NEVER])
-    assert no.time.isnever(a[::2]).tolist() == [False, False]  # ty: ignore[unresolved-attribute]
-    assert no.time.isnever(a[1::2]).tolist() == [True, True]  # ty: ignore[unresolved-attribute]
-    assert no.time.isnever(a[::-1]).tolist() == [True, False, True, False]  # ty: ignore[unresolved-attribute]
+    assert no.time.isnever(a[::2]).tolist() == [False, False]
+    assert no.time.isnever(a[1::2]).tolist() == [True, True]
+    assert no.time.isnever(a[::-1]).tolist() == [True, False, True, False]

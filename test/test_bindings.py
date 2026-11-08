@@ -93,12 +93,12 @@ def test_array_args_accept_readonly(mc: no.MonteCarlo) -> None:
     p.flags.writeable = False
     assert mc.hazard(p).shape == (2,)
     assert mc.stopping(p).shape == (2,)
-    assert not no.time.isnever(p).any()  # ty: ignore[unresolved-attribute]
+    assert not no.time.isnever(p).any()
 
 
 def test_array_args_preserve_shape(mc: no.MonteCarlo) -> None:
     assert mc.hazard(np.full((2, 3), 0.5)).shape == (2, 3)
-    assert no.time.isnever(np.zeros((2, 3))).shape == (2, 3)  # ty: ignore[unresolved-attribute]
+    assert no.time.isnever(np.zeros((2, 3))).shape == (2, 3)
 
 
 def test_array_args_do_not_modify_input(mc: no.MonteCarlo) -> None:
@@ -282,7 +282,7 @@ def test_instance_assigned_override_needs_class_override() -> None:
 
     for cls, expected in ((StepOnly, ["step"]), (WithFinalise, ["step", "instance finalise"])):
         m = cls()
-        m.finalise = lambda m=m: m.called.append("instance finalise")  # ty: ignore[invalid-assignment]
+        m.finalise = lambda m=m: m.called.append("instance finalise")
         assert no.run(m)
         assert m.called == expected
 
