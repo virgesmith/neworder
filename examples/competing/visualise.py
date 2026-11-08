@@ -1,6 +1,6 @@
 import numpy as np
 from matplotlib import pyplot as plt
-from people import People  # ty:ignore[unresolved-import]
+from people import People  # ty:ignore[import-not-found]
 
 
 def plot(model: People) -> None:
@@ -20,8 +20,8 @@ def plot_age(model: People) -> None:
         model.population.time_of_baby_4,
         model.population.time_of_baby_5,
     ]
-    plt.hist(b, bins, stacked=True)
-    plt.hist(model.population.time_of_death, bins, color="black")
+    plt.hist(b, bins.tolist(), stacked=True)
+    plt.hist(model.population.time_of_death, bins.tolist(), color="black")
     plt.title("Competing risks of childbirth and death")
     plt.legend(["1st birth", "2nd birth", "3rd birth", "4th birth", "5th birth", "Death"])
     plt.xlabel("Age (y)")

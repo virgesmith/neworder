@@ -1,5 +1,5 @@
 # !setup!
-from parallel_mpi import ParallelMPI  # import our model definition  # ty:ignore[unresolved-import]
+from parallel_mpi import ParallelMPI  # import our model definition  # ty:ignore[import-not-found]
 
 import neworder
 

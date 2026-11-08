@@ -19,17 +19,9 @@ class Status(IntEnum):
     IMMUNE = 2
     DEAD = 3
 
-    @property
-    def rgba(self) -> tuple[float, float, float, float]:
-        match self:
-            case Status.SUSCEPTIBLE:
-                return (1.0, 1.0, 1.0, 1.0)
-            case Status.INFECTED:
-                return (1.0, 0.0, 0.0, 1.0)
-            case Status.IMMUNE:
-                return (0.0, 1.0, 0.0, 1.0)
-            case Status.DEAD:
-                return (0.0, 0.0, 0.0, 1.0)
+
+# indexed by Status value
+COLOURS = np.array(["white", "red", "green", "black"])
 
 
 class Infection(no.Model):
@@ -187,7 +179,7 @@ class Infection(no.Model):
         g = ax.scatter(
             self.agents.geometry.x,
             self.agents.geometry.y,
-            color=self.agents.status.apply(lambda c: c.rgba),
+            color=COLOURS[self.agents.status],
             edgecolor="k",
         )
         fig.suptitle("[q to quit]")
@@ -197,7 +189,7 @@ class Infection(no.Model):
 
     def __update_visualisation(self, num_infected, num_immune, num_dead) -> None:
         offsets = np.array(list(zip(self.agents.geometry.x, self.agents.geometry.y, strict=False)))
-        colours = self.agents.status.apply(lambda c: c.rgba)
+        colours = COLOURS[self.agents.status]
         self.g.set_offsets(offsets)
         self.g.set_facecolors(colours)
         self.fig.suptitle(

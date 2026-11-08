@@ -1,4 +1,4 @@
-from conway import Conway  # ty:ignore[unresolved-import]
+from conway import Conway  # ty:ignore[import-not-found]
 
 import neworder as no
 

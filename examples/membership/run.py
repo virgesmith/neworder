@@ -7,7 +7,7 @@ that SplitMix64 draws are stable under sub-sampling and reordering, and
 contrasts this with the sequential MonteCarlo stream, which is not.
 """
 
-from membership import Membership  # ty:ignore[unresolved-import]
+from membership import Membership  # ty:ignore[import-not-found]
 
 import neworder as no
 

@@ -1,6 +1,6 @@
 import numpy as np
 import numpy.typing as npt
-from markov_chain import ConditionalMarkovChain, MarkovChain, MarkovChainBase  # ty:ignore[unresolved-import]
+from markov_chain import ConditionalMarkovChain, MarkovChain, MarkovChainBase  # ty:ignore[import-not-found]
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
 

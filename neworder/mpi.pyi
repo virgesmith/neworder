@@ -9,7 +9,7 @@ COMM: the MPI communicator (None in serial mode)
 
 from __future__ import annotations
 
-import mpi4py.MPI  # ty:ignore[unresolved-import]
+import mpi4py.MPI  # ty:ignore[import-not-found]
 
 __all__: list[str] = ["COMM", "RANK", "SIZE"]
 COMM: mpi4py.MPI.Intracomm | None  # value = <mpi4py.MPI.Intracomm object>

@@ -4,7 +4,7 @@ from pathlib import Path
 
 import numpy
 from pybind11.setup_helpers import ParallelCompile, Pybind11Extension
-from setuptools import setup  # ty:ignore[unresolved-import]
+from setuptools import setup  # ty:ignore[import-not-found]
 
 # see https://github.com/pybind/python_example
 

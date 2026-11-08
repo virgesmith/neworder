@@ -10,7 +10,7 @@ from warnings import deprecated
 
 import numpy as np
 import numpy.typing as npt
-from _neworder_core import stats as _stats  # ty:ignore[unresolved-import]
+from _neworder_core import stats as _stats  # ty:ignore[import-not-found]
 
 __all__: list[str] = ["logistic", "logit"]
 

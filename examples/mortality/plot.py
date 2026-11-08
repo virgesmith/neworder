@@ -1,14 +1,19 @@
+from typing import cast
+
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from matplotlib.container import BarContainer
 
 
 class Hist:
     def __init__(self, data: pd.Series, numbins: int) -> None:
         fig, ax = plt.subplots()
         # see https://matplotlib.org/api/_as_gen/matplotlib.pyplot.hist.html
-        self.n, _bins, self.patches = plt.hist(data, numbins, facecolor="black")
+        self.n, _bins, patches = plt.hist(data, numbins, facecolor="black")
+        # a single dataset always gives a BarContainer, not a list of them
+        self.patches = cast(BarContainer, patches)
 
         ax.set_title(f"Discrete case-based mortality model ({len(data)} people)")
         ax.set_xlabel("Age at Death")
@@ -29,7 +34,7 @@ class Hist:
 
     def _animate(self, frameno: int):
         i = 0
-        for rect, h in zip(self.patches, self.n, strict=True):  # ty:ignore[invalid-argument-type]
+        for rect, h in zip(self.patches, self.n, strict=True):
             rect.set_height(h if i <= frameno else 0)
             i = i + 1
         return self.patches

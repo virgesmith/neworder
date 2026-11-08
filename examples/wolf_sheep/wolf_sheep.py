@@ -238,14 +238,14 @@ class WolfSheep(no.Model):
 
         bins = np.linspace(0, self.init_wolf_speed * 3.0, 51)
         width = self.init_wolf_speed * 3.0 / 50
-        _, b_ws, ax_ws = ax3.hist([self.init_wolf_speed], bins=bins, width=width, color=WOLF_COLOUR)
+        _, b_ws, ax_ws = ax3.hist([self.init_wolf_speed], bins=bins.tolist(), width=width, color=WOLF_COLOUR)
         # ax3.set_xlabel("Speed distribution")
         ax3.axvline(self.init_wolf_speed)
 
         # sheep speed distribution
         bins = np.linspace(0, self.init_sheep_speed * 3.0, 51)
         width = self.init_sheep_speed * 3.0 / 50
-        _, b_ss, ax_ss = ax4.hist([self.init_sheep_speed], bins=bins, width=width, color=SHEEP_COLOUR)
+        _, b_ss, ax_ss = ax4.hist([self.init_sheep_speed], bins=bins.tolist(), width=width, color=SHEEP_COLOUR)
         ax4.set_xlabel("Speed distribution")
         ax4.axvline(self.init_sheep_speed)
 

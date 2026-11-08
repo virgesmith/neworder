@@ -10,8 +10,8 @@ This version implements the model using multithreading rather than MPI
 import sys
 from concurrent.futures import ThreadPoolExecutor
 
-from black_scholes_mt import BlackScholesMT, greeks  # ty:ignore[unresolved-import]
-from helpers import Market, Option  # ty:ignore[unresolved-import]
+from black_scholes_mt import BlackScholesMT, greeks  # ty:ignore[import-not-found]
+from helpers import Market, Option  # ty:ignore[import-not-found]
 
 import neworder
 

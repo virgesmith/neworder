@@ -1,6 +1,6 @@
-from data import max_age, min_age  # ty:ignore[unresolved-import]
+from data import max_age, min_age  # ty:ignore[import-not-found]
 from matplotlib import pyplot as plt
-from riskpaths import RiskPaths  # ty:ignore[unresolved-import]
+from riskpaths import RiskPaths  # ty:ignore[import-not-found]
 
 
 def plot(model: RiskPaths) -> None:
