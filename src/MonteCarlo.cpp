@@ -6,27 +6,37 @@
 #include "Timeline.h"
 #include <algorithm>
 #include <cmath>
+#include <limits>
 #include <numpy/random/bitgen.h>
 #include <random>
+#include <sstream>
 
 namespace {
 
 void validate_prob(double prob) {
   if (std::isnan(prob) || prob < 0.0 || prob > 1.0) {
-    throw py::value_error("probabilities must be in [0,1], got %%"s % prob);
+    throw no::value_error("probabilities must be in [0,1], got %%"s % prob);
   }
 }
 
-void validate_prob(const py::array_t<double>& prob) {
+void validate_prob(const no::ArrayLike<double>& prob) {
   std::for_each(no::cbegin(prob), no::cend(prob), [](double p) { validate_prob(p); });
 }
 
-void validate_lambda(const py::array_t<double>& lambda) {
+void validate_lambda(const no::ArrayLike<double>& lambda) {
   std::for_each(no::cbegin(lambda), no::cend(lambda), [](double l) {
     if (std::isnan(l) || l < 0.0) {
-      throw py::value_error("intensities must be >=0, got %%"s % l);
+      throw no::value_error("intensities must be >=0, got %%"s % l);
     }
   });
+}
+
+// the arrival processes take the largest intensity, and extrapolate the final one
+void validate_lambda_t(const no::ArrayLike<double>& lambda_t) {
+  if (lambda_t.size() == 0) {
+    throw no::value_error("intensities must not be empty");
+  }
+  validate_lambda(lambda_t);
 }
 
 } // namespace
@@ -45,13 +55,13 @@ int32_t no::MonteCarlo::nondeterministic_stream() {
   return rand();
 }
 
-no::MonteCarlo::MonteCarlo(std::function<int32_t()> seeder) noexcept
+no::MonteCarlo::MonteCarlo(std::function<int32_t()> seeder)
     : m_seeder(std::move(seeder)), m_seed(m_seeder()), m_prng(m_seed) {}
 
 int32_t no::MonteCarlo::seed() const noexcept { return m_seed; }
 
-void no::MonteCarlo::init_bitgen(py::capsule capsule) {
-  bitgen_t* bitgen(capsule);
+void no::MonteCarlo::init_bitgen(nb::capsule capsule) {
+  bitgen_t* bitgen = static_cast<bitgen_t*>(capsule.data());
   bitgen->state = this;
   bitgen->next_uint64 = [](void* p) { return static_cast<no::MonteCarlo*>(p)->raw(); };
   bitgen->next_uint32 = [](void* p) { return static_cast<uint32_t>(static_cast<no::MonteCarlo*>(p)->raw()); };
@@ -83,12 +93,12 @@ double no::MonteCarlo::u01() noexcept {
   return m_prng() * SCALE;
 }
 
-py::array_t<double> no::MonteCarlo::ustream(py::ssize_t n) {
+no::NpArray<double> no::MonteCarlo::ustream(Py_ssize_t n) {
   return no::make_array<double>({n}, [this]() { return u01(); });
 }
 
-py::array_t<int64_t> no::MonteCarlo::sample(py::ssize_t n, const py::array_t<double>& cat_weights) {
-  py::ssize_t m = cat_weights.size();
+no::NpArray<int64_t> no::MonteCarlo::sample(Py_ssize_t n, const ArrayLike<double>& cat_weights) {
+  size_t m = cat_weights.size();
   const double* p = no::cbegin(cat_weights);
 
   std::vector<double> cumul = no::cumulative(p, m);
@@ -103,19 +113,19 @@ py::array_t<int64_t> no::MonteCarlo::sample(py::ssize_t n, const py::array_t<dou
 }
 
 // simple hazard constant probability
-py::array_t<double> no::MonteCarlo::hazard(double prob, py::ssize_t n) {
+no::NpArray<double> no::MonteCarlo::hazard(double prob, Py_ssize_t n) {
   validate_prob(prob);
-  return no::make_array<int>({n}, [&]() { return (u01() < prob) ? 1 : 0; });
+  return no::make_array<double>({n}, [&]() { return (u01() < prob) ? 1.0 : 0.0; });
 }
 
 // hazard with varying probablities
-py::array_t<double> no::MonteCarlo::hazard(const py::array_t<double>& prob) {
+no::NpArray<double> no::MonteCarlo::hazard(const ArrayLike<double>& prob) {
   validate_prob(prob);
-  return no::unary_op<int, double>(prob, [this](double p) { return u01() < p ? 1 : 0; });
+  return no::unary_op<double, double>(prob, [this](double p) { return u01() < p ? 1.0 : 0.0; });
 }
 
 // computes stopping times
-py::array_t<double> no::MonteCarlo::stopping(double prob, py::ssize_t n) {
+no::NpArray<double> no::MonteCarlo::stopping(double prob, Py_ssize_t n) {
   validate_prob(prob);
   double rprob = 1.0 / prob;
 
@@ -124,21 +134,20 @@ py::array_t<double> no::MonteCarlo::stopping(double prob, py::ssize_t n) {
   return no::make_array<double>({n}, [&]() { return -::log(u01()) * rprob; });
 }
 
-py::array_t<double> no::MonteCarlo::stopping(const py::array_t<double>& prob) {
+no::NpArray<double> no::MonteCarlo::stopping(const ArrayLike<double>& prob) {
   validate_prob(prob);
   return no::unary_op<double, double>(prob, [this](double p) { return -::log(u01()) / p; });
 }
 
 // multiple-arrival (0+) process
-py::array_t<double> no::MonteCarlo::arrivals(const py::array_t<double>& lambda_t, double dt, py::ssize_t n,
-                                             double gap) {
-  validate_lambda(lambda_t);
+no::NpArray<double> no::MonteCarlo::arrivals(const ArrayLike<double>& lambda_t, double dt, Py_ssize_t n, double gap) {
+  validate_lambda_t(lambda_t);
   const double* pl = no::cbegin(lambda_t);
   size_t nl = lambda_t.size();
 
   // validate lambdas - but what exactly is valid?
   if (pl[nl - 1] != 0.0) {
-    throw py::value_error("Multiple-arrival Non-homogeneous Poisson process requires a zero final hazard rate");
+    throw nb::value_error("Multiple-arrival Non-homogeneous Poisson process requires a zero final hazard rate");
   }
 
   // What is the optimal lambda_u? For now largest value
@@ -170,23 +179,25 @@ py::array_t<double> no::MonteCarlo::arrivals(const py::array_t<double>& lambda_t
     // no::log("%%: %%"s % i % times[i]);
   }
 
-  py::array_t<double> nptimes({n, static_cast<py::ssize_t>(imax - 1)});
-  no::fill(nptimes, no::time::never());
-  double* pa = no::begin(nptimes); //.begin();
+  // each row's final entry is dropped, so with n=0 (and so imax=0) avoid underflowing the column count
+  const size_t ncols = imax > 0 ? imax - 1 : 0;
+  NpArray<double> nptimes = no::allocate<double>(Index_t<2>{n, static_cast<Py_ssize_t>(ncols)});
+  double* pa = nptimes.data();
+  std::fill(pa, pa + nptimes.size(), no::time::never());
 
   for (size_t i = 0; i < times.size(); ++i) {
     for (size_t j = 0; j < times[i].size() - 1; ++j) {
       pa[j] = times[i][j];
     }
-    pa += imax - 1;
+    pa += ncols;
   }
 
   return nptimes;
 }
 
-py::array_t<double> no::MonteCarlo::first_arrival(const py::array_t<double>& lambda_t, double dt, py::ssize_t n,
+no::NpArray<double> no::MonteCarlo::first_arrival(const ArrayLike<double>& lambda_t, double dt, Py_ssize_t n,
                                                   double minval) {
-  validate_lambda(lambda_t);
+  validate_lambda_t(lambda_t);
   const double* pl = no::cbegin(lambda_t);
   size_t nl = lambda_t.size();
 
@@ -195,8 +206,8 @@ py::array_t<double> no::MonteCarlo::first_arrival(const py::array_t<double>& lam
 
   double lambda_i;
 
-  py::array_t<double> times(static_cast<size_t>(n));
-  double* pt = no::begin(times);
+  NpArray<double> times = no::allocate<double>(n);
+  double* pt = times.data();
   double tmax = (nl - 1) * dt;
 
   for (size_t i = 0; i < static_cast<size_t>(n); ++i) {
@@ -218,11 +229,12 @@ py::array_t<double> no::MonteCarlo::first_arrival(const py::array_t<double>& lam
 
 // next-arrival process - times of transition from a state arrived at at startingpoints to a subsequent state, with an
 // optional deterministic minimum separation if the state hasn't been arrived at (no::never())
-py::array_t<double> no::MonteCarlo::next_arrival(const py::array_t<double>& startingpoints,
-                                                 const py::array_t<double>& lambda_t, double dt, bool relative,
+no::NpArray<double> no::MonteCarlo::next_arrival(const ArrayLike<double>& startingpoints,
+                                                 const ArrayLike<double>& lambda_t, double dt, bool relative,
                                                  double minsep) {
-  validate_lambda(lambda_t);
+  validate_lambda_t(lambda_t);
   size_t n = startingpoints.size();
+  const double* ps = no::cbegin(startingpoints);
 
   const double* pl = no::cbegin(lambda_t);
   size_t nl = lambda_t.size();
@@ -232,12 +244,12 @@ py::array_t<double> no::MonteCarlo::next_arrival(const py::array_t<double>& star
   double lambda_u = *std::max_element(pl, pl + nl);
   double lambda_i;
 
-  py::array_t<double> times(n);
-  double* pt = no::begin(times);
+  NpArray<double> times = no::allocate<double>(static_cast<Py_ssize_t>(n));
+  double* pt = times.data();
 
   for (size_t i = 0; i < n; ++i) {
     // account for any deterministic time lag (e.g. 9 months between births)
-    double offset = no::at(startingpoints, {static_cast<py::ssize_t>(i)}) + minsep;
+    double offset = ps[i] + minsep;
     // skip if we haven't actually arrived at the state to transition from
     if (no::time::isnever(offset)) {
       pt[i] = no::time::never();
@@ -260,12 +272,12 @@ py::array_t<double> no::MonteCarlo::next_arrival(const py::array_t<double>& star
   return times;
 }
 
-py::array_t<int64_t> no::MonteCarlo::counts(const py::array_t<double>& lambda, double dt) {
+no::NpArray<int64_t> no::MonteCarlo::counts(const ArrayLike<double>& lambda, double dt) {
   validate_lambda(lambda);
 
   size_t n = lambda.size();
-  py::array_t<int64_t> counts(n);
-  int64_t* pc = no::begin(counts);
+  NpArray<int64_t> counts = no::allocate<int64_t>(static_cast<Py_ssize_t>(n));
+  int64_t* pc = counts.data();
 
   for (const double* it = no::cbegin(lambda); it != no::cend(lambda); ++it, ++pc) {
     // sample arrivals within [0,dt)
@@ -283,20 +295,23 @@ py::array_t<int64_t> no::MonteCarlo::counts(const py::array_t<double>& lambda, d
 std::vector<double> no::cumulative(const double* p, size_t n) {
   static const double tolerance = std::sqrt(std::numeric_limits<double>::epsilon());
 
+  if (n == 0)
+    throw no::value_error("probabilities must not be empty");
+
   std::vector<double> cumprobs(n);
   if (p[0] < 0.0 || p[0] > 1.0)
-    throw py::value_error("invalid probability: %% at index 0"s % p[0]);
+    throw no::value_error("invalid probability: %% at index 0"s % p[0]);
 
   cumprobs[0] = p[0];
   for (size_t i = 1; i < n; ++i) {
     if (p[i] < 0.0 || p[i] > 1.0)
-      throw py::value_error("invalid probability %% at index %%"s % p[i] % i);
+      throw no::value_error("invalid probability %% at index %%"s % p[i] % i);
     cumprobs[i] = cumprobs[i - 1] + p[i];
   }
 
   // check probabilities sum to unity within tolerance
   if (fabs(cumprobs[n - 1] - 1.0) > tolerance)
-    throw py::value_error("cumulative probabilities don't sum to unity: %%"s % cumprobs);
+    throw no::value_error("cumulative probabilities don't sum to unity: %%"s % cumprobs);
   // then force the final value to 1 (in case its slightly out, which could cause a problem)
   cumprobs[n - 1] = 1.0;
 

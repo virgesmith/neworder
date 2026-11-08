@@ -363,3 +363,54 @@ def test_halt_finalise() -> None:
 
     with pytest.raises(StopIteration):
         no.run(m)
+
+
+@pytest.mark.parametrize("member", ["time", "start", "end", "dt", "at_end"])
+def test_custom_timeline_missing_property(member: str) -> None:
+    class Incomplete(CustomTimeline):
+        pass
+
+    # hide the member defined by CustomTimeline, so that the lookup falls through to the abstract base
+    setattr(Incomplete, member, no.Timeline.__dict__[member])
+    with pytest.raises(RuntimeError):
+        getattr(Incomplete(), member)
+
+
+def test_custom_timeline_missing_next() -> None:
+    class Incomplete(no.Timeline):
+        @property
+        def time(self) -> float:
+            return 0.0
+
+        @property
+        def start(self) -> float:
+            return 0.0
+
+        @property
+        def end(self) -> float:
+            return 1.0
+
+        @property
+        def dt(self) -> float:
+            return 1.0
+
+        @property
+        def at_end(self) -> bool:
+            return False
+
+    class IncompleteModel(no.Model):
+        def __init__(self) -> None:
+            super().__init__(Incomplete(), no.MonteCarlo.deterministic_identical_stream)
+
+        def step(self) -> None:
+            pass
+
+    with pytest.raises(RuntimeError):
+        no.run(IncompleteModel())
+
+
+def test_strided_arrays() -> None:
+    a = np.array([1.0, no.time.NEVER, 2.0, no.time.NEVER])
+    assert no.time.isnever(a[::2]).tolist() == [False, False]
+    assert no.time.isnever(a[1::2]).tolist() == [True, True]
+    assert no.time.isnever(a[::-1]).tolist() == [True, False, True, False]

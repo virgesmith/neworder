@@ -4,7 +4,7 @@ This file instructs AI agents acting as developer, reviewer, and QA for this rep
 
 ## Project Overview
 
-`neworder` is a dynamic microsimulation framework implemented as a Python extension module. The core is written in C++ (in [src/](src/)) and exposed to Python via [pybind11](https://pybind11.readthedocs.io/). The Python package lives in [neworder/](neworder/), with type stubs in [stubs/](stubs/), tests in [test/](test/), documentation in [docs/](docs/), and runnable examples in [examples/](examples/).
+`neworder` is a dynamic microsimulation framework implemented as a Python extension module. The core is written in C++ (in [src/](src/)) and exposed to Python via [nanobind](https://nanobind.readthedocs.io/), built with [scikit-build-core](https://scikit-build-core.readthedocs.io/) and CMake ([CMakeLists.txt](CMakeLists.txt)). The Python package lives in [neworder/](neworder/), with type stubs in [stubs/](stubs/), tests in [test/](test/), documentation in [docs/](docs/), and runnable examples in [examples/](examples/).
 
 The documentation site is at [neworder.readthedocs.io](https://neworder.readthedocs.io). Source is in [docs/](docs/) (MkDocs). ReadTheDocs builds automatically on pushes to `main` ("latest") and on `v*` tags ("stable").
 
@@ -51,7 +51,7 @@ uv run pytest                           # all tests pass
 When reviewing a PR or diff, check:
 
 1. **Correctness** — does the logic match the documented behaviour? Consider edge cases: empty populations, single-process vs. MPI, zero-length timelines.
-2. **C++/Python boundary** — pybind11 bindings in [src/Module.cpp](src/Module.cpp) must accurately expose C++ behaviour. Check for ownership, lifetime, and GIL issues.
+2. **C++/Python boundary** — nanobind bindings in [src/Module.cpp](src/Module.cpp) must accurately expose C++ behaviour. Check for ownership, lifetime, and GIL issues. Binding a virtual method with a C++ implementation must call it non-virtually, or a Python override that calls `super()` runs twice when called from Python. nanobind's `bool` caster only accepts `True`/`False`, so use `no::truthy` for values returned by user code, which might be a `numpy.bool`. Array arguments should be `no::ArrayLike<T>` rather than `nb::ndarray`, which doesn't accept lists or pandas objects. [test/test_bindings.py](test/test_bindings.py) pins this behaviour, and the values of the random streams.
 3. **Type stubs** — if the C++ API changed, verify stubs in [stubs/](stubs/) and [neworder/](neworder/) are updated.
 4. **MPI correctness** — functions touching `mpi` must work correctly in both serial (1 process) and parallel (N > 1) contexts. Don't introduce rank-0-only logic without guarding.
 5. **Test coverage** — new behaviour needs a test in [test/](test/). The relevant test files map to modules: `test_mc.py` → MonteCarlo, `test_timeline.py` → timelines, `test_model.py` → Model, `test_df.py` → dataframe helpers, etc.
@@ -63,6 +63,7 @@ When reviewing a PR or diff, check:
 
 - Run the full gate suite (`ruff check`, `ruff format --check`, `ty check`, `pytest`) before declaring any task done.
 - CI runs the matrix: Python 3.13, 3.14, 3.14t, 3.15 × ubuntu, windows, macos. Flag anything that might be platform- or version-specific (e.g. freethreaded 3.14t, compiler flags).
+- Wheels are `abi3`: one per platform, built on Python 3.13 and tested on 3.13, 3.14 and 3.15. No wheels are published for free-threaded interpreters, which build from source. C++ code must stay within the limited API, so CPython macros such as `PyTuple_SET_ITEM` won't compile.
 - MPI tests run separately via [mpi-test.yml](.github/workflows/mpi-test.yml). If touching parallel functionality, ensure `mpiexec -n 2 uv run pytest` passes locally.
 - Coverage (C++ via gcov + Python) is reported to [codecov.io](https://codecov.io/gh/virgesmith/neworder). Ensure `gcc` and `gcov` versions are consistent if building coverage locally.
 - If a test is skipped or marked `xfail`, leave a comment explaining why and when it can be removed.
@@ -80,10 +81,10 @@ Every development task — feature, fix, refactor, or notable design decision �
 ## Repository Layout
 
 ```
-src/                     # C++ extension source (pybind11)
+src/                     # C++ extension source (nanobind)
   Model.cpp / Model.h
   MonteCarlo.cpp / ...
-  Module.cpp             # pybind11 bindings entry point
+  Module.cpp             # nanobind bindings entry point
   Timeline.cpp / ...
 neworder/                # Python package
   __init__.py            # public exports (re-exports _neworder_core + pure-Python)
@@ -96,6 +97,7 @@ neworder/                # Python package
 stubs/
   _neworder_core-stubs/  # generated type stubs for the extension module
 test/
+  test_bindings.py       # the C++/Python boundary, and the values of the random streams
   test_df.py
   test_domain.py
   test_geospatial.py
@@ -118,27 +120,28 @@ examples/                # runnable microsimulation examples
   coverage.yml           # CI: codecov upload
   mpi-test.yml           # CI: MPI parallel tests
   pypi-release.yml       # CI: PyPI publish on v* tag
+CMakeLists.txt
 pyproject.toml
 .pre-commit-config.yaml
 ```
 
 ## Regenerating Type Stubs
 
-The stubs that matter are the hand-maintained files in [neworder/](neworder/): `__init__.pyi` (the C++ API plus the pure-Python re-exports) and `time.pyi`, `mpi.pyi`, `df.pyi`. (`stats` is wrapped by the pure-Python `neworder/stats.py`, which carries its own annotations and docstrings.) `ty`, IDEs and the API docs (mkdocstrings/griffe) all read these. They are seeded from `pybind11-stubgen` output but carry manual corrections, so **merge** regenerated output into them — never copy it over wholesale.
+The stubs that matter are the hand-maintained files in [neworder/](neworder/): `__init__.pyi` (the C++ API plus the pure-Python re-exports) and `time.pyi`, `mpi.pyi`, `df.pyi`. (`stats` is wrapped by the pure-Python `neworder/stats.py`, which carries its own annotations and docstrings.) `ty`, IDEs and the API docs (mkdocstrings/griffe) all read these. They are seeded from `nanobind.stubgen` output but carry manual corrections, so **merge** regenerated output into them — never copy it over wholesale.
 
 After any change to the bindings in [src/Module.cpp](src/Module.cpp) or the docstrings in [src/Module_docstr.cpp](src/Module_docstr.cpp), rebuild the extension and regenerate:
 
 ```sh
-uv sync --dev --reinstall-package neworder   # plain `uv sync` may not rebuild the C++ extension
-pybind11-stubgen _neworder_core --ignore-all-errors   # writes stubs/_neworder_core/{__init__,time,mpi,stats,df}.pyi
+uv sync --dev                                 # rebuilds the C++ extension if src/ has changed
+uv run python -m nanobind.stubgen -m _neworder_core -r -O stubs   # writes stubs/_neworder_core/{__init__,time,mpi,stats,df}.pyi
 ```
 
 - Run it on `_neworder_core`, **not** `neworder`. Stubs generated for the Python package would shadow the `.py` sources (`domain.py`, `mc.py`, `timeline.py`) and replace the hand-written `__init__.pyi`.
-- `--ignore-all-errors` is required because pybind11-stubgen cannot parse default arguments that are functions (a pattern used in `_neworder_core`).
 - `stubs/` is gitignored scratch output. Diff it against `neworder/*.pyi` and port only real API changes (new or removed members, changed signatures, updated docstrings). Class order differs between the two, so compare symbol by symbol rather than with a plain `diff`.
 
 Manual corrections to preserve when merging:
 - Precise types where stubgen emits `Any` or bare containers, e.g. pandas `Series`/`Categorical` in `df.pyi`, typed `*args` and `Callable[[], int]` on `SplitMix64`, `RunState` return types.
+- The `__repr__` of each concrete timeline: these are an implementation detail, and are covered by `Timeline.__repr__`.
 - `__all__` and imports in `__init__.pyi` that re-export the pure-Python API (`Domain`, `CalendarTimeline`, `as_np`, ...).
 - An implementation signature after any module-level `@overload` group (e.g. `time.isnever`). Without one, griffe drops the function and it disappears from the API docs.
 - Docstrings on module constants (e.g. `time.NEVER`, `mpi.RANK`), so mkdocstrings renders them.

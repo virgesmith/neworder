@@ -1,5 +1,0 @@
-include LICENCE.md
-include README.md
-recursive-exclude test *
-recursive-exclude examples *
-include src/*.h

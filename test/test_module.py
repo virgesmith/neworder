@@ -22,6 +22,16 @@ def test_basics() -> None:
     no.log({1: 2, 3: 4})
 
 
+def test_log_text(capsys: pytest.CaptureFixture[str]) -> None:
+    no.log("a\x00b", "c")
+    assert capsys.readouterr().out.endswith("] a\x00b c\n")
+    # capsys's stdout is strict UTF-8, so a lone surrogate raises just as it would with print
+    with pytest.raises(UnicodeEncodeError):
+        print("x\udc80y")
+    with pytest.raises(UnicodeEncodeError):
+        no.log("x\udc80y")
+
+
 def test_submodules() -> None:
     assert hasattr(no, "mpi")
     assert hasattr(no, "stats")

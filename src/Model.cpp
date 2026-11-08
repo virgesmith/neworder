@@ -6,11 +6,9 @@
 #include "Timeline.h"
 #include "Timer.h"
 
-#include <pybind11/pybind11.h>
-
-no::Model::Model(no::Timeline& timeline, const py::function& seeder)
-    : m_runState(no::Model::NOT_STARTED), m_timeline(timeline), m_timeline_handle(py::cast(&timeline)),
-      m_monteCarlo([seeder]() { return seeder().cast<int32_t>(); }) {
+no::Model::Model(no::Timeline& timeline, const nb::callable& seeder)
+    : m_runState(no::Model::NOT_STARTED), m_timeline(timeline), m_timeline_handle(nb::find(timeline)),
+      m_monteCarlo([seeder]() { return no::checked_cast<int32_t>(seeder(), "the seeder's result"); }) {
   no::log("model init: timeline=%% mc=%%"s % m_timeline.repr() % m_monteCarlo.repr());
 }
 
@@ -47,14 +45,15 @@ bool no::Model::run(Model& model) {
   auto pytimeline = PyAccessor(model.timeline());
 
   // check the model hasn't already completed
-  if (pytimeline.get_as<bool>("at_end")) {
-    throw py::stop_iteration("Model has already run to completion. Reinstantiate the timeline if necessary");
+  if (pytimeline.get_truthy("at_end")) {
+    throw nb::stop_iteration("Model has already run to completion. Reinstantiate the timeline if necessary");
   }
 
   model.m_runState = no::Model::RUNNING;
 
   // get the Model class name
-  const std::string& model_name = py::cast(&model).attr("__class__").attr("__name__").cast<std::string>();
+  nb::object pymodel = nb::find(model);
+  const std::string model_name = nb::cast<std::string>(pymodel.attr("__class__").attr("__name__"));
 
   no::log("starting %% model run. start time=%%"s % model_name % pytimeline.get("time"));
 
@@ -65,7 +64,7 @@ bool no::Model::run(Model& model) {
   // Loop over timeline
   bool ok = true;
   while (model.m_runState == Model::RUNNING) {
-    py::object t = pytimeline.get("time");
+    nb::object t = pytimeline.get("time");
     int64_t timeindex = pytimeline.get_as<int64_t>("index");
 
     // call the step method, then increment the timeline
@@ -76,7 +75,8 @@ bool no::Model::run(Model& model) {
 
     // call the check method and stop if necessary
     if (no::env::checked) {
-      ok = model.check();
+      // via python rather than the trampoline, which would reject a numpy.bool
+      ok = no::truthy(pymodel.attr("check")());
       no::log("t=%%(%%) %%.check(): %%"s % t % timeindex % model_name % (ok ? "ok" : "FAILED"));
       if (!ok) {
         // emit warning as well on failure (since the above message only appears when verbose mode is on)
@@ -91,7 +91,7 @@ bool no::Model::run(Model& model) {
     }
 
     // normal completion if not explicitly halted
-    if (model.m_runState == no::Model::RUNNING && pytimeline.get_as<bool>("at_end")) {
+    if (model.m_runState == no::Model::RUNNING && pytimeline.get_truthy("at_end")) {
       model.m_runState = Model::COMPLETED;
       no::log("t=%%(%%) %%.finalise()"s % pytimeline.get("time") % pytimeline.get("index") % model_name);
       model.finalise();

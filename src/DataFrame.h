@@ -1,7 +1,7 @@
 #pragma once
 
+#include "ArrayHelpers.h"
 #include "NewOrder.h"
-#include <pybind11/numpy.h>
 // Data frame manipulation routines
 
 namespace no {
@@ -10,12 +10,12 @@ class MonteCarlo;
 
 namespace df {
 
-py::array_t<int64_t> unique_index(size_t n);
+NpArray<int64_t> unique_index(size_t n);
 
-py::object transition(no::MonteCarlo& mc, py::array_t<double, py::array::c_style | py::array::forcecast> matrix,
-                      py::object& series);
+nb::object transition(no::MonteCarlo& mc, const ArrayLike<double>& matrix, const nb::object& series);
 
-py::object transition_conditional(no::MonteCarlo& mc, py::dict matrices, py::object& group, py::object& series);
+nb::object transition_conditional(no::MonteCarlo& mc, const nb::dict& matrices, const nb::object& group,
+                                  const nb::object& series);
 
 } // namespace df
 

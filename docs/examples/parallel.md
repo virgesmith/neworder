@@ -100,6 +100,9 @@ Dividing model execution amongst threads rather than processes can be more trick
 
 `neworder` from 1.5 declares it can run safely without the GIL, and contains two new functions: `freethreaded()`, which indicates whether neworder has been compiled against a free-threaded interpreter, and `thread_id()` (which returns the same value as python's `threading.get_native_id()`). The `sys._is_gil_enabled()` function can be used to check for certain at runtime.
 
+!!! warning "Free-threaded builds"
+    Binary wheels are not published for free-threaded interpreters, so installing `neworder` on one builds it from source, which requires a C++ toolchain.
+
 !!! tip "Guidance for multithreaded model implementation"
     - Seeding RNGs with `thread_id()` is discouraged under any circumstance. Values are nondeterministic, and...
     - `ThreadPoolExecutor` will potentially reuse threads, so you may see the same thread_id in supposedly different threads, making their random streams identical.

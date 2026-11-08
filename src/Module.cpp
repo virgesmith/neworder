@@ -1,28 +1,30 @@
 
 #include "Module.h"
 
+#include "ArrayHelpers.h"
 #include "DataFrame.h"
+#include "Helpers.h"
 #include "Log.h"
 #include "Model.h"
 #include "MonteCarlo.h"
-#include "NPArray.h"
 #include "SplitMix64.h"
 #include "Timeline.h"
 
 #include "NewOrder.h"
 
-#include <memory>
-#include <pybind11/native_enum.h>
+#include <cstdlib>
+#include <new>
+#include <stdexcept>
 
-using namespace py::literals;
+using namespace nb::literals;
 
 int no::env::thread_id() {
   thread_local int id{-1};
 
   if (id < 0) {
     // use python API for consistency
-    auto threading = py::module::import("threading");
-    id = threading.attr("get_native_id")().cast<int>();
+    nb::module_ threading = nb::module_::import_("threading");
+    id = nb::cast<int>(threading.attr("get_native_id")());
   }
   return id;
 }
@@ -30,7 +32,14 @@ int no::env::thread_id() {
 namespace {
 
 // not visible to (rest of) C++ - use the function declared in Log.h
-void log_obj(const py::args& msg) { py::print(no::env::logPrefix[no::env::Context::PY] % no::env::thread_id(), *msg); }
+void log_obj(const nb::args& args) {
+  // joined as python strings: converting each to UTF-8 would fail on a lone surrogate and truncate at a NUL
+  nb::list strs;
+  for (nb::handle arg : args)
+    strs.append(nb::str(arg));
+  const std::string prefix = no::env::logPrefix[no::env::Context::PY] % no::env::thread_id() % ""s;
+  nb::print(nb::str("{}{}").format(prefix, nb::str(" ").attr("join")(strs)));
+}
 
 } // namespace
 
@@ -43,16 +52,16 @@ std::atomic_int64_t no::env::uniqueIndex = -1;
 // these types are not trivially copyable so can't be atomic
 std::string no::env::logPrefix[2];
 
-void init_env(py::object mpi) {
+void init_env(nb::module_& mpi) {
   int r = 0;
   int s = 1;
-  py::object comm = py::none();
+  nb::object comm = nb::none();
   try {
-    py::module mpi = py::module::import("mpi4py.MPI");
-    comm = mpi.attr("COMM_WORLD");
-    r = comm.attr("Get_rank")().cast<int>();
-    s = comm.attr("Get_size")().cast<int>();
-  } catch (const py::error_already_set& pyerror) {
+    nb::module_ mpi4py = nb::module_::import_("mpi4py.MPI");
+    comm = mpi4py.attr("COMM_WORLD");
+    r = nb::cast<int>(comm.attr("Get_rank")());
+    s = nb::cast<int>(comm.attr("Get_size")());
+  } catch (const nb::python_error& pyerror) {
     // if something other than module not found has occurred, fail
     if (!pyerror.matches(PyExc_ModuleNotFoundError))
       throw;
@@ -67,20 +76,23 @@ void init_env(py::object mpi) {
   no::env::uniqueIndex.store(static_cast<int64_t>(no::env::rank), std::memory_order_relaxed);
 
   // cache log message context for efficiency
-  no::env::logPrefix[no::env::Context::CPP] = "[no %%/%%(%%)]"s % r % s;
-  no::env::logPrefix[no::env::Context::PY] = "[py %%/%%(%%)]"s % r % s;
+  no::env::logPrefix[no::env::Context::CPP] = "[no %%/%%(%%)] %%"s % r % s;
+  no::env::logPrefix[no::env::Context::PY] = "[py %%/%%(%%)] %%"s % r % s;
 }
 
-#if PY_MINOR_VERSION >= 13 && Py_GIL_DISABLED
+#if defined(NB_FREE_THREADED)
 const bool freethreaded_build = true;
-PYBIND11_MODULE(_neworder_core, m, py::mod_gil_not_used())
 #else
 const bool freethreaded_build = false;
-PYBIND11_MODULE(_neworder_core, m)
 #endif
-{
-  // py::options options;
-  // options.disable_function_signatures();
+
+NB_MODULE(_neworder_core, m) {
+  // Reports python objects still alive at exit. Off by default, as models can legitimately hold reference cycles that
+  // the garbage collector can't see through C++, e.g. a seeder bound to the model itself
+  nb::set_leak_warnings(std::getenv("NEWORDER_LEAK_WARNINGS") != nullptr);
+
+  no::numpy::init();
+
 #include "Module_docstr.cpp"
 
   m.doc() = module_docstr;
@@ -94,28 +106,32 @@ PYBIND11_MODULE(_neworder_core, m)
   time.attr("NEVER") = no::time::never();
 
   // register abstract base class
-  py::class_<no::Timeline, no::PyTimeline>(m, "Timeline")
-      .def(py::init<>())
-      .def_property_readonly("time", &no::Timeline::time, timeline_time_docstr)
-      .def_property_readonly("start", &no::Timeline::start, timeline_start_docstr)
-      .def_property_readonly("end", &no::Timeline::end, timeline_end_docstr)
-      .def_property_readonly("index", &no::Timeline::index, timeline_index_docstr)
-      .def_property_readonly("dt", &no::Timeline::dt, timeline_dt_docstr)
-      .def_property_readonly("at_end", &no::Timeline::at_end, timeline_at_end_docstr)
-      .def("__repr__", &no::Timeline::repr, timeline_repr_docstr);
+  nb::class_<no::Timeline, no::PyTimeline>(m, "Timeline")
+      .def(nb::init<>())
+      .def_prop_ro("time", &no::Timeline::time, timeline_time_docstr)
+      .def_prop_ro("start", &no::Timeline::start, timeline_start_docstr)
+      .def_prop_ro("end", &no::Timeline::end, timeline_end_docstr)
+      .def_prop_ro("index", &no::Timeline::index, timeline_index_docstr)
+      .def_prop_ro("dt", &no::Timeline::dt, timeline_dt_docstr)
+      .def_prop_ro("at_end", &no::Timeline::at_end, timeline_at_end_docstr)
+      // non-virtual for the same reason as Model's methods, so the concrete classes bind their own
+      .def("__repr__", [](const no::Timeline& self) { return self.no::Timeline::repr(); }, timeline_repr_docstr);
 
-  py::class_<no::NoTimeline, no::Timeline>(m, "NoTimeline", notimeline_docstr)
-      .def(py::init<>(), notimeline_init_docstr);
+  nb::class_<no::NoTimeline, no::Timeline>(m, "NoTimeline", notimeline_docstr)
+      .def(nb::init<>(), notimeline_init_docstr)
+      .def("__repr__", &no::NoTimeline::repr, timeline_repr_docstr);
 
-  py::class_<no::LinearTimeline, no::Timeline>(m, "LinearTimeline", lineartimeline_docstr)
-      .def(py::init<double, double, size_t>(), lineartimeline_init_docstr, "start"_a, "end"_a, "nsteps"_a)
-      .def(py::init<double, double>(), lineartimeline_init_open_docstr, "start"_a, "step"_a);
+  nb::class_<no::LinearTimeline, no::Timeline>(m, "LinearTimeline", lineartimeline_docstr)
+      .def(nb::init<double, double, size_t>(), lineartimeline_init_docstr, "start"_a, "end"_a, "nsteps"_a)
+      .def(nb::init<double, double>(), lineartimeline_init_open_docstr, "start"_a, "step"_a)
+      .def("__repr__", &no::LinearTimeline::repr, timeline_repr_docstr);
 
-  py::class_<no::NumericTimeline, no::Timeline>(m, "NumericTimeline", numerictimeline_docstr)
-      .def(py::init<const std::vector<double>&>(), numerictimeline_init_docstr, "times"_a);
+  nb::class_<no::NumericTimeline, no::Timeline>(m, "NumericTimeline", numerictimeline_docstr)
+      .def(nb::init<const std::vector<double>&>(), numerictimeline_init_docstr, "times"_a)
+      .def("__repr__", &no::NumericTimeline::repr, timeline_repr_docstr);
 
   // MC
-  py::class_<no::MonteCarlo>(m, "MonteCarlo", mc_docstr)
+  nb::class_<no::MonteCarlo>(m, "MonteCarlo", mc_docstr)
       // constructor is NOT exposed to python, can only be created within a model
       .def_static("deterministic_identical_stream", &no::MonteCarlo::deterministic_identical_stream,
                   mc_deterministic_identical_stream_docstr)
@@ -131,11 +147,11 @@ PYBIND11_MODULE(_neworder_core, m)
       .def("ustream", &no::MonteCarlo::ustream, mc_ustream_docstr, "n"_a)
       .def("sample", &no::MonteCarlo::sample, mc_sample_docstr, "n"_a, "cat_weights"_a)
       // explicitly give function type for overloads
-      .def("hazard", py::overload_cast<double, py::ssize_t>(&no::MonteCarlo::hazard), mc_hazard_docstr, "p"_a, "n"_a)
-      .def("hazard", py::overload_cast<const py::array_t<double>&>(&no::MonteCarlo::hazard), mc_hazard_a_docstr, "p"_a)
-      .def("stopping", py::overload_cast<double, py::ssize_t>(&no::MonteCarlo::stopping), mc_stopping_docstr,
+      .def("hazard", nb::overload_cast<double, Py_ssize_t>(&no::MonteCarlo::hazard), mc_hazard_docstr, "p"_a, "n"_a)
+      .def("hazard", nb::overload_cast<const no::ArrayLike<double>&>(&no::MonteCarlo::hazard), mc_hazard_a_docstr, "p"_a)
+      .def("stopping", nb::overload_cast<double, Py_ssize_t>(&no::MonteCarlo::stopping), mc_stopping_docstr,
            "lambda_"_a, "n"_a)
-      .def("stopping", py::overload_cast<const py::array_t<double>&>(&no::MonteCarlo::stopping), mc_stopping_a_docstr,
+      .def("stopping", nb::overload_cast<const no::ArrayLike<double>&>(&no::MonteCarlo::stopping), mc_stopping_a_docstr,
            "lambda_"_a)
       .def("counts", &no::MonteCarlo::counts, mc_counts_docstr, "lambda_"_a, "dt"_a)
       .def("arrivals", &no::MonteCarlo::arrivals, mc_arrivals_docstr, "lambda_"_a, "dt"_a, "n"_a, "mingap"_a)
@@ -147,33 +163,43 @@ PYBIND11_MODULE(_neworder_core, m)
 
   // Microsimulation (or ABM) model class
   auto model =
-      py::class_<no::Model, no::PyModel>(m, "Model", model_docstr)
-          .def(py::init<no::Timeline&, const py::function&>(), model_init_docstr, "timeline"_a,
-               "seeder"_a = py::cpp_function(no::MonteCarlo::deterministic_independent_stream))
+      nb::class_<no::Model, no::PyModel>(m, "Model", model_docstr)
+          .def(nb::init<no::Timeline&, const nb::callable&>(), model_init_docstr, "timeline"_a,
+               nb::arg("seeder").sig("MonteCarlo.deterministic_independent_stream") =
+                   nb::cpp_function(no::MonteCarlo::deterministic_independent_stream))
           // properties are readonly only in the sense you can't assign to them; you CAN call their mutable methods
-          .def_property_readonly("timeline", &no::Model::timeline, model_timeline_docstr)
-          .def_property_readonly("mc", &no::Model::mc, model_mc_docstr)
-          .def_property_readonly("run_state", &no::Model::runState, model_runstate_docstr)
-          .def("modify", &no::Model::modify, model_modify_docstr)
-          .def("step", &no::Model::step, model_step_docstr)
-          .def("check", &no::Model::check, model_check_docstr)
-          .def("finalise", &no::Model::finalise, model_finalise_docstr)
+          .def_prop_ro("timeline", &no::Model::timeline, model_timeline_docstr)
+          .def_prop_ro("mc", &no::Model::mc, model_mc_docstr)
+          .def_prop_ro("run_state", &no::Model::runState, model_runstate_docstr)
+          // These are what a python override's super() call reaches, so must not dispatch virtually. nanobind's
+          // trampolines only recognise super() if C++ made the outer call, so an override called from python would
+          // otherwise be entered a second time
+          .def("modify", [](no::Model& self) { self.no::Model::modify(); }, model_modify_docstr)
+          .def(
+              "step",
+              [](no::Model&) { throw std::runtime_error("Tried to call pure virtual function \"Model::step\""); },
+              model_step_docstr)
+          .def("check", [](no::Model& self) { return self.no::Model::check(); }, model_check_docstr)
+          .def("finalise", [](no::Model& self) { self.no::Model::finalise(); }, model_finalise_docstr)
           .def("halt", &no::Model::halt, model_halt_docstr)
           .def("run", [](no::Model& self) { return no::Model::run(self); }, model_run_docstr);
 
-  py::native_enum<no::Model::RunState>(model, "RunState", "enum.Enum")
+  nb::enum_<no::Model::RunState>(model, "RunState")
       .value("NOT_STARTED", no::Model::NOT_STARTED)
       .value("RUNNING", no::Model::RUNNING)
       .value("HALTED", no::Model::HALTED)
       .value("COMPLETED", no::Model::COMPLETED)
-      .export_values()
-      .finalize();
+      .export_values();
 
   // Hash-based deterministic sampler
-  py::class_<no::SplitMix64>(m, "SplitMix64", sms_docstr)
-      .def(py::init([](const py::function& seeder, bool use_counter) {
-               return std::make_unique<no::SplitMix64>([seeder]() { return seeder().cast<int64_t>(); }, use_counter);
-           }), "seeder"_a, py::kw_only(), "use_counter"_a = false, sms_init_docstr)
+  nb::class_<no::SplitMix64>(m, "SplitMix64", sms_docstr)
+      .def(
+          "__init__",
+          [](no::SplitMix64* self, const nb::callable& seeder, bool use_counter) {
+            new (self) no::SplitMix64(
+                [seeder]() { return no::checked_cast<int64_t>(seeder(), "the seeder's result"); }, use_counter);
+          },
+          "seeder"_a, nb::kw_only(), "use_counter"_a = false, sms_init_docstr)
       .def("counter", &no::SplitMix64::counter, sms_counter_docstr)
       .def("reset", &no::SplitMix64::reset, sms_reset_docstr)
       .def("uarray", &no::SplitMix64::uarray, sms_uarray_docstr)

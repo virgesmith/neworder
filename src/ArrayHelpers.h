@@ -3,167 +3,162 @@
 
 #include "NewOrder.h"
 
-#include <pybind11/numpy.h>
-#include <array>
+#include <nanobind/ndarray.h>
 
+#include <algorithm>
+#include <array>
+#include <cstddef>
+#include <cstdint>
+#include <span>
+#include <type_traits>
+#include <utility>
+#include <vector>
 
 namespace no {
 
-template<size_t D>
-using Index_t = std::array<py::ssize_t, D>;
+template <size_t D> using Index_t = std::array<Py_ssize_t, D>;
 
-// this should be faster than using initializer_list as the compiler can optimise better?
-template<typename T, size_t D=1>
-T& at(py::array_t<T>& a, const Index_t<D>& index)
-{
-  assert(a.ndim() == D);
-  T* buf = (T*)a.request().ptr;
+// A writable numpy array. Create new ones with allocate, which uses np.empty so that the result owns its data. Wrapping
+// memory allocated in C++ in a capsule gives an array that doesn't, and is no faster.
+template <typename T> using NpArray = nb::ndarray<nb::numpy, T, nb::c_contig, nb::device::cpu>;
 
-  size_t offset = index[0];
-  for (size_t i = 1; i < D; ++i)
-  {
-    offset = offset * a.strides()[i-1]/sizeof(T) + index[i];
+namespace numpy {
+
+// Fetches the numpy functions and types used below. Must be called once, on module initialisation
+void init();
+
+enum class DType { FLOAT64, INT64, BOOL };
+
+template <typename T> constexpr DType dtype_of() {
+  if constexpr (std::is_same_v<T, double>)
+    return DType::FLOAT64;
+  else if constexpr (std::is_same_v<T, int64_t>)
+    return DType::INT64;
+  else {
+    static_assert(std::is_same_v<T, bool>, "unsupported array type");
+    return DType::BOOL;
   }
-  return buf[offset];
 }
 
-// no impl for D=0
-template<typename T>
-T& at(py::array_t<T>& a, const Index_t<0>& index);
+bool is_ndarray(nb::handle obj) noexcept;
 
+// np.empty(shape, dtype)
+nb::object empty(std::span<const Py_ssize_t> shape, DType dtype);
 
-template<typename T, size_t D=1>
-const T& at(const py::array_t<T>& a, const Index_t<D>& index)
-{
-  assert(a.ndim() == D);
-  T* buf = (T*)a.request().ptr;
+// np.asarray(obj, dtype=dtype, order="C")
+nb::object asarray(nb::handle obj, DType dtype);
 
-  size_t offset = index[0];
-  for (size_t i = 1; i < D; ++i)
-  {
-    offset = offset * a.strides()[i-1]/sizeof(T) + index[i];
-  }
-  return buf[offset];
+// np.array(obj, dtype=dtype, order="C", copy=True)
+nb::object copy(nb::handle obj, DType dtype);
+
+} // namespace numpy
+
+// A read-only, C-contiguous array argument. Anything numpy can convert to T can be passed from python, like
+// numpy.typing.ArrayLike, and nb::ndarray alone doesn't do this: it only understands objects that already expose their
+// memory, which excludes e.g. lists and pandas.Series.
+template <typename T> class ArrayLike {
+public:
+  using View = nb::ndarray<const T, nb::c_contig, nb::device::cpu>;
+
+  ArrayLike() = default;
+  explicit ArrayLike(View view) : m_view(std::move(view)) {}
+
+  const T* data() const { return m_view.data(); }
+  size_t size() const { return m_view.size(); }
+  size_t ndim() const { return m_view.ndim(); }
+  size_t shape(size_t i) const { return m_view.shape(i); }
+
+private:
+  View m_view;
+};
+
+// Converts a python object that isn't a function argument, e.g. a dict value. Raises if numpy can't convert it
+template <typename T> ArrayLike<T> as_array(nb::handle obj) {
+  return ArrayLike<T>(nb::cast<typename ArrayLike<T>::View>(numpy::asarray(obj, numpy::dtype_of<T>())));
 }
 
-// no impl for D=0
-template<typename T>
-const T& at(py::array_t<T>& a, const Index_t<0>& index);
+template <typename T> const T* cbegin(const ArrayLike<T>& a) { return a.data(); }
 
+template <typename T> const T* cend(const ArrayLike<T>& a) { return a.data() + a.size(); }
 
-template<typename T>
-T* begin(py::array_t<T>& a)
-{
-  assert(a.itemsize() == sizeof(T));
-  return (T*)a.request().ptr;
+// Allocates an uninitialised array. Raises ValueError for a negative size
+template <typename T> NpArray<T> allocate(std::span<const Py_ssize_t> shape) {
+  return nb::cast<NpArray<T>>(numpy::empty(shape, numpy::dtype_of<T>()));
 }
 
-template<typename T>
-const T* cbegin(const py::array_t<T>& a)
-{
-  assert(a.itemsize() == sizeof(T));
-  return (const T*)a.request().ptr;
-}
+template <typename T> NpArray<T> allocate(Py_ssize_t size) { return allocate<T>(std::span<const Py_ssize_t>(&size, 1)); }
 
-template<typename T>
-T* end(py::array_t<T>& a)
-{
-  assert(a.itemsize() == sizeof(T));
-  return (T*)a.request().ptr + a.size();
-}
-
-template<typename T>
-const T* cend(const py::array_t<T>& a)
-{
-  assert(a.itemsize() == sizeof(T));
-  return (const T*)a.request().ptr + a.size();
-}
-
-// Create a 1d array, initialising with a function
-// e.g. "ones" is make_array<double>(n, [](){ return 1.0; })
-template<typename T, size_t D=1>
-py::array_t<T> make_array(const Index_t<D>& n, const std::function<T()>& f)
-{
-  py::array_t<T> a(n);
-  std::generate(begin(a), end(a), f);
-  return a;
-}
-
-template<typename T>
-py::array_t<T>& fill(py::array_t<T>& a, T val)
-{
-  std::fill(begin(a), end(a), val);
+// Create an array, initialising with a function
+// e.g. "ones" is make_array<double>({n}, [](){ return 1.0; })
+template <typename T, size_t D = 1, typename F> NpArray<T> make_array(const Index_t<D>& n, F f) {
+  NpArray<T> a = allocate<T>(std::span<const Py_ssize_t>(n));
+  std::generate(a.data(), a.data() + a.size(), f);
   return a;
 }
 
 // "nullary"/scalar unary op implemented as make_array
-template<typename R, typename A>
-py::array_t<R> unary_op(const py::array_t<A>& arg, const std::function<R(A)>& f)
-{
-  py::array_t<R> result(std::vector<py::ssize_t>(arg.shape(), arg.shape() + arg.ndim()));
+template <typename R, typename A, typename F> NpArray<R> unary_op(const ArrayLike<A>& arg, F f) {
+  // on the stack, as this is called per person in some models. numpy allows at most 64 dimensions
+  std::array<Py_ssize_t, 64> shape;
+  if (arg.ndim() > shape.size())
+    throw nb::value_error("arrays can have at most 64 dimensions");
+  for (size_t i = 0; i < arg.ndim(); ++i)
+    shape[i] = static_cast<Py_ssize_t>(arg.shape(i));
 
-  const A* p = (const A*)arg.request().ptr;
-  R* r = (R*)result.request().ptr;
-  for (py::ssize_t i = 0; i < arg.size(); ++i)
-  {
+  NpArray<R> result = allocate<R>(std::span<const Py_ssize_t>(shape.data(), arg.ndim()));
+
+  const A* p = arg.data();
+  R* r = result.data();
+  for (size_t i = 0; i < arg.size(); ++i) {
     r[i] = f(p[i]);
   }
   return result;
 }
 
-template<typename R, typename A0, typename A1>
-py::array_t<R> binary_op(A0 arg0, const py::array_t<A1>& arg1, const std::function<R(A0, A1)>& f)
-{
-  py::array_t<R> result(std::vector<py::ssize_t>(arg1.shape(), arg1.shape() + arg1.ndim()));
-  const A1* p = (const A1*)arg1.request().ptr;
-  R* r = (R*)result.request().ptr;
-
-  for (py::ssize_t i = 0; i < arg1.size(); ++i)
-  {
-    r[i] = f(arg0, p[i]);
-  }
-  return result;
+namespace time {
+NEWORDER_EXPORT NpArray<bool> isnever_a(const ArrayLike<double>& x);
 }
 
-template<typename R, typename A0, typename A1>
-py::array_t<R> binary_op(const py::array_t<A0>& arg0, A1 arg1, const std::function<R(A0, A1)>& f)
-{
-  py::array_t<R> result(std::vector<py::ssize_t>{arg0.shape(), arg0.shape() + arg0.ndim()});
+// logistic function f(x; x0, k)
+NEWORDER_EXPORT NpArray<double> logistic(const ArrayLike<double>& x, double x0, double k);
 
-  const A0* p = (const A0*)arg0.request().ptr;
-  R* r = (R*)result.request().ptr;
+// logit function
+NEWORDER_EXPORT NpArray<double> logit(const ArrayLike<double>& x);
 
-  for (py::ssize_t i = 0; i < arg0.size(); ++i)
-  {
-    r[i] = f(p[i], arg1);
+} // namespace no
+
+NAMESPACE_BEGIN(NB_NAMESPACE)
+NAMESPACE_BEGIN(detail)
+
+template <typename T> struct type_caster<no::ArrayLike<T>> {
+  NB_TYPE_CASTER(no::ArrayLike<T>, const_name("numpy.typing.ArrayLike"))
+
+  // Dispatch tries every overload without conversions, then again with them. So restricting the first pass to real
+  // ndarrays is what sends e.g. a numpy.float64, which also exposes its memory, to an overload taking a double
+  bool from_python(handle src, uint32_t flags, cleanup_list* cleanup) noexcept {
+    using View = typename no::ArrayLike<T>::View;
+    const uint32_t no_convert = flags & ~static_cast<uint32_t>(cast_flags::convert);
+    make_caster<View> view;
+
+    if (!(flags & static_cast<uint32_t>(cast_flags::convert))) {
+      if (!no::numpy::is_ndarray(src) || !view.from_python(src, no_convert, cleanup))
+        return false;
+    } else {
+      try {
+        // the view holds a reference to the converted array
+        object converted = no::numpy::asarray(src, no::numpy::dtype_of<T>());
+        if (!view.from_python(converted, no_convert, cleanup))
+          return false;
+      } catch (...) {
+        return false;
+      }
+    }
+    value = no::ArrayLike<T>(std::move(view.value));
+    return true;
   }
-  return result;
-}
 
-template<typename R, typename A0, typename A1>
-py::array_t<R> binary_op(const py::array_t<A0>& arg0, const py::array_t<A1>& arg1, const std::function<R(A0, A1)>& f)
-{
-  if (arg0.ndim() != arg1.ndim())
-  {
-    throw std::runtime_error("binary_op: argments must have same dimension");
-  }
-  for (py::ssize_t i = 0; i < arg0.ndim(); ++i)
-  {
-    if (arg0.shape()[i] != arg1.shape()[i])
-      throw std::runtime_error("binary_op: argments must have same size");
-  }
+  static handle from_cpp(const no::ArrayLike<T>&, rv_policy, cleanup_list*) noexcept { return handle(); }
+};
 
-  py::array_t<R> result(std::vector<py::ssize_t>(arg0.shape(), arg0.shape() + arg0.ndim()));
-
-  const A0* p0 = (const A0*)arg0.request().ptr;
-  const A1* p1 = (const A1*)arg1.request().ptr;
-  R* r = (R*)result.request().ptr;
-
-  for (py::ssize_t i = 0; i < arg0.size(); ++i)
-  {
-    r[i] = f(p0[i], p1[i]);
-  }
-  return result;
-}
-
-}
+NAMESPACE_END(detail)
+NAMESPACE_END(NB_NAMESPACE)

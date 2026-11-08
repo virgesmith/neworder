@@ -65,6 +65,221 @@ Overpass server look like a hang; the example could enable `ox.settings.log_cons
 
 ---
 
+## 2026-11-08 — Cast errors, nanobind pin, and other review follow-ups (#135)
+
+**Why** — The remaining findings from reviewing the nanobind port:
+- A failed `nb::cast` is a bare `std::bad_cast`, so a seeder or a timeline's `index` returning the wrong type raised
+  `RuntimeError: std::bad_cast`, without saying what or why.
+- `nanobind>=3.1` had no upper bound, but the `ArrayLike` caster uses nanobind's detail API, which has changed between
+  major versions. Free-threaded users always build from source, so a nanobind 4 could break their installs.
+- Developer checkouts from before the move to scikit-build-core still contain an in-place `_neworder_core.*.so`. It's
+  gitignored, and shadows the current build whenever the repo root is on `sys.path`.
+- `unary_op` heap-allocated its result's shape on every call.
+- The `stats` deprecation said "removed in v1.8", which is now this release.
+
+**What**
+- `no::checked_cast<T>(value, what)` (`src/Helpers.h`) raises `TypeError: <what> must be <type>, got <repr>`. It's used
+  for both seeders (`Model` and `SplitMix64`) and `PyAccessor::get_as`, e.g. `MyTimeline.index must be an int64, got
+  'zero'`. An out of range scalar argument to `SplitMix64` raises the same `TypeError` as an out of range array element.
+- `nanobind>=3.1,<4` in `build-system.requires`.
+- `docs/developer.md` warns about the old extension modules, and says how to remove them.
+- `unary_op` builds the shape in a `std::array` (numpy allows at most 64 dimensions). It made no measurable difference:
+  `hazard`, `isnever` and `stopping` on 1- and 9-element arrays were within noise of before (about 550-850 ns a call).
+- The `stats` deprecation now says it will be removed in v2.0.
+
+**Design decisions**
+- *Fixed the call sites rather than adding a global translator for `nb::cast_error`.* A translator can't know the value
+  or the expected type, so its message would be no better. The remaining `nb::cast`s convert values neworder produces
+  itself, the thread id, or MPI's rank and size.
+- *Kept the `unary_op` change* despite no measurable gain, as it's simpler than the vector it replaces.
+- *Didn't delete the stale extension modules* from the checkout this was developed in; that's the developer's call.
+
+**Follow-ups** — `no.log`, and logging in verbose mode, raise when `sys.stdout` is None (e.g. under `pythonw.exe`),
+where pybind11's `py::print` did nothing.
+
+---
+
+## 2026-11-07 — Fix crashes on empty input, bad seeders and unencodable strings (#135)
+
+**Why** — Reviewing the nanobind port found inputs that crash the interpreter or abort the process, rather than raise:
+- `no.log("x\udc80y")` segfaulted, because `nb::str::c_str()` returns null for a string that can't be encoded as UTF-8
+  (e.g. a lone surrogate, as in a filename decoded with `surrogateescape`). `std::to_string(nb::object)`, which builds
+  error and log messages, had the same bug: `basic_string` from null, which is UB on MSVC.
+- `mc.sample(n, [])` segfaulted, as `no::cumulative` read the first and last elements of an empty array.
+- A seeder that raised, or returned something other than an int32, called `std::terminate` from the `noexcept`
+  `MonteCarlo` constructor.
+- `first_arrival`, `next_arrival` and `arrivals` read out of bounds on empty intensities, and `arrivals` with `n=0`
+  underflowed its column count to -1.
+
+**What**
+- `log_obj` (`src/Module.cpp`) joins the arguments as Python strings and prints the result, so it behaves as `print`
+  does: an unencodable string fails (or not) according to `sys.stdout`'s error handler, and a NUL no longer truncates.
+- `std::to_string(nb::object)` (`src/Log.cpp`) falls back to `backslashreplace` when the string can't be encoded.
+- `no::cumulative` raises `ValueError` on empty probabilities. The arrival processes raise `ValueError` on empty
+  intensities (`validate_lambda_t`), and `arrivals(..., n=0, ...)` returns a `(0, 0)` array.
+- `MonteCarlo`'s constructor is no longer `noexcept`. A seeder's result that isn't an int32 raises `TypeError` from
+  construction or `reset()` (see the next entry), and exceptions raised by the seeder propagate unchanged.
+
+**Design decisions**
+- *Different fixes for the two string conversions.* `log` is Python's logging, so it should match `print`. That
+  includes raising on a strict stdout, e.g. pytest's `capsys`, which is what pybind11's `py::print` did.
+  `std::to_string` builds messages, often for an exception that's already being raised, so it must not fail itself.
+- *Empty intensities are an error, not an empty result.* The processes sample from the largest intensity and
+  extrapolate the final one, neither of which exists. `counts` still accepts an empty array, as it maps one intensity
+  to one count.
+
+---
+
+## 2026-11-07 — Merge `NPArray` into `ArrayHelpers`
+
+**Why** — The split didn't follow the code. `ArrayHelpers.h` declared the numpy helpers, but `NPArray.cpp` implemented
+them, and `NPArray.h` only declared `isnever_a`, `logistic` and `logit`, which only `Module.cpp` uses.
+
+**What** — `NPArray.cpp` renamed to `ArrayHelpers.cpp`, with the declarations from `NPArray.h` moved to
+`ArrayHelpers.h` and `NPArray.h` removed. No functional change.
+
+**Design decisions**
+- *Kept the `ArrayHelpers` name*, as 7 files already include it, against 1 for `NPArray.h`.
+- *Left the three functions in `ArrayHelpers`* rather than moving `isnever_a` to `Timeline` and the other two to a
+  stats file. That would also be reasonable, but it's a separate change.
+
+---
+
+## 2026-11-07 — Inline the element functions in `make_array` and `unary_op`
+
+**Why** — Both took a `std::function`, so every element of every array they filled cost an indirect call that the
+compiler couldn't inline. They underlie most of `MonteCarlo`, `isnever`, `logistic`, `logit` and `df.unique_index`.
+
+**What** — `src/ArrayHelpers.h`: the function is now a template parameter. Callers are unchanged. Measured per element
+on 1M-element arrays, against a build of the same source using `std::function` (abi3, Linux, CPython 3.15):
+`df.unique_index` -86%, `isnever` -39%, `ustream` -19%, `hazard(p, n)` -18%, `sample` -10%, `hazard(array)` -7%,
+`stopping(p, n)` -6%, `stopping(array)` -3%. `ustream(1)` per call -3%. The random streams are unchanged
+(`test_bindings.py`).
+
+**Design decisions**
+- *Corrected the comment on `NpArray`.* It said that wrapping memory allocated in C++ was several times slower than
+  `np.empty`, but a stock nanobind module measured 318 ns vs 289 ns for a 1-element array, and the same for 1000
+  elements. The 2026-11-06 entry's "about 3x slower" was relative to pybind11. The reason to keep `np.empty` is that the
+  result owns its data, which `test_bindings.py` checks.
+- *Kept `ArrayLike` and its caster.* The same module showed that a plain `nb::ndarray` argument converts dtypes and
+  strided arrays, but rejects lists, tuples and `pandas.Series`, and takes `numpy.float64` ahead of a `double`
+  overload. The tests require all of those to work.
+
+---
+
+## 2026-11-07 — Publish abi3 wheels, and stop publishing free-threaded wheels
+
+**Why** — The release built a wheel per interpreter per platform: 12 wheels, with more for every new CPython. The
+2026-09-02 investigation on `claude/publish-ci-abi3-builds-ely7z4` found abi3 impossible with pybind11, and nanobind
+removes that blocker. One abi3 wheel per platform takes the total to 3.
+
+**What**
+- `CMakeLists.txt`: `STABLE_ABI` and `${SKBUILD_SABI_COMPONENT}`. `pyproject.toml`: `wheel.py-api = "cp313"`, which
+  sets the wheel tag. Both are needed: `STABLE_ABI` alone gives an abi3 binary in a version-specific wheel, and
+  `wheel.py-api` alone gives a version-specific binary in a wheel claiming to be abi3.
+- `src/NPArray.cpp`: `PyTuple_SET_ITEM` isn't in the limited API, so it's now `PyTuple_SetItem`.
+- `cp314t-*` removed from the cibuildwheel build list. `3.14t` stays in the `build-test.yml` matrix.
+
+**Design decisions**
+- *Accept the per-call cost.* Measured on Linux with CPython 3.15, against native wheels from the same source:
+  `isnever(float)` unchanged, `mc.ustream(1)` +8%, `isnever` on a 1-element array +9%, `mc.sample(1, weights)` +11%,
+  `Model.run` per step +2%, `mc.ustream(1000000)` -7%. 3.13 and 3.14 were similar, except `isnever` on a 1000-element
+  array, which was +22% on 3.13 and +1-2% on the others. Neither that outlier nor the large `ustream` gain is explained.
+- *Linked mode rather than split mode.* In nanobind 3.1, `abi3t` (PEP 803, Python 3.15+) is only available in split
+  mode, so linked mode has no stable ABI for free-threaded builds. Split mode wasn't tried, as it adds a runtime
+  dependency on a backend package.
+- *Stop publishing free-threaded wheels, but keep testing free-threaded builds.* Publishing them would need 3 more
+  wheels for each free-threaded version, which is the matrix growth this change removes. Free-threading is still a
+  supported feature, so `FREE_THREADED` stays in `CMakeLists.txt` and the `3.14t` jobs in `build-test.yml` keep testing
+  it, using a source build. `pip install neworder` on a free-threaded interpreter now builds from source too, which
+  needs a C++ toolchain. Wheels built on 3.14t and 3.15t also passed the tests locally, on Linux.
+- *Keep cp314 and cp315 in the cibuildwheel build list.* cibuildwheel 4.2.0 reuses the cp313 abi3 wheel for them rather
+  than rebuilding, and still runs the tests on each, so the wheel is tested on every interpreter it's published for.
+- *Tag `cp313` rather than `cp312`.* nanobind's linked mode targets the 3.12 limited API, but the tag matches
+  `requires-python`.
+
+**Follow-ups**
+- Windows and macOS are untested: run `pypi-release.yml` manually to check those wheels, and the wheel reuse, before
+  releasing.
+- Revisit free-threaded wheels if nanobind's linked mode gains `abi3t`, or split mode becomes worthwhile.
+
+---
+
+## 2026-11-06 — Migrate from pybind11 to nanobind, and from setuptools to scikit-build-core
+
+**Why** — nanobind produces smaller, faster bindings. Measured against pybind11 on Linux with CPython 3.14: the
+extension is 362 KB rather than 754 KB, the wheel 181 KB rather than 304 KB, `Model.run` and scalar calls take 55-62%
+of the time, and small array calls 44-70%. Functions on large arrays are about the same or faster, as most of their
+time isn't in the bindings. The public Python API is unchanged, and the random streams match the pybind11 build's (see
+`test_bindings.py`).
+
+**What**
+- `src/`: all bindings ported. Removed unused array helpers (`binary_op`, `at`, `fill`) and `no::log(handle)`.
+- Build: `setup.py` and `MANIFEST.in` replaced by `CMakeLists.txt` and `[tool.scikit-build]`. `[tool.uv] cache-keys`
+  means that a plain `uv sync` now rebuilds after a C++ change. The extension no longer lands in the repo root.
+- `pybind11-stubgen` replaced by `nanobind.stubgen`, which no longer needs `--ignore-all-errors`. The hand-maintained
+  stubs needed almost no change.
+- `test/test_bindings.py` pins the boundary's behaviour and the values of the random streams. It was written first and
+  passes on the pybind11 build, so it acted as the contract for the migration.
+- Coverage: the extension is built with instrumentation in the project environment. Only the build step changed.
+- `ty`: `allowed-unresolved-imports` covers the packages from the optional extras, so type checking works with or
+  without them installed, and `neworder/mpi.pyi` no longer needs a `ty:ignore`.
+
+**Behaviour changes**
+- Fixed: strided input arrays were silently read as if contiguous, e.g. `isnever(a[::2])` read the wrong elements. They
+  are now copied to a contiguous layout. Results change for any caller affected by the bug.
+- Fixed: a `Timeline` subclass missing a property recursed unboundedly, crashing the interpreter on Windows. It now
+  raises a `RuntimeError`. The trampoline's re-entrancy guard stops the recursion after one round.
+- A subclass that doesn't call `super().__init__` now raises a `TypeError` (and a `RuntimeWarning`) when first used
+  rather than on construction, as nanobind has no metaclass in which to check.
+- A virtual method assigned to an instance (`m.step = f`) is only called from C++ if the class also overrides it, as
+  nanobind checks the class for an override before fetching it from the instance. Overriding in a subclass is
+  unaffected, and so is `check()`, which `Model::run` calls via Python.
+- `bool` parameters (`relative`, `use_counter`, `verbose`, `checked`) now accept only `True`/`False`, so e.g. a
+  `numpy.bool` raises `TypeError`. Values returned from `check()` and `at_end` still only need to be truthy.
+- The wording of argument errors differs; the exception types don't.
+
+**Design decisions**
+- *scikit-build-core and CMake.* nanobind's documentation says that custom build systems are unsupported, so staying
+  on setuptools would have meant owning that logic. `NOMINSIZE` is set, because nanobind optimises for size by default,
+  which would also apply to the sampling loops in this module.
+- *`no::ArrayLike<T>` for array arguments, rather than `nb::ndarray`.* `nb::ndarray` only accepts objects that already
+  expose their memory, so it rejects lists and pandas objects. It's a small custom caster with the semantics of
+  pybind11's `array_t`: the no-convert pass accepts only real `ndarray`s, and the convert pass uses `np.asarray`.
+  Without the first restriction, a `numpy.float64` passed to `isnever` is claimed by the array overload through the
+  buffer protocol, and it returns a 0-d array rather than a `bool`.
+- *Returned arrays are allocated with `np.empty`, then passed through `nb::ndarray`.* The documented approach, wrapping
+  memory allocated in C++ in a capsule, was tried first. Compared to pybind11 it was about 3x slower for 1-element
+  arrays, which matters to case-based models that make a call per person, and the result didn't own its data. With
+  `np.empty`, nanobind's export returns the original array, so it's a plain numpy array that owns its data. A custom
+  array class and caster bypassing `nb::ndarray` altogether was also tried: it saves about 130 ns per call, by avoiding
+  the import of the new array, but isn't worth owning a caster built on nanobind's `detail` API. numpy's C API would be
+  faster still, but would add a binary dependency on numpy.
+- *Base methods are bound non-virtually.* nanobind's trampolines only recognise a `super()` call if C++ made the outer
+  call. So with `.def("check", &Model::check)`, an override called from Python that calls `super().check()` dispatches
+  back to itself and runs twice. `test_bindings.py` caught this. As a result `Timeline.__repr__` is non-virtual, and
+  each concrete timeline binds its own.
+- *`Model::run` calls `check` via Python*, because `NB_OVERRIDE` casts the result strictly, and models commonly return
+  a `numpy.bool` (e.g. the mortality example). Rejected: using nanobind's `detail::ticket` API to write a lenient
+  trampoline.
+- *Leak warnings are off by default* (set `NEWORDER_LEAK_WARNINGS` to enable), as a model can legitimately hold a cycle
+  that the garbage collector can't see through C++, e.g. a seeder bound to the model. The test suite reports no leaks.
+  `NB_DOMAIN` isolates this global flag from other nanobind extensions.
+- *Split mode not adopted.* It adds a runtime dependency on a backend package. The stable ABI doesn't need split mode,
+  and was adopted separately (see the 2026-11-07 entry).
+- *One PR rather than class by class.* The two libraries don't share types, and `Model`, `MonteCarlo` and the array
+  helpers cross every file.
+
+**Follow-ups**
+- The `infection` example fails with `AttributeError: 'int' object has no attribute 'rgba'` in its plotting code. It
+  fails the same way on the pybind11 build, so isn't related to this change.
+- Storing seeders as `nb::callable` rather than in a `std::function` would allow `tp_traverse` on `Model` and
+  `SplitMix64`, so that Python can collect self-referencing models.
+- If PR #134 (Timeline API v2) goes ahead it will need rebasing onto this. Its `overriding_self` uses pybind11
+  internals, and `catch (py::stop_iteration&)` won't compile, as `nb::stop_iteration` is a function rather than a type.
+
+---
+
 ## 2026-10-17 — Raise the coverage target to 95%
 
 **Why** — The coverage-workflow change (2026-10-08, below) temporarily lowered the Codecov project target to 60%,

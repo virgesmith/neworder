@@ -2,10 +2,12 @@
 #include "Log.h"
 
 #include <algorithm>
+#include <cmath>
+#include <limits>
 
-py::object no::NoTimeline::time() const { return py::float_(time::never()); }
-py::object no::NoTimeline::start() const { return py::float_(time::never()); }
-py::object no::NoTimeline::end() const { return py::float_(time::never()); }
+nb::object no::NoTimeline::time() const { return nb::float_(time::never()); }
+nb::object no::NoTimeline::start() const { return nb::float_(time::never()); }
+nb::object no::NoTimeline::end() const { return nb::float_(time::never()); }
 
 double no::NoTimeline::dt() const { return 0.0; }
 
@@ -23,11 +25,11 @@ no::LinearTimeline::LinearTimeline(double start, double end, size_t steps)
   // validate
   // negative timesteps are disallowed as MC functions will misbehave with dt<0
   if (m_end <= m_start) {
-    throw py::value_error("end time (%%) must be after the start time (%%)"s % m_end % m_start);
+    throw no::value_error("end time (%%) must be after the start time (%%)"s % m_end % m_start);
   }
 
   if (m_steps < 1) {
-    throw py::value_error("timeline must have at least one step");
+    throw nb::value_error("timeline must have at least one step");
   }
 
   // set to start
@@ -39,7 +41,7 @@ no::LinearTimeline::LinearTimeline(double start, double step)
     : m_start(start), m_end(no::time::far_future()), m_dt(step), m_steps(-1) {
   // validate
   if (m_dt <= 0.0) {
-    throw py::value_error("timeline must have a positive step size, got %%"s % m_dt);
+    throw no::value_error("timeline must have a positive step size, got %%"s % m_dt);
   }
 }
 
@@ -49,9 +51,9 @@ void no::LinearTimeline::_next() {}
 
 bool no::LinearTimeline::at_end() const { return m_steps > 0 && m_index >= m_steps; }
 
-py::object no::LinearTimeline::time() const { return py::float_(m_start + m_dt * m_index); }
-py::object no::LinearTimeline::start() const { return py::float_(m_start); }
-py::object no::LinearTimeline::end() const { return py::float_(m_end); }
+nb::object no::LinearTimeline::time() const { return nb::float_(m_start + m_dt * m_index); }
+nb::object no::LinearTimeline::start() const { return nb::float_(m_start); }
+nb::object no::LinearTimeline::end() const { return nb::float_(m_end); }
 
 std::string no::LinearTimeline::repr() const {
   return m_end == no::time::far_future()
@@ -63,22 +65,22 @@ std::string no::LinearTimeline::repr() const {
 
 no::NumericTimeline::NumericTimeline(const std::vector<double>& times) : m_times(times) {
   if (m_times.size() < 2) {
-    throw py::value_error("timeline must have at least 2 points");
+    throw nb::value_error("timeline must have at least 2 points");
   }
   // check ascending
   for (size_t i = 1; i < m_times.size(); ++i) {
     if (m_times[i] <= m_times[i - 1]) {
-      throw py::value_error("invalid timeline: time at index %% (%%) is not strictly greater than previous (%%)"s % i %
+      throw no::value_error("invalid timeline: time at index %% (%%) is not strictly greater than previous (%%)"s % i %
                             m_times[i] % m_times[i - 1]);
     }
   }
 }
 
-py::object no::NumericTimeline::time() const { return at_end() ? end() : py::float_(m_times[m_index]); }
+nb::object no::NumericTimeline::time() const { return at_end() ? end() : nb::object(nb::float_(m_times[m_index])); }
 
-py::object no::NumericTimeline::start() const { return py::float_(m_times.front()); }
+nb::object no::NumericTimeline::start() const { return nb::float_(m_times.front()); }
 
-py::object no::NumericTimeline::end() const { return py::float_(m_times.back()); }
+nb::object no::NumericTimeline::end() const { return nb::float_(m_times.back()); }
 
 double no::NumericTimeline::dt() const {
   if (m_index >= m_times.size() - 1)

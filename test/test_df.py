@@ -57,6 +57,10 @@ def test_transition_conditional_errors() -> None:
     # every group category must have a matrix
     with pytest.raises(ValueError):
         no.df.transition_conditional(model.mc, {"M": trans}, group, series)
+    # including when the label can't be encoded as UTF-8 for the message
+    bad_group = pd.Series(pd.Categorical(["x\udc80"] * 2))
+    with pytest.raises(ValueError, match=r"group 'x\\udc80'"):
+        no.df.transition_conditional(model.mc, {}, bad_group, series)
 
     # a group's matrix must be 2d, square and match the number of series categories
     with pytest.raises(ValueError):

@@ -119,6 +119,18 @@ def test_uarray_uniform_distribution(rs: no.SplitMix64) -> None:
 def test_uarray_bad_arg(rs: no.SplitMix64) -> None:
     with pytest.raises(TypeError):
         rs.uarray("not_an_int_or_array")  # ty: ignore[invalid-argument-type]
+    # out of range for an int64, whether a scalar or an array element
+    with pytest.raises(TypeError):
+        rs.uarray(2**64 - 1)
+    with pytest.raises(TypeError):
+        rs.uarray([2**64 - 1])
+
+
+def test_seeder_errors() -> None:
+    with pytest.raises(TypeError, match="seeder's result must be an int64"):
+        no.SplitMix64(lambda: 2**70).uarray(1)
+    with pytest.raises(ZeroDivisionError):
+        no.SplitMix64(lambda: 1 // 0).uarray(1)
 
 
 def test_uarray_2d_input_rejected(rs: no.SplitMix64) -> None:
@@ -338,3 +350,9 @@ def test_raw_known_values(rs: no.SplitMix64) -> None:
             5565653659192831415,
         ],
     )
+
+
+def test_strided_arrays(rs: no.SplitMix64) -> None:
+    a = np.arange(6, dtype=np.int64)
+    assert (rs.raw(a[::2]) == rs.raw(np.array([0, 2, 4]))).all()
+    assert (rs.raw(a[::-1]) == rs.raw(np.array([5, 4, 3, 2, 1, 0]))).all()

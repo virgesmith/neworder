@@ -124,7 +124,7 @@ symbol     | type              | description
 `__repr__` | `str` method      | (optional) a string representation of the object, defaults to the name of the class
 
 !!! warning "Implement every property"
-    A subclass must implement all of these properties. If one is missing, accessing it doesn't raise an `AttributeError`: the lookup finds the base class property again and recurses. On Linux this ends in a `RuntimeError` ("Tried to call pure virtual function"), but on Windows, which has a smaller default stack, it can overflow the stack and crash the interpreter. A missing `_next` raises `RuntimeError` when the model runs.
+    A subclass must implement all of these properties. If one is missing, accessing it raises a `RuntimeError` ("tried to call a pure virtual function"), rather than an `AttributeError`. A missing `_next` raises a `RuntimeError` when the model runs.
 
 
 ### Spatial Domain
@@ -176,7 +176,7 @@ New users should take a look at the examples, which cover a range of application
 
 ## Data and Performance
 
-*neworder* is written in python and C++ with the python bindings provided by the *pybind11* package. As python and C++ have very different memory models, it's generally not advisable to directly share data, i.e. to safely have a python object and a C++ object both referencing (and potentially modifying) the same memory location. Thus *neworder* class member variables are accessible only via member functions and results are returned by value (i.e. copied). However, there is a crucial exception to this: the *numpy* `ndarray` type. This is fundamental to the operation of the framework, as it enables the C++ module to directly access (and modify) both *numpy* arrays and *pandas* data frames, facilitiating very fast implementation of algorithms operating directly on *pandas* DataFrames.[^1]
+*neworder* is written in python and C++ with the python bindings provided by the *nanobind* package. As python and C++ have very different memory models, it's generally not advisable to directly share data, i.e. to safely have a python object and a C++ object both referencing (and potentially modifying) the same memory location. Thus *neworder* class member variables are accessible only via member functions and results are returned by value (i.e. copied). However, there is a crucial exception to this: the *numpy* `ndarray` type. This is fundamental to the operation of the framework, as it enables the C++ module to directly access (and modify) both *numpy* arrays and *pandas* data frames, facilitiating very fast implementation of algorithms operating directly on *pandas* DataFrames.[^1]
 
 !!! note "Explicit Loops"
     To get the best performance, avoid using explicit loops in python code where "vectorised" *neworder* (or e.g. numpy) functions can be used instead.

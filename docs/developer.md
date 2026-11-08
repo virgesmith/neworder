@@ -37,11 +37,20 @@ uv sync --dev --extra parallel-openmpi  # or parallel-mpich, or parallel-native 
     `uv sync` removes any extras that aren't named on the command line, so include all the ones you need every time,
     e.g. `uv sync --dev --extra geospatial --extra parallel-openmpi`.
 
-After changing the C++ code, rebuild the extension. `uv sync` may not detect the change, so force a rebuild:
+After changing the C++ code, `uv sync --dev` rebuilds the extension. If that doesn't happen for some reason, or you've changed the build environment, force a rebuild:
 
 ```bash
 uv sync --dev --reinstall-package neworder
 ```
+
+!!! warning "Extension modules from old builds"
+    Before version 1.8, building left the extension module (`_neworder_core.*.so`, or `.pyd` on Windows) in the repo
+    root. Because it's gitignored, it's easy to miss. When the repo root is on `sys.path`, e.g. with `python -m pytest`
+    or a REPL started there, Python imports it instead of the current build. Delete any you find:
+
+    ```bash
+    rm -f _neworder_core.*
+    ```
 
 To use a specific compiler, set it in the environment, e.g.
 
@@ -117,29 +126,32 @@ Coverage of both the C++ and the python code is reported to [codecov.io](https:/
 
 ```bash
 uv sync --dev --extra geospatial
-CXXFLAGS=--coverage uv run --no-sync --with setuptools python setup.py build_ext --inplace --force
+uv pip install scikit-build-core
+rm -rf build
+CXXFLAGS=--coverage SKBUILD_CMAKE_BUILD_TYPE=Debug uv pip install --no-build-isolation --reinstall --no-deps -e .
 uv run --no-sync --with pytest-cov pytest --cov=neworder --cov-report=xml:coverage-py.xml
 uvx gcovr --root . --filter src/ --exclude-unreachable-branches --exclude-throw-branches --xml coverage-cpp.xml --print-summary build
 ```
 
-The extension is rebuilt in place because gcov writes its output (`*.gcda` files) next to the object files, and `uv sync` builds in a temporary directory that is deleted afterwards. `--no-sync` stops `uv run` replacing the instrumented build. Run `uv sync --dev --reinstall-package neworder` afterwards to restore a normal build. The `gcc` and `gcov` versions must match, otherwise `gcovr` will fail to read the coverage data.
+The extension is rebuilt in the project environment because `uv sync` builds in a temporary environment that is deleted afterwards, and gcov needs the nanobind headers at the paths they were compiled from. gcov writes its output (`*.gcda` files) next to the object files, in `build/`. Removing it first ensures that the flags take effect, as they are only read when the build is configured. `--no-sync` stops `uv run` replacing the instrumented build. Run `rm -rf build && uv sync --dev --reinstall-package neworder` afterwards to restore a normal build. The `gcc` and `gcov` versions must match, otherwise `gcovr` will fail to read the coverage data.
 
 ## Type stubs
 
 The type stubs for the C++ extension module are maintained by hand in `neworder/`: `__init__.pyi` (the core API plus the pure-python re-exports) and `time.pyi`, `mpi.pyi` and `df.pyi`. The `stats` submodule is wrapped by the pure-python `neworder/stats.py` in order to provide deprecation warnings. These are what type checkers, IDEs and the API documentation see, so they must be kept in sync with the bindings in `src/Module.cpp` and the docstrings in `src/Module_docstr.cpp`.
 
-They are seeded from the output of `pybind11-stubgen`, which can be regenerated (after rebuilding the extension) with:
+They are seeded from the output of `nanobind.stubgen`, which can be regenerated (after rebuilding the extension) with:
 
 ```bash
-uv run pybind11-stubgen _neworder_core --ignore-all-errors
+uv run python -m nanobind.stubgen -m _neworder_core -r -O stubs
 ```
 
-`--ignore-all-errors` is required because `pybind11-stubgen` can't parse a default argument that is a function. The output goes to `stubs/_neworder_core/` (which isn't under version control). Don't copy it over the files in `neworder/`. Instead, port across only the genuine API changes, since the hand-maintained stubs contain corrections that would otherwise be lost:
+The output goes to `stubs/_neworder_core/` (which isn't under version control). Don't copy it over the files in `neworder/`. Instead, port across only the genuine API changes, since the hand-maintained stubs contain corrections that would otherwise be lost:
 
 - more precise types than the generated ones (e.g. pandas types in `df.pyi`, typed `*args` for `SplitMix64`)
 - re-exports of the pure-python API in `__init__.pyi`
 - an implementation signature following module-level `@overload`s (e.g. `time.isnever`). Without it the function is omitted from the API documentation.
 - docstrings for module constants (e.g. `time.NEVER`, `mpi.RANK`), so they appear in the API documentation
+- no `__repr__` on the concrete timelines, which is an implementation detail covered by `Timeline.__repr__`
 
 ## Release Checklist
 

@@ -5,6 +5,8 @@
 #include "NewOrder.h"
 #include "Timeline.h"
 
+#include <nanobind/trampoline.h>
+
 namespace no {
 
 class Environment;
@@ -19,7 +21,7 @@ public:
     COMPLETED // reached end of timeline, finalise called
   };
 
-  Model(no::Timeline& timeline, const py::function& seeder);
+  Model(no::Timeline& timeline, const nb::callable& seeder);
 
   virtual ~Model() = default;
 
@@ -49,22 +51,23 @@ public:
 private:
   RunState m_runState;
   Timeline& m_timeline;
-  py::object m_timeline_handle; // ensures above ref isnt deleted during the lifetime of this object
+  nb::object m_timeline_handle; // ensures above ref isnt deleted during the lifetime of this object
   MonteCarlo m_monteCarlo;
 };
 
 class PyModel : private Model {
-  using Model::Model;
+  NB_TRAMPOLINE(Model);
   using Model::operator=;
 
   // trampoline methods
-  void modify() override { PYBIND11_OVERRIDE(void, Model, modify); }
+  void modify() override { NB_OVERRIDE(modify); }
 
-  void step() override { PYBIND11_OVERRIDE_PURE(void, Model, step); }
+  void step() override { NB_OVERRIDE_PURE(step); }
 
-  bool check() override { PYBIND11_OVERRIDE(bool, Model, check); }
+  // NB Model::run calls check() via python, because a python override might not return a strict bool
+  bool check() override { NB_OVERRIDE(check); }
 
-  void finalise() override { PYBIND11_OVERRIDE(void, Model, finalise); }
+  void finalise() override { NB_OVERRIDE(finalise); }
 };
 
 } // namespace no

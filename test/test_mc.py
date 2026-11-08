@@ -90,6 +90,8 @@ def test_sample(base_model: no.Model) -> None:
         base_model.mc.sample(100, np.array([-0.1, 1.1]))
     with pytest.raises(ValueError):
         base_model.mc.sample(100, np.array([0.5, 1.5]))
+    with pytest.raises(ValueError):
+        base_model.mc.sample(100, [])
     assert np.all(base_model.mc.sample(100, np.array([1.0, 0.0, 0.0, 0.0])) == 0)
     assert np.all(base_model.mc.sample(100, np.array([0.0, 1.0, 0.0, 0.0])) == 1)
     assert np.all(base_model.mc.sample(100, np.array([0.0, 0.0, 0.0, 1.0])) == 3)
@@ -149,6 +151,15 @@ def test_arrivals_validation(base_model: no.Model) -> None:
         base_model.mc.arrivals([1.0, 1.0], 1.0, 10, 0.0)
     with pytest.raises(ValueError):
         base_model.mc.arrivals([np.nan, np.nan], 1.0, 10, 0.0)
+
+    with pytest.raises(ValueError):
+        base_model.mc.first_arrival([], 1.0, 10)
+    with pytest.raises(ValueError):
+        base_model.mc.next_arrival(np.zeros(10), [], 1.0)
+    with pytest.raises(ValueError):
+        base_model.mc.arrivals([], 1.0, 10, 0.0)
+
+    assert base_model.mc.arrivals([1.0, 0.0], 1.0, 0, 0.0).shape == (0, 0)
 
 
 def test_mc_counts(base_model: no.Model) -> None:
@@ -371,3 +382,10 @@ def test_bitgen(base_model: no.Model) -> None:
     gen2 = no.as_np(base_model_different_seed.mc)
     assert gen2.bit_generator.random_raw() != base_model.mc.raw()
     assert (gen2.uniform(size=100) != base_model.mc.ustream(100)).all()
+
+
+def test_strided_arrays(base_model: no.Model) -> None:
+    p = np.array([0.0, 1.0, 0.0, 1.0])
+    assert (base_model.mc.hazard(p[::2]) == 0.0).all()
+    assert (base_model.mc.hazard(p[1::2]) == 1.0).all()
+    assert (base_model.mc.hazard(p[::-1]) == [1.0, 0.0, 1.0, 0.0]).all()

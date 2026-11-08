@@ -1,17 +1,15 @@
 [build-system]
 requires = [
-    "setuptools>=42",
-    "wheel",
-    "pybind11>=2.13",
+    "scikit-build-core>=1.1",
+    "nanobind>=3.1,<4",  # the ArrayLike caster uses nanobind's detail API
     "numpy",
-    "pytest"
 ]
 
-build-backend = "setuptools.build_meta"
+build-backend = "scikit_build_core.build"
 
 [project]
 name = "neworder"
-version = "1.7.2"
+version = "1.8.0"
 authors = [
   { name="Andrew Smith", email="andrew@friarswood.net" },
 ]
@@ -35,10 +33,9 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-  "pybind11>=2.10.3",
+  "nanobind>=3.1",
   "pytest>=9.0.3",
   "ruff",
-  "pybind11-stubgen>=2.5.5",
   "pre-commit>=4.5.1",
   "ty>=0.0.34",
   "requests>=2.34.2",  # only needed by docs, but in dev to prevent ty from complaining about docs/macros.py
@@ -77,6 +74,22 @@ neworder-skill = "neworder.skill_cli:main"
 "Homepage" = "https://neworder.readthedocs.io/"
 "Bug Tracker" = "https://github.com/virgesmith/neworder/issues"
 
+[tool.scikit-build]
+minimum-version = "build-system.requires"
+# keep the build tree, so that rebuilds are incremental and gcov can find its data
+build-dir = "build/{wheel_tag}"
+wheel.packages = ["neworder"]
+wheel.py-api = "cp313"
+sdist.exclude = ["/.agents", "/.github", "/docs", "/examples", "/paper", "/test"]
+
+[tool.uv]
+# rebuild the extension on `uv sync` if any of these change
+cache-keys = [{ file = "pyproject.toml" }, { file = "CMakeLists.txt" }, { file = "src/*" }]
+
+[tool.ty.analysis]
+# provided by the optional extras, so might not be installed
+allowed-unresolved-imports = ["geopandas.**", "mpi4py.**", "networkx.**", "osmnx.**", "shapely.**"]
+
 [tool.pytest.ini_options]
 minversion = "6.0"
 testpaths = [
@@ -91,8 +104,9 @@ select = ["ARG", "B", "C", "E", "F", "I", "N", "PERF", "PTH", "RUF", "SIM", "UP"
 ignore = ["E501", "N803", "N806"]
 
 [tool.cibuildwheel]
-# the interpreters tested in build-test.yml (free-threaded 3.14 and 3.15 need no `enable` flag in cibuildwheel 4)
-build = ["cp313-*", "cp314-*", "cp314t-*", "cp315-*"]
+# no free-threaded wheels: abi3 can't cover them, so they're tested from source in build-test.yml instead.
+# The abi3 wheel is built on the first of these, then reused and tested on the others
+build = ["cp313-*", "cp314-*", "cp315-*"]
 # manylinux only - alpine/musl builds aren't tested anywhere
 skip = ["*-musllinux_*"]
 build-frontend = "build[uv]"
