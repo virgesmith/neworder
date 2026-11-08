@@ -2,7 +2,7 @@ import importlib.metadata
 
 __version__ = importlib.metadata.version("neworder")
 
-from _neworder_core import (  # ty:ignore[unresolved-import]
+from _neworder_core import (  # ty:ignore[import-not-found]
     LinearTimeline,
     Model,
     MonteCarlo,

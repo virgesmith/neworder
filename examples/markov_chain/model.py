@@ -2,8 +2,8 @@ import time
 
 import numpy as np
 import numpy.typing as npt
-import visualisation  # ty:ignore[unresolved-import]
-from markov_chain import ConditionalMarkovChain, MarkovChain  # ty:ignore[unresolved-import]
+import visualisation  # ty:ignore[import-not-found]
+from markov_chain import ConditionalMarkovChain, MarkovChain  # ty:ignore[import-not-found]
 
 import neworder as no
 

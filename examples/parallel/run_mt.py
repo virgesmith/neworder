@@ -8,7 +8,7 @@ from concurrent.futures import ThreadPoolExecutor
 from threading import Barrier, Lock
 
 import pandas as pd
-from parallel_mt import ParallelThreaded  # ty:ignore[unresolved-import]
+from parallel_mt import ParallelThreaded  # ty:ignore[import-not-found]
 
 import neworder
 

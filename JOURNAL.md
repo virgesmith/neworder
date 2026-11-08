@@ -22,6 +22,49 @@ Entry template:
 
 ---
 
+## 2026-11-08 — Upgrade locked dependencies; fix ty 0.0.99 diagnostics
+
+**Why** — Refreshed `uv.lock` (pandas 3.0.6 → 3.1.1, ty 0.0.85 → 0.0.99, ruff → 0.17.4, among others). The newer ty
+reported 45 diagnostics, including errors that would fail CI's `ty check`.
+
+**What**
+- Renamed `ty:ignore[unresolved-import]` to `ty:ignore[import-not-found]` (rule renamed in ty).
+- `neworder/time.pyi`: added an `NDArray -> NDArray[bool]` overload of `isnever` ahead of the `SupportsFloat -> bool`
+  one. `ndarray` defines `__float__`, so arrays matched the scalar overload and were typed as `bool`, which made
+  `~isnever(arr)` look like a deprecated bool inversion.
+- Examples: passed histogram `bins` as lists (`bins.tolist()`), since matplotlib's stubs reject `ndarray`, and cast
+  `plt.hist`'s patches to `BarContainer` in the mortality example (one dataset always gives a single container).
+- Bumped the ruff and ty pre-commit pins to the locked versions so local hooks and CI agree.
+
+**Design decisions**
+- Fixed the `isnever` stub rather than suppressing the warnings in examples: the type was wrong for every array caller.
+
+**Follow-ups** — The pre-commit pins and `uv.lock` can drift again; dependabot only updates the lockfile.
+
+---
+
+## 2026-11-08 — Fix infection example colour lookup
+
+**Why** — The infection example crashed in its visualisation with `AttributeError: 'int' object has no attribute
+'rgba'`. pandas stores an `IntEnum` assigned to a column as plain `int64`, so `status.apply(lambda c: c.rgba)` received
+`numpy.int64` values, not `Status` members. It went unnoticed because the example's OSM download (Overpass API) had
+been failing first.
+
+**What** — Removed the `Status.rgba` property and replaced it with a module-level `COLOURS` array indexed by status
+value, so colours are looked up for the whole column in one step: `COLOURS[self.agents.status]`.
+
+**Design decisions**
+- Lookup table, not a fix to the property (`status.map(lambda s: Status(s).rgba)`): the column holds integers, so going
+  back through the enum one row at a time was the wrong shape. Indexing an array is vectorised and simpler.
+- Kept `Status` as an `IntEnum` for the named states, and kept `status` as an integer column instead of forcing `object`
+  dtype to preserve the enum, so comparisons such as `status == Status.INFECTED` stay vectorised.
+- Matplotlib colour names (`"white"`, `"red"`, ...) instead of RGBA tuples, for readability.
+
+**Follow-ups** — osmnx's defaults (180s timeout, unlimited 55s retries on 429/504, logging off) make an overloaded
+Overpass server look like a hang; the example could enable `ox.settings.log_console` and use a shorter timeout.
+
+---
+
 ## 2026-10-17 — Raise the coverage target to 95%
 
 **Why** — The coverage-workflow change (2026-10-08, below) temporarily lowered the Codecov project target to 60%,

@@ -1,11 +1,11 @@
 """RiskPaths model"""
 
-import data  # ty:ignore[unresolved-import]
+import data  # ty:ignore[import-not-found]
 import numpy as np
 import pandas as pd
 
 # dynamics data
-from data import Parity, UnionState  # ty:ignore[unresolved-import]
+from data import Parity, UnionState  # ty:ignore[import-not-found]
 
 import neworder
 

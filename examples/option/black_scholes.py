@@ -1,7 +1,7 @@
 """Black-Scholes model implementations: analytic and MC"""
 
 import numpy as np
-from helpers import Market, Option, analytic_pv  # ty:ignore[unresolved-import]
+from helpers import Market, Option, analytic_pv  # ty:ignore[import-not-found]
 
 import neworder
 

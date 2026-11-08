@@ -1,10 +1,10 @@
 import time
 
 # model implementations
-from people import PeopleContinuous, PeopleDiscrete  # ty:ignore[unresolved-import]
+from people import PeopleContinuous, PeopleDiscrete  # ty:ignore[import-not-found]
 
 # visualisation code
-from plot import plot  # ty:ignore[unresolved-import]
+from plot import plot  # ty:ignore[import-not-found]
 
 import neworder
 

@@ -6,7 +6,7 @@ Using multithreading rather than MPI
 from copy import copy
 
 import numpy as np
-from helpers import Market, Option, analytic_pv  # ty:ignore[unresolved-import]
+from helpers import Market, Option, analytic_pv  # ty:ignore[import-not-found]
 
 import neworder
 

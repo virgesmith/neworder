@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-import pyramid  # ty:ignore[unresolved-import]
+import pyramid  # ty:ignore[import-not-found]
 
 import neworder
 
