@@ -2,7 +2,7 @@
 Submodule for statistical functions
 
 !!! warning "Deprecated"
-    This module will be removed in v1.8. Use the `scipy.special` equivalents (`expit`, `logit`) instead.
+    This module will be removed in v2.0. Use the `scipy.special` equivalents (`expit`, `logit`) instead.
 """
 
 from typing import SupportsFloat
@@ -16,7 +16,7 @@ __all__: list[str] = ["logistic", "logit"]
 
 
 @deprecated(
-    "neworder.stats.logistic is deprecated, and will be removed in v1.8. Use scipy.special.expit(k * (x - x0)) instead"
+    "neworder.stats.logistic is deprecated, and will be removed in v2.0. Use scipy.special.expit(k * (x - x0)) instead"
 )
 def logistic(x: npt.ArrayLike, x0: SupportsFloat = 0.0, k: SupportsFloat = 1.0) -> npt.NDArray[np.float64]:
     """
@@ -35,7 +35,7 @@ def logistic(x: npt.ArrayLike, x0: SupportsFloat = 0.0, k: SupportsFloat = 1.0) 
     return _stats.logistic(x, x0, k)
 
 
-@deprecated("neworder.stats.logit is deprecated, and will be removed in v1.8. Use scipy.special.logit instead")
+@deprecated("neworder.stats.logit is deprecated, and will be removed in v2.0. Use scipy.special.logit instead")
 def logit(x: npt.ArrayLike) -> npt.NDArray[np.float64]:
     """
     Computes the logit function on the supplied values.

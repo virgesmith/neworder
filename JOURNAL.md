@@ -63,6 +63,73 @@ value, so colours are looked up for the whole column in one step: `COLOURS[self.
 **Follow-ups** — osmnx's defaults (180s timeout, unlimited 55s retries on 429/504, logging off) make an overloaded
 Overpass server look like a hang; the example could enable `ox.settings.log_console` and use a shorter timeout.
 
+---
+
+## 2026-11-08 — Cast errors, nanobind pin, and other review follow-ups (#135)
+
+**Why** — The remaining findings from reviewing the nanobind port:
+- A failed `nb::cast` is a bare `std::bad_cast`, so a seeder or a timeline's `index` returning the wrong type raised
+  `RuntimeError: std::bad_cast`, without saying what or why.
+- `nanobind>=3.1` had no upper bound, but the `ArrayLike` caster uses nanobind's detail API, which has changed between
+  major versions. Free-threaded users always build from source, so a nanobind 4 could break their installs.
+- Developer checkouts from before the move to scikit-build-core still contain an in-place `_neworder_core.*.so`. It's
+  gitignored, and shadows the current build whenever the repo root is on `sys.path`.
+- `unary_op` heap-allocated its result's shape on every call.
+- The `stats` deprecation said "removed in v1.8", which is now this release.
+
+**What**
+- `no::checked_cast<T>(value, what)` (`src/Helpers.h`) raises `TypeError: <what> must be <type>, got <repr>`. It's used
+  for both seeders (`Model` and `SplitMix64`) and `PyAccessor::get_as`, e.g. `MyTimeline.index must be an int64, got
+  'zero'`. An out of range scalar argument to `SplitMix64` raises the same `TypeError` as an out of range array element.
+- `nanobind>=3.1,<4` in `build-system.requires`.
+- `docs/developer.md` warns about the old extension modules, and says how to remove them.
+- `unary_op` builds the shape in a `std::array` (numpy allows at most 64 dimensions). It made no measurable difference:
+  `hazard`, `isnever` and `stopping` on 1- and 9-element arrays were within noise of before (about 550-850 ns a call).
+- The `stats` deprecation now says it will be removed in v2.0.
+
+**Design decisions**
+- *Fixed the call sites rather than adding a global translator for `nb::cast_error`.* A translator can't know the value
+  or the expected type, so its message would be no better. The remaining `nb::cast`s convert values neworder produces
+  itself, the thread id, or MPI's rank and size.
+- *Kept the `unary_op` change* despite no measurable gain, as it's simpler than the vector it replaces.
+- *Didn't delete the stale extension modules* from the checkout this was developed in; that's the developer's call.
+
+**Follow-ups** — `no.log`, and logging in verbose mode, raise when `sys.stdout` is None (e.g. under `pythonw.exe`),
+where pybind11's `py::print` did nothing.
+
+---
+
+## 2026-11-07 — Fix crashes on empty input, bad seeders and unencodable strings (#135)
+
+**Why** — Reviewing the nanobind port found inputs that crash the interpreter or abort the process, rather than raise:
+- `no.log("x\udc80y")` segfaulted, because `nb::str::c_str()` returns null for a string that can't be encoded as UTF-8
+  (e.g. a lone surrogate, as in a filename decoded with `surrogateescape`). `std::to_string(nb::object)`, which builds
+  error and log messages, had the same bug: `basic_string` from null, which is UB on MSVC.
+- `mc.sample(n, [])` segfaulted, as `no::cumulative` read the first and last elements of an empty array.
+- A seeder that raised, or returned something other than an int32, called `std::terminate` from the `noexcept`
+  `MonteCarlo` constructor.
+- `first_arrival`, `next_arrival` and `arrivals` read out of bounds on empty intensities, and `arrivals` with `n=0`
+  underflowed its column count to -1.
+
+**What**
+- `log_obj` (`src/Module.cpp`) joins the arguments as Python strings and prints the result, so it behaves as `print`
+  does: an unencodable string fails (or not) according to `sys.stdout`'s error handler, and a NUL no longer truncates.
+- `std::to_string(nb::object)` (`src/Log.cpp`) falls back to `backslashreplace` when the string can't be encoded.
+- `no::cumulative` raises `ValueError` on empty probabilities. The arrival processes raise `ValueError` on empty
+  intensities (`validate_lambda_t`), and `arrivals(..., n=0, ...)` returns a `(0, 0)` array.
+- `MonteCarlo`'s constructor is no longer `noexcept`. A seeder's result that isn't an int32 raises `TypeError` from
+  construction or `reset()` (see the next entry), and exceptions raised by the seeder propagate unchanged.
+
+**Design decisions**
+- *Different fixes for the two string conversions.* `log` is Python's logging, so it should match `print`. That
+  includes raising on a strict stdout, e.g. pytest's `capsys`, which is what pybind11's `py::print` did.
+  `std::to_string` builds messages, often for an exception that's already being raised, so it must not fail itself.
+- *Empty intensities are an error, not an empty result.* The processes sample from the largest intensity and
+  extrapolate the final one, neither of which exists. `counts` still accepts an empty array, as it maps one intensity
+  to one count.
+
+---
+
 ## 2026-11-07 — Merge `NPArray` into `ArrayHelpers`
 
 **Why** — The split didn't follow the code. `ArrayHelpers.h` declared the numpy helpers, but `NPArray.cpp` implemented
@@ -206,9 +273,6 @@ time isn't in the bindings. The public Python API is unchanged, and the random s
 **Follow-ups**
 - The `infection` example fails with `AttributeError: 'int' object has no attribute 'rgba'` in its plotting code. It
   fails the same way on the pybind11 build, so isn't related to this change.
-- `first_arrival`, `next_arrival` or `arrivals` can hang on empty input (not isolated further). `first_arrival`
-  dereferences `max_element` on an empty range. Exists independently of this change.
-- `MonteCarlo`'s constructor is `noexcept` but calls a Python seeder, so a seeder that raises calls `std::terminate`.
 - Storing seeders as `nb::callable` rather than in a `std::function` would allow `tp_traverse` on `Model` and
   `SplitMix64`, so that Python can collect self-referencing models.
 - If PR #134 (Timeline API v2) goes ahead it will need rebasing onto this. Its `overriding_self` uses pybind11

@@ -43,6 +43,15 @@ After changing the C++ code, `uv sync --dev` rebuilds the extension. If that doe
 uv sync --dev --reinstall-package neworder
 ```
 
+!!! warning "Extension modules from old builds"
+    Before version 1.8, building left the extension module (`_neworder_core.*.so`, or `.pyd` on Windows) in the repo
+    root. Because it's gitignored, it's easy to miss. When the repo root is on `sys.path`, e.g. with `python -m pytest`
+    or a REPL started there, Python imports it instead of the current build. Delete any you find:
+
+    ```bash
+    rm -f _neworder_core.*
+    ```
+
 To use a specific compiler, set it in the environment, e.g.
 
 ```bash

@@ -1,7 +1,7 @@
 [build-system]
 requires = [
     "scikit-build-core>=1.1",
-    "nanobind>=3.1",
+    "nanobind>=3.1,<4",  # the ArrayLike caster uses nanobind's detail API
     "numpy",
 ]
 
@@ -9,7 +9,7 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "neworder"
-version = "2.0.0"
+version = "1.8.0"
 authors = [
   { name="Andrew Smith", email="andrew@friarswood.net" },
 ]

@@ -31,6 +31,14 @@ void validate_lambda(const no::ArrayLike<double>& lambda) {
   });
 }
 
+// the arrival processes take the largest intensity, and extrapolate the final one
+void validate_lambda_t(const no::ArrayLike<double>& lambda_t) {
+  if (lambda_t.size() == 0) {
+    throw no::value_error("intensities must not be empty");
+  }
+  validate_lambda(lambda_t);
+}
+
 } // namespace
 
 // helper functions for basic seeding strategies
@@ -47,7 +55,7 @@ int32_t no::MonteCarlo::nondeterministic_stream() {
   return rand();
 }
 
-no::MonteCarlo::MonteCarlo(std::function<int32_t()> seeder) noexcept
+no::MonteCarlo::MonteCarlo(std::function<int32_t()> seeder)
     : m_seeder(std::move(seeder)), m_seed(m_seeder()), m_prng(m_seed) {}
 
 int32_t no::MonteCarlo::seed() const noexcept { return m_seed; }
@@ -133,7 +141,7 @@ no::NpArray<double> no::MonteCarlo::stopping(const ArrayLike<double>& prob) {
 
 // multiple-arrival (0+) process
 no::NpArray<double> no::MonteCarlo::arrivals(const ArrayLike<double>& lambda_t, double dt, Py_ssize_t n, double gap) {
-  validate_lambda(lambda_t);
+  validate_lambda_t(lambda_t);
   const double* pl = no::cbegin(lambda_t);
   size_t nl = lambda_t.size();
 
@@ -171,7 +179,9 @@ no::NpArray<double> no::MonteCarlo::arrivals(const ArrayLike<double>& lambda_t, 
     // no::log("%%: %%"s % i % times[i]);
   }
 
-  NpArray<double> nptimes = no::allocate<double>(Index_t<2>{n, static_cast<Py_ssize_t>(imax - 1)});
+  // each row's final entry is dropped, so with n=0 (and so imax=0) avoid underflowing the column count
+  const size_t ncols = imax > 0 ? imax - 1 : 0;
+  NpArray<double> nptimes = no::allocate<double>(Index_t<2>{n, static_cast<Py_ssize_t>(ncols)});
   double* pa = nptimes.data();
   std::fill(pa, pa + nptimes.size(), no::time::never());
 
@@ -179,7 +189,7 @@ no::NpArray<double> no::MonteCarlo::arrivals(const ArrayLike<double>& lambda_t, 
     for (size_t j = 0; j < times[i].size() - 1; ++j) {
       pa[j] = times[i][j];
     }
-    pa += imax - 1;
+    pa += ncols;
   }
 
   return nptimes;
@@ -187,7 +197,7 @@ no::NpArray<double> no::MonteCarlo::arrivals(const ArrayLike<double>& lambda_t, 
 
 no::NpArray<double> no::MonteCarlo::first_arrival(const ArrayLike<double>& lambda_t, double dt, Py_ssize_t n,
                                                   double minval) {
-  validate_lambda(lambda_t);
+  validate_lambda_t(lambda_t);
   const double* pl = no::cbegin(lambda_t);
   size_t nl = lambda_t.size();
 
@@ -222,7 +232,7 @@ no::NpArray<double> no::MonteCarlo::first_arrival(const ArrayLike<double>& lambd
 no::NpArray<double> no::MonteCarlo::next_arrival(const ArrayLike<double>& startingpoints,
                                                  const ArrayLike<double>& lambda_t, double dt, bool relative,
                                                  double minsep) {
-  validate_lambda(lambda_t);
+  validate_lambda_t(lambda_t);
   size_t n = startingpoints.size();
   const double* ps = no::cbegin(startingpoints);
 
@@ -284,6 +294,9 @@ no::NpArray<int64_t> no::MonteCarlo::counts(const ArrayLike<double>& lambda, dou
 //
 std::vector<double> no::cumulative(const double* p, size_t n) {
   static const double tolerance = std::sqrt(std::numeric_limits<double>::epsilon());
+
+  if (n == 0)
+    throw no::value_error("probabilities must not be empty");
 
   std::vector<double> cumprobs(n);
   if (p[0] < 0.0 || p[0] > 1.0)

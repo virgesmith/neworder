@@ -287,6 +287,23 @@ def test_instance_assigned_override_needs_class_override() -> None:
         assert m.called == expected
 
 
+def test_timeline_index_must_be_int() -> None:
+    class StrIndexTimeline(_NumpyBoolTimeline):
+        @property
+        def index(self) -> int:
+            return "zero"  # ty: ignore[invalid-return-type]
+
+    class M(no.Model):
+        def __init__(self) -> None:
+            super().__init__(StrIndexTimeline(), no.MonteCarlo.deterministic_identical_stream)
+
+        def step(self) -> None:
+            pass
+
+    with pytest.raises(TypeError, match=r"StrIndexTimeline\.index must be an int64, got 'zero'"):
+        no.run(M())
+
+
 def test_timeline_repr() -> None:
     class Timeline(_NumpyBoolTimeline):
         calls = 0

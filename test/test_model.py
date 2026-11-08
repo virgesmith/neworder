@@ -1,5 +1,6 @@
 import warnings
 
+import numpy as np
 import pytest
 
 import neworder as no
@@ -48,6 +49,22 @@ def test_default_seeder() -> None:
 
     assert DefaultModel().x == ExplicitModel().x
     assert DefaultModel().x != DifferentModel().x
+
+
+def test_seeder_errors() -> None:
+    assert no.Model(no.NoTimeline(), lambda: np.int32(7)).mc.seed() == 7
+
+    with pytest.raises(TypeError, match="seeder's result must be an int32"):
+        no.Model(no.NoTimeline(), lambda: 1.5)
+    with pytest.raises(TypeError, match="seeder's result must be an int32"):
+        no.Model(no.NoTimeline(), lambda: 2**31)
+    with pytest.raises(ZeroDivisionError):
+        no.Model(no.NoTimeline(), lambda: 1 // 0)
+
+    seeds = iter([1, "x"])
+    m = no.Model(no.NoTimeline(), lambda: next(seeds))
+    with pytest.raises(TypeError, match="seeder's result must be an int32"):
+        m.mc.reset()
 
 
 def test_multimodel() -> None:

@@ -90,6 +90,8 @@ def test_sample(base_model: no.Model) -> None:
         base_model.mc.sample(100, np.array([-0.1, 1.1]))
     with pytest.raises(ValueError):
         base_model.mc.sample(100, np.array([0.5, 1.5]))
+    with pytest.raises(ValueError):
+        base_model.mc.sample(100, [])
     assert np.all(base_model.mc.sample(100, np.array([1.0, 0.0, 0.0, 0.0])) == 0)
     assert np.all(base_model.mc.sample(100, np.array([0.0, 1.0, 0.0, 0.0])) == 1)
     assert np.all(base_model.mc.sample(100, np.array([0.0, 0.0, 0.0, 1.0])) == 3)
@@ -149,6 +151,15 @@ def test_arrivals_validation(base_model: no.Model) -> None:
         base_model.mc.arrivals([1.0, 1.0], 1.0, 10, 0.0)
     with pytest.raises(ValueError):
         base_model.mc.arrivals([np.nan, np.nan], 1.0, 10, 0.0)
+
+    with pytest.raises(ValueError):
+        base_model.mc.first_arrival([], 1.0, 10)
+    with pytest.raises(ValueError):
+        base_model.mc.next_arrival(np.zeros(10), [], 1.0)
+    with pytest.raises(ValueError):
+        base_model.mc.arrivals([], 1.0, 10, 0.0)
+
+    assert base_model.mc.arrivals([1.0, 0.0], 1.0, 0, 0.0).shape == (0, 0)
 
 
 def test_mc_counts(base_model: no.Model) -> None:

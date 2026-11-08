@@ -59,7 +59,11 @@ no::SplitMix64::KeyMix no::SplitMix64::mix_keys(const nb::args& args, const char
 
   for (nb::handle obj : args) {
     if (nb::isinstance<nb::int_>(obj)) {
-      parsed.push_back({{static_cast<uint64_t>(nb::cast<int64_t>(obj))}, false});
+      int64_t value = 0;
+      // so an out of range int raises the same error as an out of range array element
+      if (!nb::try_cast(obj, value))
+        throw no::type_error(invalid_arg);
+      parsed.push_back({{static_cast<uint64_t>(value)}, false});
     } else {
       no::ArrayLike<int64_t> arr;
       try {

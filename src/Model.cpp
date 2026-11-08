@@ -8,7 +8,7 @@
 
 no::Model::Model(no::Timeline& timeline, const nb::callable& seeder)
     : m_runState(no::Model::NOT_STARTED), m_timeline(timeline), m_timeline_handle(nb::find(timeline)),
-      m_monteCarlo([seeder]() { return nb::cast<int32_t>(seeder()); }) {
+      m_monteCarlo([seeder]() { return no::checked_cast<int32_t>(seeder(), "the seeder's result"); }) {
   no::log("model init: timeline=%% mc=%%"s % m_timeline.repr() % m_monteCarlo.repr());
 }
 

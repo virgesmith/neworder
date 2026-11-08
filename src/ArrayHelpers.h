@@ -98,11 +98,14 @@ template <typename T, size_t D = 1, typename F> NpArray<T> make_array(const Inde
 
 // "nullary"/scalar unary op implemented as make_array
 template <typename R, typename A, typename F> NpArray<R> unary_op(const ArrayLike<A>& arg, F f) {
-  std::vector<Py_ssize_t> shape(arg.ndim());
+  // on the stack, as this is called per person in some models. numpy allows at most 64 dimensions
+  std::array<Py_ssize_t, 64> shape;
+  if (arg.ndim() > shape.size())
+    throw nb::value_error("arrays can have at most 64 dimensions");
   for (size_t i = 0; i < arg.ndim(); ++i)
     shape[i] = static_cast<Py_ssize_t>(arg.shape(i));
 
-  NpArray<R> result = allocate<R>(shape);
+  NpArray<R> result = allocate<R>(std::span<const Py_ssize_t>(shape.data(), arg.ndim()));
 
   const A* p = arg.data();
   R* r = result.data();

@@ -3,6 +3,7 @@
 
 #include "ArrayHelpers.h"
 #include "DataFrame.h"
+#include "Helpers.h"
 #include "Log.h"
 #include "Model.h"
 #include "MonteCarlo.h"
@@ -32,13 +33,12 @@ namespace {
 
 // not visible to (rest of) C++ - use the function declared in Log.h
 void log_obj(const nb::args& args) {
-  std::string msg;
-  for (nb::handle arg : args) {
-    if (!msg.empty())
-      msg += " ";
-    msg += nb::str(arg).c_str();
-  }
-  nb::print((no::env::logPrefix[no::env::Context::PY] % no::env::thread_id() % msg).c_str());
+  // joined as python strings: converting each to UTF-8 would fail on a lone surrogate and truncate at a NUL
+  nb::list strs;
+  for (nb::handle arg : args)
+    strs.append(nb::str(arg));
+  const std::string prefix = no::env::logPrefix[no::env::Context::PY] % no::env::thread_id() % ""s;
+  nb::print(nb::str("{}{}").format(prefix, nb::str(" ").attr("join")(strs)));
 }
 
 } // namespace
@@ -196,7 +196,8 @@ NB_MODULE(_neworder_core, m) {
       .def(
           "__init__",
           [](no::SplitMix64* self, const nb::callable& seeder, bool use_counter) {
-            new (self) no::SplitMix64([seeder]() { return nb::cast<int64_t>(seeder()); }, use_counter);
+            new (self) no::SplitMix64(
+                [seeder]() { return no::checked_cast<int64_t>(seeder(), "the seeder's result"); }, use_counter);
           },
           "seeder"_a, nb::kw_only(), "use_counter"_a = false, sms_init_docstr)
       .def("counter", &no::SplitMix64::counter, sms_counter_docstr)
