@@ -85,7 +85,7 @@ src/                     # C++ extension source (nanobind)
   Model.cpp / Model.h
   MonteCarlo.cpp / ...
   Module.cpp             # nanobind bindings entry point
-  Timeline.cpp / ...
+  Time.cpp / Time.h      # no::time helpers (never, isnever, ...)
 neworder/                # Python package
   __init__.py            # public exports (re-exports _neworder_core + pure-Python)
   domain.py              # Domain, Edge, Space, StateGrid

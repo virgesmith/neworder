@@ -94,6 +94,8 @@ halt state.
   it, and the current step, exposed as `Model.timestep` (`None` before the first step). `Model::run` takes steps with
   `PyIter_Next`, so there's no exception-driven control flow, and finalises when the iterator is exhausted. Keeping
   the iterator between runs is what makes halt and resume work.
+- `src/Timeline.{h,cpp}` is renamed `Time.{h,cpp}`, as all that's left in it is the `no::time` helpers (`never`,
+  `isnever`, ...). `Time.h` no longer includes `NewOrder.h`, which it didn't need.
 - Examples read `self.timestep` instead of `self.timeline`. Models that need the start time record it from the first
   step's `start` (markov_chain, membership).
 
