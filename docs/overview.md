@@ -48,6 +48,8 @@ factory | native type | `dt` | use for
 `numeric(times)` | `float` | the difference of consecutive times | non-integer time from a list or array of (strictly increasing) time points, allowing for unequally-spaced steps
 `calendar(start=..., step=..., end=None)` | `date` | years (ACT/365) | calendar dates with steps defined daily, monthly or annually (as a `relativedelta`). Monthly steps preserve the day of the month where possible, and if `end` isn't a whole number of steps from `start` the final step is shortened to end at it
 
+Iterators are consumed by the model. To use the same timeline in several models, convert to a list, e.g. `list(neworder.timeline.linear(0, end=10))`, or call the factory for each model.
+
 For example, `list(neworder.timeline.linear(2020, end=2023))` is
 
 ```python
@@ -58,7 +60,75 @@ For example, `list(neworder.timeline.linear(2020, end=2023))` is
 ]
 ```
 
-The neworder convention is that the first timestep has index 1. `dt` must be a floating-point type and it is up to the timeline author to determine how to express the interval, e.g. for dates, `dt` could be a number of days, or a year fraction using some custom convention (the builtin `neworder.timeline.calendar` uses ACT/365).
+and a model run takes its steps like this:
+
+<figure class="timeline-diagram" style="width:100%">
+<svg viewBox="0 0 760 276" role="img" aria-label="The timeline linear(2020, end=2023) as three steps on a time axis from 2020 to 2023, each with dt 1.0, preceded by None before the first step. modify runs before the first step, when timestep is None. step and check run in each step, and finalise also runs in the last step, when timestep is step 3." style="width:100%;height:auto;max-width:760px" font-family="monospace" font-size="17">
+  <g stroke="currentColor" stroke-opacity="0.3" stroke-dasharray="3 4">
+    <line x1="160" y1="46" x2="160" y2="122"/><line x1="350" y1="46" x2="350" y2="122"/>
+    <line x1="540" y1="46" x2="540" y2="122"/><line x1="730" y1="46" x2="730" y2="122"/>
+  </g>
+  <g style="fill:var(--md-accent-fg-color, #4caf50);stroke:var(--md-accent-fg-color, #4caf50)" fill-opacity="0.15" stroke-width="1.5">
+    <rect x="14" y="14" width="142" height="32" rx="4"/><rect x="164" y="14" width="182" height="32" rx="4"/><rect x="354" y="14" width="182" height="32" rx="4"/>
+    <rect x="544" y="14" width="182" height="32" rx="4"/>
+  </g>
+  <g fill="currentColor" text-anchor="middle">
+    <text x="85" y="36">None</text><text x="255" y="36">index=1, dt=1.0</text><text x="445" y="36">index=2, dt=1.0</text>
+    <text x="635" y="36">index=3, dt=1.0</text>
+  </g>
+  <line x1="10" y1="66" x2="160" y2="66" stroke="currentColor" stroke-opacity="0.4" stroke-dasharray="6 4"/>
+  <line x1="730" y1="66" x2="750" y2="66" stroke="currentColor" stroke-opacity="0.4" stroke-dasharray="6 4"/>
+  <line x1="160" y1="66" x2="730" y2="66" stroke="currentColor" stroke-width="2"/>
+  <g stroke="currentColor" stroke-width="2">
+    <line x1="160" y1="59" x2="160" y2="73"/><line x1="350" y1="59" x2="350" y2="73"/>
+    <line x1="540" y1="59" x2="540" y2="73"/><line x1="730" y1="59" x2="730" y2="73"/>
+  </g>
+  <g fill="currentColor" text-anchor="middle">
+    <text x="160" y="94">2020</text><text x="350" y="94">2021</text><text x="540" y="94">2022</text><text x="730" y="94">2023</text>
+  </g>
+  <defs>
+    <marker id="nw-timeline-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="currentColor" fill-opacity="0.7"/></marker>
+  </defs>
+  <g fill="none" stroke="currentColor" stroke-opacity="0.7" stroke-width="1.5" marker-end="url(#nw-timeline-arrow)">
+    <path d="M145 136 H178"/>
+    <path d="M255 150 V164"/>
+    <path d="M330 180 H350 V136 H368"/>
+    <path d="M445 150 V164"/>
+    <path d="M520 180 H540 V136 H558"/>
+    <path d="M635 150 V164"/>
+    <path d="M635 194 V208"/>
+  </g>
+  <g fill="currentColor" fill-opacity="0.05" stroke="currentColor" stroke-opacity="0.6">
+    <rect x="25" y="122" width="120" height="28" rx="4"/>
+    <rect x="180" y="122" width="150" height="28" rx="4"/>
+    <rect x="180" y="166" width="150" height="28" rx="4"/>
+    <rect x="370" y="122" width="150" height="28" rx="4"/>
+    <rect x="370" y="166" width="150" height="28" rx="4"/>
+    <rect x="560" y="122" width="150" height="28" rx="4"/>
+    <rect x="560" y="166" width="150" height="28" rx="4"/>
+    <rect x="560" y="210" width="150" height="28" rx="4"/>
+  </g>
+  <g fill="currentColor" text-anchor="middle">
+    <text x="85" y="142">modify()</text>
+    <text x="255" y="142">step()</text>
+    <text x="255" y="186">check()</text>
+    <text x="445" y="142">step()</text>
+    <text x="445" y="186">check()</text>
+    <text x="635" y="142">step()</text>
+    <text x="635" y="186">check()</text>
+    <text x="635" y="230">finalise()</text>
+  </g>
+  <!--g fill="currentColor" fill-opacity="0.75" text-anchor="middle" font-size="15">
+    <text x="85" y="264">timestep: None</text>
+    <text x="255" y="264">timestep: step 1</text><text x="445" y="264">timestep: step 2</text>
+    <text x="635" y="264">timestep: step 3</text>
+  </g-->
+</svg>
+
+</figure>
+
+Each step runs from its `start` to its `end` on the time axis. `self.timestep` is `None` before the first step, and `finalise()` sees the last step. `check()` is only called if checking is enabled.
+
 
 #### Custom timelines
 
@@ -76,7 +146,29 @@ def halving() -> Iterator[neworder.Timestep]:
         i, t = i + 1, tnew
 ```
 
-Iterators are consumed by the model. To use the same timeline in several models, convert to a list, e.g. `list(neworder.timeline.linear(0, end=10))`, or call the factory for each model.
+It is entirely up to the timeline author what `dt` means. It must be a floating-point type but, e.g. for dates, `dt` could be a number of days, or a year fraction using some custom daycount convention (the builtin `neworder.timeline.calendar` uses ACT/365).
+
+#### Advancing the timeline manually
+
+Whilst the model will automatically iterate over `self.timeline`, user supplied code can - if necessary - take steps itself if the timeline is supplied as an `Iterator` (1), e.g. to skip some steps:
+{ .annotate }
+
+1.  If the timeline is supplied as an `Iterable` that isn't an `Iterator` (e.g. a list), this will not work.
+
+```python
+def step(self) -> None:
+    ...
+    if self.quiet_period():
+        # self.timeline is typed as an Iterable, so narrow it for type checkers
+        assert isinstance(self.timeline, Iterator)
+        # the run won't call step() for this timestep
+        skipped = next(self.timeline, None)
+```
+
+The run carries on from the step after the skipped one, and `self.timestep` isn't changed by a step taken manually. Pass a default to `next` as above: if the timeline is exhausted, a bare `next(self.timeline)` raises `StopIteration` out of `neworder.run`, without calling `finalise`. Similarly, a model constructed with a partly consumed iterator starts from its next step.
+
+!!! warning "Don't advance the timeline by accident"
+    Anything that iterates `self.timeline` takes steps from it, e.g. a `for` loop, `list(self.timeline)` or `any(...)`. The run silently skips those steps, and if they're the remaining ones, it finalises after the current step. To inspect the timeline from model code without consuming it, construct the model with a list: a list isn't an iterator, so iterating it has no effect on the run (and `next` on it raises `TypeError`).
 
 !!! warning "Migrating from neworder 1.x"
     Timelines are no longer classes. Replace `NoTimeline()`, `LinearTimeline(...)`, `NumericTimeline(...)` and `CalendarTimeline(...)` with the factories `neworder.timeline.null()`, `linear(...)`, `numeric(...)` and `calendar(...)`, and read the current step from `self.timestep` rather than `self.timeline`:

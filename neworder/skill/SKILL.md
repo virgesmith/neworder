@@ -107,6 +107,12 @@ The `no.timeline` factories return an iterator of timesteps, open-ended if `end`
 A custom timeline is any iterable of `Timestep`s, e.g. a list or a generator function. An iterator
 can only be used by one model; a list can be shared.
 
+If the timeline is an iterator (e.g. from a factory), `self.timeline` is the iterator the run takes
+its steps from, so `next(self.timeline, None)` in `step()` skips the next step (narrow it first with
+`assert isinstance(self.timeline, Iterator)`, as it's typed `Iterable`). `self.timestep` isn't changed, and a bare `next()` on an exhausted timeline raises `StopIteration` out of the run. Anything
+else that iterates `self.timeline` (a `for` loop, `list()`, `any()`) also consumes steps, which the
+run silently skips. To inspect the timeline without consuming it, construct the model with a list.
+
 Open-ended timelines stop via `model.halt()` from within `step()`. Note that `halt()` does *not*
 return immediately — the rest of `step()` and `check()` still run — and `finalise()` is **not**
 called for a halted model; call it explicitly if needed. A halted model can be resumed by passing
@@ -205,9 +211,9 @@ one of the `parallel-native`/`parallel-openmpi`/`parallel-mpich` extras and `mpi
   immediately, and `dtype` matters as much as the outer type. The package ships annotations and
   `py.typed`, so a type checker catches most of this — use one.
 - **`transition`/`transition_conditional` return new data**, they do not mutate the series.
-- **Never advance the timeline yourself**; the runtime does it between steps.
-- **`timeline.time` is the end of the step**, not the start — the start is `time - dt`. The first
-  `step()` sees `index == 1`.
+- **Don't iterate `self.timeline` by accident.** For an iterator timeline, a `for` loop, `list()` etc.
+  consume steps the run then skips. Only advance it deliberately, with `next(self.timeline, None)`.
+- **The first `step()` sees `self.timestep.index == 1`**, not 0 as in 1.x.
 - **`NEVER` is NaN** — `NEVER == NEVER` is `False`; use `no.time.isnever`.
 - **`mc.reset()` re-invokes the seeder**, so a non-deterministic seeder gives a *different* stream
   after reset, not the original one.

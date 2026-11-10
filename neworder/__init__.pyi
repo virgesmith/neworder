@@ -238,7 +238,8 @@ class Model:
     @property
     def timeline(self) -> collections.abc.Iterable[Timestep]:
         """
-        The model's timeline: the iterable of steps it was constructed with
+        The model's timeline: the iterable of steps it was constructed with. If it's an iterator (e.g. from a
+        neworder.timeline factory), the run takes its steps from it, so iterating it in model code skips them
         """
     @property
     def timestep(self) -> Timestep:
