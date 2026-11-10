@@ -22,6 +22,33 @@ Entry template:
 
 ---
 
+## 2026-11-10 — Document advancing the timeline from model code (#134)
+
+**Why** — For an iterator timeline, `self.timeline` is the iterator the run takes its steps from, so model code can
+advance it. The 2026-11-07 guard against this (`RuntimeError`) went with the timeline classes, so it's now silent.
+Advancing deliberately can be useful, e.g. to skip steps, but iterating `self.timeline` for some other reason
+consumes steps without warning.
+
+**What**
+- The overview has a section on advancing the timeline manually, with a warning about doing it by accident. The
+  bundled skill, and the `Model.timeline` docstring and stub, say the same.
+- Tests pin the behaviour: `next(self.timeline, None)` skips a step and leaves `self.timestep` unchanged, skipping
+  the remaining steps finalises after the current one, iterating a list timeline has no effect, a bare `next()` on
+  an exhausted timeline raises `StopIteration` out of the run, and a partly consumed iterator starts at its next step.
+- The skill's stale "`timeline.time` is the end of the step" pitfall is replaced.
+
+**Design decisions**
+- *Document and support it rather than reinstate a guard.* The run loop only sees an iterator, so detecting a step
+  taken elsewhere would mean wrapping it, and that would also block deliberate use. A list timeline is the way to
+  make the timeline safe to inspect.
+- Examples narrow `self.timeline` with `assert isinstance(self.timeline, Iterator)` rather than suppressing the type
+  error, since `Model.timeline` is correctly typed `Iterable`.
+
+**Follow-ups** — a bare `next()` past the end leaves the model `RUNNING`; it could be finalised instead, but code
+that does this has a bug, so raising is the more useful outcome.
+
+---
+
 ## 2026-11-10 — Resuming a halted model doesn't call `modify` again (#134)
 
 **Why** — `Model::run` called `modify()` unconditionally, so every resume of a halted model applied it again (this

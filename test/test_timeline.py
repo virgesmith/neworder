@@ -353,6 +353,66 @@ def test_halt_on_final_step_then_resume() -> None:
     assert m.modified == [None]
 
 
+def test_advance_timeline_manually() -> None:
+    class Skipping(RecordingModel):
+        def step(self) -> None:
+            super().step()
+            if self.timestep.index == 2:
+                assert isinstance(self.timeline, Iterator)
+                assert next(self.timeline, None) == (3, 2, 3, 1.0)
+                assert self.timestep.index == 2
+
+    m = Skipping(no.timeline.linear(0, end=4))
+    assert no.run(m)
+    assert [s.index for s in m.steps] == [1, 2, 4]
+    assert m.finalised == (4, 3, 4, 1.0)
+
+    # skipping the remaining steps finalises after the current one
+    m = Skipping(no.timeline.linear(0, end=3))
+    assert no.run(m)
+    assert [s.index for s in m.steps] == [1, 2]
+    assert m.run_state == no.Model.COMPLETED
+    assert m.finalised == (2, 1, 2, 1.0)
+
+
+def test_iterating_timeline_consumes_iterator_not_list() -> None:
+    class Iterating(RecordingModel):
+        def step(self) -> None:
+            super().step()
+            self.remaining = len(list(self.timeline))
+
+    m = Iterating(list(no.timeline.linear(0, end=3)))
+    no.run(m)
+    assert [s.index for s in m.steps] == [1, 2, 3]
+
+    m = Iterating(no.timeline.linear(0, end=3))
+    no.run(m)
+    assert [s.index for s in m.steps] == [1]
+    assert m.remaining == 2
+    assert m.run_state == no.Model.COMPLETED
+
+
+def test_next_on_exhausted_timeline_raises() -> None:
+    class Overrunning(RecordingModel):
+        def step(self) -> None:
+            super().step()
+            assert isinstance(self.timeline, Iterator)
+            next(self.timeline)
+
+    m = Overrunning(no.timeline.linear(0, end=1))
+    with pytest.raises(StopIteration):
+        no.run(m)
+    assert m.finalised is None
+
+
+def test_partly_consumed_timeline() -> None:
+    timeline = no.timeline.linear(0, end=4)
+    next(timeline)
+    m = RecordingModel(timeline)
+    assert no.run(m)
+    assert [s.index for s in m.steps] == [2, 3, 4]
+
+
 def test_rerun_completed_model() -> None:
     m = RecordingModel(no.timeline.linear(0, end=2))
     no.run(m)

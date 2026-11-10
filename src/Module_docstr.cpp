@@ -253,7 +253,8 @@ const char* model_init_docstr = R"""(
 )""";
 
 const char* model_timeline_docstr = R"""(
-    The model's timeline: the iterable of steps it was constructed with
+    The model's timeline: the iterable of steps it was constructed with. If it's an iterator (e.g. from a
+    neworder.timeline factory), the run takes its steps from it, so iterating it in model code skips them
 )""";
 
 const char* model_timestep_docstr = R"""(
