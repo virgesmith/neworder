@@ -28,6 +28,10 @@ This is provided by:
 
 ### Timeline
 
+!!! warning "Timelines are changing in v2.0"
+
+    neworder 2.0 will replace the timeline classes described here with iterators of timesteps. Existing models will need some changes, and their results may differ slightly. See [Migrating to neworder 2.0](#migrating-to-v2) for what will change and how to prepare.
+
 *neworder*'s timeline is conceptually a sequence of steps that are iterated over (calling the Model's `step` and (optionally) `check` methods at each iteration, plus the `finalise` method at the last time point, which is commonly used to post-process the raw model data at the end of the model run. Timelines should not be incremented in client code, this happens automatically within the model.
 
 The framework is extensible but provides four types of timeline (3 implemented in C++, one in python):
@@ -98,7 +102,7 @@ classDiagram
 
 !!! warning Timeline Limitations
 
-    The current implementation of the `neworder.Timeline` interface does not support iteration outside a model. For now, testing a custom implementation requires creating a dummy model to iterate the timeline. A future `neworder` release may refactor timelines in terms of iterables to make development easier.
+    The current implementation of the `neworder.Timeline` interface does not support iteration outside a model. For now, testing a custom implementation requires creating a dummy model to iterate the timeline. neworder 2.0 will refactor timelines in terms of iterables to make development easier: see [Migrating to neworder 2.0](#migrating-to-v2).
 
 #### Custom timelines
 
@@ -126,6 +130,15 @@ symbol     | type              | description
 !!! warning "Implement every property"
     A subclass must implement all of these properties. If one is missing, accessing it raises a `RuntimeError` ("tried to call a pure virtual function"), rather than an `AttributeError`. A missing `_next` raises a `RuntimeError` when the model runs.
 
+#### Migrating to neworder 2.0 { #migrating-to-v2 }
+
+neworder 2.0 redesigns timelines. A timeline will no longer be an object holding the current position: it will be plain data, an iterator (or any iterable) of timesteps, and the model will track the current step. This makes timelines easier to write and test, since they can be iterated outside a model.
+
+The 2.0 API may change before it is released. If you can't migrate straight away, pin your dependency to `neworder<2`.
+
+A pre-release of 2.0 will be published on PyPI ahead of the final release, so that you can try your models against the new API and report any problems. Installers ignore pre-releases unless asked for them, so it won't be installed by accident: use `pip install --pre neworder` or `uv add --prerelease allow neworder` to try it.
+
+For what will change and how to update your models, see the migration guide in the [2.0.0rc1 documentation](https://neworder.readthedocs.io/en/v2.0.0rc1/overview/#timeline).
 
 ### Spatial Domain
 

@@ -22,6 +22,42 @@ Entry template:
 
 ---
 
+## 2026-11-11 — Advance notice of the timeline changes in 2.0
+
+**Why** — 2.0 replaces the timeline classes with iterators of timesteps (PR #134). The change breaks existing models,
+and some of its effects can't be detected at runtime: step indices start at 1, so random streams keyed on them shift;
+`modify()` runs once rather than on every resume; and `halt()` behaves differently. Users need to know before they
+upgrade.
+
+**What** — Documentation only, no behaviour change:
+- A "Changing in v2.0" admonition on each timeline class (`LinearTimeline`, `NumericTimeline`, `NoTimeline`,
+  `CalendarTimeline`), in `Module_docstr.cpp` and mirrored in `__init__.pyi` and `timeline.py`, so it appears on the
+  API page and in `help()`/IDE hovers. Each links to the migration section of the overview.
+- A warning at the top of the Timeline section of `docs/overview.md`, and a short "Migrating to neworder 2.0" section:
+  what is changing, advice to pin `neworder<2`, notice that a 2.0 pre-release will be published on PyPI, and a link
+  to the 2.0.0rc1 docs for the detailed migration guide.
+- `docs/examples/membership.md`: corrected the claim that the example's output varies between runs; it is seeded
+  deterministically.
+
+**Design decisions**
+- Docs only, no runtime `FutureWarning` for now. A warning on every timeline construction can't point users at a
+  replacement in 1.x, and the docstring admonitions reach users through the API docs and IDE hovers. If one is
+  added later, it should be `FutureWarning`, not `DeprecationWarning`, which Python hides unless it's raised from
+  `__main__`. The timeline classes are usually constructed in an imported model module, not in `__main__`.
+- The detailed migration guide (API mapping tables, run-behaviour changes, things to watch) belongs in the 2.0 docs,
+  which describe the new API. The 1.x docs only link to it. A full guide was drafted here and cut back for that reason.
+- The docstring links use a full ReadTheDocs URL (`/en/stable/`) rather than a relative `overview.md` link, so they
+  work in `help()` and IDE hovers too. These docstrings reach users with the next 1.x release, which is when `stable`
+  will have the section. The docs build doesn't check full URLs, though.
+
+**Follow-ups**
+- The link to the 2.0.0rc1 docs only works once `v2.0.0rc1` is tagged and ReadTheDocs has built that version, which
+  may need to be activated by hand.
+- PR #134's migration notes are only a short warning in `overview.md`. Expand them into the full guide before tagging
+  rc1.
+
+---
+
 ## 2026-11-08 — Upgrade locked dependencies; fix ty 0.0.99 diagnostics
 
 **Why** — Refreshed `uv.lock` (pandas 3.0.6 → 3.1.1, ty 0.0.85 → 0.0.99, ruff → 0.17.4, among others). The newer ty

@@ -7,6 +7,11 @@ import neworder as no
 
 class CalendarTimeline(no.Timeline):
     """
+    !!! warning "Changing in v2.0"
+
+        Timeline classes are being replaced with an Iterator-based implementation. See the
+        [migration guide](https://neworder.readthedocs.io/en/stable/overview/#migrating-to-v2).
+
     A timeline representing calendar days. At any given step, `time` returns the date at the *start* of the step
     For monthly timesteps, preserves day of month.
     Numeric step size is computed using an ACT/365 basis and may vary depending on choice of step.

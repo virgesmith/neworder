@@ -166,8 +166,12 @@ class SplitMix64:
 
 class LinearTimeline(Timeline):
     """
+    !!! warning "Changing in v2.0"
 
-    An equally-spaced non-calendar timeline .
+        Timeline classes are being replaced with an Iterator-based implementation. See the
+        [migration guide](https://neworder.readthedocs.io/en/stable/overview/#migrating-to-v2).
+
+    An equally-spaced non-calendar timeline.
     """
     @typing.overload
     def __init__(self, start: typing.SupportsFloat, end: typing.SupportsFloat, nsteps: typing.SupportsInt) -> None:
@@ -386,6 +390,10 @@ class MonteCarlo:
 
 class NoTimeline(Timeline):
     """
+    !!! warning "Changing in v2.0"
+
+        Timeline classes are being replaced with an Iterator-based implementation. See the
+        [migration guide](https://neworder.readthedocs.io/en/stable/overview/#migrating-to-v2).
 
     An arbitrary one step timeline, for continuous-time models with no explicit (discrete) timeline
     """
@@ -396,6 +404,10 @@ class NoTimeline(Timeline):
 
 class NumericTimeline(Timeline):
     """
+    !!! warning "Changing in v2.0"
+
+        Timeline classes are being replaced with an Iterator-based implementation. See the
+        [migration guide](https://neworder.readthedocs.io/en/stable/overview/#migrating-to-v2).
 
     An custom non-calendar timeline where the user explicitly specifies the time points, which must be monotonically increasing.
     """
