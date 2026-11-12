@@ -183,11 +183,6 @@ NB_MODULE(_neworder_core, m) {
       .def_static("hash64", &no::SplitMix64::hash64, "s"_a, sms_hash64_docstr)
       .def("__repr__", &no::SplitMix64::repr, sms_repr_docstr);
 
-  // statistical utils
-  m.def_submodule("stats", stats_docstr)
-      .def("logistic", no::logistic, stats_logistic_docstr, "x"_a, "x0"_a = 0.0, "k"_a = 1.0)
-      .def("logit", no::logit, stats_logit_docstr, "x"_a);
-
   // dataframe manipulation
   m.def_submodule("df", df_docstr)
       .def("unique_index", no::df::unique_index, df_unique_index_docstr, "n"_a)

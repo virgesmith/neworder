@@ -337,30 +337,6 @@ const char* time_isnever_a_docstr = R"""(
     implemented as a floating-point NaN, direct comparison will always fails, since NaN != NaN.
 )""";
 
-// Statistical functions
-
-const char* stats_docstr = R"""(
-    Submodule for statistical functions
-)""";
-
-const char* stats_logistic_docstr = R"""(
-    Computes the logistic function on the supplied values.
-    Args:
-        x: The input values.
-        x0: the midpoint location (default 0)
-        k: The growth rate (1/scale, default 1)
-    Returns:
-        The function values
-)""";
-
-
-const char* stats_logit_docstr = R"""(
-    Computes the logit function on the supplied values.
-    Args:
-        x: The input probability values in (0,1).
-    Returns:
-        The function values (log-odds)
-)""";
 
 // Dataframe manipulation
 

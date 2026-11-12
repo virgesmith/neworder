@@ -15,6 +15,4 @@
 
 ::: neworder.mpi
 
-::: neworder.stats
-
 ::: neworder.df
