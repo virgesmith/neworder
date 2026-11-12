@@ -28,6 +28,9 @@ This is provided by:
 
 ### Timeline
 
+!!! warning "Migrating from neworder 1.x"
+    Timelines are no longer classes, and model code reads the current step from `self.timestep` rather than `self.timeline`. Some changes are silent, e.g. the step index now starts at 1. See [Migrating to 2.0](migration.md).
+
 *neworder*'s timeline is a sequence of steps, each with an index, a start and an end, and a length. It's just data: an iterator of `neworder.timeline.Timestep`s (or any iterable of them). The model run takes each step in turn, calling the Model's `step` and (optionally) `check` methods, plus the `finalise` method after the last step, which is commonly used to post-process the raw model data at the end of the model run.
 
 Inside the model, `self.timestep` is the current step, a `Timestep(index, start, end, dt)`:
@@ -169,18 +172,6 @@ The run carries on from the step after the skipped one, and `self.timestep` isn'
 
 !!! warning "Don't advance the timeline by accident"
     Anything that iterates `self.timeline` takes steps from it, e.g. a `for` loop, `list(self.timeline)` or `any(...)`. The run silently skips those steps, and if they're the remaining ones, it finalises after the current step. To inspect the timeline from model code without consuming it, construct the model with a list: a list isn't an iterator, so iterating it has no effect on the run (and `next` on it raises `TypeError`).
-
-!!! warning "Migrating from neworder 1.x"
-    Timelines are no longer classes. Replace `NoTimeline()`, `LinearTimeline(...)`, `NumericTimeline(...)` and `CalendarTimeline(...)` with the factories `neworder.timeline.null()`, `linear(...)`, `numeric(...)` and `calendar(...)`, and read the current step from `self.timestep` rather than `self.timeline`:
-
-    1.x | 2.0
-    ----|----
-    `self.timeline.index` | `self.timestep.index`, but it's 1 in the first step (it was 0)
-    `self.timeline.time` | `self.timestep.start`, the start of the step
-    `self.timeline.dt` | `self.timestep.dt`
-    `self.timeline.start`, `.end` | the first step's `start`, and the last step's `end`
-
-    Random streams keyed on the step index (e.g. with `SplitMix64`) are shifted by one, so results won't match 1.x exactly. `LinearTimeline(start, step)` was open-ended in 1.x; `end` is now keyword-only, so the equivalent `linear(start, 1)` raises `TypeError`.
 
 #### Controlling the model
 

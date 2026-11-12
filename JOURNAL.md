@@ -22,6 +22,29 @@ Entry template:
 
 ---
 
+## 2026-11-12 — Timeline migration guide (#134)
+
+**Why** — The 1.x → 2.0 notes were a warning box in the overview. They mapped `self.timeline.time` to
+`self.timestep.start`, which is only right in `step()`: in 1.x the timeline advanced before `check()` and
+`finalise()`, so there it corresponds to `self.timestep.end`. Most of the silent behaviour changes weren't listed.
+
+**What** — A new page, `docs/migration.md` ("Migrating to 2.0", in the nav), covering constructing timelines,
+reading the current step depending on where it's read, and the silent changes. The overview box now links to it.
+
+The API docs were missing the timeline factories and `Timestep`: `docs/api.md` had no `neworder.timeline` section,
+and `__init__.pyi` left `Timestep` out of `__all__` (unlike `__init__.py`), so griffe treated it as a private import.
+Both are fixed, and `timeline.py` has an explicit `__all__`.
+
+**Design decisions**
+- A separate page rather than a longer overview section, so it can be linked from the release notes and dropped
+  later without touching the overview.
+- `Timestep` is documented once, under `neworder.timeline` with the factories that yield it, and filtered out of
+  the top-level `neworder` section. Signatures elsewhere (e.g. `Model.timestep`) link to it there.
+
+**Follow-ups** — link it from the 2.0 release notes.
+
+---
+
 ## 2026-11-10 — Document advancing the timeline from model code (#134)
 
 **Why** — For an iterator timeline, `self.timeline` is the iterator the run takes its steps from, so model code can
