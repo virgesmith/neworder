@@ -17,17 +17,22 @@ from dateutil.relativedelta import relativedelta
 
 import neworder as no
 
+__all__ = ["Timestep", "calendar", "linear", "null", "numeric"]
+
 
 class Timestep(NamedTuple):
     """
-    A step of a timeline: its index (from 1), its start and end in the timeline's native type (e.g. int, float or
-    date), and its length as a float, for computations such as hazard rates.
+    A step of a timeline. Timelines are iterables of these, and `Model.timestep` is the current one.
     """
 
     index: int
+    """The position of the step in the timeline, counting from 1."""
     start: Any
+    """The start of the step, in the timeline's native type (e.g. int, float or date)."""
     end: Any
+    """The end of the step, in the timeline's native type."""
     dt: float
+    """The length of the step as a float (e.g. in years for calendar), for computations such as hazard rates."""
 
 
 def null() -> Iterator[Timestep]:

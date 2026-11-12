@@ -26,6 +26,7 @@ __all__: list[str] = [
     "Space",
     "SplitMix64",
     "StateGrid",
+    "Timestep",
     "as_np",
     "checked",
     "df",
