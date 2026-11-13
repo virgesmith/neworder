@@ -91,7 +91,6 @@ neworder/                # Python package
   domain.py              # Domain, Edge, Space, StateGrid
   mc.py                  # as_np helper
   timeline.py            # Timestep, and the timeline factories null, linear, numeric, calendar
-  stats.py               # deprecated wrappers for the C++ stats submodule
   *.pyi                  # type stubs for C++ submodules (time, mpi, df)
   py.typed               # PEP 561 marker
 stubs/
@@ -107,7 +106,6 @@ test/
   test_mpi.py
   test_multithreaded.py
   test_splitmix64.py
-  test_stats.py
   test_timeline.py
 docs/                    # MkDocs documentation source
   api.md
@@ -127,13 +125,13 @@ pyproject.toml
 
 ## Regenerating Type Stubs
 
-The stubs that matter are the hand-maintained files in [neworder/](neworder/): `__init__.pyi` (the C++ API plus the pure-Python re-exports) and `time.pyi`, `mpi.pyi`, `df.pyi`. (`stats` is wrapped by the pure-Python `neworder/stats.py`, which carries its own annotations and docstrings.) `ty`, IDEs and the API docs (mkdocstrings/griffe) all read these. They are seeded from `nanobind.stubgen` output but carry manual corrections, so **merge** regenerated output into them — never copy it over wholesale.
+The stubs that matter are the hand-maintained files in [neworder/](neworder/): `__init__.pyi` (the C++ API plus the pure-Python re-exports) and `time.pyi`, `mpi.pyi`, `df.pyi`. `ty`, IDEs and the API docs (mkdocstrings/griffe) all read these. They are seeded from `nanobind.stubgen` output but carry manual corrections, so **merge** regenerated output into them — never copy it over wholesale.
 
 After any change to the bindings in [src/Module.cpp](src/Module.cpp) or the docstrings in [src/Module_docstr.cpp](src/Module_docstr.cpp), rebuild the extension and regenerate:
 
 ```sh
 uv sync --dev                                 # rebuilds the C++ extension if src/ has changed
-uv run python -m nanobind.stubgen -m _neworder_core -r -O stubs   # writes stubs/_neworder_core/{__init__,time,mpi,stats,df}.pyi
+uv run python -m nanobind.stubgen -m _neworder_core -r -O stubs   # writes stubs/_neworder_core/{__init__,time,mpi,df}.pyi
 ```
 
 - Run it on `_neworder_core`, **not** `neworder`. Stubs generated for the Python package would shadow the `.py` sources (`domain.py`, `mc.py`, `timeline.py`) and replace the hand-written `__init__.pyi`.

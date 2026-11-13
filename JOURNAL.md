@@ -22,6 +22,24 @@ Entry template:
 
 ---
 
+## 2026-11-12 — Remove the `stats` module
+
+**Why** — `neworder.stats.logistic` and `logit` duplicate `scipy.special.expit` and `logit`, and `scipy` is already a
+runtime dependency. They were deprecated in #125 for removal in 2.0.
+
+**What**
+- The `stats` submodule is removed from the C++ extension (bindings, docstrings and `no::logistic`/`no::logit`),
+  along with the deprecation wrapper `neworder/stats.py`, its stub entries, its API docs section and its tests.
+- The migration guide maps the old functions to their `scipy.special` equivalents.
+
+**Design decisions**
+- Removed outright rather than kept as deprecated aliases, since 2.0 is already a breaking release and the
+  replacements are one-liners.
+
+**Follow-ups** — none.
+
+---
+
 ## 2026-11-12 — Timeline migration guide (#134)
 
 **Why** — The 1.x → 2.0 notes were a warning box in the overview. They mapped `self.timeline.time` to

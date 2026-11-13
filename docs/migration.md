@@ -2,6 +2,8 @@
 
 neworder 2.0 replaces the timeline classes with plain data. A timeline is now an iterator (or any iterable) of `neworder.Timestep(index, start, end, dt)`, and the model, not the timeline, holds the current step, as `self.timestep`. See [Timeline](overview.md#timeline) for the full description.
 
+The `stats` module which provided logit and logistic functions has now been removed, since they duplicate functionality in `scipy`. See [statistical functions](#statistical-functions) for the replacements.
+
 If you can't migrate yet, pin `neworder<2`.
 
 ## Constructing a timeline
@@ -66,3 +68,15 @@ These changes don't raise errors, so check for them in your model:
 - **`halt()` in `modify()` is honoured.** The run stops before taking any steps.
 - **A model halted on its final step** calls `finalise()` when it's resumed.
 - **Iterating `self.timeline` takes steps from the run.** A `for` loop, `list()` or `any()` over it in model code skips those steps (see [advancing the timeline manually](overview.md#advancing-the-timeline-manually)). Construct the model with a list if you need to inspect the timeline.
+
+## Statistical functions
+
+Replace the `neworder.stats` functions with their `scipy.special` equivalents (`scipy` is installed with neworder):
+
+1.x | 2.0
+----|----
+`neworder.stats.logistic(x)` | `scipy.special.expit(x)`
+`neworder.stats.logistic(x, x0, k)` | `scipy.special.expit(k * (x - x0))`
+`neworder.stats.logit(x)` | `scipy.special.logit(x)`
+
+The `neworder.stats` functions accepted lists, but `k * (x - x0)` needs `x` to be a numpy array (or pandas object), so convert a list with `np.asarray(x)` first.

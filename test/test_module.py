@@ -34,7 +34,7 @@ def test_log_text(capsys: pytest.CaptureFixture[str]) -> None:
 
 def test_submodules() -> None:
     assert hasattr(no, "mpi")
-    assert hasattr(no, "stats")
+    assert hasattr(no, "timeline")
     assert hasattr(no, "df")
 
 
