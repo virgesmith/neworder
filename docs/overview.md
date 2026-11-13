@@ -271,7 +271,7 @@ See the [Conway](examples/conway.md) example for implementations.
 
 #### Graph
 
-The `GeospatialGraph` class provides a wrapper around the `networkx` and `osmnx` packages, and provides methods for computing shortest paths, isochrones, and subgraphs as well as identifying edges connected to nodes and vice versa. Due to its heavy dependencies, it an extra - installed using `pip install neworder[geospatial]`.
+The `GeospatialGraph` class provides a wrapper around the `networkx` and `osmnx` packages, and provides methods for computing shortest paths, isochrones, and subgraphs as well as identifying edges connected to nodes and vice versa. Due to its heavy dependencies, it is an extra - installed using e.g. `pip install neworder[geospatial]`.
 
 See the [infection](examples/infection.md) example for an implementation.
 
