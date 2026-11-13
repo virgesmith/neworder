@@ -45,11 +45,11 @@ the command exits non-zero.
 ## What the agent gets
 
 The skill's frontmatter tells an agent when to load it — mentions of *neworder*, `no.Model`,
-`neworder.run`, the timeline classes, `mc.hazard`/`stopping`/`arrivals`, `no.df.transition`,
+`neworder.run`, the timeline factories, `mc.hazard`/`stopping`/`arrivals`, `no.df.transition`,
 `SplitMix64`, `StateGrid` or `neworder.mpi`. Its body covers:
 
 - the `modify` → `step`/`check` → `finalise` lifecycle, and a minimal working model
-- the four timeline types, custom timelines, and open-ended timelines with `halt()`
+- the timeline factories, custom timelines, and open-ended timelines with `halt()`
 - the `MonteCarlo` sampling methods, the seeding strategies, and the numpy adapter `as_np`
 - `SplitMix64`'s keyed, order-independent draws and when they're preferable
 - `no.df.transition`/`transition_conditional`/`unique_index`, including the categorical-dtype and

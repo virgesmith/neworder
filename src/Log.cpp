@@ -1,6 +1,5 @@
 
 #include "Log.h"
-#include "Helpers.h"
 #include "Module.h"
 
 std::string std::to_string(char c) { return std::string(1, c); }

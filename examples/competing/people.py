@@ -8,7 +8,7 @@ class People(no.Model):
     """A simple aggregration of Persons each represented as a row in a data frame"""
 
     def __init__(self, dt: float, fertility_hazard_file: str, mortality_hazard_file: str, n: int) -> None:
-        super().__init__(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
+        super().__init__(no.timeline.null(), no.MonteCarlo.deterministic_identical_stream)
 
         self.dt = dt  # time resolution of fertility/mortality data
 

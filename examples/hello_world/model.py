@@ -38,7 +38,7 @@ class HelloWorld(neworder.Model):
 
         NB it is *essential* to initialise the base class.
         """
-        super().__init__(neworder.NoTimeline(), neworder.MonteCarlo.nondeterministic_stream)
+        super().__init__(neworder.timeline.null(), neworder.MonteCarlo.nondeterministic_stream)
 
         # create a silent population of size n
         self.population = pd.DataFrame(index=neworder.df.unique_index(n), data={"talkative": False})

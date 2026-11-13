@@ -8,11 +8,11 @@ This simple example illustrates the basic model structure, how it all fits toget
 
 The framework runs a model via the `neworder.run` function, which takes an instance of a `Model` class. All models contain, at a minimum:
 
-- an instance of a timeline, in this case the `NoTimeline` arbitrary single-step timeline
+- a timeline, in this case `neworder.timeline.null()`, an arbitrary single step
 - an instance of a `neworder.MonteCarlo` engine
 - user-defined methods to evolve the state (`step`) and report/postprocess results (`finalise`).
 
-In this example the model doesn't have an explicit discrete timeline, so for models of this type a method is provided to construct an empty timeline (which is a single step of length zero).
+In this example the model doesn't have an explicit discrete timeline, so for models of this type a factory is provided to construct a null timeline (a single step whose start, end and length are undefined).
 
 !!! note "Timelines"
     In some model specifications, each individual's entire history can be constructed in a single pass, and in this type of situation a null timeline is appropriate. In more complex examples, the timeline could either refer to absolute time, or for "case-based" models (to use MODGEN parlance), the age of a cohort.
@@ -82,32 +82,31 @@ To get a better idea of what's going on, uncomment the line containing `neworder
 First we get some information about the model initialisation parameters:
 
 ```text
-[no 0/1]  model init: timeline=<NoTimeline stepped=False> mc=<neworder.MonteCarlo seed=874991939>
-[no 0/1]  starting model run. start time=nan
+[no 0/1]  model init: timeline=generator mc=<neworder.MonteCarlo seed=874991939>
+[no 0/1]  starting HelloWorld model run
 ```
 
-When using `NoTimeline()` the start time, end time are undefined and the timestep is zero - i.e. a single arbitrary step in which all computation is done.
+The null timeline yields a single step, whose start, end and length are undefined - i.e. a single arbitrary step in which all computation is done.
 
 The RNG seed is displayed for reproducibility, although in this configuration we explicitly requested a random seed using the `neworder.MonteCarlo.nondeterministic_stream` parameter, so each time you run the model you will get a different seed, and different results. The next output concerns the modify method which is explained in the [Option](./option.md) example.
 
 ```text
-[no 0/1]  t=nan(0) HelloWorld.modify(0)
+[no 0/1]  HelloWorld.modify()
 [no 0/1]  defaulted to no-op Model::modify()
 ```
 
-Note that the time value is NaN (not-a-number) since absolute time is not important in this implementation, but the index is zero. Now the `step` method is called, which applies our single random transition - making some individuals "talkative":
+No step has been taken yet, so the model's `timestep` is `None`. Now the model takes the timeline's single step and the `step` method is called, which applies our single random transition - making some individuals "talkative". The log shows the step: its start, end and length (`dt`) are undefined (`None` and NaN), since absolute time is not important in this implementation:
 
 ```text
-[no 0/1]  t=nan(1) HelloWorld.step()
+[no 0/1]  Timestep(index=1, start=None, end=None, dt=nan) HelloWorld.step()
 ```
 
 and this is followed by the `check` method, which is optional and we haven't implemented:
 
 ```text
 [no 0/1]  defaulted to no-op Model::check()
-[no 0/1]  t=nan(1) HelloWorld.check() [ok]
+[no 0/1]  Timestep(index=1, start=None, end=None, dt=nan) HelloWorld.check(): ok
 ```
-and the time index has updated to 1.
 
 !!! note "Checks"
     Custom data sanity checks can be run after each timestep by overriding the `check` method. The default implementation does nothing. A typical pattern would be to implement checks for debugging a model during development, then disable them entirely to improve performance using `neworder.checked(False)`. See the other examples.
@@ -115,7 +114,7 @@ and the time index has updated to 1.
 We've now reached the end of our single step "timeline" so the `finalise` method is called:
 
 ```text
-[no 0/1]  t=nan(1) HelloWorld.finalise()
+[no 0/1]  HelloWorld.finalise()
 ```
 
 which in this case just prints the results:

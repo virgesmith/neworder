@@ -12,7 +12,7 @@ def test_errors() -> None:
     df["DC2101EW_C_ETHPUK11"] = pd.Categorical(df["DC2101EW_C_ETHPUK11"], categories=range(4))
 
     # base model for MC engine
-    model = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
+    model = no.Model(no.timeline.null(), no.MonteCarlo.deterministic_identical_stream)
 
     m = len(df["DC2101EW_C_ETHPUK11"].cat.categories)
     # identity matrix means no transitions
@@ -40,7 +40,7 @@ def test_errors() -> None:
 
 
 def test_transition_conditional_errors() -> None:
-    model = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
+    model = no.Model(no.timeline.null(), no.MonteCarlo.deterministic_identical_stream)
 
     series = pd.Series(pd.Categorical(["north", "south"], categories=["north", "south"]))
     group = pd.Series(pd.Categorical(["M", "F"], categories=["M", "F"]))
@@ -162,7 +162,7 @@ def test_basic() -> None:
 
     N = 100000
     # base model for MC engine
-    model = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
+    model = no.Model(no.timeline.null(), no.MonteCarlo.deterministic_identical_stream)
 
     df = pd.DataFrame({"category": pd.Categorical([1] * N, categories=[1, 2, 3])})
 
