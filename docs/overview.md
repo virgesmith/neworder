@@ -53,20 +53,20 @@ factory | native type | `dt` | use for
 
 Iterators are consumed by the model. To use the same timeline in several models, convert to a list, e.g. `list(neworder.timeline.linear(0, end=10))`, or call the factory for each model.
 
-For example, `list(neworder.timeline.linear(2020, end=2023))` is
+For example, `list(neworder.timeline.linear(2026, end=2029))` is
 
 ```python
 [
-    Timestep(index=1, start=2020, end=2021, dt=1.0),
-    Timestep(index=2, start=2021, end=2022, dt=1.0),
-    Timestep(index=3, start=2022, end=2023, dt=1.0),
+    Timestep(index=1, start=2026, end=2027, dt=1.0),
+    Timestep(index=2, start=2027, end=2028, dt=1.0),
+    Timestep(index=3, start=2028, end=2029, dt=1.0),
 ]
 ```
 
 and a model run takes its steps like this:
 
 <figure class="timeline-diagram" style="width:100%">
-<svg viewBox="0 0 760 276" role="img" aria-label="The timeline linear(2020, end=2023) as three steps on a time axis from 2020 to 2023, each with dt 1.0, preceded by None before the first step. modify runs before the first step, when timestep is None. step and check run in each step, and finalise also runs in the last step, when timestep is step 3." style="width:100%;height:auto;max-width:760px" font-family="monospace" font-size="17">
+<svg viewBox="0 0 760 276" role="img" aria-label="The timeline linear(2026, end=2029) as three steps on a time axis from 2026 to 2029, each with dt 1.0, preceded by None before the first step. modify runs before the first step, when timestep is None. step and check run in each step, and finalise also runs in the last step, when timestep is step 3." style="width:100%;height:auto;max-width:760px" font-family="monospace" font-size="17">
   <g stroke="currentColor" stroke-opacity="0.3" stroke-dasharray="3 4">
     <line x1="160" y1="46" x2="160" y2="122"/><line x1="350" y1="46" x2="350" y2="122"/>
     <line x1="540" y1="46" x2="540" y2="122"/><line x1="730" y1="46" x2="730" y2="122"/>
@@ -87,7 +87,7 @@ and a model run takes its steps like this:
     <line x1="540" y1="59" x2="540" y2="73"/><line x1="730" y1="59" x2="730" y2="73"/>
   </g>
   <g fill="currentColor" text-anchor="middle">
-    <text x="160" y="94">2020</text><text x="350" y="94">2021</text><text x="540" y="94">2022</text><text x="730" y="94">2023</text>
+    <text x="160" y="94">2026</text><text x="350" y="94">2027</text><text x="540" y="94">2028</text><text x="730" y="94">2029</text>
   </g>
   <defs>
     <marker id="nw-timeline-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="currentColor" fill-opacity="0.7"/></marker>
@@ -177,11 +177,80 @@ The run carries on from the step after the skipped one, and `self.timestep` isn'
 
 The model can be conditionally stopped using the `halt` method - this is essential for open-ended timelines, but can also be useful in situations where you may want to run other code when some condition has been satisfied - the model can be subsequently resumed from where it left off - just call `run` again.
 
+For example, if the model above calls `halt()` in its second step, it takes two runs to complete:
+
+<figure class="timeline-diagram" style="width:100%">
+<svg viewBox="0 0 760 276" role="img" aria-label="The timeline linear(2026, end=2029) as three steps on a time axis from 2026 to 2029. In the first run, modify runs before the first step, then step and check in step 1. In step 2, step calls halt, check runs, and run returns. Calling run again resumes at step 3, where step, check and finalise run." style="width:100%;height:auto;max-width:760px" font-family="monospace" font-size="17">
+  <g stroke="currentColor" stroke-opacity="0.3" stroke-dasharray="3 4">
+    <line x1="160" y1="46" x2="160" y2="122"/><line x1="350" y1="46" x2="350" y2="122"/>
+    <line x1="540" y1="46" x2="540" y2="122"/><line x1="730" y1="46" x2="730" y2="122"/>
+  </g>
+  <g style="fill:var(--md-accent-fg-color, #4caf50);stroke:var(--md-accent-fg-color, #4caf50)" fill-opacity="0.15" stroke-width="1.5">
+    <rect x="14" y="14" width="142" height="32" rx="4"/><rect x="164" y="14" width="182" height="32" rx="4"/><rect x="354" y="14" width="182" height="32" rx="4"/>
+    <rect x="544" y="14" width="182" height="32" rx="4"/>
+  </g>
+  <g fill="currentColor" text-anchor="middle">
+    <text x="85" y="36">None</text><text x="255" y="36">index=1, dt=1.0</text><text x="445" y="36">index=2, dt=1.0</text>
+    <text x="635" y="36">index=3, dt=1.0</text>
+  </g>
+  <line x1="10" y1="66" x2="160" y2="66" stroke="currentColor" stroke-opacity="0.4" stroke-dasharray="6 4"/>
+  <line x1="730" y1="66" x2="750" y2="66" stroke="currentColor" stroke-opacity="0.4" stroke-dasharray="6 4"/>
+  <line x1="160" y1="66" x2="730" y2="66" stroke="currentColor" stroke-width="2"/>
+  <g stroke="currentColor" stroke-width="2">
+    <line x1="160" y1="59" x2="160" y2="73"/><line x1="350" y1="59" x2="350" y2="73"/>
+    <line x1="540" y1="59" x2="540" y2="73"/><line x1="730" y1="59" x2="730" y2="73"/>
+  </g>
+  <g fill="currentColor" text-anchor="middle">
+    <text x="160" y="94">2026</text><text x="350" y="94">2027</text><text x="540" y="94">2028</text><text x="730" y="94">2029</text>
+  </g>
+  <defs>
+    <marker id="nw-halt-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="currentColor" fill-opacity="0.7"/></marker>
+  </defs>
+  <g fill="none" stroke="currentColor" stroke-opacity="0.7" stroke-width="1.5" marker-end="url(#nw-halt-arrow)">
+    <path d="M145 136 H178"/>
+    <path d="M255 150 V184"/>
+    <path d="M330 200 H350 V136 H368"/>
+    <path d="M445 150 V184"/>
+    <path d="M445 214 V232"/>
+    <path d="M520 248 H540 V136 H558" stroke-dasharray="5 4"/>
+    <path d="M635 150 V184"/>
+    <path d="M635 214 V228"/>
+  </g>
+  <g fill="currentColor" fill-opacity="0.05" stroke="currentColor" stroke-opacity="0.6">
+    <rect x="25" y="122" width="120" height="28" rx="4"/>
+    <rect x="180" y="122" width="150" height="28" rx="4"/>
+    <rect x="180" y="186" width="150" height="28" rx="4"/>
+    <rect x="370" y="186" width="150" height="28" rx="4"/>
+    <rect x="560" y="122" width="150" height="28" rx="4"/>
+    <rect x="560" y="186" width="150" height="28" rx="4"/>
+    <rect x="560" y="230" width="150" height="28" rx="4"/>
+  </g>
+  <g style="fill:#ff9800;stroke:#ff9800" fill-opacity="0.15" stroke-width="1.5">
+    <rect x="370" y="234" width="150" height="28" rx="4" stroke-dasharray="4 3"/>
+    <rect x="370" y="122" width="150" height="28" rx="4"/>
+  </g>
+  <g fill="currentColor" text-anchor="middle">
+    <text x="85" y="142">modify()</text>
+    <text x="255" y="142">step()</text>
+    <text x="255" y="206">check()</text>
+    <text x="445" y="142">step()</text>
+    <text x="445" y="206">check()</text>
+    <text x="445" y="254">run returns</text>
+    <text x="635" y="142">step()</text>
+    <text x="635" y="206">check()</text>
+    <text x="635" y="250">finalise()</text>
+  </g>
+</svg>
+
+</figure>
+
+The first `neworder.run` calls `halt()` in step 2 and returns after the check. The dashed arrow is a second call to `neworder.run`, which resumes at step 3 without calling `modify()` again.
+
 !!! note "Halting and resuming"
 
     - If a model calls `halt()`, the run stops *after* the current step (including any check), so a subsequent call to `neworder.run` resumes at the next step.
     - Resuming doesn't call `modify` again. If the model was halted on the final step, resuming it just calls `finalise`.
-    - `halt` does not trigger `finalise` - so models with open-ended timelines never call `finalise`.
+    - `halt` will not automatically trigger `finalise` - so for models with open-ended timelines, any `finalise` call must be done explicitly in user code.
     - Calling `halt()` from `modify` stops the run before any steps are taken. Running a model that has completed raises `StopIteration`.
 
 ### Spatial Domain
@@ -204,6 +273,8 @@ See the [Conway](examples/conway.md) example for implementations.
 
 The `GeospatialGraph` class provides a wrapper around the `networkx` and `osmnx` packages, and provides methods for computing shortest paths, isochrones, and subgraphs as well as identifying edges connected to nodes and vice versa. Due to its heavy dependencies, it an extra - installed using `pip install neworder[geospatial]`.
 
+See the [infection](examples/infection.md) example for an implementation.
+
 ### Model
 
 In order to construct a functioning model, the minimal requirements of the model developer are to:
@@ -221,9 +292,10 @@ the following can also be optionally implemented in the model:
 
 - a `modify` method, which is called once, at the start of the first model run (not when a halted model is resumed), and can be used for instance to modify the input data for different processes in a parallel run, for batch processing or sensitivity analysis.
 - a `check` method, which is run at every timestep, to e.g. perform checks simulation remains plausible.
+- a `finalise` method, which is called once, after the last step of the timeline, and is commonly used to post-process the raw model data. It isn't called when the model halts, so a model with an open-ended timeline never finalises unless user code calls `finalise` explicitly.
 
 !!! note "Additional class methods"
-    There are no restrictions on implementing additional methods in the model class, although bear in mind they won't be available to the *neworder* runtime (unless called by one of the functions listed above).
+    You can add any other methods to your model class. The *neworder* runtime only calls the methods listed above, so any others only run if your code calls them, e.g. from `step`.
 
 Pretty much everything else is entirely up to the model developer. While the module is completely agnostic about the format of data, the library functions accept and return *numpy* arrays, and it is recommended to use *pandas* dataframes where appropriate in order to be able to use the fast data manipulation functionality provided.
 
