@@ -10,6 +10,9 @@ no::Model::Model(no::Timeline& timeline, const nb::callable& seeder)
     : m_runState(no::Model::NOT_STARTED), m_timeline(timeline), m_timeline_handle(nb::find(timeline)),
       m_monteCarlo([seeder]() { return no::checked_cast<int32_t>(seeder(), "the seeder's result"); }) {
   no::log("model init: timeline=%% mc=%%"s % m_timeline.repr() % m_monteCarlo.repr());
+  no::future_warn("neworder 2.0 replaces the timeline classes with iterators of timesteps: models will need changes, "
+                  "and their results may differ. See https://neworder.readthedocs.io/en/stable/overview/#timeline, "
+                  "and pin neworder<2 if you can't migrate yet.");
 }
 
 void no::Model::modify() {

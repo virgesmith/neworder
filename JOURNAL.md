@@ -22,6 +22,75 @@ Entry template:
 
 ---
 
+## 2026-11-14 — `FutureWarning` on model construction for the 2.0 timeline changes
+
+**Why** — The 2.0 timeline changes break existing models, some silently, and the docs-only notice (below) only reaches
+users who read the docs or hover over a timeline class. A user who simply upgrades would get no notice at all.
+
+**What**
+- `no::Model`'s constructor emits a `FutureWarning` saying that 2.0 replaces the timeline classes, linking to the
+  Timeline section of the overview, and advising a `neworder<2` pin. `no::future_warn` is added to `Log.h` for it.
+- `docs/overview.md`: the summary of the 2.0 changes is now inline in the warning at the top of the Timeline section,
+  and the separate "Migrating to neworder 2.0" section, which linked to the not-yet-published 2.0.0rc1 docs, is
+  removed. The docstring links on the timeline classes now point at `overview/#timeline`.
+- The test suite ignores the warning (`filterwarnings` in `pyproject.toml`), apart from the test that checks it.
+
+**Design decisions**
+- This reverses the "docs only" decision in the entry below. That argued a warning can't point users at a replacement
+  in 1.x; it still can't, but it can point them at the summary and the pin, which is what they need before upgrading.
+- Warn in the `Model` constructor, not the timeline constructors. Every model run goes through it, including those
+  with a custom `Timeline` subclass, and the changes affect model code (`self.timeline` to `self.timestep`, `modify`,
+  `halt`) as much as timeline construction.
+- `FutureWarning`, not `DeprecationWarning`, which Python hides unless raised from `__main__`: models are usually
+  defined in an imported module.
+- Stack level 1 attributes the warning to the subclass's `super().__init__(...)` call, so the default filter shows it
+  once per model class per process, not once per instance.
+- No environment variable or API to turn it off: the standard `warnings` filters do that, e.g.
+  `warnings.filterwarnings("ignore", category=FutureWarning, message="neworder 2.0")`.
+
+**Follow-ups**
+- Under MPI every process emits the warning.
+- With warnings as errors (`-W error`), constructing a model raises, as for any other warning.
+- Remove the warning, and `no::future_warn` if nothing else uses it, in 2.0.
+
+---
+
+## 2026-11-11 — Advance notice of the timeline changes in 2.0
+
+**Why** — 2.0 replaces the timeline classes with iterators of timesteps (PR #134). The change breaks existing models,
+and some of its effects can't be detected at runtime: step indices start at 1, so random streams keyed on them shift;
+`modify()` runs once rather than on every resume; and `halt()` behaves differently. Users need to know before they
+upgrade.
+
+**What** — Documentation only, no behaviour change:
+- A "Changing in v2.0" admonition on each timeline class (`LinearTimeline`, `NumericTimeline`, `NoTimeline`,
+  `CalendarTimeline`), in `Module_docstr.cpp` and mirrored in `__init__.pyi` and `timeline.py`, so it appears on the
+  API page and in `help()`/IDE hovers. Each links to the migration section of the overview.
+- A warning at the top of the Timeline section of `docs/overview.md`, and a short "Migrating to neworder 2.0" section:
+  what is changing, advice to pin `neworder<2`, notice that a 2.0 pre-release will be published on PyPI, and a link
+  to the 2.0.0rc1 docs for the detailed migration guide.
+- `docs/examples/membership.md`: corrected the claim that the example's output varies between runs; it is seeded
+  deterministically.
+
+**Design decisions**
+- Docs only, no runtime `FutureWarning` for now. A warning on every timeline construction can't point users at a
+  replacement in 1.x, and the docstring admonitions reach users through the API docs and IDE hovers. If one is
+  added later, it should be `FutureWarning`, not `DeprecationWarning`, which Python hides unless it's raised from
+  `__main__`. The timeline classes are usually constructed in an imported model module, not in `__main__`.
+- The detailed migration guide (API mapping tables, run-behaviour changes, things to watch) belongs in the 2.0 docs,
+  which describe the new API. The 1.x docs only link to it. A full guide was drafted here and cut back for that reason.
+- The docstring links use a full ReadTheDocs URL (`/en/stable/`) rather than a relative `overview.md` link, so they
+  work in `help()` and IDE hovers too. These docstrings reach users with the next 1.x release, which is when `stable`
+  will have the section. The docs build doesn't check full URLs, though.
+
+**Follow-ups**
+- The link to the 2.0.0rc1 docs only works once `v2.0.0rc1` is tagged and ReadTheDocs has built that version, which
+  may need to be activated by hand.
+- PR #134's migration notes are only a short warning in `overview.md`. Expand them into the full guide before tagging
+  rc1.
+
+---
+
 ## 2026-11-08 — Upgrade locked dependencies; fix ty 0.0.99 diagnostics
 
 **Why** — Refreshed `uv.lock` (pandas 3.0.6 → 3.1.1, ty 0.0.85 → 0.0.99, ruff → 0.17.4, among others). The newer ty

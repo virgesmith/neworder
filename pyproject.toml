@@ -95,6 +95,10 @@ minversion = "6.0"
 testpaths = [
     "test"
 ]
+# every test constructs a model: only test_timeline_future_warning checks the 2.0 notice
+filterwarnings = [
+    "ignore:neworder 2.0:FutureWarning",
+]
 
 [tool.ruff]
 line-length = 120

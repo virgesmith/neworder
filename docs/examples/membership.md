@@ -61,7 +61,7 @@ python examples/membership/run.py
 [py 0/1(2956824)] MonteCarlo: reordering alone changed the draw for 984/984 members
 ```
 
-The exact membership counts will vary between runs of this example, but the last two lines will always read the same way: `SplitMix64` is unaffected by the shuffle, and `MonteCarlo` changes for (close to) every member.
+The output is identical on every run: both engines are seeded deterministically (`MonteCarlo.deterministic_identical_stream` and a constant `SplitMix64` seed), and the shuffle uses a fixed numpy seed. Changing the seeds or the parameters in `run.py` will change the membership counts, but the last two lines will always read the same way: `SplitMix64` is unaffected by the shuffle, and `MonteCarlo` changes for (close to) every member - only a member the shuffle happens to leave in place keeps its draw.
 
 ## Next steps
 

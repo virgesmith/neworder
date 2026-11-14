@@ -40,7 +40,12 @@ const char* run_docstr = R"""(
 // Timeline
 
 const char* lineartimeline_docstr = R"""(
-    An equally-spaced non-calendar timeline .
+    !!! warning "Changing in v2.0"
+
+        Timeline classes are being replaced with an Iterator-based implementation. See the
+        [summary of the changes](https://neworder.readthedocs.io/en/stable/overview/#timeline).
+
+    An equally-spaced non-calendar timeline.
 )""";
 
 const char* lineartimeline_init_docstr = R"""(
@@ -53,6 +58,11 @@ const char* lineartimeline_init_open_docstr = R"""(
 )""";
 
 const char* numerictimeline_docstr = R"""(
+    !!! warning "Changing in v2.0"
+
+        Timeline classes are being replaced with an Iterator-based implementation. See the
+        [summary of the changes](https://neworder.readthedocs.io/en/stable/overview/#timeline).
+
     An custom non-calendar timeline where the user explicitly specifies the time points, which must be monotonically increasing.
 )""";
 
@@ -61,6 +71,11 @@ const char* numerictimeline_init_docstr = R"""(
 )""";
 
 const char* notimeline_docstr = R"""(
+    !!! warning "Changing in v2.0"
+
+        Timeline classes are being replaced with an Iterator-based implementation. See the
+        [summary of the changes](https://neworder.readthedocs.io/en/stable/overview/#timeline).
+
     An arbitrary one step timeline, for continuous-time models with no explicit (discrete) timeline
 )""";
 
@@ -308,6 +323,8 @@ const char* model_docstr = R"""(
 
 const char* model_init_docstr = R"""(
     Constructs a model object with a timeline and (optionally) a seeder function for the random stream(s)
+
+    Emits a `FutureWarning` about the timeline changes in v2.0.
 )""";
 
 const char* model_timeline_docstr = R"""(

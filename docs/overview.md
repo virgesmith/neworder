@@ -28,6 +28,28 @@ This is provided by:
 
 ### Timeline
 
+!!! warning "Timelines are changing in v2.0"
+    The current implementation of the `neworder.Timeline` interface has some issues, e.g. ambiguities over the exact point in time `step()` occurs and not supporting iteration outside a model which complicates testing. neworder v2 completely redesigns timelines.
+
+    A timeline will no longer be an object holding the current position: it will be plain data, an iterator (or any iterable) of timesteps, and the model will track the current step. This makes timelines easier to write and test, since they can be iterated outside a model.
+
+    - The timeline classes are replaced by `Iterable` or `Iterator` over `neworder.Timestep`. The `neworder.timeline` provides equivalents of the existing classes: `NoTimeline` becomes `null`, `LinearTimeline` becomes `linear` (integer unit steps) or `numeric`, `NumericTimeline` becomes `sequence`, and `CalendarTimeline` becomes `calendar`.
+    - Model code reads the current step from `self.timestep`, not `self.timeline`. It's `None` before the first step, i.e. in `__init__` and `modify`.
+    - `time` is replaced by `self.timestep.start` or `self.timestep.end`. In 1.x it was the start of the step in `step`, but its end in `check` and `finalise`.
+    - `start`, `end` and `at_end` have no equivalent, as a step knows nothing about the rest of its timeline.
+
+    Some changes are silent, so check for them in your model:
+
+    - The step index starts at 1 and is constant throughout the step. In 1.x it was 0 in the first `step` and 1 by the first `check`.
+    - `calendar` shortens the final step to finish at `end`, where 1.x overshot.
+    - `dt` for the `null` timeline is `neworder.time.NEVER` (NaN), not 0.0.
+    - `modify` is called once only, not each time a halted model is resumed, and a `halt` in `modify` stops the run before any steps are taken.
+    - A model halted on its final step calls `finalise` when it's resumed.
+    - Iterating `self.timeline` in model code takes steps from the run.
+
+    If you can't migrate yet, pin `neworder<2`. A pre-release of v2.0.0 will be provided in due course for evaluation.
+
+
 *neworder*'s timeline is conceptually a sequence of steps that are iterated over (calling the Model's `step` and (optionally) `check` methods at each iteration, plus the `finalise` method at the last time point, which is commonly used to post-process the raw model data at the end of the model run. Timelines should not be incremented in client code, this happens automatically within the model.
 
 The framework is extensible but provides four types of timeline (3 implemented in C++, one in python):
@@ -96,10 +118,6 @@ classDiagram
   }
 ```
 
-!!! warning Timeline Limitations
-
-    The current implementation of the `neworder.Timeline` interface does not support iteration outside a model. For now, testing a custom implementation requires creating a dummy model to iterate the timeline. A future `neworder` release may refactor timelines in terms of iterables to make development easier.
-
 #### Custom timelines
 
 If none of the supplied timelines are suitable, users can implement their own, deriving from the abstract `neworder.Timeline` base class, which provides an `index` property that should not be overidden.
@@ -125,7 +143,6 @@ symbol     | type              | description
 
 !!! warning "Implement every property"
     A subclass must implement all of these properties. If one is missing, accessing it raises a `RuntimeError` ("tried to call a pure virtual function"), rather than an `AttributeError`. A missing `_next` raises a `RuntimeError` when the model runs.
-
 
 ### Spatial Domain
 
@@ -156,12 +173,12 @@ In order to construct a functioning model, the minimal requirements of the model
     - a constructor
     - the `step` method (which is run at every timestep)
 - define a timeline (see above) over which the model runs
-- set a seeding policy for the random stream (3 are provided, but you can create your own)
-- instantiate an instance of the subclass with the timeline and seeding policy
+- instantiate an instance of the subclass with the timeline
 - then, simply pass your model to the `neworder.run` function.
 
 the following can also be optionally implemented in the model:
 
+- set a seeding policy for the random stream (3 are provided, but you can create your own)
 - a `modify` method, which is called at the start of the model run and can be used for instance to modify the input data for different processes in a parallel run, for batch processing or sensitivity analysis.
 - a `check` method, which is run at every timestep, to e.g. perform checks simulation remains plausible.
 
