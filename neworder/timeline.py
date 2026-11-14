@@ -4,7 +4,7 @@ generators, which end for a fixed timeline and run forever for an open-ended one
 a list or a generator function, works too.
 """
 
-from collections.abc import Iterator, Sequence
+from collections.abc import Callable, Iterable, Iterator
 from datetime import date
 from itertools import count, pairwise
 from math import isclose
@@ -12,12 +12,11 @@ from numbers import Integral
 from typing import Any, NamedTuple
 
 import numpy as np
-import numpy.typing as npt
 from dateutil.relativedelta import relativedelta
 
 import neworder as no
 
-__all__ = ["Timestep", "calendar", "linear", "null", "numeric"]
+__all__ = ["Timestep", "calendar", "linear", "null", "numeric", "sequence"]
 
 
 class Timestep(NamedTuple):
@@ -43,6 +42,29 @@ def null() -> Iterator[Timestep]:
     yield Timestep(1, None, None, no.time.NEVER)
 
 
+def _difference(start: Any, end: Any) -> Any:
+    return end - start
+
+
+def sequence(points: Iterable[Any], *, dt: Callable[[Any, Any], float] = _difference) -> Iterator[Timestep]:
+    """
+    Steps between consecutive points of any type, e.g. unequally-spaced times or dates, so n points give n-1 steps. The
+    points can be any iterable, including an open-ended iterator. dt is a function computing the length of a step from
+    its start and end, which defaults to their difference and so must be supplied for points that aren't numbers, e.g.
+    `lambda start, end: (end - start).days / 365` for dates. Raises a ValueError, when the step is reached, if its
+    length isn't positive.
+    """
+    for i, (t0, t1) in enumerate(pairwise(points), start=1):
+        length = float(dt(t0, t1))
+        # negative timesteps are disallowed as MC functions will misbehave with dt<0. Also rejects NaN
+        if not length > 0.0:
+            raise ValueError(f"invalid timeline: step {i} from {t0!r} to {t1!r} has non-positive length ({length})")
+        yield Timestep(i, t0, t1, length)
+
+
+# the factories below validate their arguments up front, then are a sequence of lazily generated points
+
+
 def linear(start: int | np.integer = 0, *, end: int | np.integer | None = None) -> Iterator[Timestep]:
     """
     Integer unit steps from start to end, or open-ended if end is not specified. Use `numeric` for non-integer times or
@@ -51,21 +73,10 @@ def linear(start: int | np.integer = 0, *, end: int | np.integer | None = None) 
     for name, value in [("start", start), ("end", end)]:
         if value is not None and (not isinstance(value, Integral) or isinstance(value, bool | np.bool_)):
             raise TypeError(f"linear requires an integer {name}, got {value!r}. Use numeric for non-integer times")
-    # negative timesteps are disallowed as MC functions will misbehave with dt<0
     if end is not None and end <= start:
         raise ValueError(f"end time ({end}) must be after the start time ({start})")
     t0 = int(start)
-    return (Timestep(i, t0 + i - 1, t0 + i, 1.0) for i in (count(1) if end is None else range(1, int(end) - t0 + 1)))
-
-
-def _strictly_increasing(times: Sequence[float] | npt.NDArray[np.floating]) -> list[float]:
-    points = [float(t) for t in times]
-    if len(points) < 2:
-        raise ValueError("timeline must have at least 2 points")
-    for i, (t0, t1) in enumerate(pairwise(points), start=1):
-        if not t1 > t0:  # also rejects NaN
-            raise ValueError(f"invalid timeline: time at index {i} ({t1}) is not strictly greater than previous ({t0})")
-    return points
+    return sequence(count(t0) if end is None else range(t0, int(end) + 1), dt=lambda _start, _end: 1.0)
 
 
 def _equal_steps(start: float, step: float, end: float | None) -> int | None:
@@ -83,25 +94,11 @@ def _equal_steps(start: float, step: float, end: float | None) -> int | None:
     return nsteps
 
 
-def numeric(
-    times: Sequence[float] | npt.NDArray[np.floating] | None = None,
-    *,
-    start: float | None = None,
-    step: float | None = None,
-    end: float | None = None,
-) -> Iterator[Timestep]:
+def numeric(start: float = 0.0, *, step: float, end: float | None = None) -> Iterator[Timestep]:
     """
-    Non-integer steps, either between explicitly specified time points, which must be strictly increasing and allow
-    for unequally-spaced steps, or equally-spaced from start with the given step size, to end (which must be a whole
-    number of steps away) or open-ended if end is not specified.
+    Equally-spaced non-integer steps from start with the given step size, to end (which must be a whole number of steps
+    away) or open-ended if end is not specified. For unequally-spaced steps, use `sequence`.
     """
-    if times is not None:
-        if start is not None or step is not None or end is not None:
-            raise TypeError("specify either times, or start and step (and optionally end), but not both")
-        points = _strictly_increasing(times)
-        return (Timestep(i, t0, t1, t1 - t0) for i, (t0, t1) in enumerate(pairwise(points), start=1))
-    if start is None or step is None:
-        raise TypeError("specify either times, or start and step (and optionally end)")
     t0, dt = float(start), float(step)
     nsteps = _equal_steps(t0, dt, end)
 
@@ -109,10 +106,11 @@ def numeric(
         # computed from the start rather than accumulating steps, to avoid rounding errors
         return float(end) if i == nsteps and end is not None else t0 + i * dt
 
-    return (Timestep(i, point(i - 1), point(i), dt) for i in (count(1) if nsteps is None else range(1, nsteps + 1)))
+    # dt is the step size itself, as the difference of the points is subject to rounding
+    return sequence(map(point, count() if nsteps is None else range(nsteps + 1)), dt=lambda _start, _end: dt)
 
 
-def calendar(*, start: date, step: relativedelta, end: date | None = None) -> Iterator[Timestep]:
+def calendar(start: date, *, step: relativedelta, end: date | None = None) -> Iterator[Timestep]:
     """
     Calendar dates, in steps of a `relativedelta` (e.g. days, months or years) from start to end, or open-ended if end
     is not specified. Monthly steps preserve the day of the month where possible. If end isn't a whole number of steps
@@ -124,14 +122,13 @@ def calendar(*, start: date, step: relativedelta, end: date | None = None) -> It
     if start + step <= start:
         raise ValueError("step must be forward in time")
 
-    def timesteps() -> Iterator[Timestep]:
-        for i in count(1):
+    def points() -> Iterator[date]:
+        for i in count():
             # computed from the start rather than accumulating steps, which would lose the day of month
-            t0, t1 = start + (i - 1) * step, start + i * step
-            if end is not None:
-                t1 = min(t1, end)
-            yield Timestep(i, t0, t1, (t1 - t0).days / 365)
-            if t1 == end:
+            t = start + i * step
+            if end is not None and t >= end:
+                yield end
                 return
+            yield t
 
-    return timesteps()
+    return sequence(points(), dt=lambda start, end: (end - start).days / 365)

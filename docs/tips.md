@@ -209,7 +209,7 @@ Models will continue to run until the end of their timeline is reached, unless e
 
 ## Open-ended timelines and Conditional Halting
 
-In some models, rather than (or as well as) evolving the population over a fixed timeline, it may make more sense to iterate timesteps until some condition is met. The "Schelling" example illustrates this - it runs until all agents are in a satisfied state. The `linear`, `numeric` and `calendar` timeline factories return an open-ended timeline if `end` is omitted. In other cases it may be useful to temporarily exit the model for later resumption.
+In some models, rather than (or as well as) evolving the population over a fixed timeline, it may make more sense to iterate timesteps until some condition is met. The "Schelling" example illustrates this - it runs until all agents are in a satisfied state. The `linear`, `numeric` and `calendar` timeline factories return an open-ended timeline if `end` is omitted, as does `sequence` given an open-ended iterator. In other cases it may be useful to temporarily exit the model for later resumption.
 
 The model's `halt` method can be used to stop the model run. In these situations, the `step` method should have some logic to (conditionally) call the `halt` method.
 

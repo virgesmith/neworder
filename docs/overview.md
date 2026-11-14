@@ -47,9 +47,9 @@ factory | native type | `dt` | use for
 --------|-------------|------|---
 `null()` | `None` | `NEVER` (undefined) | continuous-time models in which the model evolution is computed in a single step
 `linear(start=0, *, end=None)` | `int` | 1.0 | integer time with unit steps
-`numeric(start=..., step=..., end=None)` | `float` | `step` | non-integer time with equal steps (`end - start` must be a whole number of steps)
-`numeric(times)` | `float` | the difference of consecutive times | non-integer time from a list or array of (strictly increasing) time points, allowing for unequally-spaced steps
-`calendar(start=..., step=..., end=None)` | `date` | years (ACT/365) | calendar dates with steps defined daily, monthly or annually (as a `relativedelta`). Monthly steps preserve the day of the month where possible, and if `end` isn't a whole number of steps from `start` the final step is shortened to end at it
+`numeric(start=0.0, *, step, end=None)` | `float` | `step` | non-integer time with equal steps (`end - start` must be a whole number of steps)
+`sequence(points, *, dt=...)` | that of the points | the difference of consecutive points, or as computed by the `dt` function | steps between explicit points of any type, e.g. unequally-spaced times, or dates: `sequence(dates, dt=lambda start, end: (end - start).days / 365)`
+`calendar(start, *, step, end=None)` | `date` | years (ACT/365) | calendar dates with steps defined daily, monthly or annually (as a `relativedelta`). Monthly steps preserve the day of the month where possible, and if `end` isn't a whole number of steps from `start` the final step is shortened to end at it
 
 Iterators are consumed by the model. To use the same timeline in several models, convert to a list, e.g. `list(neworder.timeline.linear(0, end=10))`, or call the factory for each model.
 
@@ -148,6 +148,8 @@ def halving() -> Iterator[neworder.Timestep]:
         yield neworder.Timestep(index=i, start=t, end=tnew, dt=tnew - t)
         i, t = i + 1, tnew
 ```
+
+Every step must be a `Timestep`: the run raises a `TypeError` for anything else, such as a bare time or a plain tuple.
 
 It is entirely up to the timeline author what `dt` means. It must be a floating-point type but, e.g. for dates, `dt` could be a number of days, or a year fraction using some custom daycount convention (the builtin `neworder.timeline.calendar` uses ACT/365).
 

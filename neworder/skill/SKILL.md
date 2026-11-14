@@ -5,7 +5,7 @@ description: >
   framework — subclassing neworder.Model, defining a timeline, sampling from the MonteCarlo or
   SplitMix64 engines, transitioning pandas categorical data with neworder.df, spatial domains, and
   MPI/multithreaded parallel runs. Triggers: "neworder", "no.Model", "neworder.run",
-  "microsimulation", no.timeline.linear/numeric/calendar, self.timestep, mc.hazard,
+  "microsimulation", no.timeline.linear/numeric/sequence/calendar, self.timestep, mc.hazard,
   mc.stopping, mc.arrivals, no.df.transition, SplitMix64, StateGrid, neworder.mpi.
 ---
 
@@ -100,9 +100,9 @@ The `no.timeline` factories return an iterator of timesteps, open-ended if `end`
 |---------|---------|
 | `null()` | continuous-time / case-based models evaluated in one step (start, end and `dt` undefined) |
 | `linear(start=0, *, end=None)` | integer times, unit steps |
-| `numeric(start=..., step=..., end=None)` | equally-spaced non-integer times; `end - start` must be a whole number of steps |
-| `numeric(times)` | explicit (possibly unequally-spaced) non-integer times |
-| `calendar(start=..., step=relativedelta(...), end=None)` | calendar dates (day/month/year steps); a final step that would overshoot `end` is shortened to end at it |
+| `numeric(start=0.0, *, step, end=None)` | equally-spaced non-integer times; `end - start` must be a whole number of steps |
+| `sequence(points, *, dt=...)` | steps between explicit points of any type (n points give n-1 steps); `dt(start, end)` computes a step's length, defaulting to `end - start` |
+| `calendar(start, *, step=relativedelta(...), end=None)` | calendar dates (day/month/year steps); a final step that would overshoot `end` is shortened to end at it |
 
 A custom timeline is any iterable of `Timestep`s, e.g. a list or a generator function. An iterator
 can only be used by one model; a list can be shared.

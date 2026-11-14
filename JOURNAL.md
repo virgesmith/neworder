@@ -22,6 +22,51 @@ Entry template:
 
 ---
 
+## 2026-11-14 — `timeline.sequence` replaces `numeric(times)`; one signature shape for the factories
+
+**Why** — `numeric` had two unrelated call forms, an array of time points or `start`/`step`/`end`, which needed
+runtime checks to reject a mix of the two and couldn't make `step` required in the signature. Explicit points also aren't
+specific to floats: the same is wanted for dates, e.g. a pandas `DatetimeIndex`. The three factories also disagreed on which arguments were
+positional: `linear` took `start` positionally, `numeric` and `calendar` were entirely keyword-only.
+
+**What** — The `times` argument of `numeric` is removed, and a new factory, `sequence(points, *, dt=...)`, yields the
+steps between consecutive points of any type, with `dt` a function `(start, end) -> float` that defaults to the
+difference. The other three factories now take `start` first, positional or keyword, and everything else keyword-only:
+
+- `linear(start=0, *, end=None)` (unchanged)
+- `numeric(start=0.0, *, step, end=None)`
+- `calendar(start, *, step, end=None)`
+
+The option examples, which used `numeric([0.0, expiry])` for one step, now use `numeric(0.0, step=expiry, end=expiry)`.
+Examples and docs call the factories with a positional `start`. The migration guide maps `NumericTimeline(times)` to
+`sequence(times)`.
+
+**Design decisions**
+- `sequence` is a separate factory rather than a second form of `numeric`: it isn't limited to floats, and each
+  factory keeps a single call form. (A first pass had no factory at all, leaving users to write the `pairwise`
+  comprehension, but combined with the new `Timestep` check below that made a list of dates needlessly awkward.)
+- `sequence` is lazy: it takes any iterable, including an open-ended iterator, so points are validated (positive
+  `dt`, which also rejects NaN) as each step is reached, not up front as `numeric(times)` did, and fewer than two
+  points gives an empty timeline, not an error. Ordering is checked via `dt` rather than `end > start`, so the
+  points needn't be comparable.
+- `linear`, `numeric` and `calendar` are implemented on `sequence`: each validates its arguments up front, then passes
+  a lazy generator of points (still computed from the start, not accumulated) and a `dt` function. `numeric` passes
+  its step size as a constant `dt`, as the difference of two points is subject to rounding. A single
+  `start + i * step` generator shared by all three was rejected: `numeric` must fix the number of steps and snap the
+  last point to `end`, while `calendar` can't count its steps in advance and clips the last one.
+- `sequence` leaves the points unconverted (ints stay ints, `Timestamp`s stay `Timestamp`s); only `dt` is a float.
+- `step` and `end` stay keyword-only, so `numeric(0.0, 0.1)` can't be read as either start/step or start/end (in 1.x,
+  `LinearTimeline(start, step)` was open-ended, but `LinearTimeline(start, end, nsteps)` wasn't).
+- The run now raises a `TypeError` if the timeline yields anything but a `Timestep`. Previously any object was passed
+  through to `self.timestep`, so a list of times (the obvious thing to try now `numeric(times)` is gone) or a pandas
+  `DatetimeIndex` ran without complaint, with `self.timestep` a float or `Timestamp`. The check is per step, in the
+  run loop, since a timeline can be an open-ended iterator. Coercing 4-tuples to `Timestep` was rejected as guesswork.
+  `test_timestep_is_passed_through` now pins that the `Timestep` object itself (with fields of any type) is unconverted.
+- `start` defaults to zero for the numeric timelines, as `linear` already did, so existing calls like `linear()` keep
+  working. `calendar` has no sensible default date, so its `start` is required.
+
+**Follow-ups** — none.
+
 ## 2026-11-12 — Timeline migration guide (#134)
 
 **Why** — The 1.x → 2.0 notes were a warning box in the overview. They mapped `self.timeline.time` to

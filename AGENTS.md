@@ -90,7 +90,7 @@ neworder/                # Python package
   __init__.py            # public exports (re-exports _neworder_core + pure-Python)
   domain.py              # Domain, Edge, Space, StateGrid
   mc.py                  # as_np helper
-  timeline.py            # Timestep, and the timeline factories null, linear, numeric, calendar
+  timeline.py            # Timestep, and the timeline factories null, linear, numeric, sequence, calendar
   stats.py               # deprecated wrappers for the C++ stats submodule
   *.pyi                  # type stubs for C++ submodules (time, mpi, df)
   py.typed               # PEP 561 marker
