@@ -22,6 +22,23 @@ def test_base_not_initialised() -> None:
         no.run(m)
 
 
+def test_timeline_future_warning() -> None:
+    class TestModel(no.Model):
+        def __init__(self) -> None:
+            super().__init__(no.NoTimeline())
+
+    with pytest.warns(FutureWarning, match=r"neworder 2\.0 replaces the timeline classes") as record:
+        TestModel()
+    # attributed to the subclass constructor, so the default filter shows it once per model class
+    assert all(w.filename == __file__ for w in record)
+
+    # the filter suggested in the docs silences it
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        warnings.filterwarnings("ignore", category=FutureWarning, message="neworder 2.0")
+        TestModel()
+
+
 def test_step_not_implemented() -> None:
     class TestModel(no.Model):
         def __init__(self) -> None:
@@ -158,7 +175,8 @@ def test_check_failure_as_error() -> None:
 
     # another test may have disabled checking
     no.checked()
+    model = FailingModel()
     with warnings.catch_warnings():
         warnings.simplefilter("error")
         with pytest.raises(RuntimeWarning, match="check\\(\\) FAILED"):
-            no.run(FailingModel())
+            no.run(model)

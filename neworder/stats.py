@@ -23,7 +23,7 @@ def logistic(x: npt.ArrayLike, x0: SupportsFloat = 0.0, k: SupportsFloat = 1.0) 
     Computes the logistic function on the supplied values.
 
     !!! warning "Deprecated"
-        Use `scipy.special.expit(k * (x - x0))` instead.
+        This function will be removed in v2.0. Use `scipy.special.expit(k * (x - x0))` instead.
 
     Args:
         x: The input values.
@@ -41,7 +41,7 @@ def logit(x: npt.ArrayLike) -> npt.NDArray[np.float64]:
     Computes the logit function on the supplied values.
 
     !!! warning "Deprecated"
-        Use `scipy.special.logit(x)` instead.
+        This function will be removed in v2.0. Use `scipy.special.logit(x)` instead.
 
     Args:
         x: The input probability values in (0,1).

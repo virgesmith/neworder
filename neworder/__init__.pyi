@@ -169,7 +169,7 @@ class LinearTimeline(Timeline):
     !!! warning "Changing in v2.0"
 
         Timeline classes are being replaced with an Iterator-based implementation. See the
-        [migration guide](https://neworder.readthedocs.io/en/stable/overview/#migrating-to-v2).
+        [summary of the changes](https://neworder.readthedocs.io/en/stable/overview/#timeline).
 
     An equally-spaced non-calendar timeline.
     """
@@ -203,6 +203,8 @@ class Model:
     def __init__(self, timeline: Timeline, seeder: collections.abc.Callable = ...) -> None:
         """
         Constructs a model object with a timeline and (optionally) a seeder function for the random stream(s)
+
+        Emits a `FutureWarning` about the timeline changes in v2.0.
         """
     def check(self) -> bool:
         """
@@ -393,7 +395,7 @@ class NoTimeline(Timeline):
     !!! warning "Changing in v2.0"
 
         Timeline classes are being replaced with an Iterator-based implementation. See the
-        [migration guide](https://neworder.readthedocs.io/en/stable/overview/#migrating-to-v2).
+        [summary of the changes](https://neworder.readthedocs.io/en/stable/overview/#timeline).
 
     An arbitrary one step timeline, for continuous-time models with no explicit (discrete) timeline
     """
@@ -407,7 +409,7 @@ class NumericTimeline(Timeline):
     !!! warning "Changing in v2.0"
 
         Timeline classes are being replaced with an Iterator-based implementation. See the
-        [migration guide](https://neworder.readthedocs.io/en/stable/overview/#migrating-to-v2).
+        [summary of the changes](https://neworder.readthedocs.io/en/stable/overview/#timeline).
 
     An custom non-calendar timeline where the user explicitly specifies the time points, which must be monotonically increasing.
     """
