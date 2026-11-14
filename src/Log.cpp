@@ -30,5 +30,5 @@ void no::warn(const std::string& msg) {
 
 void no::future_warn(const std::string& msg) {
   if (PyErr_WarnEx(PyExc_FutureWarning, msg.c_str(), 1) == -1)
-    throw nb::python_error();
+    throw nb::python_error(); // GCOVR_EXCL_LINE
 }
