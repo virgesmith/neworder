@@ -63,7 +63,7 @@ else:
             assert not np.array_equal(a0, a1)
 
         # base model for MC engine
-        model = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
+        model = no.Model(no.timeline.null(), no.MonteCarlo.deterministic_identical_stream)
 
         # # check identical streams (independent=False)
         u = model.mc.ustream(1000)
@@ -72,7 +72,7 @@ else:
         assert np.array_equal(u, v)
 
         # base model for MC engine
-        model = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_independent_stream)
+        model = no.Model(no.timeline.null(), no.MonteCarlo.deterministic_independent_stream)
 
         # # check identical streams (independent=False)
         u = model.mc.ustream(1000)

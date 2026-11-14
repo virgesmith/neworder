@@ -8,7 +8,7 @@
 #include "Model.h"
 #include "MonteCarlo.h"
 #include "SplitMix64.h"
-#include "Timeline.h"
+#include "Time.h"
 
 #include "NewOrder.h"
 
@@ -105,31 +105,6 @@ NB_MODULE(_neworder_core, m) {
   time.attr("FAR_FUTURE") = no::time::far_future();
   time.attr("NEVER") = no::time::never();
 
-  // register abstract base class
-  nb::class_<no::Timeline, no::PyTimeline>(m, "Timeline")
-      .def(nb::init<>())
-      .def_prop_ro("time", &no::Timeline::time, timeline_time_docstr)
-      .def_prop_ro("start", &no::Timeline::start, timeline_start_docstr)
-      .def_prop_ro("end", &no::Timeline::end, timeline_end_docstr)
-      .def_prop_ro("index", &no::Timeline::index, timeline_index_docstr)
-      .def_prop_ro("dt", &no::Timeline::dt, timeline_dt_docstr)
-      .def_prop_ro("at_end", &no::Timeline::at_end, timeline_at_end_docstr)
-      // non-virtual for the same reason as Model's methods, so the concrete classes bind their own
-      .def("__repr__", [](const no::Timeline& self) { return self.no::Timeline::repr(); }, timeline_repr_docstr);
-
-  nb::class_<no::NoTimeline, no::Timeline>(m, "NoTimeline", notimeline_docstr)
-      .def(nb::init<>(), notimeline_init_docstr)
-      .def("__repr__", &no::NoTimeline::repr, timeline_repr_docstr);
-
-  nb::class_<no::LinearTimeline, no::Timeline>(m, "LinearTimeline", lineartimeline_docstr)
-      .def(nb::init<double, double, size_t>(), lineartimeline_init_docstr, "start"_a, "end"_a, "nsteps"_a)
-      .def(nb::init<double, double>(), lineartimeline_init_open_docstr, "start"_a, "step"_a)
-      .def("__repr__", &no::LinearTimeline::repr, timeline_repr_docstr);
-
-  nb::class_<no::NumericTimeline, no::Timeline>(m, "NumericTimeline", numerictimeline_docstr)
-      .def(nb::init<const std::vector<double>&>(), numerictimeline_init_docstr, "times"_a)
-      .def("__repr__", &no::NumericTimeline::repr, timeline_repr_docstr);
-
   // MC
   nb::class_<no::MonteCarlo>(m, "MonteCarlo", mc_docstr)
       // constructor is NOT exposed to python, can only be created within a model
@@ -164,11 +139,12 @@ NB_MODULE(_neworder_core, m) {
   // Microsimulation (or ABM) model class
   auto model =
       nb::class_<no::Model, no::PyModel>(m, "Model", model_docstr)
-          .def(nb::init<no::Timeline&, const nb::callable&>(), model_init_docstr, "timeline"_a,
+          .def(nb::init<const nb::object&, const nb::callable&>(), model_init_docstr, "timeline"_a,
                nb::arg("seeder").sig("MonteCarlo.deterministic_independent_stream") =
                    nb::cpp_function(no::MonteCarlo::deterministic_independent_stream))
           // properties are readonly only in the sense you can't assign to them; you CAN call their mutable methods
           .def_prop_ro("timeline", &no::Model::timeline, model_timeline_docstr)
+          .def_prop_ro("timestep", &no::Model::timestep, model_timestep_docstr)
           .def_prop_ro("mc", &no::Model::mc, model_mc_docstr)
           .def_prop_ro("run_state", &no::Model::runState, model_runstate_docstr)
           // These are what a python override's super() call reaches, so must not dispatch virtually. nanobind's

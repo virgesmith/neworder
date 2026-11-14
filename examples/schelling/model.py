@@ -14,7 +14,7 @@ similarity = 0.6
 
 # open-ended timeline with arbitrary timestep
 # the model halts when all agents are satisfied, rather than at a specific time
-timeline = neworder.LinearTimeline(0, 1.0)
+timeline = neworder.timeline.linear()
 
 schelling = Schelling(timeline, gridsize, categories, similarity)
 

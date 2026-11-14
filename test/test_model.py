@@ -25,7 +25,7 @@ def test_base_not_initialised() -> None:
 def test_step_not_implemented() -> None:
     class TestModel(no.Model):
         def __init__(self) -> None:
-            super().__init__(no.NoTimeline())
+            super().__init__(no.timeline.null())
 
     with pytest.raises(RuntimeError):
         no.run(TestModel())
@@ -34,17 +34,17 @@ def test_step_not_implemented() -> None:
 def test_default_seeder() -> None:
     class DefaultModel(no.Model):
         def __init__(self) -> None:
-            super().__init__(no.NoTimeline())
+            super().__init__(no.timeline.null())
             self.x = self.mc.raw()
 
     class ExplicitModel(no.Model):
         def __init__(self) -> None:
-            super().__init__(no.NoTimeline(), no.MonteCarlo.deterministic_independent_stream)
+            super().__init__(no.timeline.null(), no.MonteCarlo.deterministic_independent_stream)
             self.x = self.mc.raw()
 
     class DifferentModel(no.Model):
         def __init__(self) -> None:
-            super().__init__(no.NoTimeline(), lambda: 42)
+            super().__init__(no.timeline.null(), lambda: 42)
             self.x = self.mc.raw()
 
     assert DefaultModel().x == ExplicitModel().x
@@ -52,17 +52,17 @@ def test_default_seeder() -> None:
 
 
 def test_seeder_errors() -> None:
-    assert no.Model(no.NoTimeline(), lambda: np.int32(7)).mc.seed() == 7
+    assert no.Model(no.timeline.null(), lambda: np.int32(7)).mc.seed() == 7
 
     with pytest.raises(TypeError, match="seeder's result must be an int32"):
-        no.Model(no.NoTimeline(), lambda: 1.5)
+        no.Model(no.timeline.null(), lambda: 1.5)
     with pytest.raises(TypeError, match="seeder's result must be an int32"):
-        no.Model(no.NoTimeline(), lambda: 2**31)
+        no.Model(no.timeline.null(), lambda: 2**31)
     with pytest.raises(ZeroDivisionError):
-        no.Model(no.NoTimeline(), lambda: 1 // 0)
+        no.Model(no.timeline.null(), lambda: 1 // 0)
 
     seeds = iter([1, "x"])
-    m = no.Model(no.NoTimeline(), lambda: next(seeds))
+    m = no.Model(no.timeline.null(), lambda: next(seeds))
     with pytest.raises(TypeError, match="seeder's result must be an int32"):
         m.mc.reset()
 
@@ -71,7 +71,7 @@ def test_multimodel() -> None:
     class TestModel(no.Model):
         def __init__(self) -> None:
             super().__init__(
-                no.LinearTimeline(0, 10, 10),
+                no.timeline.linear(0, end=10),
                 no.MonteCarlo.deterministic_identical_stream,
             )
             self.x = 0.0
@@ -94,7 +94,7 @@ def test_runstate() -> None:
 
     class TestModel(no.Model):
         def __init__(self, *, do_halt: bool) -> None:
-            super().__init__(no.NoTimeline())
+            super().__init__(no.timeline.null())
             self.do_halt = do_halt
             self.finalised = False
 
@@ -128,7 +128,7 @@ def test_runstate() -> None:
 def test_verbose(capsys: pytest.CaptureFixture[str]) -> None:
     class TestModel(no.Model):
         def __init__(self) -> None:
-            super().__init__(no.LinearTimeline(0, 2, 2))
+            super().__init__(no.timeline.linear(0, end=2))
 
         def step(self) -> None:
             pass
@@ -148,7 +148,7 @@ def test_verbose(capsys: pytest.CaptureFixture[str]) -> None:
 def test_check_failure_as_error() -> None:
     class FailingModel(no.Model):
         def __init__(self) -> None:
-            super().__init__(no.NoTimeline())
+            super().__init__(no.timeline.null())
 
         def step(self) -> None:
             pass

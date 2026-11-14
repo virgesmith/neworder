@@ -28,6 +28,7 @@ nav = [
     { Infection = "examples/infection.md" },
   ]},
   {"Tips and Tricks" = "tips.md" },
+  {"Migrating to 2.0" = "migration.md" },
   {"Agent Skill" = "agent-skill.md" },
   {"API Reference" = "api.md" },
   { References = "references.md" },
@@ -141,6 +142,7 @@ signature_crossrefs = true
 docstring_style = "google"
 show_root_heading = true
 members_order = "source"
+show_source = false
 
 [project.plugins.mkdocs-video]
 is_video = true

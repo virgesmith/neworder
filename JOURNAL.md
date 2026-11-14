@@ -22,6 +22,178 @@ Entry template:
 
 ---
 
+## 2026-11-14 — `timeline.sequence` replaces `numeric(times)`; one signature shape for the factories
+
+**Why** — `numeric` had two unrelated call forms, an array of time points or `start`/`step`/`end`, which needed
+runtime checks to reject a mix of the two and couldn't make `step` required in the signature. Explicit points also aren't
+specific to floats: the same is wanted for dates, e.g. a pandas `DatetimeIndex`. The three factories also disagreed on which arguments were
+positional: `linear` took `start` positionally, `numeric` and `calendar` were entirely keyword-only.
+
+**What** — The `times` argument of `numeric` is removed, and a new factory, `sequence(points, *, dt=...)`, yields the
+steps between consecutive points of any type, with `dt` a function `(start, end) -> float` that defaults to the
+difference. The other three factories now take `start` first, positional or keyword, and everything else keyword-only:
+
+- `linear(start=0, *, end=None)` (unchanged)
+- `numeric(start=0.0, *, step, end=None)`
+- `calendar(start, *, step, end=None)`
+
+The option examples, which used `numeric([0.0, expiry])` for one step, now use `numeric(0.0, step=expiry, end=expiry)`.
+Examples and docs call the factories with a positional `start`. The migration guide maps `NumericTimeline(times)` to
+`sequence(times)`.
+
+**Design decisions**
+- `sequence` is a separate factory rather than a second form of `numeric`: it isn't limited to floats, and each
+  factory keeps a single call form. (A first pass had no factory at all, leaving users to write the `pairwise`
+  comprehension, but combined with the new `Timestep` check below that made a list of dates needlessly awkward.)
+- `sequence` is lazy: it takes any iterable, including an open-ended iterator, so points are validated (positive
+  `dt`, which also rejects NaN) as each step is reached, not up front as `numeric(times)` did, and fewer than two
+  points gives an empty timeline, not an error. Ordering is checked via `dt` rather than `end > start`, so the
+  points needn't be comparable.
+- `linear`, `numeric` and `calendar` are implemented on `sequence`: each validates its arguments up front, then passes
+  a lazy generator of points (still computed from the start, not accumulated) and a `dt` function. `numeric` passes
+  its step size as a constant `dt`, as the difference of two points is subject to rounding. A single
+  `start + i * step` generator shared by all three was rejected: `numeric` must fix the number of steps and snap the
+  last point to `end`, while `calendar` can't count its steps in advance and clips the last one.
+- `sequence` leaves the points unconverted (ints stay ints, `Timestamp`s stay `Timestamp`s); only `dt` is a float.
+- `step` and `end` stay keyword-only, so `numeric(0.0, 0.1)` can't be read as either start/step or start/end (in 1.x,
+  `LinearTimeline(start, step)` was open-ended, but `LinearTimeline(start, end, nsteps)` wasn't).
+- The run now raises a `TypeError` if the timeline yields anything but a `Timestep`. Previously any object was passed
+  through to `self.timestep`, so a list of times (the obvious thing to try now `numeric(times)` is gone) or a pandas
+  `DatetimeIndex` ran without complaint, with `self.timestep` a float or `Timestamp`. The check is per step, in the
+  run loop, since a timeline can be an open-ended iterator. Coercing 4-tuples to `Timestep` was rejected as guesswork.
+  `test_timestep_is_passed_through` now pins that the `Timestep` object itself (with fields of any type) is unconverted.
+- `start` defaults to zero for the numeric timelines, as `linear` already did, so existing calls like `linear()` keep
+  working. `calendar` has no sensible default date, so its `start` is required.
+
+**Follow-ups** — none.
+
+## 2026-11-12 — Timeline migration guide (#134)
+
+**Why** — The 1.x → 2.0 notes were a warning box in the overview. They mapped `self.timeline.time` to
+`self.timestep.start`, which is only right in `step()`: in 1.x the timeline advanced before `check()` and
+`finalise()`, so there it corresponds to `self.timestep.end`. Most of the silent behaviour changes weren't listed.
+
+**What** — A new page, `docs/migration.md` ("Migrating to 2.0", in the nav), covering constructing timelines,
+reading the current step depending on where it's read, and the silent changes. The overview box now links to it.
+
+The API docs were missing the timeline factories and `Timestep`: `docs/api.md` had no `neworder.timeline` section,
+and `__init__.pyi` left `Timestep` out of `__all__` (unlike `__init__.py`), so griffe treated it as a private import.
+Both are fixed, and `timeline.py` has an explicit `__all__`.
+
+**Design decisions**
+- A separate page rather than a longer overview section, so it can be linked from the release notes and dropped
+  later without touching the overview.
+- `Timestep` is documented once, under `neworder.timeline` with the factories that yield it, and filtered out of
+  the top-level `neworder` section. Signatures elsewhere (e.g. `Model.timestep`) link to it there.
+
+**Follow-ups** — link it from the 2.0 release notes.
+
+---
+
+## 2026-11-10 — Document advancing the timeline from model code (#134)
+
+**Why** — For an iterator timeline, `self.timeline` is the iterator the run takes its steps from, so model code can
+advance it. The 2026-11-07 guard against this (`RuntimeError`) went with the timeline classes, so it's now silent.
+Advancing deliberately can be useful, e.g. to skip steps, but iterating `self.timeline` for some other reason
+consumes steps without warning.
+
+**What**
+- The overview has a section on advancing the timeline manually, with a warning about doing it by accident. The
+  bundled skill, and the `Model.timeline` docstring and stub, say the same.
+- Tests pin the behaviour: `next(self.timeline, None)` skips a step and leaves `self.timestep` unchanged, skipping
+  the remaining steps finalises after the current one, iterating a list timeline has no effect, a bare `next()` on
+  an exhausted timeline raises `StopIteration` out of the run, and a partly consumed iterator starts at its next step.
+- The skill's stale "`timeline.time` is the end of the step" pitfall is replaced.
+
+**Design decisions**
+- *Document and support it rather than reinstate a guard.* The run loop only sees an iterator, so detecting a step
+  taken elsewhere would mean wrapping it, and that would also block deliberate use. A list timeline is the way to
+  make the timeline safe to inspect.
+- Examples narrow `self.timeline` with `assert isinstance(self.timeline, Iterator)` rather than suppressing the type
+  error, since `Model.timeline` is correctly typed `Iterable`.
+
+**Follow-ups** — a bare `next()` past the end leaves the model `RUNNING`; it could be finalised instead, but code
+that does this has a bug, so raising is the more useful outcome.
+
+---
+
+## 2026-11-10 — Resuming a halted model doesn't call `modify` again (#134)
+
+**Why** — `Model::run` called `modify()` unconditionally, so every resume of a halted model applied it again (this
+dates from 1.x). `modify` is for one-off changes to the model's inputs, e.g. per-process perturbations in a parallel
+run or sensitivity analysis, and applying it twice corrupts them. A model halted on its final step called `modify`
+again when resumed, before finalising.
+
+**What**
+- `Model::run` calls `modify()` only when the run state is `NOT_STARTED`. A resumed run carries on with the next step;
+  if there is none, it just calls `finalise()`.
+- Tests assert `modify` is called once across halt/resume, halt in `modify`, and halt on the final step.
+- Docs, the `modify` docstring and stub, the timeline contract and the agent skill say it's called once, on the first
+  run.
+
+**Design decisions**
+- The run state is the guard, not a separate flag: any state other than `NOT_STARTED` means `modify` has run. This
+  covers a model halted in `modify` itself, and one whose `check()` failed, which is left `RUNNING`.
+
+**Follow-ups** — none.
+
+---
+
+## 2026-11-10 — Timeline v2: timelines are data; the model owns the current step (#134)
+
+**Why** — In the first v2 design, timelines were stateful iterator objects whose `__next__` returned each step as a
+native `(start, end)` tuple. The only caller was `Model::run`, which discarded the tuple, so model code couldn't reach
+the native values (the people example rebuilt dates from the float time). The iterator also invited model code to
+advance the timeline, which the run loop then had to guard against. Several intermediate designs kept the timeline as
+a stateful clock: a C++ base class with abstract properties dispatched through a hand-written trampoline, then a C++
+clock computing everything from `_point(i)`/`_time(i)`/`_at_end(i)` hooks. Each added mechanism to the C++/Python
+boundary, and the step state lived in the wrong place: the position in the timeline is part of a model run, like its
+halt state.
+
+**What**
+- A timeline is plain data: an iterator of `neworder.timeline.Timestep(index, start, end, dt)` named tuples (or any
+  iterable of them). `start` and
+  `end` are native (e.g. `int` or `date`), and `dt` is a float.
+- `neworder.timeline` provides factories, `null()`, `linear()`, `numeric()` and `calendar()`, which always return a
+  generator, open-ended if `end` is omitted. They replace `NoTimeline`, `LinearTimeline`,
+  `NumericTimeline` and `CalendarTimeline`.
+- `calendar()` shortens a final step that would overshoot `end`, rather than ending after it.
+- The C++ `Timeline` class, its trampoline, bindings and stub are gone. `Model` holds the iterable, an iterator over
+  it, and the current step, exposed as `Model.timestep` (`None` before the first step). `Model::run` takes steps with
+  `PyIter_Next`, so there's no exception-driven control flow, and finalises when the iterator is exhausted. Keeping
+  the iterator between runs is what makes halt and resume work.
+- `src/Timeline.{h,cpp}` is renamed `Time.{h,cpp}`, as all that's left in it is the `no::time` helpers (`never`,
+  `isnever`, ...). `Time.h` no longer includes `NewOrder.h`, which it didn't need.
+- Examples read `self.timestep` instead of `self.timeline`. Models that need the start time record it from the first
+  step's `start` (markov_chain, membership).
+
+**Design decisions**
+- Data rather than objects: the run loop needs nothing from a timeline but its next step, so a timeline needn't be a
+  class, and a custom timeline is just a list or a generator function.
+- The current step lives on the model (`self.timestep`), not passed to `step()`: method signatures are unchanged, and
+  `check()` and `finalise()` see it too.
+- `timestep` is typed as `Timestep` in the stub, although it is `None` before the first step. Typing it `Timestep | None`
+  would make every `step()` narrow a value that is always set there.
+- No float time: steps carry native `start`/`end` and a float `dt`, which covers the Monte-Carlo functions. For
+  `linear` and `numeric` the native values are numbers anyway.
+- `dt` is exact: the step size for `linear`/`numeric`, and whole days / 365 for `calendar`.
+- The factories always return an iterator, rather than a tuple when fixed and a generator when open-ended: one return
+  type, and no overloads. An iterator can only be used by one model; `list()` it to share it.
+- Factories rather than classes with the old names: the names change anyway, and lowercase functions match what they
+  are.
+
+**Behaviour changes**
+- `self.timestep.index` is 1 in the first step (1.x `timeline.index` was 0), so random streams keyed on it are
+  shifted by one.
+- The null timeline's `dt` is `NEVER` (it was 0.0).
+- A seeder can't read `self.timestep`, as it's first called while the base class is being initialised. The tips page
+  shows keeping the step index in a plain attribute instead.
+
+**Follow-ups** — `test_bindings.py` no longer covers timelines beyond pass-through, as there's no C++ timeline left
+to pin.
+
+---
+
 ## 2026-11-08 — Upgrade locked dependencies; fix ty 0.0.99 diagnostics
 
 **Why** — Refreshed `uv.lock` (pandas 3.0.6 → 3.1.1, ty 0.0.85 → 0.0.99, ruff → 0.17.4, among others). The newer ty
@@ -62,6 +234,152 @@ value, so colours are looked up for the whole column in one step: `COLOURS[self.
 
 **Follow-ups** — osmnx's defaults (180s timeout, unlimited 55s retries on 429/504, logging off) make an overloaded
 Overpass server look like a hang; the example could enable `ox.settings.log_console` and use a shorter timeout.
+
+---
+
+## 2026-11-07 — Timeline v2 review fixes: louder breaks, run-loop fixes (#134)
+
+**Why** — A review of #134 found that several 1.x models would keep running under 2.0 but silently give different
+results, plus two bugs: `halt()` called from `modify()` was ignored, and an equal-step `NumericTimeline` ending at
+0 was rejected. Breaking changes should fail loudly wherever they can.
+
+**What**
+- `LinearTimeline(start=0, *, end=None)`: `end` is keyword-only, because `LinearTimeline(0, 1)` meant "open-ended,
+  step 1" in 1.x and would otherwise silently become a one-step timeline. `bool` start/end values are rejected.
+- `CalendarTimeline` `time` and `dt` are in **years** (ACT/365), not days. This replaces the 2026-10-31 decision.
+  Annual rates are the common case, and with days a `hazard(rate * dt)` only failed for rates above ~1/365; below
+  that, probabilities were silently 365x too high. `dt` is computed from the whole number of days in the step, so
+  it's exact (e.g. 31/365). The people example goes back to using `timeline.dt` directly.
+- `dt` is `NaN` (`NEVER`) before the first step for every timeline, including the fixed-step ones and `NoTimeline`.
+  This replaces "the step size if fixed, NEVER otherwise". The base class handles index 0, and subclasses implement
+  `_dt(i)`.
+- `Model::run`:
+  - `halt()` in `modify()` is honoured: no steps are taken and the timeline isn't advanced. `RUNNING` was
+    previously set after `modify()`, which overwrote the halt.
+  - Re-running a completed model raises `StopIteration` *before* calling `modify()`, which resolves the earlier
+    follow-up. A model halted on its final step now finalises when resumed, where it previously raised.
+  - It raises `ValueError` if a new model's timeline has already been advanced (e.g. by `list(timeline)`), and
+    `RuntimeError` if `modify`/`step`/`check` advance it. Either would otherwise silently skip steps.
+- Equal-step `NumericTimeline` uses an absolute tolerance when checking that `end` is a whole number of steps, so
+  `start=-0.3, step=0.1, end=0.0` works. `NumericTimeline(times)` rejects `NaN`s.
+- `CalendarTimeline` finds its number of steps by exponential/binary search rather than a linear scan. Daily
+  steps over 200 years took 0.3s to construct.
+- Docs: a "Migrating from 1.x" warning in the overview lists the remaining silent changes (`time`/`index` in
+  `step()`, index-keyed random streams, `NumericTimeline(times)`). The overview and the bundled skill also
+  document halt/resume and the advance guard.
+
+**Design decisions**
+- *Guard against advancing the timeline in model code* rather than only documenting it. It costs two extra
+  `index` reads per step: the framework's own overhead is ~3.6µs/step, vs ~2.8µs without the guard and ~1.5µs in
+  1.7, which is negligible next to any real `step()`. A fresh model on a partly-iterated timeline is rejected
+  rather than run from there, as there's no known use for it and it was the cause of the confusing "already run
+  to completion" error.
+- *A model halted on its final step finalises when resumed.* Resuming means "continue from the next step"; when
+  there isn't one, that's completion. The alternative was to keep raising `StopIteration`, which left no way to
+  finalise.
+- *Kept:* in the infection example, the initially infected recover one step earlier than in 1.x, because their
+  infection time (index 0) is now measured against end-of-step indices. This is consistent with the clock
+  semantics, so the example wasn't changed.
+
+**Follow-ups**
+- The MPI examples and tests weren't run (no MPI available locally). The infection example couldn't be run
+  (no access to the Overpass API).
+- #135 (nanobind): `PyTimeline`'s abstract-member check uses pybind11 internals and must be ported, and
+  #135's `test_bindings.py` Timeline tests target the 1.x API.
+
+## 2026-10-31 — Timelines as clock-like iterators over native steps, with float time; implementations moved to Python (v2.0.0)
+
+**Why** — The old `Timeline` interface was large and awkward: `start`, `end`, `time`, `dt`, `at_end`, `_next`,
+plus an `index` managed by the C++ base class. You couldn't iterate it outside a model, and `time` meant the start of
+the step in `step()` but the end of it in `check()` (after the timeline had advanced). A Python subclass missing a
+property recursed infinitely, which crashed the interpreter on Windows. Implementing the concrete timelines in C++
+gained nothing, as each access goes through Python anyway. The design follows the maintainer's prototype (`t.py`,
+not committed), with its bugs fixed (see below).
+
+**What** — Breaking change, so a major version bump to 2.0.0.
+- `neworder.Timeline` is still the C++ abstract base class, and `Model` still takes a `no::Timeline&`. Its
+  abstract interface is now `index` (int), `time` and `dt` (both `double`), and `__next__`. It also has a concrete
+  `__iter__` (which returns self) and a default `__repr__`. `start`, `end`, `at_end` and `_next` are gone.
+- A timeline behaves like a clock:
+  - Before the run, `index` is 0 and `time` is the start.
+  - Each `__next__` takes a step: it increments `index`, sets `time` to the end of the step, and returns the step as
+    a `(start, end)` tuple of the timeline's native type.
+  - `time` and `dt` are always floats. `dt` is the length of the most recent step. Before the first step, `dt` is
+    the step size if that's fixed, and `NEVER` otherwise.
+- `NoTimeline`, `LinearTimeline` and `NumericTimeline` moved from C++ to `neworder/timeline.py`, alongside
+  `CalendarTimeline`, and share a private `_SteppedTimeline[T]` base. Subclasses give each point's native value
+  (`_point`) and its float value (`_numeric`):
+  - `NoTimeline()`: native `(None, None)`; `time` is `NEVER` and `dt` is 0.
+  - `LinearTimeline(start=0, end=None)`: native `int`, unit steps, open-ended if `end` is omitted.
+  - `NumericTimeline(start=..., step=..., end=None)`: native `float`, equal steps, open-ended if `end` is omitted;
+    `end - start` must be a whole number of steps.
+  - `NumericTimeline(times)`: native `float`, explicit (possibly unequal) points.
+  - `CalendarTimeline(start=..., step=..., end=None)`: native `date`, keyword-only arguments; `time` is days since
+    the start and `dt` is in days.
+  - Reprs follow the prototype (`<ClassName start=... end=... step=...>`).
+- `Model::run` logs the start and calls `modify` (which sees the start). It then takes the first step, raising
+  `StopIteration` if the timeline is already exhausted, and loops step → check → halt test → advance. `finalise`
+  runs when advancing raises `StopIteration`. It calls the C++ virtuals directly, which made `PyAccessor`
+  (in `src/Helpers.h`, previously used to read Python timelines' properties) redundant, so it was deleted.
+- Examples updated:
+  - Clock semantics: conway's glider is placed when `index == 1`, mortality looks up hazards by the age at the
+    start of the step (`time - dt`), and markov_chain, membership and wolf_sheep take the start from `time` before
+    the run.
+  - people: `Population` takes the start date, to turn the float time back into a date for its labels, and converts
+    `dt` from days to years for its annual rates.
+  - option uses `NumericTimeline([0.0, expiry])`, and boids an open-ended `NumericTimeline`.
+  - Every `LinearTimeline` lost its `nsteps`/step argument, and mortality's `max_age` is now an int.
+  - Docs (overview, hello-world, tips) and the bundled skill were updated to match.
+
+**Design decisions**
+- *Native values via iteration; float `time`/`dt` on the timeline.* Model code always gets a number it can compute
+  with, pass to the MonteCarlo functions and compare with `no.time.NEVER`/`FAR_FUTURE`/`DISTANT_PAST`. Those
+  constants don't work with `None` or `date`. Rejected along the way:
+  - `time` as the native `(start, end)` tuple: this broke those constants for `NoTimeline` and calendar dates.
+  - No `dt` at all: models need step lengths for hazards and ageing.
+- *Clock semantics, as in the prototype.* `index` counts the steps taken, and `modify` sees the start. Rejected: a
+  timeline "positioned at" its first step, with index 0 during the first step. That kept existing `index` usage
+  unchanged, but it made the state before the run (which `modify` sees) the end of the first step, which is
+  unintuitive.
+- *Calendar float time is in days* (the prototype's choice). This is exact, and doesn't build in a year-length
+  convention: models with annual rates convert, as the people example does with ACT/365. Rejected: years since
+  the start on an ACT/365 basis, and decimal years.
+- *Bugs fixed relative to the prototype*:
+  - `Numeric.dt` returned the start of the step.
+  - `if self._end and ...` treated an end of 0 as open-ended.
+  - Accumulating `+= step` drifted (floats) and lost the day of the month (calendar).
+  - The calendar `dt` was computed as `t - (t - step)`, which is wrong for month-end steps.
+  - `start + n * step` falling just short of `end` gave an extra step. Equal-step `NumericTimeline` now fixes the
+    number of steps up front, and rejects an `end` that isn't a whole number of steps away.
+  
+  Points are computed from the start (`start + i * step`).
+- *Halting doesn't advance the timeline.* A resumed run calls `modify` again, then continues with the next step.
+- *Abstract members are enforced in the trampoline.* `NB_OVERRIDE` can't dispatch to Python properties: it fetches
+  the property's value and then calls it. (`PYBIND11_OVERRIDE` had the same problem, and recursed on an
+  un-overridden property, before the move to nanobind.) So `PyTimeline` checks that the subclass's attribute isn't
+  the base's own, and raises a `TypeError` that names the missing member. Values are converted with
+  `no::checked_cast`, so a property returning the wrong type raises e.g. `TypeError: MyTimeline.index must be an
+  int64, got 'zero'`. This replaces the "pure virtual function" `RuntimeError` documented for 1.x custom
+  timelines.
+- *Missing members are reported on first use, not at instantiation.* `Timeline` can't be a true Python ABC:
+  CPython's abstract check is in `object.__new__`, which nanobind's own `__new__` bypasses, so even `ABCMeta`'s
+  `__abstractmethods__` is ignored. A metaclass whose `__call__` checks for overrides was shown to work, but
+  wasn't adopted: the runtime `TypeError` (raised at the latest when a `Model` is constructed) plus static
+  checking via the stub's `@abstractmethod`s is enough.
+- *Rebased onto the nanobind migration (#135).* The design was written against pybind11 and ported when rebasing.
+  `Timeline.__repr__` stays bound non-virtually, like `Model`'s methods. The timeline tests that #135 added to
+  `test/test_bindings.py` were rewritten for the new interface (numpy scalars from `index`/`time`/`dt`, a
+  wrongly-typed `index`, `__repr__`, identity and lifetime). The tests of the C++ timeline constructors' argument
+  conversion were dropped, as `test/test_timeline.py` covers the Python constructors.
+- *`LinearTimeline` is integer with unit steps*, so it's an exact counter. Anything else goes through
+  `NumericTimeline`, so float handling lives in one place.
+
+**Follow-ups**
+- `Model::run` calls `modify` before discovering that a timeline is already exhausted (there's no way to peek at an
+  iterator).
+- A Python subclass that implements `index`/`time`/`dt` as methods rather than properties gets a cast error
+  (`MyTimeline.time must be a float, got <bound method ...>`) rather than one that says they must be properties.
+- The examples weren't run (per project preference); they're covered by `ty` only.
 
 ---
 

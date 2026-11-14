@@ -13,24 +13,20 @@ import typing
 import numpy
 import numpy.typing
 
-from . import df, mpi, stats, time
+from . import df, mpi, stats, time, timeline
 from .domain import Domain, Edge, Space, StateGrid
 from .mc import as_np
-from .timeline import CalendarTimeline
+from .timeline import Timestep
 
 __all__: list[str] = [
-    "CalendarTimeline",
     "Domain",
     "Edge",
-    "LinearTimeline",
     "Model",
     "MonteCarlo",
-    "NoTimeline",
-    "NumericTimeline",
     "Space",
     "SplitMix64",
     "StateGrid",
-    "Timeline",
+    "Timestep",
     "as_np",
     "checked",
     "df",
@@ -41,6 +37,7 @@ __all__: list[str] = [
     "stats",
     "thread_id",
     "time",
+    "timeline",
     "verbose",
 ]
 
@@ -164,23 +161,6 @@ class SplitMix64:
             TypeError: If any argument is not a scalar int or a 1-D integer array.
         """
 
-class LinearTimeline(Timeline):
-    """
-
-    An equally-spaced non-calendar timeline .
-    """
-    @typing.overload
-    def __init__(self, start: typing.SupportsFloat, end: typing.SupportsFloat, nsteps: typing.SupportsInt) -> None:
-        """
-        Constructs a timeline from start to end, with the given number of steps.
-        """
-    @typing.overload
-    def __init__(self, start: typing.SupportsFloat, step: typing.SupportsFloat) -> None:
-        """
-        Constructs an open-ended timeline give a start value and a step size. NB the model will run until the Model.halt() method is explicitly called
-        (from inside the step() method).
-        """
-
 class Model:
     """
 
@@ -196,9 +176,10 @@ class Model:
     HALTED: typing.ClassVar[Model.RunState]  # value = <RunState.HALTED: 2>
     NOT_STARTED: typing.ClassVar[Model.RunState]  # value = <RunState.NOT_STARTED: 0>
     RUNNING: typing.ClassVar[Model.RunState]  # value = <RunState.RUNNING: 1>
-    def __init__(self, timeline: Timeline, seeder: collections.abc.Callable = ...) -> None:
+    def __init__(self, timeline: collections.abc.Iterable[Timestep], seeder: collections.abc.Callable = ...) -> None:
         """
-        Constructs a model object with a timeline and (optionally) a seeder function for the random stream(s)
+        Constructs a model object with a timeline, which is any iterable of steps (e.g. from the neworder.timeline
+        factories), and (optionally) a seeder function for the random stream(s)
         """
     def check(self) -> bool:
         """
@@ -224,6 +205,7 @@ class Model:
     def modify(self) -> None:
         """
         User-overridable method used to modify state in a per-process basis for multiprocess model runs.
+        Called once, at the start of the first run: resuming a halted model doesn't call it again.
         Default behaviour is to do nothing.
         This function should not be called directly, it is used by the Model.run() function
         """
@@ -255,9 +237,15 @@ class Model:
             COMPLETED: model has run to the end of its timeline
         """
     @property
-    def timeline(self) -> Timeline:
+    def timeline(self) -> collections.abc.Iterable[Timestep]:
         """
-        The model's timeline object
+        The model's timeline: the iterable of steps it was constructed with. If it's an iterator (e.g. from a
+        neworder.timeline factory), the run takes its steps from it, so iterating it in model code skips them
+        """
+    @property
+    def timestep(self) -> Timestep:
+        """
+        The current step of the model's timeline, or None before the first step (e.g. in the constructor and modify)
         """
 
 class MonteCarlo:
@@ -382,63 +370,6 @@ class MonteCarlo:
     def ustream(self, n: typing.SupportsInt) -> numpy.typing.NDArray[numpy.float64]:
         """
         Returns an array of uniform random [0,1) variates of length n
-        """
-
-class NoTimeline(Timeline):
-    """
-
-    An arbitrary one step timeline, for continuous-time models with no explicit (discrete) timeline
-    """
-    def __init__(self) -> None:
-        """
-        Constructs an arbitrary one step timeline, where the start and end times are undefined and there is a single step of size zero. Useful for continuous-time models
-        """
-
-class NumericTimeline(Timeline):
-    """
-
-    An custom non-calendar timeline where the user explicitly specifies the time points, which must be monotonically increasing.
-    """
-    def __init__(self, times: collections.abc.Sequence[typing.SupportsFloat]) -> None:
-        """
-        Constructs a timeline from an array of time points.
-        """
-
-class Timeline:
-    def __init__(self) -> None: ...
-    def __repr__(self) -> str:
-        """
-        Prints a human-readable representation of the timeline object
-        """
-    @property
-    def at_end(self) -> bool:
-        """
-        Returns True if the current step is the end of the timeline
-        """
-    @property
-    def dt(self) -> float:
-        """
-        Returns the step size size of the timeline
-        """
-    @property
-    def end(self) -> typing.Any:
-        """
-        Returns the time of the end of the timeline
-        """
-    @property
-    def index(self) -> int:
-        """
-        Returns the index of the current step in the timeline
-        """
-    @property
-    def start(self) -> typing.Any:
-        """
-        Returns the time of the start of the timeline
-        """
-    @property
-    def time(self) -> typing.Any:
-        """
-        Returns the time of the current step in the timeline
         """
 
 def checked(checked: bool = True) -> None:

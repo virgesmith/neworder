@@ -2,6 +2,8 @@
 population.py: Model implementation for population microsimulation
 """
 
+from collections.abc import Iterable
+from datetime import date
 from pathlib import Path
 
 import numpy as np
@@ -14,7 +16,7 @@ import neworder
 class Population(neworder.Model):
     def __init__(
         self,
-        timeline: neworder.Timeline,
+        timeline: Iterable[neworder.timeline.Timestep],
         population_file: str,
         fertility_file: str,
         mortality_file: str,
@@ -47,6 +49,10 @@ class Population(neworder.Model):
         self.fig = None
         self.plot_pyramid()
 
+    def date(self) -> date:
+        """The date at the end of the current timestep"""
+        return self.timestep.end
+
     def step(self) -> None:
         self.births()
         self.deaths()
@@ -61,7 +67,7 @@ class Population(neworder.Model):
         # NB census age category max value is 86 (=85 or over)
         self.population.Age = (  # ty:ignore[invalid-assignment]
             self.population.Age + 1
-        )  # NB self.timeline.dt wont be exactly 1 as based on an average length year of 365.2475 days
+        )  # NB age is incremented by exactly 1, whereas self.timestep.dt is 366/365 for a step spanning a leap day
         # reconstruct census age group
         self.population.DC1117EW_C_AGE = np.clip(np.ceil(self.population.Age), 1, 86).astype(int)  # ty:ignore[invalid-assignment]
 
@@ -75,7 +81,7 @@ class Population(neworder.Model):
             "Rate"
         ].to_numpy()
         # Then randomly determine if a birth occurred
-        h = self.mc.hazard(rates * self.timeline.dt)
+        h = self.mc.hazard(rates * self.timestep.dt)
 
         # The babies are a clone of the new mothers, with with changed PID, reset age and randomised gender (keeping location and ethnicity)
         newborns = females[h == 1].copy()
@@ -94,7 +100,7 @@ class Population(neworder.Model):
         rates = self.population.join(self.mortality, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])["Rate"]
 
         # Then randomly determine if a death occurred
-        h = self.mc.hazard(rates.to_numpy() * self.timeline.dt)
+        h = self.mc.hazard(rates.to_numpy() * self.timestep.dt)
 
         # Finally remove deceased from table
         self.population = self.population[h != 1]
@@ -104,7 +110,7 @@ class Population(neworder.Model):
         # - sample counts of migrants according to intensity
         # - append result to population
 
-        self.in_migration["count"] = self.mc.counts(self.in_migration.Rate.to_numpy(), self.timeline.dt)
+        self.in_migration["count"] = self.mc.counts(self.in_migration.Rate.to_numpy(), self.timestep.dt)
         h_in = self.in_migration.loc[self.in_migration.index.repeat(self.in_migration["count"])].drop(
             ["Rate", "count"], axis=1
         )
@@ -117,7 +123,7 @@ class Population(neworder.Model):
         out_rates = self.population.join(self.out_migration, on=["NewEthpop_ETH", "DC1117EW_C_SEX", "DC1117EW_C_AGE"])[
             "Rate"
         ].to_numpy()
-        h_out = self.mc.hazard(out_rates * self.timeline.dt)
+        h_out = self.mc.hazard(out_rates * self.timestep.dt)
         # add incoming & remove outgoing migrants
         self.population = pd.concat((self.population[h_out != 1], h_in))
 
@@ -156,7 +162,7 @@ class Population(neworder.Model):
             return False
 
         neworder.log(
-            f"check OK: time={self.timeline.time} size={self.size()} mean_age={self.mean_age():.2f}, pct_female={100.0 * self.gender_split():.2f} net_migration={self.in_out[0] - self.in_out[1]} ({self.in_out[0]}-{self.in_out[1]})"
+            f"check OK: time={self.date()} size={self.size()} mean_age={self.mean_age():.2f}, pct_female={100.0 * self.gender_split():.2f} net_migration={self.in_out[0] - self.in_out[1]} ({self.in_out[0]}-{self.in_out[1]})"
         )
 
         # if all is ok, plot the data
@@ -173,9 +179,8 @@ class Population(neworder.Model):
         if self.fig is None:
             self.fig, self.axes, self.mbar, self.fbar = pyramid.plot(a, m, f)
         else:
-            # NB self.timeline.time is now the time at the *end* of the timestep since this is called from check() (as opposed to step())
             self.mbar, self.fbar = pyramid.update(
-                str(self.timeline.time.year),
+                str(self.date().year),
                 self.fig,
                 self.axes,
                 self.mbar,

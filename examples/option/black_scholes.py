@@ -11,7 +11,7 @@ class BlackScholes(neworder.Model):
     # !constructor!
     def __init__(self, option: Option, market: Market, nsims: int) -> None:
         # Using exact MC calc of GBM requires only 1 timestep
-        timeline = neworder.LinearTimeline(0.0, option.expiry, 1)
+        timeline = neworder.timeline.numeric(0.0, step=option.expiry, end=option.expiry)
         # ensure all processes have identical streams, cancelling random noise
         seeder = neworder.MonteCarlo.deterministic_identical_stream
         super().__init__(timeline, seeder)
@@ -74,7 +74,7 @@ class BlackScholes(neworder.Model):
 
     def simulate(self) -> float:
         # get the single timestep from the timeline
-        dt = self.timeline.dt
+        dt = self.timestep.dt
         normals = self.rng.normal(size=self.nsims)
 
         # compute underlying prices at t=dt

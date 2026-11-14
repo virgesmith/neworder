@@ -7,7 +7,8 @@ import enum
 import gc
 import re
 import warnings
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from datetime import date
 from typing import Any
 
 import numpy as np
@@ -20,12 +21,12 @@ import neworder as no
 @pytest.fixture
 def mc() -> no.MonteCarlo:
     # the python reference to mc keeps its model alive
-    return no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream).mc
+    return no.Model(no.timeline.null(), no.MonteCarlo.deterministic_identical_stream).mc
 
 
 class _CheckModel(no.Model):
     def __init__(self, check_result: Any) -> None:
-        super().__init__(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
+        super().__init__(no.timeline.null(), no.MonteCarlo.deterministic_identical_stream)
         self.check_result = check_result
 
     def step(self) -> None:
@@ -33,37 +34,6 @@ class _CheckModel(no.Model):
 
     def check(self) -> bool:
         return self.check_result
-
-
-class _NumpyBoolTimeline(no.Timeline):
-    """A custom timeline whose properties return numpy scalars, as computed properties naturally do"""
-
-    def __init__(self) -> None:
-        super().__init__()
-        self.t = np.float64(0.0)
-
-    @property
-    def start(self) -> float:
-        return 0.0
-
-    @property
-    def end(self) -> float:
-        return 2.0
-
-    @property
-    def time(self) -> float:
-        return float(self.t)
-
-    @property
-    def dt(self) -> float:
-        return 1.0
-
-    def _next(self) -> None:
-        self.t += 1.0
-
-    @property
-    def at_end(self) -> bool:
-        return self.t >= 2.0  # ty: ignore[invalid-return-type]
 
 
 @pytest.mark.parametrize(
@@ -141,7 +111,7 @@ def test_returned_arrays(mc: no.MonteCarlo) -> None:
 
 
 def test_returned_arrays_outlive_model() -> None:
-    a = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream).mc.ustream(1000)
+    a = no.Model(no.timeline.null(), no.MonteCarlo.deterministic_identical_stream).mc.ustream(1000)
     gc.collect()
     assert ((a >= 0.0) & (a < 1.0)).all()
 
@@ -158,11 +128,11 @@ def test_array_sizes(mc: no.MonteCarlo) -> None:
 
 
 def test_default_seeder() -> None:
-    assert no.Model(no.NoTimeline()).mc.seed() == 19937 + no.mpi.RANK
+    assert no.Model(no.timeline.null()).mc.seed() == 19937 + no.mpi.RANK
 
 
 def test_seeder_numpy_int() -> None:
-    assert no.Model(no.NoTimeline(), lambda: np.int64(3)).mc.seed() == 3
+    assert no.Model(no.timeline.null(), lambda: np.int64(3)).mc.seed() == 3
     no.SplitMix64(lambda: np.int64(3)).uarray(1)  # ty: ignore[invalid-argument-type]
 
 
@@ -178,24 +148,10 @@ def test_check_result_falsy(result: Any) -> None:
         assert no.run(_CheckModel(result)) is False
 
 
-def test_timeline_at_end_numpy_bool() -> None:
-    class Model(no.Model):
-        def __init__(self) -> None:
-            super().__init__(_NumpyBoolTimeline(), no.MonteCarlo.deterministic_identical_stream)
-            self.steps = 0
-
-        def step(self) -> None:
-            self.steps += 1
-
-    m = Model()
-    assert no.run(m)
-    assert m.steps == 2
-
-
 def test_python_overrides_can_call_base() -> None:
     class Model(no.Model):
         def __init__(self) -> None:
-            super().__init__(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
+            super().__init__(no.timeline.null(), no.MonteCarlo.deterministic_identical_stream)
             self.called: list[str] = []
 
         def modify(self) -> None:
@@ -221,7 +177,7 @@ def test_python_overrides_can_call_base() -> None:
 def test_python_overrides_called_from_python_run_once() -> None:
     class Model(no.Model):
         def __init__(self) -> None:
-            super().__init__(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
+            super().__init__(no.timeline.null(), no.MonteCarlo.deterministic_identical_stream)
             self.called: list[str] = []
 
         def modify(self) -> None:
@@ -252,7 +208,7 @@ def test_python_overrides_called_from_python_run_once() -> None:
 def test_python_override_calling_pure_base_raises() -> None:
     class Model(no.Model):
         def __init__(self) -> None:
-            super().__init__(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
+            super().__init__(no.timeline.null(), no.MonteCarlo.deterministic_identical_stream)
             self.steps = 0
 
         def step(self) -> None:
@@ -270,7 +226,7 @@ def test_instance_assigned_override_needs_class_override() -> None:
     # instance, so a method assigned to an instance is ignored by C++ unless the class also overrides it
     class StepOnly(no.Model):
         def __init__(self) -> None:
-            super().__init__(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
+            super().__init__(no.timeline.null(), no.MonteCarlo.deterministic_identical_stream)
             self.called: list[str] = []
 
         def step(self) -> None:
@@ -287,69 +243,57 @@ def test_instance_assigned_override_needs_class_override() -> None:
         assert m.called == expected
 
 
-def test_timeline_index_must_be_int() -> None:
-    class StrIndexTimeline(_NumpyBoolTimeline):
-        @property
-        def index(self) -> int:
-            return "zero"  # ty: ignore[invalid-return-type]
-
-    class M(no.Model):
-        def __init__(self) -> None:
-            super().__init__(StrIndexTimeline(), no.MonteCarlo.deterministic_identical_stream)
-
-        def step(self) -> None:
-            pass
-
-    with pytest.raises(TypeError, match=r"StrIndexTimeline\.index must be an int64, got 'zero'"):
-        no.run(M())
-
-
-def test_timeline_repr() -> None:
-    class Timeline(_NumpyBoolTimeline):
-        calls = 0
-
-        def __repr__(self) -> str:
-            Timeline.calls += 1
-            return "custom " + super().__repr__()
-
-    assert repr(_NumpyBoolTimeline()) == "<_NumpyBoolTimeline index=0>"
-    assert repr(Timeline()) == "custom <Timeline index=0>"
-    assert Timeline.calls == 1
-    # the C++ implementations are still used, and inherited by any python subclasses
-    assert repr(no.NoTimeline()) == "<neworder.NoTimeline stepped=False>"
-    assert repr(no.LinearTimeline(0.0, 1.0, 1)).startswith("<neworder.LinearTimeline")
-    assert repr(no.NumericTimeline([0.0, 1.0])).startswith("<neworder.NumericTimeline")
-
-    # a python __repr__ is seen by C++, which logs it when the model is constructed
-    no.verbose(True)
-    try:
-        calls = Timeline.calls
-        no.Model(Timeline(), no.MonteCarlo.deterministic_identical_stream)
-        assert Timeline.calls == calls + 1
-    finally:
-        no.verbose(False)
-
-
 def test_object_identity() -> None:
-    timeline = _NumpyBoolTimeline()
+    timeline = no.timeline.linear(0, end=2)
     m = no.Model(timeline, no.MonteCarlo.deterministic_identical_stream)
     assert m.timeline is timeline
     assert m.mc is m.mc
 
 
-def test_timeline_downcast() -> None:
-    m = no.Model(no.LinearTimeline(0.0, 1.0, 1), no.MonteCarlo.deterministic_identical_stream)
-    assert isinstance(m.timeline, no.LinearTimeline)
-
-
 def test_timeline_kept_alive_by_model() -> None:
-    m = no.Model(_NumpyBoolTimeline(), no.MonteCarlo.deterministic_identical_stream)
+    m = no.Model([no.timeline.Timestep(1, 0, 1, 1.0)], no.MonteCarlo.deterministic_identical_stream)
     gc.collect()
-    assert m.timeline.time == 0.0
+    assert m.timeline == [(1, 0, 1, 1.0)]
+
+
+def test_timeline_must_be_iterable() -> None:
+    with pytest.raises(TypeError, match="not iterable"):
+        no.Model(3)  # ty: ignore[invalid-argument-type]
+
+
+def test_timestep_is_passed_through() -> None:
+    """The model's timestep is the object the timeline yields, unconverted, whatever the types of its fields"""
+    steps = [no.Timestep(1, np.float32(0.5), "two", 1.0), no.Timestep(2, None, date(2026, 1, 1), 0.5)]
+
+    class M(no.Model):
+        def __init__(self) -> None:
+            super().__init__(iter(steps))
+            self.seen: list[Any] = []
+
+        def step(self) -> None:
+            self.seen.append(self.timestep)
+
+    m = M()
+    assert no.run(m)
+    assert m.seen[0] is steps[0]
+    assert m.seen[1] is steps[1]
+
+
+def test_timeline_errors_propagate() -> None:
+    def failing() -> Iterator[no.timeline.Timestep]:
+        yield no.timeline.Timestep(1, 0, 1, 1.0)
+        raise ValueError("bad step")
+
+    class M(no.Model):
+        def step(self) -> None:
+            pass
+
+    with pytest.raises(ValueError, match="bad step"):
+        no.run(M(failing()))
 
 
 def test_mc_keeps_model_alive() -> None:
-    mc = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream).mc
+    mc = no.Model(no.timeline.null(), no.MonteCarlo.deterministic_identical_stream).mc
     gc.collect()
     assert mc.ustream(1).shape == (1,)
 
@@ -361,14 +305,6 @@ def test_run_state() -> None:
     assert m.run_state is no.Model.RunState.NOT_STARTED
     no.run(m)
     assert m.run_state is no.Model.RunState.COMPLETED
-
-
-def test_timeline_arguments() -> None:
-    assert no.NumericTimeline(np.array([0.0, 1.0])).dt == 1.0  # ty: ignore[invalid-argument-type]
-    assert no.NumericTimeline((0.0, 1.0)).dt == 1.0
-    assert no.LinearTimeline(0, 1, np.int64(2)).dt == 0.5
-    with pytest.raises(TypeError):
-        no.LinearTimeline(0, 1, 2.0)
 
 
 def test_keyword_arguments(mc: no.MonteCarlo) -> None:

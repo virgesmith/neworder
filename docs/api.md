@@ -5,8 +5,13 @@
 
 
 ::: neworder
+    options:
+      # documented with the factories in neworder.timeline
+      filters: ["!^_", "!^Timestep$"]
 
 ::: neworder.time
+
+::: neworder.timeline
 
 ::: neworder.mpi
 

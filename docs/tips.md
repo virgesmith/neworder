@@ -3,7 +3,7 @@
 ## Model Initialisation
 
 !!! warning "Base Model Initialisation"
-    When instantiating the model subclass, it is essential that the `neworder.Model` base class is explicitly initialised. It must be supplied with a `Timeline` object and (optionally) a seeding function for the Monte-Carlo engine. Failure to do this will result in a runtime error.
+    When instantiating the model subclass, it is essential that the `neworder.Model` base class is explicitly initialised. It must be supplied with a timeline (an iterable of steps, e.g. from the `neworder.timeline` factories) and (optionally) a seeding function for the Monte-Carlo engine. Failure to do this will result in a runtime error.
 
 Ensure the `neworder.Model` base class is properly initialised:
 
@@ -50,7 +50,7 @@ which returns the same seed for all odd-ranked processes and a different seed fo
 
 ```python
 class MyModel(neworder.Model):
-    def __init__(self, timeline: neworder.Timeline) -> None:
+    def __init__(self, timeline: Iterable[neworder.timeline.Timestep]) -> None:
         super().__init__(timeline, lambda: (neworder.mpi.RANK % 2) + 12345)
         ...
 ```
@@ -94,16 +94,16 @@ Call `uarray` with any mix of scalar integers (used as context, adding no output
 
 ```python
 # 1-D: one variate per person
-draws = self.rng.uarray(person_ids, process_id, self.timeline.index)
+draws = self.rng.uarray(person_ids, process_id, self.timestep.index)
 
 # 2-D: one variate per (person, draw_index) pair
-draws = self.rng.uarray(person_ids, process_id, self.timeline.index, draw_indices)
+draws = self.rng.uarray(person_ids, process_id, self.timestep.index, draw_indices)
 ```
 
 String keys (e.g. the name of a stochastic process) can be converted to stable integers with `SplitMix64.hash64`:
 
 ```python
-draws = self.rng.uarray(person_ids, neworder.SplitMix64.hash64("mortality"), self.timeline.index)
+draws = self.rng.uarray(person_ids, neworder.SplitMix64.hash64("mortality"), self.timestep.index)
 ```
 
 ### Raw integer draws
@@ -117,17 +117,19 @@ class StepwiseStreams(neworder.Model):
     def __init__(self) -> None:
         # initialise the seed source deterministically
         seed_source = neworder.SplitMix64(neworder.MonteCarlo.deterministic_independent_stream)
-        # construct the timeline first so the seeder can capture it
-        timeline = neworder.LinearTimeline(0, 10, 10)
         # this ensures this model's variates are independent of any other model's
         id = neworder.SplitMix64.hash64(self.__class__.__name__)
+        # the seeder is first called while the base class is being initialised, so it can't read self.timestep:
+        # keep the step index in a plain attribute, set before the base class is initialised
+        self.step_index = 0
 
         def seeder() -> np.int32:
-            return seed_source.raw(id, timeline.index).astype(np.int32)
+            return seed_source.raw(id, self.step_index).astype(np.int32)
 
-        super().__init__(timeline, seeder)
+        super().__init__(neworder.timeline.linear(0, end=10), seeder)
 
     def step(self) -> None:
+        self.step_index = self.timestep.index
         self.mc.reset()  # re-seeds from the current timestep
         ...
 ```
@@ -207,7 +209,7 @@ Models will continue to run until the end of their timeline is reached, unless e
 
 ## Open-ended timelines and Conditional Halting
 
-In some models, rather than (or as well as) evolving the population over a fixed timeline, it may make more sense to iterate timesteps until some condition is met. The "Schelling" example illustrates this - it runs until all agents are in a satisfied state. Currently, the inbuilt `LinearTimeline` and `CalendarTimeline` classes support both fixed and open-ended timelines. In other cases it may be useful to temporarily exit the model for later resumption.
+In some models, rather than (or as well as) evolving the population over a fixed timeline, it may make more sense to iterate timesteps until some condition is met. The "Schelling" example illustrates this - it runs until all agents are in a satisfied state. The `linear`, `numeric` and `calendar` timeline factories return an open-ended timeline if `end` is omitted, as does `sequence` given an open-ended iterator. In other cases it may be useful to temporarily exit the model for later resumption.
 
 The model's `halt` method can be used to stop the model run. In these situations, the `step` method should have some logic to (conditionally) call the `halt` method.
 

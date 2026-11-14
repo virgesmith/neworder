@@ -125,7 +125,7 @@ def cpp_impl(m: no.Model, df: pd.DataFrame) -> tuple[int, float, pd.Series]:
 # no.log(df.n.value_counts())
 
 if __name__ == "__main__":
-    m = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
+    m = no.Model(no.timeline.null(), no.MonteCarlo.deterministic_identical_stream)
 
     rows, tc, colcpp = cpp_impl(m, get_data())
     no.log(f"C++ {rows}: {tc}")

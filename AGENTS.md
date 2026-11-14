@@ -85,12 +85,12 @@ src/                     # C++ extension source (nanobind)
   Model.cpp / Model.h
   MonteCarlo.cpp / ...
   Module.cpp             # nanobind bindings entry point
-  Timeline.cpp / ...
+  Time.cpp / Time.h      # no::time helpers (never, isnever, ...)
 neworder/                # Python package
   __init__.py            # public exports (re-exports _neworder_core + pure-Python)
   domain.py              # Domain, Edge, Space, StateGrid
   mc.py                  # as_np helper
-  timeline.py            # CalendarTimeline
+  timeline.py            # Timestep, and the timeline factories null, linear, numeric, sequence, calendar
   stats.py               # deprecated wrappers for the C++ stats submodule
   *.pyi                  # type stubs for C++ submodules (time, mpi, df)
   py.typed               # PEP 561 marker
@@ -141,8 +141,7 @@ uv run python -m nanobind.stubgen -m _neworder_core -r -O stubs   # writes stubs
 
 Manual corrections to preserve when merging:
 - Precise types where stubgen emits `Any` or bare containers, e.g. pandas `Series`/`Categorical` in `df.pyi`, typed `*args` and `Callable[[], int]` on `SplitMix64`, `RunState` return types.
-- The `__repr__` of each concrete timeline: these are an implementation detail, and are covered by `Timeline.__repr__`.
-- `__all__` and imports in `__init__.pyi` that re-export the pure-Python API (`Domain`, `CalendarTimeline`, `as_np`, ...).
+- `__all__` and imports in `__init__.pyi` that re-export the pure-Python API (`Domain`, `timeline`, `as_np`, ...).
 - An implementation signature after any module-level `@overload` group (e.g. `time.isnever`). Without one, griffe drops the function and it disappears from the API docs.
 - Docstrings on module constants (e.g. `time.NEVER`, `mpi.RANK`), so mkdocstrings renders them.
 

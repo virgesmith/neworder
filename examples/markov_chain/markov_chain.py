@@ -1,4 +1,5 @@
 import time
+from collections.abc import Iterable
 
 import numpy as np
 import numpy.typing as npt
@@ -15,7 +16,7 @@ class MarkovChainBase(no.Model):
     matrices) and its own matrix validation.
     """
 
-    def __init__(self, timeline: no.Timeline, npeople: int, states: npt.NDArray[np.int64]) -> None:
+    def __init__(self, timeline: Iterable[no.timeline.Timestep], npeople: int, states: npt.NDArray[np.int64]) -> None:
         super().__init__(timeline, no.MonteCarlo.deterministic_identical_stream)
 
         self.npeople = npeople
@@ -24,12 +25,21 @@ class MarkovChainBase(no.Model):
 
         self.summary = pd.DataFrame(columns=states, dtype=np.int64)
         self.summary.loc[0] = self._state_counts()
+        # the time of each row of the summary, recorded as the steps are taken
+        self.t: list[float] = []
+
+    def _record(self) -> None:
+        """Appends the state counts at the end of the current step to the summary"""
+        if not self.t:
+            self.t.append(self.timestep.start)
+        self.t.append(self.timestep.end)
+        self.summary.loc[len(self.summary)] = self._state_counts()
 
     def _state_counts(self) -> pd.Series:
         return self.pop.state.value_counts().reindex(self.states, fill_value=0)
 
     def finalise(self) -> None:
-        self.summary["t"] = np.arange(self.timeline.start, self.timeline.end + 1e-8, self.timeline.dt)
+        self.summary["t"] = self.t
         self.summary.reset_index(drop=True, inplace=True)
 
     @staticmethod
@@ -51,7 +61,7 @@ class MarkovChain(MarkovChainBase):
 
     def __init__(
         self,
-        timeline: no.Timeline,
+        timeline: Iterable[no.timeline.Timestep],
         npeople: int,
         states: npt.NDArray[np.int64],
         transition_matrix: npt.NDArray[np.float64],
@@ -96,7 +106,7 @@ class MarkovChain(MarkovChainBase):
             self.pop["state"] = no.df.transition(self.mc, self.transition_matrix, self.pop["state"])
         self.transition_time_s += time.perf_counter() - t0
 
-        self.summary.loc[len(self.summary)] = self._state_counts()
+        self._record()
 
     # !step_pooled!
 
@@ -128,7 +138,7 @@ class ConditionalMarkovChain(MarkovChainBase):
 
     def __init__(
         self,
-        timeline: no.Timeline,
+        timeline: Iterable[no.timeline.Timestep],
         npeople: int,
         states: npt.NDArray[np.int64],
         group_transition_matrices: dict[str, npt.NDArray[np.float64]],
@@ -148,7 +158,7 @@ class ConditionalMarkovChain(MarkovChainBase):
         self.pop["state"] = no.df.transition_conditional(
             self.mc, self.group_transition_matrices, self.pop["group"], self.pop["state"]
         )
-        self.summary.loc[len(self.summary)] = self._state_counts()
+        self._record()
 
     # !step_conditional!
 
