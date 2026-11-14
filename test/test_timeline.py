@@ -1,6 +1,6 @@
 from collections.abc import Iterable, Iterator
 from datetime import date
-from itertools import islice
+from itertools import count, islice
 from types import GeneratorType
 
 import numpy as np
@@ -82,14 +82,7 @@ def test_linear() -> None:
 
 
 def test_numeric() -> None:
-    assert list(no.timeline.numeric([0, 1, 3, 7])) == [(1, 0.0, 1.0, 1.0), (2, 1.0, 3.0, 2.0), (3, 3.0, 7.0, 4.0)]
-    steps = list(no.timeline.numeric(np.linspace(0.0, 1.0, 17)))
-    assert [s.end for s in steps] == [i / 16 for i in range(1, 17)]
-    assert all(s.dt == 1 / 16 for s in steps)
-
-
-def test_numeric_equal_steps() -> None:
-    steps = list(no.timeline.numeric(start=2025.0, step=0.25, end=2026.0))
+    steps = list(no.timeline.numeric(2025.0, step=0.25, end=2026.0))
     assert [(s.start, s.end) for s in steps] == [
         (2025.0, 2025.25),
         (2025.25, 2025.5),
@@ -100,7 +93,8 @@ def test_numeric_equal_steps() -> None:
 
     # start + n * step falls just short of end, which mustn't produce an extra step
     assert 3 * 0.3 < 0.9
-    steps = list(no.timeline.numeric(start=0.0, step=0.3, end=0.9))
+    # start defaults to zero
+    steps = list(no.timeline.numeric(step=0.3, end=0.9))
     assert [(s.start, s.end) for s in steps] == [(0.0, 0.3), (0.3, 0.6), (0.6, 0.9)]
 
     # end of zero isn't treated as open-ended
@@ -116,6 +110,42 @@ def test_numeric_equal_steps() -> None:
     assert last == (1000, 0.1 * 999, 0.1 * 1000, 0.1)
 
 
+def test_sequence() -> None:
+    steps = no.timeline.sequence([0, 1, 3, 7])
+    assert isinstance(steps, GeneratorType)
+    assert list(steps) == [(1, 0, 1, 1.0), (2, 1, 3, 2.0), (3, 3, 7, 4.0)]
+    steps = list(no.timeline.sequence(np.linspace(0.0, 1.0, 17)))
+    assert [s.end for s in steps] == [i / 16 for i in range(1, 17)]
+    assert all(type(s.dt) is float and s.dt == 1 / 16 for s in steps)
+
+    # points of any type, given a function for the length of a step
+    dates = [date(2020, 1, 1), date(2020, 3, 1), date(2021, 3, 1)]
+    steps = list(no.timeline.sequence(dates, dt=lambda start, end: (end - start).days / 365))
+    assert steps == [(1, dates[0], dates[1], 60 / 365), (2, dates[1], dates[2], 1.0)]
+    # the default length is the difference, which isn't a number for dates
+    with pytest.raises(TypeError):
+        list(no.timeline.sequence(dates))
+
+    # any iterable, including an open-ended one
+    assert list(islice(no.timeline.sequence(2**i for i in count()), 3)) == [
+        (1, 1, 2, 1.0),
+        (2, 2, 4, 2.0),
+        (3, 4, 8, 4.0),
+    ]
+    # fewer than two points is no steps
+    assert list(no.timeline.sequence([2020])) == []
+
+    # steps are validated as they're reached
+    steps = no.timeline.sequence([2019, 2020, 2020])
+    assert next(steps) == (1, 2019, 2020, 1.0)
+    with pytest.raises(ValueError, match="step 2"):
+        next(steps)
+    with pytest.raises(ValueError, match="step 1"):
+        list(no.timeline.sequence([2021, 2020]))
+    with pytest.raises(ValueError, match="step 1"):
+        list(no.timeline.sequence([0.0, float("nan"), 2.0]))
+
+
 def test_calendar() -> None:
     # monthly steps, checking the day of the month is only adjusted in months with fewer days
     dim = [31, 29, 31, 30, 31, 30, 31]
@@ -129,7 +159,7 @@ def test_calendar() -> None:
             # dt is the length of the step in years, ACT/365
             assert dt == (t1 - t0).days / 365
 
-    steps = list(no.timeline.calendar(start=date(2020, 1, 31), step=relativedelta(months=1), end=date(2020, 5, 31)))
+    steps = list(no.timeline.calendar(date(2020, 1, 31), step=relativedelta(months=1), end=date(2020, 5, 31)))
     assert [(s.end, s.dt) for s in steps] == [
         (date(2020, 2, 29), 29 / 365),
         (date(2020, 3, 31), 31 / 365),
@@ -175,18 +205,13 @@ def test_validation() -> None:
         no.timeline.linear(2020, end=2020)
     with pytest.raises(ValueError):
         no.timeline.linear(2020, end=2019)
-    with pytest.raises(ValueError):
-        no.timeline.numeric([2021, 2020])
-    with pytest.raises(ValueError, match="index 2"):
-        no.timeline.numeric([2019, 2020, 2020])
-    with pytest.raises(ValueError):
-        no.timeline.numeric([2020])
-    with pytest.raises(ValueError, match="index 1"):
-        no.timeline.numeric([0.0, float("nan"), 2.0])
+    # explicit time points are for sequence
     with pytest.raises(TypeError):
-        no.timeline.numeric([2020, 2021], start=2020, step=1)
+        no.timeline.numeric([2020.0, 2021.0], step=1.0)  # ty:ignore[invalid-argument-type]
     with pytest.raises(TypeError):
-        no.timeline.numeric(start=2020.0)
+        no.timeline.numeric(2020.0)  # ty:ignore[missing-argument]
+    with pytest.raises(TypeError):
+        no.timeline.numeric(0.0, 0.1)  # ty:ignore[too-many-positional-arguments, missing-argument]
     with pytest.raises(ValueError):
         no.timeline.numeric(start=2020.0, step=0.0)
     with pytest.raises(ValueError):
@@ -429,3 +454,12 @@ def test_strided_arrays() -> None:
     assert no.time.isnever(a[::2]).tolist() == [False, False]
     assert no.time.isnever(a[1::2]).tolist() == [True, True]
     assert no.time.isnever(a[::-1]).tolist() == [True, False, True, False]
+
+
+def test_timeline_must_yield_timesteps() -> None:
+    # e.g. a sequence of times rather than of steps
+    for timeline in ([0.0, 0.5, 2.0], [(1, 0.0, 0.5, 0.5)], np.linspace(0.0, 1.0, 5)):
+        m = RecordingModel(timeline)  # ty:ignore[invalid-argument-type]
+        with pytest.raises(TypeError, match=r"must yield neworder\.Timestep"):
+            no.run(m)
+        assert m.steps == []

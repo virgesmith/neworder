@@ -22,7 +22,7 @@ out_migration_rate_data = "examples/people/migration-out.csv"
 
 # define the evolution timeline
 start_date = date(2011, 1, 1)
-timeline = neworder.timeline.calendar(start=start_date, step=relativedelta(years=1), end=date(2051, 1, 1))
+timeline = neworder.timeline.calendar(start_date, step=relativedelta(years=1), end=date(2051, 1, 1))
 
 # create the model
 population = Population(

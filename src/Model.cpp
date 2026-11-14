@@ -74,7 +74,14 @@ bool no::Model::run(Model& model) {
       model.finalise();
       break;
     }
-    model.m_timestep = nb::steal(next);
+    nb::object step = nb::steal(next);
+    // imported here, as neworder.timeline itself imports this module
+    if (!nb::isinstance(step, nb::module_::import_("neworder.timeline").attr("Timestep"))) {
+      throw nb::type_error(("timeline must yield neworder.Timestep, got %% (%%)"s % nb::type_name(step.type()).c_str() %
+                            nb::repr(step).c_str())
+                               .c_str());
+    }
+    model.m_timestep = std::move(step);
     const std::string timestep = nb::repr(model.m_timestep).c_str();
 
     no::log("%% %%.step()"s % timestep % model_name);

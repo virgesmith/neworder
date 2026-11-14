@@ -8,6 +8,7 @@ import gc
 import re
 import warnings
 from collections.abc import Callable, Iterator
+from datetime import date
 from typing import Any
 
 import numpy as np
@@ -261,12 +262,12 @@ def test_timeline_must_be_iterable() -> None:
 
 
 def test_timestep_is_passed_through() -> None:
-    """The model's timestep is whatever the timeline yields, unconverted"""
-    steps = [np.float32(0.5), "two"]
+    """The model's timestep is the object the timeline yields, unconverted, whatever the types of its fields"""
+    steps = [no.Timestep(1, np.float32(0.5), "two", 1.0), no.Timestep(2, None, date(2026, 1, 1), 0.5)]
 
     class M(no.Model):
         def __init__(self) -> None:
-            super().__init__(iter(steps))  # ty: ignore[invalid-argument-type]
+            super().__init__(iter(steps))
             self.seen: list[Any] = []
 
         def step(self) -> None:

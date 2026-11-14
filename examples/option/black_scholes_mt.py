@@ -17,7 +17,7 @@ class BlackScholesMT(neworder.Model):
 
     def __init__(self, option: Option, market: Market, nsims: int, index: int) -> None:
         # Using exact MC calc of GBM requires only 1 timestep
-        timeline = neworder.timeline.numeric([0.0, option.expiry])
+        timeline = neworder.timeline.numeric(0.0, step=option.expiry, end=option.expiry)
         # ensures all threads have identical random streams
         super().__init__(timeline, neworder.MonteCarlo.deterministic_identical_stream)
 
