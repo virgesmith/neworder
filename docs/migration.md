@@ -15,7 +15,7 @@ The classes become factory functions in `neworder.timeline`. Each takes `start` 
 `NoTimeline()` | `timeline.null()`
 `LinearTimeline(0, 10, 10)`, integer unit steps | `timeline.linear(0, end=10)`
 `LinearTimeline(0.0, 1.0, 4)`, any other steps | `timeline.numeric(0.0, step=0.25, end=1.0)`
-`LinearTimeline(2020, 1)`, open-ended | `timeline.linear(2020)`, or `timeline.numeric(2020.0, step=...)`
+`LinearTimeline(2020, 1)`, open-ended | `timeline.linear(2020)`, or `timeline.numeric(2020.0, step=1.0)`
 `NumericTimeline([0.0, 0.5, 2.0])` | `timeline.sequence([0.0, 0.5, 2.0])`
 `CalendarTimeline(start, step, end=end)` | `timeline.calendar(start, step=step, end=end)`
 a subclass of `neworder.Timeline` | a generator function, or a list, of `Timestep` (see [custom timelines](overview.md#custom-timelines))
