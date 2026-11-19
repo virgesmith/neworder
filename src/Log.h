@@ -91,6 +91,5 @@ namespace no {
 
 void log(const std::string& msg);
 void warn(const std::string& msg);
-void future_warn(const std::string& msg);
 
 } // namespace no

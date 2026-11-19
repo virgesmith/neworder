@@ -291,6 +291,7 @@ In order to construct a functioning model, the minimal requirements of the model
 
 the following can also be optionally implemented in the model:
 
+- set a seeding policy for the random stream (3 are provided, but you can create your own)
 - a `modify` method, which is called once, at the start of the first model run (not when a halted model is resumed), and can be used for instance to modify the input data for different processes in a parallel run, for batch processing or sensitivity analysis.
 - a `check` method, which is run at every timestep, to e.g. perform checks simulation remains plausible.
 - a `finalise` method, which is called once, after the last step of the timeline, and is commonly used to post-process the raw model data. It isn't called when the model halts, so a model with an open-ended timeline never finalises unless user code calls `finalise` explicitly.
