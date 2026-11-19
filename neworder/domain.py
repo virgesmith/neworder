@@ -129,7 +129,7 @@ class Space(Domain):
         if ungroup:
             p = np.split(p, self.dim, axis=1)
             v = np.split(v, self.dim, axis=1)
-        return p, v  # ty:ignore[invalid-return-type]
+        return p, v  # ty:ignore[invalid-explicit-return]
 
     def dists2(
         self,

@@ -79,7 +79,7 @@ class RiskPaths(neworder.Model):
         ] = neworder.time.NEVER
 
         # count unions entered into
-        self.population.Unions = (~neworder.time.isnever(self.population["T_Union1Start"].to_numpy())).astype(int) + (  # ty:ignore[unresolved-attribute]
+        self.population.Unions = (~neworder.time.isnever(self.population["T_Union1Start"].to_numpy())).astype(int) + (  # ty:ignore[missing-attribute]
             ~neworder.time.isnever(self.population["T_Union2Start"].to_numpy())
         ).astype(int)
 

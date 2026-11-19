@@ -75,7 +75,7 @@ These changes don't raise errors, so check for them in your model:
 
 ## Statistical functions
 
-Replace the `neworder.stats` functions with their `scipy.special` equivalents (`scipy` is installed with neworder):
+Replace the removed `neworder.stats` functions with their `scipy.special` equivalents (`scipy` is installed with neworder):
 
 1.x | 2.0
 ----|----

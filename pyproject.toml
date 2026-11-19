@@ -9,7 +9,7 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "neworder"
-version = "2.0.0"
+version = "2.0.0b1"
 authors = [
   { name="Andrew Smith", email="andrew@friarswood.net" },
 ]
@@ -37,7 +37,7 @@ dev = [
   "pytest>=9.0.3",
   "ruff",
   "pre-commit>=4.5.1",
-  "ty>=0.0.34",
+  "ty>=0.0.107",
   "requests>=2.34.2",  # only needed by docs, but in dev to prevent ty from complaining about docs/macros.py
 ]
 # separate from dev because zensical has no free-threaded wheels, so would be built from source on 3.14t

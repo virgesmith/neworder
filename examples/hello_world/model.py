@@ -77,7 +77,7 @@ class HelloWorld(neworder.Model):
         Returns: NoneType
         """
         # randomly make some people talkative
-        self.population.talkative = self.mc.hazard(self.p_talk, len(self.population)).astype(bool)  # ty:ignore[unresolved-attribute]
+        self.population.talkative = self.mc.hazard(self.p_talk, len(self.population)).astype(bool)  # ty:ignore[missing-attribute]
 
     # !step!
 

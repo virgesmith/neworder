@@ -40,8 +40,8 @@ class Population(neworder.Model):
         self.out_migration = pd.read_csv(out_migration_file, index_col=[0, 1, 2])
 
         # make gender and age categorical
-        self.population.DC1117EW_C_AGE = self.population.DC1117EW_C_AGE.astype("category")  # ty:ignore[unresolved-attribute]
-        self.population.DC1117EW_C_SEX = self.population.DC1117EW_C_SEX.astype("category")  # ty:ignore[unresolved-attribute]
+        self.population.DC1117EW_C_AGE = self.population.DC1117EW_C_AGE.astype("category")  # ty:ignore[missing-attribute]
+        self.population.DC1117EW_C_SEX = self.population.DC1117EW_C_SEX.astype("category")  # ty:ignore[missing-attribute]
 
         # actual age is randomised within the bound of the category (NB category values are age +1)
         self.population["Age"] = self.population.DC1117EW_C_AGE.astype(int) - self.mc.ustream(len(self.population))

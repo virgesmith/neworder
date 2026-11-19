@@ -99,7 +99,7 @@ class PeopleContinuous(neworder.Model):
 
     # !cont_step!
     def step(self) -> None:
-        self.population.age_at_death = self.mc.first_arrival(  # ty:ignore[unresolved-attribute]
+        self.population.age_at_death = self.mc.first_arrival(  # ty:ignore[missing-attribute]
             self.mortality_hazard.Rate.to_numpy(), self.dt, len(self.population)
         )
 

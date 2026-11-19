@@ -39,7 +39,7 @@ class People(no.Model):
             self.population[col] = births[:, i]
             # remove births that would have occured after death
             self.population.loc[self.population[col] > self.population.time_of_death, col] = no.time.NEVER
-            self.population.parity = self.population.parity + ~no.time.isnever(self.population[col].to_numpy())  # ty:ignore[unresolved-attribute]
+            self.population.parity = self.population.parity + ~no.time.isnever(self.population[col].to_numpy())  # ty:ignore[missing-attribute]
 
     def finalise(self) -> None:
         # compute means

@@ -91,14 +91,14 @@ class Boids3d(no.Model):
         self._normalise()
 
         # set colours
-        self.boids.c = 0  # ty:ignore[unresolved-attribute]
+        self.boids.c = 0  # ty:ignore[missing-attribute]
         self.boids.loc[in_range[0 : self.N_predators].sum(axis=0) != 0, "c"] = 1
         self.boids.loc[too_close[0 : self.N_predators].sum(axis=0) != 0, "c"] = 2
         self.boids.loc[0 : self.N_predators - 1, "c"] = 3
 
         (
-            (self.boids.x, self.boids.y, self.boids.z),  # ty:ignore[unresolved-attribute]
-            (self.boids.vx, self.boids.vy, self.boids.vz),  # ty:ignore[unresolved-attribute]
+            (self.boids.x, self.boids.y, self.boids.z),  # ty:ignore[missing-attribute]
+            (self.boids.vx, self.boids.vy, self.boids.vz),  # ty:ignore[missing-attribute]
         ) = self.domain.move(
             (self.boids.x, self.boids.y, self.boids.z),
             (self.boids.vx, self.boids.vy, self.boids.vz),
@@ -117,9 +117,9 @@ class Boids3d(no.Model):
         mean_vy = (in_range * self.boids.vy.to_numpy()) @ weights
         mean_vz = (in_range * self.boids.vz.to_numpy()) @ weights
 
-        self.boids.vx += mean_vx * Boids3d.ALIGN_COEFF  # ty:ignore[unresolved-attribute]
-        self.boids.vy += mean_vy * Boids3d.ALIGN_COEFF  # ty:ignore[unresolved-attribute]
-        self.boids.vz += mean_vz * Boids3d.ALIGN_COEFF  # ty:ignore[unresolved-attribute]
+        self.boids.vx += mean_vx * Boids3d.ALIGN_COEFF  # ty:ignore[missing-attribute]
+        self.boids.vy += mean_vy * Boids3d.ALIGN_COEFF  # ty:ignore[missing-attribute]
+        self.boids.vz += mean_vz * Boids3d.ALIGN_COEFF  # ty:ignore[missing-attribute]
 
     def _cohere(
         self,
@@ -134,9 +134,9 @@ class Boids3d(no.Model):
         y = (in_range * dy) @ weights
         z = (in_range * dz) @ weights
 
-        self.boids.vx += x * Boids3d.COHERE_COEFF  # ty:ignore[unresolved-attribute]
-        self.boids.vy += y * Boids3d.COHERE_COEFF  # ty:ignore[unresolved-attribute]
-        self.boids.vz += z * Boids3d.COHERE_COEFF  # ty:ignore[unresolved-attribute]
+        self.boids.vx += x * Boids3d.COHERE_COEFF  # ty:ignore[missing-attribute]
+        self.boids.vy += y * Boids3d.COHERE_COEFF  # ty:ignore[missing-attribute]
+        self.boids.vz += z * Boids3d.COHERE_COEFF  # ty:ignore[missing-attribute]
 
     def _separate(
         self,
@@ -149,9 +149,9 @@ class Boids3d(no.Model):
         # TODO clip d2?
         # impact on v is proportional to 1/f
         f = Boids3d.SEPARATE_COEFF / d2 * in_range
-        self.boids.vx += (f * dx).sum(axis=0)  # ty:ignore[unresolved-attribute]
-        self.boids.vy += (f * dy).sum(axis=0)  # ty:ignore[unresolved-attribute]
-        self.boids.vz += (f * dz).sum(axis=0)  # ty:ignore[unresolved-attribute]
+        self.boids.vx += (f * dx).sum(axis=0)  # ty:ignore[missing-attribute]
+        self.boids.vy += (f * dy).sum(axis=0)  # ty:ignore[missing-attribute]
+        self.boids.vz += (f * dz).sum(axis=0)  # ty:ignore[missing-attribute]
 
     def _avoid(
         self,
@@ -162,15 +162,15 @@ class Boids3d(no.Model):
         dz: npt.NDArray[np.float64],
     ) -> None:
         f = Boids3d.AVOID_COEFF / d2[0 : self.N_predators, :] * in_range[0 : self.N_predators, :]
-        self.boids.vx += (f * dx[0 : self.N_predators, :]).sum(axis=0)  # ty:ignore[unresolved-attribute]
-        self.boids.vy += (f * dy[0 : self.N_predators, :]).sum(axis=0)  # ty:ignore[unresolved-attribute]
-        self.boids.vz += (f * dz[0 : self.N_predators, :]).sum(axis=0)  # ty:ignore[unresolved-attribute]
+        self.boids.vx += (f * dx[0 : self.N_predators, :]).sum(axis=0)  # ty:ignore[missing-attribute]
+        self.boids.vy += (f * dy[0 : self.N_predators, :]).sum(axis=0)  # ty:ignore[missing-attribute]
+        self.boids.vz += (f * dz[0 : self.N_predators, :]).sum(axis=0)  # ty:ignore[missing-attribute]
 
     def _revert(self) -> None:
         """Return to the origin"""
-        self.boids.vx -= (self.boids.x - self.range / 2) * Boids3d.REVERT_COEFF  # ty:ignore[unresolved-attribute]
-        self.boids.vy -= (self.boids.y - self.range / 2) * Boids3d.REVERT_COEFF  # ty:ignore[unresolved-attribute]
-        self.boids.vz -= (self.boids.z - self.range / 2) * Boids3d.REVERT_COEFF  # ty:ignore[unresolved-attribute]
+        self.boids.vx -= (self.boids.x - self.range / 2) * Boids3d.REVERT_COEFF  # ty:ignore[missing-attribute]
+        self.boids.vy -= (self.boids.y - self.range / 2) * Boids3d.REVERT_COEFF  # ty:ignore[missing-attribute]
+        self.boids.vz -= (self.boids.z - self.range / 2) * Boids3d.REVERT_COEFF  # ty:ignore[missing-attribute]
 
     def _normalise(self) -> None:
         # normalise speed
@@ -179,9 +179,9 @@ class Boids3d(no.Model):
             a_min=0.00001,
             a_max=None,
         )
-        self.boids.vx *= self.speed / norm  # ty:ignore[unresolved-attribute]
-        self.boids.vy *= self.speed / norm  # ty:ignore[unresolved-attribute]
-        self.boids.vz *= self.speed / norm  # ty:ignore[unresolved-attribute]
+        self.boids.vx *= self.speed / norm  # ty:ignore[missing-attribute]
+        self.boids.vy *= self.speed / norm  # ty:ignore[missing-attribute]
+        self.boids.vz *= self.speed / norm  # ty:ignore[missing-attribute]
 
         # predators are faster
         self.boids.loc[0 : self.N_predators - 1, "vx"] *= 1.5
@@ -239,4 +239,4 @@ def _project(a: pd.Series[np.float64], z: pd.Series[np.float64], c: float) -> pd
 
 
 def _size(z: pd.Series[np.float64]) -> pd.Series[np.float64]:
-    return 5.0 / (0.5 + z)  # np.clip(.5 + z, a_min=0.1, a_max=None)  # ty:ignore[invalid-return-type]
+    return 5.0 / (0.5 + z)  # np.clip(.5 + z, a_min=0.1, a_max=None)  # ty:ignore[invalid-explicit-return]

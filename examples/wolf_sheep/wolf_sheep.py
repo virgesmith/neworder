@@ -129,7 +129,7 @@ class WolfSheep(no.Model):
 
     def __step_grass(self) -> None:
         # grow grass
-        self.grass.countdown = np.clip(self.grass.countdown - 1, 0, None)  # ty:ignore[unresolved-attribute]
+        self.grass.countdown = np.clip(self.grass.countdown - 1, 0, None)  # ty:ignore[missing-attribute]
 
     def __step_wolves(self) -> None:
         # move wolves (wrapped) and update cell
