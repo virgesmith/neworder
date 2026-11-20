@@ -10,15 +10,16 @@ To help users familiarise themselves with the framework, a number of detailed ex
 
 ## Provision
 
-At at it heart, *neworder* simply provides a mechanism to iterate over a timeline and perform user-specified operations at each point on the timeline, with the help of a library of statistical and data manipulation functions.
+At its heart, *neworder* simply provides a mechanism to iterate over a timeline and perform user-specified operations at each point on the timeline, with the help of a library of statistical and data manipulation functions.
 
 This is provided by:
 
 - a **Model** base class: providing the skeleton on which users implement their models
 - a **Timeline**: the time horizon over which to run the model
 - an optional spatial domain, which can be continuous (`Space`), discrete (`StateGrid`), or a graph (`GeospatialGraph`).
-- a random number stream that a model constructs if it needs one, with seeding strategies for parallel streams. neworder provides a `MonteCarlo` engine based in MT19937, and `SplitMix64` hash-based engine for individual-level reproducibility.
-- a library of Monte-Carlo methods and statistical functions, plus compatibility with `numpy`'s statistical functionality through an adapter
+- **random number generators**, which a model constructs if it needs them (either or both), with seeding strategies for reproducible or independent parallel streams:
+    - `MonteCarlo`: a Mersenne Twister (MT19937) stream with efficient sampling methods, which can also drive `numpy`'s distributions through an adapter
+    - `SplitMix64`: a hash-based generator that keys draws on individuals, so each individual's results are reproducible however the population changes
 - data manipulation functions optimised for *pandas* DataFrames
 - support for parallel execution using MPI (via the `mpi4py` package), or alternatively using multithreading.
 
