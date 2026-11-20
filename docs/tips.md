@@ -111,27 +111,23 @@ draws = self.rng.uarray(person_ids, neworder.SplitMix64.hash64("mortality"), sel
 
 `raw` takes the same arguments as `uarray` and returns the same shape, but gives you the underlying 64-bit hashes as `int64` (spanning the full signed range) instead of mapping them onto `U[0,1)`.
 
-Its main use is seeding. Keying a `MonteCarlo` seed on the model identity and the timestep gives each step its own stream, so a step's draws no longer depend on how many were taken before it:
+Its main use is seeding. Keying a `MonteCarlo` seed on the model identity and a counter gives each step its own stream, so a step's draws no longer depend on how many were taken before it:
 
 ```python
 class StepwiseStreams(neworder.Model):
     def __init__(self) -> None:
         super().__init__(neworder.timeline.linear(0, end=10))
         # initialise the seed source deterministically
-        seed_source = neworder.SplitMix64(neworder.MonteCarlo.deterministic_independent_stream)
+        seed_source = neworder.SplitMix64(neworder.MonteCarlo.deterministic_independent_stream, use_counter=True)
         # this ensures this model's variates are independent of any other model's
         id = neworder.SplitMix64.hash64(self.__class__.__name__)
-        # the seeder is first called when the engine is constructed, before the first step, when self.timestep is
-        # None: keep the step index in a plain attribute instead
-        self.step_index = 0
-
+        # return a seed, use_counter ensures independence
         def seeder() -> np.int32:
-            return seed_source.raw(id, self.step_index).astype(np.int32)
+            return seed_source.raw(id).astype(np.int32)
 
         self.mc = neworder.MonteCarlo(seeder)
 
     def step(self) -> None:
-        self.step_index = self.timestep.index
         self.mc.reset()  # re-seeds from the current timestep
         ...
 ```
@@ -140,6 +136,9 @@ Each step's stream is reproducible in isolation - `raw(id, 3)` yields the step-3
 
 !!! note "Narrowing to `int32`"
     The `MonteCarlo` seeder must return a value that fits in `int32`, so the `int64` from `raw` needs narrowing - `astype` wraps to the low 32 bits, which is fine for a seed. A type checker will flag the return as `ndarray` rather than `np.int32`; suppress it at the call site.
+
+!!! warning "Seeders and timelines that refer to their model"
+    A seeder, or a timeline generator that hasn't run to completion, that refers to its model (e.g. via `self`) keeps it alive until the process exits, which only matters if you construct many models in one process.
 
 ### Repeated calls with the same arguments
 
