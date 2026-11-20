@@ -22,6 +22,53 @@ Entry template:
 
 ---
 
+## 2026-11-20 — `MonteCarlo` is no longer a member of `Model` (#134)
+
+**Why** — Every model got a `MonteCarlo` engine whether it needed one or not, seeded by an optional second argument to
+`Model.__init__`. `SplitMix64`, the other random engine, was already a plain object that models construct and hold
+themselves, so the two worked differently for no good reason. Construction inside the base class also forced awkward
+ordering: a seeder reading model state needed that state set *before* `super().__init__()`, as the `StepwiseStreams`
+example in `docs/tips.md` showed.
+
+**What** — `Model(timeline)` takes only a timeline, and its `mc` property is gone. `MonteCarlo` is constructible from
+Python, `MonteCarlo(seeder=MonteCarlo.deterministic_independent_stream)`, and models construct it themselves,
+conventionally as `self.mc`. It logs its seed when verbose (this used to be part of the model's init log line). All
+examples, tests, docs and the bundled skill are converted; tests that only built a bare `Model` to get at `.mc` now use
+`mc`/`indep_mc` fixtures, and the seeder tests moved from `test_model.py` to `test_mc.py`.
+
+**Design decisions**
+- The default seeder stays `deterministic_independent_stream`, so MPI runs still get independent streams without the
+  user choosing.
+- Both 1.x forms fail loudly: `super().__init__(timeline, seeder)` raises `TypeError` and an unconstructed `self.mc`
+  raises `AttributeError`. Covered in a "Random numbers" section of `docs/migration.md`.
+- The seeder is still held in a `std::function`, wrapped by the binding's `__init__` with the int32 result check, as
+  `SplitMix64` does. Reference cycles through it remain uncollectable (#140).
+
+## 2026-11-20 — `RunState.FAILED`; `numeric` tolerance no longer scales with the times (#134)
+
+**Why** — Two review findings. (1) An exception during a run left the model `RUNNING`, so running it again treated it
+as a resume. After the timeline raised, Python had closed its generator, so the re-run saw an exhausted timeline and
+finalised a truncated run as if it had completed. After a non-`Timestep` item or a failed `step()`, it silently carried
+on past the failure. (2) `numeric`'s whole-number-of-steps check used `isclose`'s default relative tolerance, which
+grows with the size of the times: `numeric(1.7e9, step=0.5, end=1.7e9+1.2)` was accepted with a last step that
+misreported `dt`, and `numeric(1e9, step=1.0, end=1e9+0.4)` gave an empty timeline.
+
+**What** — `Model.run` catches any exception escaping the run (timeline, `modify`, `step`, `check`, `finalise`), sets
+the new terminal `RunState.FAILED` and re-raises; a later run raises `RuntimeError`. The run loop moved into a private
+`run_steps` so the handler wraps it in one place. `numeric` checks `|start + n*step - end|` against
+`max(1e-9 * step, 4 * ulp(max(|start|, |end|)))`, and rejects `n < 1`.
+
+**Design decisions**
+- Every exception is terminal, not just timeline errors — making `step()` errors resumable would mean two behaviours to
+  explain, and a step that raised has left the model half-modified, so resuming is rarely meaningful. This replaces the
+  previous "a re-run skips the failed step" migration note. `halt()` and a falsy `check()` remain resumable: they're
+  deliberate stops, not errors.
+- A new enum value rather than reusing `COMPLETED`, which means `finalise()` was called, and gives a misleading
+  `StopIteration` message. `FAILED` is appended (value 4), so the existing values are unchanged.
+- The `numeric` tolerance is relative to the step, but floored at a few ulps of the endpoints: they can't be represented
+  more precisely than that, so a purely step-relative tolerance rejects valid large-time timelines such as
+  `numeric(1.7e9 + 0.1, step=0.1, end=1.7e9 + 0.3)`.
+
 ## 2026-11-19 — Rebase the 2.0 timeline work onto 1.8 (#134)
 
 **Why** — #137 (the 1.x notice of the 2.0 timeline changes) was merged to `main` after this branch was cut. Its

@@ -11,7 +11,8 @@ class PeopleDiscrete(neworder.Model):
     def __init__(self, mortality_hazard_file: str, n: int, max_age: int) -> None:
         # This is case-based model the timeline refers to the age of the cohort
         timeline = neworder.timeline.linear(0, end=max_age)
-        super().__init__(timeline, neworder.MonteCarlo.deterministic_identical_stream)
+        super().__init__(timeline)
+        self.mc = neworder.MonteCarlo(neworder.MonteCarlo.deterministic_identical_stream)
 
         # initialise cohort
         self.mortality_hazard = pd.read_csv(mortality_hazard_file)
@@ -79,7 +80,8 @@ class PeopleContinuous(neworder.Model):
 
     def __init__(self, mortality_hazard_file: str, n: int, dt: float) -> None:
         # Direct sampling doesnt require a timeline
-        super().__init__(neworder.timeline.null(), neworder.MonteCarlo.deterministic_identical_stream)
+        super().__init__(neworder.timeline.null())
+        self.mc = neworder.MonteCarlo(neworder.MonteCarlo.deterministic_identical_stream)
         # initialise cohort
         self.mortality_hazard = pd.read_csv(mortality_hazard_file)
 

@@ -3,7 +3,7 @@
 ## Model Initialisation
 
 !!! warning "Base Model Initialisation"
-    When instantiating the model subclass, it is essential that the `neworder.Model` base class is explicitly initialised. It must be supplied with a timeline (an iterable of steps, e.g. from the `neworder.timeline` factories) and (optionally) a seeding function for the Monte-Carlo engine. Failure to do this will result in a runtime error.
+    When instantiating the model subclass, it is essential that the `neworder.Model` base class is explicitly initialised. It must be supplied with a timeline (an iterable of steps, e.g. from the `neworder.timeline` factories). Failure to do this will result in a runtime error. A model that needs random numbers then constructs its own `neworder.MonteCarlo` engine, usually as `self.mc`.
 
 Ensure the `neworder.Model` base class is properly initialised:
 
@@ -46,12 +46,13 @@ def hybrid_seeder() -> int:
     return (neworder.mpi.RANK % 2) + 12345
 ```
 
-which returns the same seed for all odd-ranked processes and a different seed for the even-ranked ones. You can define your seeder inline when you instantiate the `Model`, e.g.
+which returns the same seed for all odd-ranked processes and a different seed for the even-ranked ones. You can define your seeder inline when you construct the `MonteCarlo` engine, e.g.
 
 ```python
 class MyModel(neworder.Model):
     def __init__(self, timeline: Iterable[neworder.timeline.Timestep]) -> None:
-        super().__init__(timeline, lambda: (neworder.mpi.RANK % 2) + 12345)
+        super().__init__(timeline)
+        self.mc = neworder.MonteCarlo(lambda: (neworder.mpi.RANK % 2) + 12345)
         ...
 ```
 
@@ -115,18 +116,19 @@ Its main use is seeding. Keying a `MonteCarlo` seed on the model identity and th
 ```python
 class StepwiseStreams(neworder.Model):
     def __init__(self) -> None:
+        super().__init__(neworder.timeline.linear(0, end=10))
         # initialise the seed source deterministically
         seed_source = neworder.SplitMix64(neworder.MonteCarlo.deterministic_independent_stream)
         # this ensures this model's variates are independent of any other model's
         id = neworder.SplitMix64.hash64(self.__class__.__name__)
-        # the seeder is first called while the base class is being initialised, so it can't read self.timestep:
-        # keep the step index in a plain attribute, set before the base class is initialised
+        # the seeder is first called when the engine is constructed, before the first step, when self.timestep is
+        # None: keep the step index in a plain attribute instead
         self.step_index = 0
 
         def seeder() -> np.int32:
             return seed_source.raw(id, self.step_index).astype(np.int32)
 
-        super().__init__(neworder.timeline.linear(0, end=10), seeder)
+        self.mc = neworder.MonteCarlo(seeder)
 
     def step(self) -> None:
         self.step_index = self.timestep.index
@@ -137,7 +139,7 @@ class StepwiseStreams(neworder.Model):
 Each step's stream is reproducible in isolation - `raw(id, 3)` yields the step-3 seed whether or not the earlier steps ever ran.
 
 !!! note "Narrowing to `int32`"
-    The `Model` seeder must return a value that fits in `int32`, so the `int64` from `raw` needs narrowing - `astype` wraps to the low 32 bits, which is fine for a seed. A type checker will flag the return as `ndarray` rather than `np.int32`; suppress it at the call site.
+    The `MonteCarlo` seeder must return a value that fits in `int32`, so the `int64` from `raw` needs narrowing - `astype` wraps to the low 32 bits, which is fine for a seed. A type checker will flag the return as `ndarray` rather than `np.int32`; suppress it at the call site.
 
 ### Repeated calls with the same arguments
 
@@ -223,7 +225,7 @@ The model's `halt` method can be used to stop the model run. In these situations
 Overriding the `halt` method should not be necessary and is not recommended. The `finalise` method, if needed, must be called explicitly for models with open-ended timelines that have been `halt`ed.
 
 !!! Note "Resuming execution"
-    A model that has previously been `halt`ed but has not reached the end of its timeline can be resumed by passing it to `neworder.run` again. Attempting to resume a model that has reached the end of it's timeline will result in a `StopIteration` exception.
+    A model that has previously been `halt`ed but has not reached the end of its timeline can be resumed by passing it to `neworder.run` again. Attempting to resume a model that has reached the end of its timeline will result in a `StopIteration` exception, and one whose run raised an exception (its `run_state` is `FAILED`) a `RuntimeError`.
 
 ## Deadlocks
 

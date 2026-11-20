@@ -7,7 +7,7 @@ a list or a generator function, works too.
 from collections.abc import Callable, Iterable, Iterator
 from datetime import date
 from itertools import count, pairwise
-from math import isclose
+from math import ulp
 from numbers import Integral
 from typing import Any, NamedTuple
 
@@ -88,8 +88,10 @@ def _equal_steps(start: float, step: float, end: float | None) -> int | None:
         raise ValueError(f"end time ({end}) must be after the start time ({start})")
     # fix the number of steps up front, as start + n * step can fall just short of end
     nsteps = round((end - start) / step)
-    # absolute tolerance is needed when end is zero, where a relative one is meaningless
-    if not isclose(start + nsteps * step, end, abs_tol=1e-9 * step):
+    # relative to the step, not the times, so that large times don't widen it. But start and end themselves are only
+    # accurate to a few ulps, which for large times can exceed the step-relative tolerance
+    tolerance = max(1e-9 * step, 4 * ulp(max(abs(start), abs(end))))
+    if nsteps < 1 or abs(start + nsteps * step - end) > tolerance:
         raise ValueError(f"end - start ({end - start}) is not a whole number of steps ({step})")
     return nsteps
 

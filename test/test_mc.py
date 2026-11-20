@@ -7,32 +7,53 @@ import neworder as no
 
 
 def test_nondeterministic_reset() -> None:
-    m = no.Model(no.timeline.null(), no.MonteCarlo.nondeterministic_stream)
-    seeds = {m.mc.seed()}
+    mc = no.MonteCarlo(no.MonteCarlo.nondeterministic_stream)
+    seeds = {mc.seed()}
     for _ in range(5):
-        m.mc.reset()
-        seeds.add(m.mc.seed())
+        mc.reset()
+        seeds.add(mc.seed())
     assert len(seeds) == 6
 
 
 def test_deterministic_reset() -> None:
-    m = no.Model(no.timeline.null(), no.MonteCarlo.deterministic_identical_stream)
-    seeds = {m.mc.seed()}
+    mc = no.MonteCarlo(no.MonteCarlo.deterministic_identical_stream)
+    seeds = {mc.seed()}
     for _ in range(5):
-        m.mc.reset()
-        seeds.add(m.mc.seed())
+        mc.reset()
+        seeds.add(mc.seed())
     assert len(seeds) == 1
 
 
-def test_mc_property(base_model: no.Model) -> None:
-    base_model.mc.ustream(1)
-    base_model.mc.reset()
+def test_mc_property(mc: no.MonteCarlo) -> None:
+    mc.ustream(1)
+    mc.reset()
 
 
-def test_mc(base_model: no.Model) -> None:
-    x = base_model.mc.ustream(1)
-    base_model.mc.reset()
-    assert x == base_model.mc.ustream(1)
+def test_mc(mc: no.MonteCarlo) -> None:
+    x = mc.ustream(1)
+    mc.reset()
+    assert x == mc.ustream(1)
+
+
+def test_default_seeder() -> None:
+    assert no.MonteCarlo().raw() == no.MonteCarlo(no.MonteCarlo.deterministic_independent_stream).raw()
+    assert no.MonteCarlo().raw() != no.MonteCarlo(lambda: 42).raw()
+
+
+def test_seeder_errors() -> None:
+    assert no.MonteCarlo(lambda: np.int32(7)).seed() == 7  # ty: ignore[invalid-argument-type]
+
+    with pytest.raises(TypeError, match="seeder's result must be an int32"):
+        no.MonteCarlo(lambda: 1.5)  # ty: ignore[invalid-argument-type]
+    with pytest.raises(TypeError, match="seeder's result must be an int32"):
+        no.MonteCarlo(lambda: 2**31)
+    with pytest.raises(ZeroDivisionError):
+        no.MonteCarlo(lambda: 1 // 0)
+
+    seeds = iter([1, "x"])
+    mc = no.MonteCarlo(lambda: next(seeds))  # ty: ignore[invalid-argument-type]
+    with pytest.raises(TypeError, match="seeder's result must be an int32"):
+        mc.reset()
 
 
 def test_seeders() -> None:
@@ -79,91 +100,90 @@ def test_seeders() -> None:
     def seeder() -> int:
         return no.mpi.RANK + 1
 
-    m = no.Model(no.timeline.null(), seeder)
-    assert m.mc.seed() == no.mpi.RANK + 1
+    mc = no.MonteCarlo(seeder)
+    assert mc.seed() == no.mpi.RANK + 1
 
 
-def test_sample(base_model: no.Model) -> None:
+def test_sample(mc: no.MonteCarlo) -> None:
     with pytest.raises(ValueError):
-        base_model.mc.sample(100, np.array([0.9]))
+        mc.sample(100, np.array([0.9]))
     with pytest.raises(ValueError):
-        base_model.mc.sample(100, np.array([-0.1, 1.1]))
+        mc.sample(100, np.array([-0.1, 1.1]))
     with pytest.raises(ValueError):
-        base_model.mc.sample(100, np.array([0.5, 1.5]))
+        mc.sample(100, np.array([0.5, 1.5]))
     with pytest.raises(ValueError):
-        base_model.mc.sample(100, [])
-    assert np.all(base_model.mc.sample(100, np.array([1.0, 0.0, 0.0, 0.0])) == 0)
-    assert np.all(base_model.mc.sample(100, np.array([0.0, 1.0, 0.0, 0.0])) == 1)
-    assert np.all(base_model.mc.sample(100, np.array([0.0, 0.0, 0.0, 1.0])) == 3)
+        mc.sample(100, [])
+    assert np.all(mc.sample(100, np.array([1.0, 0.0, 0.0, 0.0])) == 0)
+    assert np.all(mc.sample(100, np.array([0.0, 1.0, 0.0, 0.0])) == 1)
+    assert np.all(mc.sample(100, np.array([0.0, 0.0, 0.0, 1.0])) == 3)
 
 
-def test_hazard(base_model: no.Model) -> None:
-    assert np.all(base_model.mc.hazard(0.0, 10) == 0.0)
-    assert np.all(base_model.mc.hazard(1.0, 10) == 1.0)
+def test_hazard(mc: no.MonteCarlo) -> None:
+    assert np.all(mc.hazard(0.0, 10) == 0.0)
+    assert np.all(mc.hazard(1.0, 10) == 1.0)
 
     with pytest.raises(ValueError):
-        base_model.mc.hazard(-0.1, 10)
+        mc.hazard(-0.1, 10)
     with pytest.raises(ValueError):
-        base_model.mc.hazard(1.1, 10)
+        mc.hazard(1.1, 10)
     with pytest.raises(ValueError):
-        base_model.mc.hazard(np.array([-0.1, 0.5]))
+        mc.hazard(np.array([-0.1, 0.5]))
     with pytest.raises(ValueError):
-        base_model.mc.hazard(np.array([0.1, 1.2]))
+        mc.hazard(np.array([0.1, 1.2]))
     with pytest.raises(ValueError):
-        base_model.mc.hazard(np.nan, 1)
+        mc.hazard(np.nan, 1)
     with pytest.raises(ValueError):
-        base_model.mc.hazard(np.array([0.1, np.nan]))
+        mc.hazard(np.array([0.1, np.nan]))
 
 
-def test_stopping(base_model: no.Model) -> None:
-    assert np.all(base_model.mc.stopping(0.0, 10) == no.time.FAR_FUTURE)
+def test_stopping(mc: no.MonteCarlo) -> None:
+    assert np.all(mc.stopping(0.0, 10) == no.time.FAR_FUTURE)
 
     with pytest.raises(ValueError):
-        base_model.mc.stopping(-0.1, 10)
+        mc.stopping(-0.1, 10)
     with pytest.raises(ValueError):
-        base_model.mc.stopping(1.1, 10)
+        mc.stopping(1.1, 10)
     with pytest.raises(ValueError):
-        base_model.mc.stopping(np.array([-0.1, 0.5]))
+        mc.stopping(np.array([-0.1, 0.5]))
     with pytest.raises(ValueError):
-        base_model.mc.stopping(np.array([0.1, 1.2]))
+        mc.stopping(np.array([0.1, 1.2]))
     with pytest.raises(ValueError):
-        base_model.mc.stopping(np.nan, 1)
+        mc.stopping(np.nan, 1)
     with pytest.raises(ValueError):
-        base_model.mc.stopping(np.array([0.1, np.nan]))
+        mc.stopping(np.array([0.1, np.nan]))
 
 
-def test_arrivals_validation(base_model: no.Model) -> None:
-    assert np.all(no.time.isnever(base_model.mc.first_arrival([0.0, 0.0], 1.0, 10)))
+def test_arrivals_validation(mc: no.MonteCarlo) -> None:
+    assert np.all(no.time.isnever(mc.first_arrival([0.0, 0.0], 1.0, 10)))
     with pytest.raises(ValueError):
-        base_model.mc.first_arrival(np.array([-1.0, 0.0]), 1.0, 10)
+        mc.first_arrival(np.array([-1.0, 0.0]), 1.0, 10)
     with pytest.raises(ValueError):
-        base_model.mc.first_arrival([1.0, np.nan], 1.0, 10)
+        mc.first_arrival([1.0, np.nan], 1.0, 10)
 
-    assert np.all(no.time.isnever(base_model.mc.next_arrival(np.zeros(10), [0.0, 0.0], 1.0)))
+    assert np.all(no.time.isnever(mc.next_arrival(np.zeros(10), [0.0, 0.0], 1.0)))
     with pytest.raises(ValueError):
-        base_model.mc.next_arrival(np.zeros(10), [-1.0, 0.0], 1.0)
+        mc.next_arrival(np.zeros(10), [-1.0, 0.0], 1.0)
     with pytest.raises(ValueError):
-        base_model.mc.next_arrival(np.zeros(10), [np.nan, np.nan], 1.0)
-
-    with pytest.raises(ValueError):
-        base_model.mc.arrivals([-1.0, 0.0], 1.0, 10, 0.0)
-    with pytest.raises(ValueError):
-        base_model.mc.arrivals([1.0, 1.0], 1.0, 10, 0.0)
-    with pytest.raises(ValueError):
-        base_model.mc.arrivals([np.nan, np.nan], 1.0, 10, 0.0)
+        mc.next_arrival(np.zeros(10), [np.nan, np.nan], 1.0)
 
     with pytest.raises(ValueError):
-        base_model.mc.first_arrival([], 1.0, 10)
+        mc.arrivals([-1.0, 0.0], 1.0, 10, 0.0)
     with pytest.raises(ValueError):
-        base_model.mc.next_arrival(np.zeros(10), [], 1.0)
+        mc.arrivals([1.0, 1.0], 1.0, 10, 0.0)
     with pytest.raises(ValueError):
-        base_model.mc.arrivals([], 1.0, 10, 0.0)
+        mc.arrivals([np.nan, np.nan], 1.0, 10, 0.0)
 
-    assert base_model.mc.arrivals([1.0, 0.0], 1.0, 0, 0.0).shape == (0, 0)
+    with pytest.raises(ValueError):
+        mc.first_arrival([], 1.0, 10)
+    with pytest.raises(ValueError):
+        mc.next_arrival(np.zeros(10), [], 1.0)
+    with pytest.raises(ValueError):
+        mc.arrivals([], 1.0, 10, 0.0)
+
+    assert mc.arrivals([1.0, 0.0], 1.0, 0, 0.0).shape == (0, 0)
 
 
-def test_mc_counts(base_model: no.Model) -> None:
-    mc = base_model.mc
+def test_mc_counts(mc: no.MonteCarlo) -> None:
     assert mc.seed() == 19937
 
     def poisson_pdf(x: range, lambda_: float) -> np.ndarray:
@@ -189,11 +209,10 @@ def test_mc_counts(base_model: no.Model) -> None:
             assert np.fabs(c1[i] - p[i]) < 1.0 / np.sqrt(n)
 
 
-def test_mc_serial(base_model: no.Model) -> None:
+def test_mc_serial(mc: no.MonteCarlo) -> None:
     if no.mpi.SIZE != 1:
         return
 
-    mc = base_model.mc
     assert mc.seed() == 19937
 
     mc.reset()
@@ -304,38 +323,37 @@ def test_mc_serial(base_model: no.Model) -> None:
     mc.reset()
 
     # Exp.value = p +/- 1/sqrt(N)
-    h = base_model.mc.hazard(0.2, 10000)
+    h = mc.hazard(0.2, 10000)
     assert isinstance(h, np.ndarray)
     assert len(h) == 10000
     assert abs(np.mean(h) - 0.2) < 0.01
 
-    hv = base_model.mc.hazard(np.array([0.1, 0.2, 0.3, 0.4, 0.5]))
+    hv = mc.hazard(np.array([0.1, 0.2, 0.3, 0.4, 0.5]))
     assert isinstance(hv, np.ndarray)
     assert len(hv) == 5
 
     # Exp.value = 1/p +/- 1/sqrt(N)
-    st = base_model.mc.stopping(0.1, 10000)
+    st = mc.stopping(0.1, 10000)
     assert isinstance(st, np.ndarray)
     assert len(st) == 10000
     assert abs(np.mean(st) / 10 - 1.0) < 0.03
 
-    sv = base_model.mc.stopping(np.array([0.1, 0.2, 0.3, 0.4, 0.5]))
+    sv = mc.stopping(np.array([0.1, 0.2, 0.3, 0.4, 0.5]))
     assert isinstance(sv, np.ndarray)
     assert len(sv) == 5
 
     # Non-homogeneous Poisson process (time-dependent hazard)
-    nhpp = base_model.mc.first_arrival(np.array([0.1, 0.2, 0.3, 0.4, 0.5]), 1.0, 10, 0.0)
+    nhpp = mc.first_arrival(np.array([0.1, 0.2, 0.3, 0.4, 0.5]), 1.0, 10, 0.0)
     assert isinstance(nhpp, np.ndarray)
     assert len(nhpp) == 10
 
 
-def test_mc_parallel(base_model: no.Model, base_indep_model: no.Model) -> None:
+def test_mc_parallel(mc: no.MonteCarlo, indep_mc: no.MonteCarlo) -> None:
     if no.mpi.SIZE == 1:
         return
     assert no.mpi.COMM is not None
 
     # test model has identical streams
-    mc = base_model.mc
     mc.reset()
     assert mc.seed() == 19937
 
@@ -350,7 +368,7 @@ def test_mc_parallel(base_model: no.Model, base_indep_model: no.Model) -> None:
             assert np.all(a - all_a[r] == 0.0)
 
     # test model_i has independent streams
-    mc = base_indep_model.mc
+    mc = indep_mc
     mc.reset()
     assert mc.seed() == 19937 + no.mpi.RANK
 
@@ -365,27 +383,27 @@ def test_mc_parallel(base_model: no.Model, base_indep_model: no.Model) -> None:
             assert not np.all(a - all_a[r] == 0.0)
 
 
-def test_bitgen(base_model: no.Model) -> None:
-    base_model2 = no.Model(no.timeline.null(), no.MonteCarlo.deterministic_identical_stream)
-    gen = no.as_np(base_model.mc)
+def test_bitgen(mc: no.MonteCarlo) -> None:
+    mc2 = no.MonteCarlo(no.MonteCarlo.deterministic_identical_stream)
+    gen = no.as_np(mc)
 
     n = gen.bit_generator.random_raw()
-    assert n == base_model2.mc.raw()
-    assert (gen.uniform(size=100) == base_model2.mc.ustream(100)).all()
+    assert n == mc2.raw()
+    assert (gen.uniform(size=100) == mc2.ustream(100)).all()
 
     # check the np gen gets the reset
-    base_model.mc.reset()
+    mc.reset()
     assert n == gen.bit_generator.random_raw()
 
-    base_model.mc.reset()
-    base_model_different_seed = no.Model(no.timeline.null(), lambda: 1234)
-    gen2 = no.as_np(base_model_different_seed.mc)
-    assert gen2.bit_generator.random_raw() != base_model.mc.raw()
-    assert (gen2.uniform(size=100) != base_model.mc.ustream(100)).all()
+    mc.reset()
+    mc_different_seed = no.MonteCarlo(lambda: 1234)
+    gen2 = no.as_np(mc_different_seed)
+    assert gen2.bit_generator.random_raw() != mc.raw()
+    assert (gen2.uniform(size=100) != mc.ustream(100)).all()
 
 
-def test_strided_arrays(base_model: no.Model) -> None:
+def test_strided_arrays(mc: no.MonteCarlo) -> None:
     p = np.array([0.0, 1.0, 0.0, 1.0])
-    assert (base_model.mc.hazard(p[::2]) == 0.0).all()
-    assert (base_model.mc.hazard(p[1::2]) == 1.0).all()
-    assert (base_model.mc.hazard(p[::-1]) == [1.0, 0.0, 1.0, 0.0]).all()
+    assert (mc.hazard(p[::2]) == 0.0).all()
+    assert (mc.hazard(p[1::2]) == 1.0).all()
+    assert (mc.hazard(p[::-1]) == [1.0, 0.0, 1.0, 0.0]).all()

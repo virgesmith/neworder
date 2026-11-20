@@ -27,7 +27,8 @@ class Membership(no.Model):
     """
 
     def __init__(self, timeline: Iterable[no.timeline.Timestep], n0: int, p_churn: float, p_join: float) -> None:
-        super().__init__(timeline, no.MonteCarlo.deterministic_identical_stream)
+        super().__init__(timeline)
+        self.mc = no.MonteCarlo(no.MonteCarlo.deterministic_identical_stream)
 
         # Stateless (use_counter=False, the default): calling uarray() twice
         # with the same arguments always returns the same values. That's

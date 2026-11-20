@@ -12,7 +12,8 @@ class Conway(no.Model):
     __glider = np.array([[0, 0, 1], [1, 0, 1], [0, 1, 1]], dtype=int)
 
     def __init__(self, nx: int, ny: int, edge: no.Edge = no.Edge.WRAP) -> None:
-        super().__init__(no.timeline.linear(), no.MonteCarlo.nondeterministic_stream)
+        super().__init__(no.timeline.linear())
+        self.mc = no.MonteCarlo(no.MonteCarlo.nondeterministic_stream)
 
         # create n automata at regular positions
         init_state = np.zeros(nx * ny)

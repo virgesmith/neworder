@@ -32,7 +32,7 @@ As per the MODGEN implementation, we step through a case-based timeline and samp
 
 So the mortality hazard is treated as a series of piecewise homogeneous Poisson processes.
 
-The discrete model is constructed, as usual, by initialising the base class with a timeline of 100 1-year steps and a seed for the Monte-Carlo engine, loads the mortality data, and initialise the population with age=0 and age at death as yet unknown:
+The discrete model is constructed, as usual, by initialising the base class with a timeline of 100 1-year steps, constructs a deterministically-seeded Monte-Carlo engine, loads the mortality data, and initialise the population with age=0 and age at death as yet unknown:
 
 {{ include_snippet("./examples/mortality/people.py", "disc_ctor")}}
 

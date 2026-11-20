@@ -11,7 +11,8 @@ class ParallelMPI(neworder.Model):
     def __init__(self, timeline: Iterable[neworder.timeline.Timestep], p: float, n: int):
         """This model uses MPI to run parallel process that synchronise timesteps and exchange data with each other"""
         # initialise base model (essential!)
-        super().__init__(timeline, neworder.MonteCarlo.nondeterministic_stream)
+        super().__init__(timeline)
+        self.mc = neworder.MonteCarlo(neworder.MonteCarlo.nondeterministic_stream)
 
         # create transition matrix with all off-diagonal probabilities equal to p
         self.p = np.identity(neworder.mpi.SIZE) * (1 - neworder.mpi.SIZE * p) + p

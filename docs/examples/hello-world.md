@@ -9,7 +9,7 @@ This simple example illustrates the basic model structure, how it all fits toget
 The framework runs a model via the `neworder.run` function, which takes an instance of a `Model` class. All models contain, at a minimum:
 
 - a timeline, in this case `neworder.timeline.null()`, an arbitrary single step
-- an instance of a `neworder.MonteCarlo` engine
+- an instance of a `neworder.MonteCarlo` engine, `self.mc`, to generate random numbers
 - user-defined methods to evolve the state (`step`) and report/postprocess results (`finalise`).
 
 In this example the model doesn't have an explicit discrete timeline, so for models of this type a factory is provided to construct a null timeline (a single step whose start, end and length are undefined).
@@ -82,7 +82,8 @@ To get a better idea of what's going on, uncomment the line containing `neworder
 First we get some information about the model initialisation parameters:
 
 ```text
-[no 0/1]  model init: timeline=generator mc=<neworder.MonteCarlo seed=874991939>
+[no 0/1]  model init: timeline=generator
+[no 0/1]  MonteCarlo init: seed=874991939
 [no 0/1]  starting HelloWorld model run
 ```
 
@@ -135,6 +136,6 @@ and finally the model reports its status and execution time:
 
 ## Next steps
 
-Try re-running the model with different input parameters, or changing the seeding strategy for reproducible results. To reproduce the exact results above replace `neworder.MonteCarlo.nondeterministic_stream` with `lambda _: 874991939` in the model initialiser, or just use `neworder.MonteCarlo.deterministic_independent_stream` to get consistent results for every run.
+Try re-running the model with different input parameters, or changing the seeding strategy for reproducible results. To reproduce the exact results above replace `neworder.MonteCarlo.nondeterministic_stream` with `lambda: 874991939` where the model constructs its `MonteCarlo` engine, or just use `neworder.MonteCarlo.deterministic_independent_stream` to get consistent results for every run.
 
 Then, check out some or all of the other examples...

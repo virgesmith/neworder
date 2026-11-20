@@ -14,7 +14,8 @@ class BlackScholes(neworder.Model):
         timeline = neworder.timeline.numeric(0.0, step=option.expiry, end=option.expiry)
         # ensure all processes have identical streams, cancelling random noise
         seeder = neworder.MonteCarlo.deterministic_identical_stream
-        super().__init__(timeline, seeder)
+        super().__init__(timeline)
+        self.mc = neworder.MonteCarlo(seeder)
 
         self.rng = neworder.as_np(self.mc)
         self.option = option

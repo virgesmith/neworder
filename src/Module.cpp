@@ -107,7 +107,15 @@ NB_MODULE(_neworder_core, m) {
 
   // MC
   nb::class_<no::MonteCarlo>(m, "MonteCarlo", mc_docstr)
-      // constructor is NOT exposed to python, can only be created within a model
+      .def(
+          "__init__",
+          [](no::MonteCarlo* self, const nb::callable& seeder) {
+            new (self)
+                no::MonteCarlo([seeder]() { return no::checked_cast<int32_t>(seeder(), "the seeder's result"); });
+          },
+          mc_init_docstr,
+          nb::arg("seeder").sig("MonteCarlo.deterministic_independent_stream") =
+              nb::cpp_function(no::MonteCarlo::deterministic_independent_stream))
       .def_static("deterministic_identical_stream", &no::MonteCarlo::deterministic_identical_stream,
                   mc_deterministic_identical_stream_docstr)
       .def_static("deterministic_independent_stream", &no::MonteCarlo::deterministic_independent_stream,
@@ -139,13 +147,10 @@ NB_MODULE(_neworder_core, m) {
   // Microsimulation (or ABM) model class
   auto model =
       nb::class_<no::Model, no::PyModel>(m, "Model", model_docstr)
-          .def(nb::init<const nb::object&, const nb::callable&>(), model_init_docstr, "timeline"_a,
-               nb::arg("seeder").sig("MonteCarlo.deterministic_independent_stream") =
-                   nb::cpp_function(no::MonteCarlo::deterministic_independent_stream))
+          .def(nb::init<const nb::object&>(), model_init_docstr, "timeline"_a)
           // properties are readonly only in the sense you can't assign to them; you CAN call their mutable methods
           .def_prop_ro("timeline", &no::Model::timeline, model_timeline_docstr)
           .def_prop_ro("timestep", &no::Model::timestep, model_timestep_docstr)
-          .def_prop_ro("mc", &no::Model::mc, model_mc_docstr)
           .def_prop_ro("run_state", &no::Model::runState, model_runstate_docstr)
           // These are what a python override's super() call reaches, so must not dispatch virtually. nanobind's
           // trampolines only recognise super() if C++ made the outer call, so an override called from python would
@@ -165,6 +170,7 @@ NB_MODULE(_neworder_core, m) {
       .value("RUNNING", no::Model::RUNNING)
       .value("HALTED", no::Model::HALTED)
       .value("COMPLETED", no::Model::COMPLETED)
+      .value("FAILED", no::Model::FAILED)
       .export_values();
 
   // Hash-based deterministic sampler

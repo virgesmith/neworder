@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Module.h"
-#include "MonteCarlo.h"
 #include "NewOrder.h"
 
 #include <nanobind/trampoline.h>
@@ -17,11 +16,12 @@ public:
     NOT_STARTED,
     RUNNING,
     HALTED,   // immediate exit without calling finalise
-    COMPLETED // reached end of timeline, finalise called
+    COMPLETED, // reached end of timeline, finalise called
+    FAILED     // an exception was raised during a run, which can't be resumed
   };
 
   // timeline is any iterable of steps
-  Model(const nb::object& timeline, const nb::callable& seeder);
+  explicit Model(const nb::object& timeline);
 
   virtual ~Model() = default;
 
@@ -36,7 +36,6 @@ public:
   nb::object timeline() const { return m_timeline; }
   // None before the first step
   nb::object timestep() const { return m_timestep; }
-  MonteCarlo& mc() { return m_monteCarlo; }
 
   // functions to override
   virtual void modify();   // optional, parallel runs only
@@ -51,12 +50,13 @@ public:
   RunState runState() const { return m_runState; }
 
 private:
+  static bool run_steps(Model& model, const nb::object& pymodel, const std::string& model_name);
+
   RunState m_runState;
   nb::object m_timeline;
   // kept between runs, so that a halted model resumes at the next step
   nb::object m_steps;
   nb::object m_timestep;
-  MonteCarlo m_monteCarlo;
 };
 
 class PyModel : private Model {

@@ -1,6 +1,6 @@
 import warnings
+from collections.abc import Callable, Iterable, Iterator
 
-import numpy as np
 import pytest
 
 import neworder as no
@@ -31,49 +31,11 @@ def test_step_not_implemented() -> None:
         no.run(TestModel())
 
 
-def test_default_seeder() -> None:
-    class DefaultModel(no.Model):
-        def __init__(self) -> None:
-            super().__init__(no.timeline.null())
-            self.x = self.mc.raw()
-
-    class ExplicitModel(no.Model):
-        def __init__(self) -> None:
-            super().__init__(no.timeline.null(), no.MonteCarlo.deterministic_independent_stream)
-            self.x = self.mc.raw()
-
-    class DifferentModel(no.Model):
-        def __init__(self) -> None:
-            super().__init__(no.timeline.null(), lambda: 42)
-            self.x = self.mc.raw()
-
-    assert DefaultModel().x == ExplicitModel().x
-    assert DefaultModel().x != DifferentModel().x
-
-
-def test_seeder_errors() -> None:
-    assert no.Model(no.timeline.null(), lambda: np.int32(7)).mc.seed() == 7
-
-    with pytest.raises(TypeError, match="seeder's result must be an int32"):
-        no.Model(no.timeline.null(), lambda: 1.5)
-    with pytest.raises(TypeError, match="seeder's result must be an int32"):
-        no.Model(no.timeline.null(), lambda: 2**31)
-    with pytest.raises(ZeroDivisionError):
-        no.Model(no.timeline.null(), lambda: 1 // 0)
-
-    seeds = iter([1, "x"])
-    m = no.Model(no.timeline.null(), lambda: next(seeds))
-    with pytest.raises(TypeError, match="seeder's result must be an int32"):
-        m.mc.reset()
-
-
 def test_multimodel() -> None:
     class TestModel(no.Model):
         def __init__(self) -> None:
-            super().__init__(
-                no.timeline.linear(0, end=10),
-                no.MonteCarlo.deterministic_identical_stream,
-            )
+            super().__init__(no.timeline.linear(0, end=10))
+            self.mc = no.MonteCarlo(no.MonteCarlo.deterministic_identical_stream)
             self.x = 0.0
 
         def step(self) -> None:
@@ -162,3 +124,58 @@ def test_check_failure_as_error() -> None:
         warnings.simplefilter("error")
         with pytest.raises(RuntimeWarning, match="check\\(\\) FAILED"):
             no.run(FailingModel())
+
+
+class _Raises(no.Model):
+    def __init__(self, where: str, timeline: Iterable[no.Timestep] | None = None) -> None:
+        super().__init__(no.timeline.linear(0, end=3) if timeline is None else timeline)
+        self.where = where
+        self.steps_taken = 0
+
+    def modify(self) -> None:
+        if self.where == "modify":
+            raise ValueError(self.where)
+
+    def step(self) -> None:
+        self.steps_taken += 1
+        if self.where == "step" and self.timestep.index == 2:
+            raise ValueError(self.where)
+
+    def check(self) -> bool:
+        if self.where == "check" and self.timestep.index == 2:
+            raise ValueError(self.where)
+        return True
+
+    def finalise(self) -> None:
+        if self.where == "finalise":
+            raise ValueError(self.where)
+
+
+def _raising_timeline() -> Iterator[no.Timestep]:
+    yield no.Timestep(1, 0, 1, 1.0)
+    raise ValueError("timeline")
+
+
+@pytest.mark.parametrize(
+    ("model", "error"),
+    [
+        (lambda: _Raises("modify"), ValueError),
+        (lambda: _Raises("step"), ValueError),
+        (lambda: _Raises("check"), ValueError),
+        (lambda: _Raises("finalise"), ValueError),
+        (lambda: _Raises("timeline", _raising_timeline()), ValueError),
+        (lambda: _Raises("timeline", [no.Timestep(1, 0, 1, 1.0), 1.0]), TypeError),  # ty:ignore[invalid-argument-type]
+    ],
+    ids=["modify", "step", "check", "finalise", "timeline", "not a timestep"],
+)
+def test_exception_fails_the_run(model: Callable[[], _Raises], error: type[Exception]) -> None:
+    m = model()
+    with pytest.raises(error):
+        no.run(m)
+    assert m.run_state == no.Model.FAILED
+    steps_taken = m.steps_taken
+    # rerunning would otherwise finalise a truncated run, or carry on past the failure
+    with pytest.raises(RuntimeError, match="failed with an exception"):
+        no.run(m)
+    assert m.run_state == no.Model.FAILED
+    assert m.steps_taken == steps_taken

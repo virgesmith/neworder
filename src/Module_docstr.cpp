@@ -31,10 +31,13 @@ const char* checked_docstr = R"""(
 
 const char* run_docstr = R"""(
     Runs the model. If the model has previously run it will resume from the point at which it was given the "halt" instruction. This is useful
-    for external processing of model data, and/or feedback from external sources. If the model has already reached the end of the timeline, this
-    function will have no effect. To re-run the model from the start, you must construct a new model object.
+    for external processing of model data, and/or feedback from external sources. To re-run the model from the start, you must construct a new
+    model object.
     Returns:
         True if model succeeded, False otherwise
+    Raises:
+        StopIteration: if the model has already reached the end of its timeline
+        RuntimeError: if a previous run of the model raised an exception
 )""";
 
 // SplitMix64
@@ -156,7 +159,13 @@ const char* sms_repr_docstr = R"""(
 // MonteCarlo
 
 const char* mc_docstr = R"""(
-    The model's Monte-Carlo engine with configurable options for parallel execution
+    A Monte-Carlo engine: a pseudorandom number generator, seeded by a seeder function, with sampling methods for
+    microsimulation. Models construct one if they need random numbers, typically as `self.mc` in their constructor.
+)""";
+
+const char* mc_init_docstr = R"""(
+    Constructs a Monte-Carlo engine, seeded by calling seeder, which must return an int32. It's called again on each
+    reset(). The default seeder gives each MPI process an independent, deterministic stream.
 )""";
 
 const char* mc_deterministic_identical_stream_docstr = R"""(
@@ -249,7 +258,7 @@ const char* model_docstr = R"""(
 
 const char* model_init_docstr = R"""(
     Constructs a model object with a timeline, which is any iterable of steps (e.g. from the neworder.timeline
-    factories), and (optionally) a seeder function for the random stream(s)
+    factories)
 )""";
 
 const char* model_timeline_docstr = R"""(
@@ -260,15 +269,13 @@ const char* model_timeline_docstr = R"""(
 const char* model_timestep_docstr = R"""(
     The current step of the model's timeline, or None before the first step (e.g. in the constructor and modify)
 )""";
-const char* model_mc_docstr = R"""(
-    The model's Monte-Carlo engine
-)""";
 const char* model_runstate_docstr = R"""(
     The model's current state - one of:
         NOT_STARTED: model has not been run
         RUNNING: model is in progress
         HALTED: model has been explicitly halted by calling its halt() method
         COMPLETED: model has run to the end of its timeline
+        FAILED: an exception was raised during a run, so the model can't be resumed
 )""";
 const char* model_modify_docstr = R"""(
     User-overridable method used to modify state in a per-process basis for multiprocess model runs.

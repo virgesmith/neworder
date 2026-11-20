@@ -20,7 +20,8 @@ class Schelling(neworder.Model):
         similarity: float,
     ) -> None:
         # NB missing this line can cause memory corruption
-        super().__init__(timeline, neworder.MonteCarlo.deterministic_identical_stream)
+        super().__init__(timeline)
+        self.mc = neworder.MonteCarlo(neworder.MonteCarlo.deterministic_identical_stream)
 
         # category 0 is empty cell
         self.ncategories = len(categories)

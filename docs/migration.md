@@ -2,6 +2,8 @@
 
 neworder 2.0 replaces the timeline classes with plain data. A timeline is now an iterator (or any iterable) of `neworder.Timestep(index, start, end, dt)`, and the model, not the timeline, holds the current step, as `self.timestep`. See [Timeline](overview.md#timeline) for the full description.
 
+Models now construct their own `MonteCarlo` engine, rather than the `Model` base class providing one. See [random numbers](#random-numbers).
+
 The `stats` module which provided logit and logistic functions has now been removed, since they duplicate functionality in `scipy`. See [statistical functions](#statistical-functions) for the replacements.
 
 If you can't migrate yet, pin `neworder<2`.
@@ -60,6 +62,29 @@ This differs from 1.x, where the timeline had a single current time, and advance
 - **`index`** was the number of steps completed: 0 in the first `step()` and 1 by the first `check()`. `self.timestep.index` is the number of the current step, counting from 1, throughout the step. So in `step()` the 1.x value is `self.timestep.index - 1`, and in `check()` and `finalise()` it's unchanged.
 - **`start`, `end` and `at_end`** described the whole timeline, and have no equivalent, as a step knows nothing about the rest of its timeline. Record `self.timestep.start` in the first step if the start of the timeline is needed, read `self.timestep.end` in `finalise()` for its end, and do end-of-run work in `finalise()`.
 - **Before the first step**, i.e. in `__init__()` and `modify()`, there is no current step: `self.timestep` is `None`.
+
+## Exceptions during a run
+
+If an exception is raised during a run, whether by the timeline or by `modify()`, `step()`, `check()` or `finalise()`, the model's `run_state` becomes the new `Model.FAILED`, and running it again raises a `RuntimeError`. Construct a new model to retry.
+
+In 1.x a model could be run again after an exception: a failed `step()` was repeated, on top of any changes it had made before raising, and a failed `check()` carried on from the next step. `halt()` and a `check()` that returns `False` still leave the model resumable.
+
+## Random numbers
+
+`Model` no longer has a Monte-Carlo engine. A model that needs random numbers constructs its own, passing it the seeder that used to be the second argument to `super().__init__`:
+
+```python
+# 1.x
+super().__init__(timeline, neworder.MonteCarlo.deterministic_identical_stream)
+
+# 2.0
+super().__init__(timeline)
+self.mc = neworder.MonteCarlo(neworder.MonteCarlo.deterministic_identical_stream)
+```
+
+Model code that uses `self.mc` is otherwise unchanged. The default seeder is still `deterministic_independent_stream`, so a 1.x model that relied on it becomes `self.mc = neworder.MonteCarlo()`. Both 1.x forms fail loudly: passing a seeder to `super().__init__` raises `TypeError`, and using `self.mc` without constructing it raises `AttributeError`.
+
+The seeder is called when the engine is constructed, rather than while the base class is initialised. A model that doesn't need random numbers needn't construct an engine, and one that needs independent streams can construct several.
 
 ## Silent changes
 

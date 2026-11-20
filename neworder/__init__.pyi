@@ -167,18 +167,20 @@ class Model:
     """
     class RunState(enum.Enum):
         COMPLETED = ...
+        FAILED = ...
         HALTED = ...
         NOT_STARTED = ...
         RUNNING = ...
 
     COMPLETED: typing.ClassVar[Model.RunState]  # value = <RunState.COMPLETED: 3>
+    FAILED: typing.ClassVar[Model.RunState]  # value = <RunState.FAILED: 4>
     HALTED: typing.ClassVar[Model.RunState]  # value = <RunState.HALTED: 2>
     NOT_STARTED: typing.ClassVar[Model.RunState]  # value = <RunState.NOT_STARTED: 0>
     RUNNING: typing.ClassVar[Model.RunState]  # value = <RunState.RUNNING: 1>
-    def __init__(self, timeline: collections.abc.Iterable[Timestep], seeder: collections.abc.Callable = ...) -> None:
+    def __init__(self, timeline: collections.abc.Iterable[Timestep]) -> None:
         """
         Constructs a model object with a timeline, which is any iterable of steps (e.g. from the neworder.timeline
-        factories), and (optionally) a seeder function for the random stream(s)
+        factories)
         """
     def check(self) -> bool:
         """
@@ -222,11 +224,6 @@ class Model:
         This function should not be called directly, it is used by the Model.run() function
         """
     @property
-    def mc(self) -> MonteCarlo:
-        """
-        The model's Monte-Carlo engine
-        """
-    @property
     def run_state(self) -> RunState:
         """
         The model's current state - one of:
@@ -234,6 +231,7 @@ class Model:
             RUNNING: model is in progress
             HALTED: model has been explicitly halted by calling its halt() method
             COMPLETED: model has run to the end of its timeline
+        FAILED: an exception was raised during a run, so the model can't be resumed
         """
     @property
     def timeline(self) -> collections.abc.Iterable[Timestep]:
@@ -250,8 +248,14 @@ class Model:
 class MonteCarlo:
     """
 
-    The model's Monte-Carlo engine with configurable options for parallel execution
+    A Monte-Carlo engine: a pseudorandom number generator, seeded by a seeder function, with sampling methods for
+    microsimulation. Models construct one if they need random numbers, typically as `self.mc` in their constructor.
     """
+    def __init__(self, seeder: collections.abc.Callable[[], int] = ...) -> None:
+        """
+        Constructs a Monte-Carlo engine, seeded by calling seeder, which must return an int32. It's called again on each
+        reset(). The default seeder gives each MPI process an independent, deterministic stream.
+        """
     @staticmethod
     def deterministic_identical_stream() -> int:
         """
@@ -392,10 +396,13 @@ def log(*args: typing.Any) -> None:
 def run(model: Model) -> bool:
     """
     Runs the model. If the model has previously run it will resume from the point at which it was given the "halt" instruction. This is useful
-    for external processing of model data, and/or feedback from external sources. If the model has already reached the end of the timeline, this
-    function will have no effect. To re-run the model from the start, you must construct a new model object.
+    for external processing of model data, and/or feedback from external sources. To re-run the model from the start, you must construct a new
+    model object.
     Returns:
         True if model succeeded, False otherwise
+    Raises:
+        StopIteration: if the model has already reached the end of its timeline
+        RuntimeError: if a previous run of the model raised an exception
     """
 
 def thread_id() -> int:

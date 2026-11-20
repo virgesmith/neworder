@@ -33,12 +33,13 @@ class HelloWorld(neworder.Model):
     def __init__(self, n: int, p: float) -> None:
         """
         We create a null timeline, corresponding to a single instantaneous
-        transition, and initialise the base class with this plus a
-        randomly-seeded Monte-Carlo engine
+        transition, and initialise the base class with this, then construct
+        a randomly-seeded Monte-Carlo engine
 
         NB it is *essential* to initialise the base class.
         """
-        super().__init__(neworder.timeline.null(), neworder.MonteCarlo.nondeterministic_stream)
+        super().__init__(neworder.timeline.null())
+        self.mc = neworder.MonteCarlo(neworder.MonteCarlo.nondeterministic_stream)
 
         # create a silent population of size n
         self.population = pd.DataFrame(index=neworder.df.unique_index(n), data={"talkative": False})

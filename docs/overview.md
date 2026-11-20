@@ -17,7 +17,7 @@ This is provided by:
 - a **Model** base class: providing the skeleton on which users implement their models
 - a **Timeline**: the time horizon over which to run the model
 - an optional spatial domain, which can be continuous (`Space`), discrete (`StateGrid`), or a graph (`GeospatialGraph`).
-- a **MonteCarlo** engine: a dedicated random number stream for each model instance, with specific configurations for parallel streams
+- a random number stream that a model constructs if it needs one, with seeding strategies for parallel streams. neworder provides a `MonteCarlo` engine based in MT19937, and `SplitMix64` hash-based engine for individual-level reproducibility.
 - a library of Monte-Carlo methods and statistical functions, plus compatibility with `numpy`'s statistical functionality through an adapter
 - data manipulation functions optimised for *pandas* DataFrames
 - support for parallel execution using MPI (via the `mpi4py` package), or alternatively using multithreading.

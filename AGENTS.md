@@ -152,6 +152,15 @@ Stub docstrings must agree with the C++ docstrings and behaviour. Fix the wordin
 - **Do not push a `v*` tag** unless the release is fully ready, the version in [pyproject.toml](pyproject.toml) matches the tag, and all CI checks pass.
 - Version bumps go in `pyproject.toml` (`version = "x.y.z"`).
 
+## PR and Issue Text
+
+PR descriptions, issue bodies and comments should be short enough to read at a glance:
+
+- Lead with a concise `## Summary`: what changed and why, plus any code example needed to show it.
+- Put everything else (API tables, design notes, testing, migration detail) inside a collapsible element after the summary, e.g. `<details><summary>API changes, design notes and testing</summary> ... </details>`. Leave a blank line after `<summary>` and before `</details>` so the Markdown inside renders.
+- Keep the attribution footer outside the collapsible element.
+- `gh pr edit --body-file` can fail with a "Projects (classic) is being deprecated" GraphQL error. Use the REST API instead: `gh api -X PATCH repos/virgesmith/neworder/pulls/<N> -F body=@<file>`.
+
 ## Workflow
 
 1. Create a feature branch off `main` — never commit directly to `main`.
@@ -163,5 +172,5 @@ Stub docstrings must agree with the C++ docstrings and behaviour. Fix the wordin
 7. If the public API changed, update [docs/api.md](docs/api.md) and any affected example.
 8. Add an entry to [JOURNAL.md](JOURNAL.md) (see [Task & Design Summaries](#task--design-summaries)).
 9. Commit — pre-commit hooks will auto-fix formatting and re-lock `uv.lock`.
-10. Open a PR targeting `main`; CI must pass before merging.
+10. Open a PR targeting `main`, with a description following [PR and Issue Text](#pr-and-issue-text); CI must pass before merging.
 11. To release: bump the version in [pyproject.toml](pyproject.toml), merge to `main`, create a GitHub release with a new tag `vX.Y.Z` and release notes (e.g. `git log vX.Y.W..HEAD --oneline`) — PyPI publish triggers automatically. Copy generated example artifacts to the release.

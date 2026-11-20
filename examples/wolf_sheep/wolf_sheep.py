@@ -13,7 +13,8 @@ GRASS_COLOUR = "green"
 
 class WolfSheep(no.Model):
     def __init__(self, params: dict[str, Any]) -> None:
-        super().__init__(no.timeline.linear(), no.MonteCarlo.deterministic_independent_stream)
+        super().__init__(no.timeline.linear())
+        self.mc = no.MonteCarlo(no.MonteCarlo.deterministic_independent_stream)
         # hard-coded to unit timestep
         self.width = params["grid"]["width"]
         self.height = params["grid"]["height"]

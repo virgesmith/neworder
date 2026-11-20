@@ -53,9 +53,11 @@ import pandas as pd
 
 class MyModel(no.Model):
     def __init__(self, n: int, mortality_rate: float) -> None:
-        # ESSENTIAL: initialise the base class with a timeline (and optionally a seeder).
+        # ESSENTIAL: initialise the base class with a timeline.
         # Omitting this is the single most common error — it fails at runtime.
-        super().__init__(no.timeline.linear(0, end=100), no.MonteCarlo.deterministic_identical_stream)
+        super().__init__(no.timeline.linear(0, end=100))
+        # the model's random number generator, if it needs one
+        self.mc = no.MonteCarlo(no.MonteCarlo.deterministic_identical_stream)
         self.population = pd.DataFrame(index=no.df.unique_index(n), data={"age": 0.0, "alive": True})
         self.mortality_rate = mortality_rate
 
@@ -77,8 +79,8 @@ if __name__ == "__main__":
         no.log("model failed")
 ```
 
-`self.mc` (the `MonteCarlo` engine), `self.timeline`, `self.timestep` and `self.run_state` are provided by the base
-class. Vectorise: prefer whole-array `mc`/`numpy`/`pandas` operations over per-agent Python loops.
+`self.timeline`, `self.timestep` and `self.run_state` are provided by the base class. `self.mc` is not: a model that
+needs random numbers constructs its own `MonteCarlo` engine (or several, or none). Vectorise: prefer whole-array `mc`/`numpy`/`pandas` operations over per-agent Python loops.
 
 ## Timelines
 
@@ -122,7 +124,9 @@ no steps are taken.
 
 ## Randomness
 
-### `MonteCarlo` — the model's sequential stream (`self.mc`)
+### `MonteCarlo` — a sequential stream (conventionally `self.mc`)
+
+Construct one in the model's `__init__`: `self.mc = no.MonteCarlo(seeder)`.
 
 | Method | Returns |
 |--------|---------|
@@ -139,9 +143,10 @@ no steps are taken.
 Non-arrivals are returned as `neworder.time.NEVER` (NaN) — test with `no.time.isnever(x)`, never
 with `==`. `no.time.DISTANT_PAST`/`FAR_FUTURE` are `-inf`/`+inf`.
 
-Seeding strategies (passed as the second argument to `super().__init__`, a callable returning an
-`int` that fits `int32`): `MonteCarlo.deterministic_identical_stream`,
-`deterministic_independent_stream` (keyed on MPI rank), `nondeterministic_stream`, or your own.
+Seeding strategies (passed to `no.MonteCarlo`, a callable returning an `int` that fits `int32`):
+`MonteCarlo.deterministic_identical_stream`, `deterministic_independent_stream` (keyed on MPI rank,
+and the default), `nondeterministic_stream`, or your own. The seeder is called when the engine is
+constructed, and again on each `reset()`.
 Identical streams + perturbed inputs → sensitivity analysis; independent streams + identical
 inputs → convergence analysis.
 
@@ -205,8 +210,10 @@ one of the `parallel-native`/`parallel-openmpi`/`parallel-mpich` extras and `mpi
 
 ## Gotchas
 
-- **The base class must be initialised** — `super().__init__(timeline, seeder)`. Skipping it is a
+- **The base class must be initialised** — `super().__init__(timeline)`. Skipping it is a
   runtime error when the instance is first used, not a quiet one.
+- **`Model` has no `MonteCarlo` engine** in 2.0. Construct `self.mc = no.MonteCarlo(seeder)` yourself;
+  the 1.x form `super().__init__(timeline, seeder)` raises `TypeError`.
 - **The C++ core is statically typed.** Passing `3.0` where an `int` is expected raises `TypeError`
   immediately, and `dtype` matters as much as the outer type. The package ships annotations and
   `py.typed`, so a type checker catches most of this — use one.

@@ -13,7 +13,8 @@ from neworder.timeline import Timestep
 
 class RecordingModel(no.Model):
     def __init__(self, timeline: Iterable[Timestep], halt_at: int | None = None) -> None:
-        super().__init__(timeline, no.MonteCarlo.deterministic_identical_stream)
+        super().__init__(timeline)
+        self.mc = no.MonteCarlo(no.MonteCarlo.deterministic_identical_stream)
         self.halt_at = halt_at
         self.initial = self.timestep
         self.modified: list[Timestep | None] = []
@@ -104,6 +105,10 @@ def test_numeric() -> None:
     steps = list(no.timeline.numeric(start=-0.3, step=0.1, end=0.0))
     assert len(steps) == 3
     assert steps[-1].end == 0.0
+    # nor when large times can't be represented exactly
+    steps = list(no.timeline.numeric(1.7e9 + 0.1, step=0.1, end=1.7e9 + 0.3))
+    assert len(steps) == 2
+    assert steps[-1].end == 1.7e9 + 0.3
 
     # open-ended, computed from the start so no accumulated rounding error
     last = list(islice(no.timeline.numeric(start=0.0, step=0.1), 1000))[-1]
@@ -218,6 +223,11 @@ def test_validation() -> None:
         no.timeline.numeric(start=2020.0, step=0.5, end=2020.0)
     with pytest.raises(ValueError, match="whole number of steps"):
         no.timeline.numeric(start=0.0, step=0.3, end=1.0)
+    # the tolerance doesn't grow with the magnitude of the times
+    with pytest.raises(ValueError, match="whole number of steps"):
+        no.timeline.numeric(1.7e9, step=0.5, end=1.7e9 + 1.2)
+    with pytest.raises(ValueError, match="whole number of steps"):
+        no.timeline.numeric(1e9, step=1.0, end=1e9 + 0.4)
     with pytest.raises(ValueError):
         no.timeline.calendar(start=date(2021, 1, 1), step=relativedelta(years=0))
     with pytest.raises(ValueError):
@@ -289,7 +299,8 @@ def test_empty_timeline() -> None:
 def test_resume() -> None:
     class HaltEveryStep(no.Model):
         def __init__(self) -> None:
-            super().__init__(no.timeline.linear(2020, end=2030), no.MonteCarlo.deterministic_identical_stream)
+            super().__init__(no.timeline.linear(2020, end=2030))
+            self.mc = no.MonteCarlo(no.MonteCarlo.deterministic_identical_stream)
 
         def step(self) -> None:
             self.halt()

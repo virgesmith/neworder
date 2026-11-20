@@ -17,7 +17,8 @@ class MarkovChainBase(no.Model):
     """
 
     def __init__(self, timeline: Iterable[no.timeline.Timestep], npeople: int, states: npt.NDArray[np.int64]) -> None:
-        super().__init__(timeline, no.MonteCarlo.deterministic_identical_stream)
+        super().__init__(timeline)
+        self.mc = no.MonteCarlo(no.MonteCarlo.deterministic_identical_stream)
 
         self.npeople = npeople
         self.states = states

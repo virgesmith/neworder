@@ -5,10 +5,9 @@
 #include "NewOrder.h"
 #include "Timer.h"
 
-no::Model::Model(const nb::object& timeline, const nb::callable& seeder)
-    : m_runState(no::Model::NOT_STARTED), m_timeline(timeline), m_steps(nb::iter(timeline)), m_timestep(nb::none()),
-      m_monteCarlo([seeder]() { return no::checked_cast<int32_t>(seeder(), "the seeder's result"); }) {
-  no::log("model init: timeline=%% mc=%%"s % nb::type_name(timeline.type()).c_str() % m_monteCarlo.repr());
+no::Model::Model(const nb::object& timeline)
+    : m_runState(no::Model::NOT_STARTED), m_timeline(timeline), m_steps(nb::iter(timeline)), m_timestep(nb::none()) {
+  no::log("model init: timeline=%%"s % nb::type_name(timeline.type()).c_str());
 }
 
 void no::Model::modify() {
@@ -33,7 +32,6 @@ void no::Model::finalise() {
 }
 
 bool no::Model::run(Model& model) {
-  Timer timer;
   int rank = no::env::rank.load(std::memory_order_relaxed);
   if (rank < 0) {
     throw std::runtime_error("environment is not correctly initialised, model will not be run");
@@ -46,7 +44,21 @@ bool no::Model::run(Model& model) {
   if (model.m_runState == Model::COMPLETED) {
     throw nb::stop_iteration("Model has already run to completion. Construct a new model to rerun it");
   }
+  if (model.m_runState == Model::FAILED) {
+    throw std::runtime_error("Model run failed with an exception. Construct a new model to rerun it");
+  }
 
+  // an exception leaves the model's state, and possibly its timeline, part way through a step, so it can't resume
+  try {
+    return run_steps(model, pymodel, model_name);
+  } catch (...) {
+    model.m_runState = Model::FAILED;
+    throw;
+  }
+}
+
+bool no::Model::run_steps(Model& model, const nb::object& pymodel, const std::string& model_name) {
+  Timer timer;
   const bool resuming = model.m_runState != no::Model::NOT_STARTED;
   no::log("%% %% model run"s % (resuming ? "resuming" : "starting") % model_name);
   model.m_runState = no::Model::RUNNING;
@@ -60,6 +72,9 @@ bool no::Model::run(Model& model) {
       no::log("received halt signal in modify()");
     }
   }
+
+  // imported here, as neworder.timeline itself imports this module
+  nb::object timestep_t = nb::module_::import_("neworder.timeline").attr("Timestep");
 
   bool ok = true;
   while (model.m_runState == Model::RUNNING) {
@@ -75,16 +90,17 @@ bool no::Model::run(Model& model) {
       break;
     }
     nb::object step = nb::steal(next);
-    // imported here, as neworder.timeline itself imports this module
-    if (!nb::isinstance(step, nb::module_::import_("neworder.timeline").attr("Timestep"))) {
+    if (!nb::isinstance(step, timestep_t)) {
       throw nb::type_error(("timeline must yield neworder.Timestep, got %% (%%)"s % nb::type_name(step.type()).c_str() %
                             nb::repr(step).c_str())
                                .c_str());
     }
     model.m_timestep = std::move(step);
-    const std::string timestep = nb::repr(model.m_timestep).c_str();
 
-    no::log("%% %%.step()"s % timestep % model_name);
+    // repr is only built when it's logged, as it's costly relative to a trivial step()
+    if (no::env::verbose) {
+      no::log("%% %%.step()"s % nb::repr(model.m_timestep).c_str() % model_name);
+    }
     model.step();
 
     // call the check method and stop if necessary
@@ -94,14 +110,14 @@ bool no::Model::run(Model& model) {
       no::log("%%.check(): %%"s % model_name % (ok ? "ok" : "FAILED"));
       if (!ok) {
         // emit warning as well on failure (since the above message only appears when verbose mode is on)
-        no::warn("check() FAILED in %%, halting model run at %%"s % model_name % timestep);
+        no::warn("check() FAILED in %%, halting model run at %%"s % model_name % nb::repr(model.m_timestep).c_str());
         break;
       }
     }
 
     // check python hasn't signalled early termination. A subsequent run resumes at the next step
-    if (model.m_runState == no::Model::HALTED) {
-      no::log("%% received halt signal"s % timestep);
+    if (model.m_runState == no::Model::HALTED && no::env::verbose) {
+      no::log("%% received halt signal"s % nb::repr(model.m_timestep).c_str());
     }
   }
   no::log("%% exec time=%%s"s % (ok ? "SUCCESS" : "ERRORED") % timer.elapsed_s());

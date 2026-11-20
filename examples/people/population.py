@@ -23,7 +23,8 @@ class Population(neworder.Model):
         in_migration_file: str,
         out_migration_file: str,
     ):
-        super().__init__(timeline, neworder.MonteCarlo.deterministic_identical_stream)
+        super().__init__(timeline)
+        self.mc = neworder.MonteCarlo(neworder.MonteCarlo.deterministic_identical_stream)
 
         # extract the local authority code from the filename
         self.lad = Path(population_file).name.split("_")[0]
