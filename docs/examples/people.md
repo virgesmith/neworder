@@ -48,14 +48,14 @@ The model displays an animated population pyramid for the entire region being mo
 
 ```text
 ...
-[py 0/1] check OK: time=2045-01-01 size=325865 mean_age=41.91, pct_female=49.46 net_migration=1202.0 (20320-19118.0)
-[py 0/1] check OK: time=2046-01-01 size=326396 mean_age=41.91, pct_female=49.41 net_migration=787.0 (20007-19220.0)
-[py 0/1] check OK: time=2047-01-01 size=327006 mean_age=41.88, pct_female=49.37 net_migration=921.0 (20252-19331.0)
-[py 0/1] check OK: time=2048-01-01 size=327566 mean_age=41.87, pct_female=49.34 net_migration=780.0 (19924-19144.0)
-[py 0/1] check OK: time=2049-01-01 size=328114 mean_age=41.84, pct_female=49.31 net_migration=824.0 (20140-19316.0)
-[py 0/1] check OK: time=2050-01-01 size=328740 mean_age=41.81, pct_female=49.26 net_migration=826.0 (20218-19392.0)
-[py 0/1] check OK: time=2051-01-01 size=329717 mean_age=41.77, pct_female=49.30 net_migration=1130.0 (20175-19045.0)
-[py 0/1] run time = 17.19s
+[py 0/1(600608)] check OK: time=2045-01-01 size=325312 mean_age=41.98, pct_female=49.38 net_migration=1259.0 (20180-18921.0)
+[py 0/1(600608)] check OK: time=2046-01-01 size=325666 mean_age=41.97, pct_female=49.36 net_migration=544.0 (19983-19439.0)
+[py 0/1(600608)] check OK: time=2047-01-01 size=325847 mean_age=41.97, pct_female=49.36 net_migration=535.0 (19856-19321.0)
+[py 0/1(600608)] check OK: time=2048-01-01 size=326556 mean_age=41.93, pct_female=49.38 net_migration=928.0 (20127-19199.0)
+[py 0/1(600608)] check OK: time=2049-01-01 size=326982 mean_age=41.85, pct_female=49.35 net_migration=739.0 (19883-19144.0)
+[py 0/1(600608)] check OK: time=2050-01-01 size=327113 mean_age=41.83, pct_female=49.31 net_migration=411.0 (19887-19476.0)
+[py 0/1(600608)] check OK: time=2051-01-01 size=327961 mean_age=41.77, pct_female=49.26 net_migration=989.0 (20128-19139.0)
+[py 0/1(600608)] run time = 8.93s
 ```
 
-This 40 year simulation of an initial population of about 280,000 runs in under 20s on a single core of a medium-spec machine.
+This 40 year simulation of an initial population of about 280,000 runs in under 10s on a single core of a medium-spec machine.

@@ -39,14 +39,6 @@ class Conway(no.Model):
 
     # !step!
 
-    def check(self) -> bool:
-        # randomly place a glider (not across edge)
-        if self.timestep.index == 1:
-            x = self.mc.raw() % (self.domain.state.shape[0] - 2)
-            y = self.mc.raw() % (self.domain.state.shape[1] - 2)
-            self.domain.state[x : x + 3, y : y + 3] = np.rot90(Conway.__glider, self.mc.raw() % 4)
-        return True
-
     def __init_visualisation(self) -> tuple[plt.Figure, AxesImage]:
         plt.ion()
         cmap = colors.ListedColormap(

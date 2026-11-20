@@ -121,6 +121,7 @@ class StepwiseStreams(neworder.Model):
         seed_source = neworder.SplitMix64(neworder.MonteCarlo.deterministic_independent_stream, use_counter=True)
         # this ensures this model's variates are independent of any other model's
         id = neworder.SplitMix64.hash64(self.__class__.__name__)
+
         # return a seed, use_counter ensures independence
         def seeder() -> np.int32:
             return seed_source.raw(id).astype(np.int32)

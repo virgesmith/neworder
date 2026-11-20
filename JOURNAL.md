@@ -22,6 +22,70 @@ Entry template:
 
 ---
 
+## 2026-11-20 — Faster boids examples, and a fix to their cohesion and alignment
+
+**Why** — Profiling the boids examples (1000 boids) showed about 50 ms per step before drawing, nearly all of it spent
+building and multiplying several 1000×1000 arrays per step: the per-axis separations from `Space.dists2` and the
+elementwise products in each rule. Profiling also showed that cohesion and alignment weren't averages:
+`(in_range * dx) @ weights` weighted each neighbour by 1 over *that neighbour's* neighbour count, not divided by the
+boid's own, which in a sample step put it up to 70% away from the true mean.
+
+**What**
+- State is held in `(N, dim)` numpy arrays rather than DataFrame columns, so each rule is one expression for all
+  axes. The initial values are drawn in the same order, so a model starts from the same state as before.
+- 2d uses a periodic `scipy.spatial.KDTree` to list the pairs of boids within vision, with offsets that take the
+  shortest route across the wrap-around edges, and sums over the pairs with `np.bincount`.
+- 3d keeps a dense distance matrix (`cdist`) but drops the separation arrays: each rule becomes a matrix
+  multiplication, using `sum_j w_ij (x_j - x_i) = (w @ x)_i - x_i * sum_j w_ij`.
+- Cohesion and alignment now use the mean over each boid's own neighbours. The coefficients are unchanged.
+- 3d draws with `draw_idle()` instead of `draw()`, and the `sleep(0.001)` per step is gone. Both examples now select
+  predators by position rather than by `.loc` label.
+
+**Design decisions**
+- Different approaches in 2d and 3d: the 3d flock condenses into a ball where each boid sees up to half the others,
+  at which point a neighbour list is as big as the dense matrix and slower to process (measured: dense 12–18 ms vs
+  sparse 22–28 ms per step over 200 steps). The 2d domain wraps, which the matrix-multiplication identity can't
+  express, and stays sparse enough for the tree to pay off.
+- `np.add.at` was tried first for the pair sums, but was about 5× slower than `np.bincount`.
+- Verified by running one step of each new model from the same state as the old code with only its averaging
+  corrected: positions, velocities and colours match exactly. Over 200 steps, without drawing: 2d ~45 → ~24 ms,
+  3d ~45 → ~13–20 ms per step (a loaded machine, so noisy).
+- The old `.loc[0 : N_predators - 1]` predator selection relied on the index starting at 0. `no.df.unique_index` keeps
+  a counter, so a second model constructed in the same process silently had no predators.
+
+**Follow-ups** — Not checked on screen, as no display was available: the flocking looks different with the averaging
+fixed, and the coefficients may need retuning. Whether `OPENBLAS_NUM_THREADS` (see `run.py`) still matters with
+drawing on is untested; without drawing it made no consistent difference. `Space.dists2` builds its separations with
+`np.tile`/`np.repeat`, which broadcasting would avoid.
+
+## 2026-11-20 — Bring the example walkthroughs back in line with the code
+
+**Why** — An audit of `docs/examples/` against the 2.0 code. The code on those pages is pulled from `examples/` by
+`include_snippet`, so it can't drift, and every include resolved. But some prose and the hand-copied sample output had
+fallen behind: wrong extra names in the install commands, descriptions that no longer matched the code, 0-based step
+indices, and log lines without the thread id that the prefix now carries.
+
+**What**
+- Prose: `neworder[parallel]` → `parallel-openmpi`/`-mpich`/`-native` (parallel, option); `GeospatialGraph` described as
+  `neworder.geospatial`, not example-specific (infection); `run_mt.py` → `run_mpi.py` (option); the halt/log condition is
+  *both* populations dying out (wolf-sheep); a `MonteCarlo` engine is no longer something every model has (hello world).
+- Sample output regenerated from the examples: the `[py 0/1(<thread id>)]` prefix, current values, Schelling steps from
+  1, the verbose `check()` line without its `Timestep` prefix (hello world), and current timings (markov-chain, mortality,
+  people). The hello world page also explains the thread id in the prefix.
+- Examples: hello world no longer calls `neworder.verbose()` by default, as its walkthrough shows the quiet output first
+  and then says to uncomment it. The mortality, competing and riskpaths summaries are formatted to the precision the
+  pages show rather than printed as raw floats, and the "life expexctancy" typo is fixed.
+
+**Design decisions**
+- Hello world's output was generated with the seed `874991939` that the page tells readers to use, so its claim to
+  reproduce "the exact results above" holds again.
+- Where an example's output was ugly (unrounded floats), the example's log line was fixed rather than pasting the raw
+  output into the page.
+- `parallel.md` output was only reformatted (the thread ids are illustrative), as `mpi4py` isn't installed locally.
+
+**Follow-ups** — Sample output is still copied by hand and will drift again. Generating it at docs build time would fix
+that, but the examples are slow, random or need MPI, so it isn't worth it yet.
+
 ## 2026-11-20 — `MonteCarlo` is no longer a member of `Model` (#134)
 
 **Why** — Every model got a `MonteCarlo` engine whether it needed one or not, seeded by an optional second argument to

@@ -9,8 +9,9 @@ This simple example illustrates the basic model structure, how it all fits toget
 The framework runs a model via the `neworder.run` function, which takes an instance of a `Model` class. All models contain, at a minimum:
 
 - a timeline, in this case `neworder.timeline.null()`, an arbitrary single step
-- an instance of a `neworder.MonteCarlo` engine, `self.mc`, to generate random numbers
 - user-defined methods to evolve the state (`step`) and report/postprocess results (`finalise`).
+
+Models that need random numbers, like this one, also construct a `neworder.MonteCarlo` engine, here `self.mc`.
 
 In this example the model doesn't have an explicit discrete timeline, so for models of this type a factory is provided to construct a null timeline (a single step whose start, end and length are undefined).
 
@@ -62,10 +63,11 @@ python examples/hello_world/model.py
 which should result in something like
 
 ```text
-[py 0/1]  Hello from 0
-[py 0/1]  Hello from 3
-[py 0/1]  Hello from 4
-[py 0/1]  Hello from 6
+[py 0/1(599546)] Hello from 0
+[py 0/1(599546)] Hello from 1
+[py 0/1(599546)] Hello from 4
+[py 0/1(599546)] Hello from 7
+[py 0/1(599546)] Hello from 8
 ```
 
 ## Understanding the workflow and the output
@@ -77,14 +79,15 @@ To get a better idea of what's going on, uncomment the line containing `neworder
 
       - Source of message: `no` if logged from the framework itself, `py` if logged from python code (via the `neworder.log()` function). The former are only displayed in verbose mode.
       - the process id ('rank' in MPI parlance) and the total number of processes ('size' in MPI parlance) - in serial mode these default to 0/1.
+      - in brackets, the native id of the thread that logged the message (see `neworder.thread_id()`).
 
 
 First we get some information about the model initialisation parameters:
 
 ```text
-[no 0/1]  model init: timeline=generator
-[no 0/1]  MonteCarlo init: seed=874991939
-[no 0/1]  starting HelloWorld model run
+[no 0/1(599546)] model init: timeline=generator
+[no 0/1(599546)] MonteCarlo init: seed=874991939
+[no 0/1(599546)] starting HelloWorld model run
 ```
 
 The null timeline yields a single step, whose start, end and length are undefined - i.e. a single arbitrary step in which all computation is done.
@@ -92,21 +95,21 @@ The null timeline yields a single step, whose start, end and length are undefine
 The RNG seed is displayed for reproducibility, although in this configuration we explicitly requested a random seed using the `neworder.MonteCarlo.nondeterministic_stream` parameter, so each time you run the model you will get a different seed, and different results. The next output concerns the modify method which is explained in the [Option](./option.md) example.
 
 ```text
-[no 0/1]  HelloWorld.modify()
-[no 0/1]  defaulted to no-op Model::modify()
+[no 0/1(599546)] HelloWorld.modify()
+[no 0/1(599546)] defaulted to no-op Model::modify()
 ```
 
 No step has been taken yet, so the model's `timestep` is `None`. Now the model takes the timeline's single step and the `step` method is called, which applies our single random transition - making some individuals "talkative". The log shows the step: its start, end and length (`dt`) are undefined (`None` and NaN), since absolute time is not important in this implementation:
 
 ```text
-[no 0/1]  Timestep(index=1, start=None, end=None, dt=nan) HelloWorld.step()
+[no 0/1(599546)] Timestep(index=1, start=None, end=None, dt=nan) HelloWorld.step()
 ```
 
 and this is followed by the `check` method, which is optional and we haven't implemented:
 
 ```text
-[no 0/1]  defaulted to no-op Model::check()
-[no 0/1]  Timestep(index=1, start=None, end=None, dt=nan) HelloWorld.check(): ok
+[no 0/1(599546)] defaulted to no-op Model::check()
+[no 0/1(599546)] HelloWorld.check(): ok
 ```
 
 !!! note "Checks"
@@ -115,23 +118,23 @@ and this is followed by the `check` method, which is optional and we haven't imp
 We've now reached the end of our single step "timeline" so the `finalise` method is called:
 
 ```text
-[no 0/1]  HelloWorld.finalise()
+[no 0/1(599546)] HelloWorld.finalise()
 ```
 
 which in this case just prints the results:
 
 ```text
-[py 0/1] Hello from 0
-[py 0/1] Hello from 1
-[py 0/1] Hello from 4
-[py 0/1] Hello from 7
-[py 0/1] Hello from 8
+[py 0/1(599546)] Hello from 0
+[py 0/1(599546)] Hello from 1
+[py 0/1(599546)] Hello from 4
+[py 0/1(599546)] Hello from 7
+[py 0/1(599546)] Hello from 8
 ```
 
 and finally the model reports its status and execution time:
 
 ```text
-[no 0/1] SUCCESS exec time=0.000914s
+[no 0/1(599546)] SUCCESS exec time=0.000459s
 ```
 
 ## Next steps

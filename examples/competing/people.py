@@ -44,6 +44,6 @@ class People(no.Model):
 
     def finalise(self) -> None:
         # compute means
-        no.log(f"birth rate = {np.mean(self.population.parity)}")
-        no.log(f"percentage mothers = {100.0 * np.mean(self.population.parity > 0)}")
-        no.log(f"life expexctancy = {np.mean(self.population.time_of_death)}")
+        no.log(f"birth rate = {np.mean(self.population.parity):.6f}")
+        no.log(f"percentage mothers = {100.0 * np.mean(self.population.parity > 0):.6f}")
+        no.log(f"life expectancy = {np.mean(self.population.time_of_death):.6f}")

@@ -29,15 +29,15 @@ The `StateGrid.count_neighbours` takes a function argument that filters the stat
 The output is an animation as shown above. Log messages also record the timestep and the proportion of the population that remains unsatisfied:
 
 ```text
-[py 0/1] step 0 43.1493% unsatisfied
-[py 0/1] step 1 39.1400% unsatisfied
-[py 0/1] step 2 36.9196% unsatisfied
-[py 0/1] step 3 35.3113% unsatisfied
-[py 0/1] step 4 33.9259% unsatisfied
+[py 0/1(599429)] step 1 43.1493% unsatisfied
+[py 0/1(599429)] step 2 39.1400% unsatisfied
+[py 0/1(599429)] step 3 36.9196% unsatisfied
+[py 0/1(599429)] step 4 35.3113% unsatisfied
+[py 0/1(599429)] step 5 33.9259% unsatisfied
 ...
-[py 0/1] step 133 0.0017% unsatisfied
-[py 0/1] step 134 0.0012% unsatisfied
-[py 0/1] step 135 0.0012% unsatisfied
-[py 0/1] step 136 0.0006% unsatisfied
-[py 0/1] step 137 0.0000% unsatisfied
+[py 0/1(599429)] step 134 0.0017% unsatisfied
+[py 0/1(599429)] step 135 0.0012% unsatisfied
+[py 0/1(599429)] step 136 0.0012% unsatisfied
+[py 0/1(599429)] step 137 0.0006% unsatisfied
+[py 0/1(599429)] step 138 0.0000% unsatisfied
 ```

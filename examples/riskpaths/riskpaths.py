@@ -86,8 +86,8 @@ class RiskPaths(neworder.Model):
 
     # !finalise!
     def finalise(self) -> None:
-        neworder.log(f"mean unions = {np.mean(self.population.Unions)}")
-        neworder.log(f"pregnancy ratio = {np.mean(self.population.Parity == Parity.PREGNANT)}")
+        neworder.log(f"mean unions = {np.mean(self.population.Unions):.6f}")
+        neworder.log(f"pregnancy ratio = {np.mean(self.population.Parity == Parity.PREGNANT):.6f}")
 
     # !finalise!
 

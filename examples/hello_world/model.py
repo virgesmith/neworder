@@ -107,7 +107,7 @@ class HelloWorld(neworder.Model):
 
 # !script!
 # uncomment for verbose output
-neworder.verbose()
+# neworder.verbose()
 # uncomment to disable checks entirely
 # neworder.checked(False)
 

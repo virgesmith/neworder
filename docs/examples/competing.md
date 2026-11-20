@@ -25,9 +25,9 @@ python examples/competing/model.py
 producing something like
 
 ```text
-[py 0/1]  birth rate = 1.471500
-[py 0/1]  percentage mothers = 78.042000
-[py 0/1]  life expexctancy = 81.829173
+[py 0/1(601077)] birth rate = 1.471500
+[py 0/1(601077)] percentage mothers = 78.042000
+[py 0/1(601077)] life expectancy = 81.829173
 ```
 
 Although we are sampling the same demographic as the [mortality](./mortality.md) example, life expectancy is over 4 years higher because in this example we are only considering females.

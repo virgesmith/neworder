@@ -25,14 +25,18 @@ mortality_discrete = PeopleDiscrete(mortality_hazard_file, population_size, max_
 start = time.perf_counter()
 neworder.run(mortality_discrete)
 end = time.perf_counter()
-neworder.log(f"Discrete model life expectancy = {mortality_discrete.life_expectancy}, exec time = {end - start}")
+neworder.log(
+    f"Discrete model life expectancy = {mortality_discrete.life_expectancy:.6f}, exec time = {end - start:.3f}s"
+)
 
 # run the continuous model
 mortality_continuous = PeopleContinuous(mortality_hazard_file, population_size, 1.0)
 start = time.perf_counter()
 neworder.run(mortality_continuous)
 end = time.perf_counter()
-neworder.log(f"Continuous model life expectancy = {mortality_continuous.life_expectancy}, exec time = {end - start}")
+neworder.log(
+    f"Continuous model life expectancy = {mortality_continuous.life_expectancy:.6f}, exec time = {end - start:.3f}s"
+)
 
 # visualise some results
 # hist_file = "docs/examples/img/mortality_%dk.png" % (population_size//1000)

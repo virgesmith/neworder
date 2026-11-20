@@ -36,7 +36,7 @@ flowchart LR
 
 The model also implements a pure-python equivalent of the `no.df.transition()` function (`MarkovChain.transition_py()`), for comparison. Set `use_python_impl = True` in `model.py` to use it instead of *neworder*'s C++ implementation.
 
-For the full 100000-person, 100-step model, the C++ implementation takes 0.14s whilst the python implementation takes 4.5s on the same platform - more than an order of magnitude faster. `no.df.transition` requires the state column to have a pandas `category` dtype (as used here), which also means the state labels don't need to be integers - strings, for example, work just as well - see `no.df.transition` for details.
+For the full 100000-person, 100-step model, the C++ implementation takes 0.13s whilst the python implementation takes 3.0s on the same platform - more than an order of magnitude faster. `no.df.transition` requires the state column to have a pandas `category` dtype (as used here), which also means the state labels don't need to be integers - strings, for example, work just as well - see `no.df.transition` for details.
 
 ## Conditional transitions
 

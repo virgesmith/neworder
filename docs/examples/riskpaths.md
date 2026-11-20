@@ -45,8 +45,8 @@ Once the end of the timeline has been reached, the `finalise` method:
 simply prints a couple of summary statistics:
 
 ```text
-[py 0/1]  mean unions = 0.923190
-[py 0/1]  pregnancy ratio = 0.467840
+[py 0/1(601130)] mean unions = 0.923190
+[py 0/1(601130)] pregnancy ratio = 0.467840
 ```
 
 The histogram above was generated with code that can be found in the examples, see the links above.

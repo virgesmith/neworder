@@ -74,10 +74,10 @@ python examples/mortality/model.py
 
 with output like this
 
-```test
-[py 0/1] Population = 100000
-[py 0/1] Discrete model life expectancy = 77.432356, exec time = 1.321355
-[py 0/1] Continuous model life expectancy = 77.388072, exec time = 0.161716
+```text
+[py 0/1(601032)] Population = 100000
+[py 0/1(601032)] Discrete model life expectancy = 77.429394, exec time = 0.394s
+[py 0/1(601032)] Continuous model life expectancy = 77.388072, exec time = 0.049s
 ```
 
 which illustrates how much more efficient the continuous implementation is (about ten times faster).
