@@ -9,7 +9,7 @@ import neworder as no
 
 
 class Conway(no.Model):
-    __glider = np.array([[0, 0, 1], [1, 0, 1], [0, 1, 1]], dtype=int)
+    _glider = np.array([[0, 0, 1], [1, 0, 1], [0, 1, 1]], dtype=int)
 
     def __init__(self, nx: int, ny: int, edge: no.Edge = no.Edge.WRAP) -> None:
         super().__init__(no.timeline.linear())
@@ -22,8 +22,6 @@ class Conway(no.Model):
 
         self.domain = no.StateGrid(init_state.reshape(ny, nx), edge=edge)
 
-        # self.domain.state[20:23, 20:23] = Conway.__glider
-
         self.fig, self.g = self.__init_visualisation()
 
     # !step!
@@ -34,6 +32,12 @@ class Conway(no.Model):
         births = n == 3
 
         self.domain.state = self.domain.state * ~deaths + births
+
+        # place a random glider every 10th step
+        if self.timestep.index % 10 == 0:
+            x = self.mc.raw() % (self.domain.state.shape[0] - 2)
+            y = self.mc.raw() % (self.domain.state.shape[1] - 2)
+            self.domain.state[x : x + 3, y : y + 3] = np.rot90(Conway._glider, self.mc.raw() % 4)
 
         self.__update_visualisation()
 
