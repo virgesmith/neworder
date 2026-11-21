@@ -8,7 +8,7 @@
 #include "Model.h"
 #include "MonteCarlo.h"
 #include "SplitMix64.h"
-#include "Timeline.h"
+#include "Time.h"
 
 #include "NewOrder.h"
 
@@ -105,34 +105,17 @@ NB_MODULE(_neworder_core, m) {
   time.attr("FAR_FUTURE") = no::time::far_future();
   time.attr("NEVER") = no::time::never();
 
-  // register abstract base class
-  nb::class_<no::Timeline, no::PyTimeline>(m, "Timeline")
-      .def(nb::init<>())
-      .def_prop_ro("time", &no::Timeline::time, timeline_time_docstr)
-      .def_prop_ro("start", &no::Timeline::start, timeline_start_docstr)
-      .def_prop_ro("end", &no::Timeline::end, timeline_end_docstr)
-      .def_prop_ro("index", &no::Timeline::index, timeline_index_docstr)
-      .def_prop_ro("dt", &no::Timeline::dt, timeline_dt_docstr)
-      .def_prop_ro("at_end", &no::Timeline::at_end, timeline_at_end_docstr)
-      // non-virtual for the same reason as Model's methods, so the concrete classes bind their own
-      .def("__repr__", [](const no::Timeline& self) { return self.no::Timeline::repr(); }, timeline_repr_docstr);
-
-  nb::class_<no::NoTimeline, no::Timeline>(m, "NoTimeline", notimeline_docstr)
-      .def(nb::init<>(), notimeline_init_docstr)
-      .def("__repr__", &no::NoTimeline::repr, timeline_repr_docstr);
-
-  nb::class_<no::LinearTimeline, no::Timeline>(m, "LinearTimeline", lineartimeline_docstr)
-      .def(nb::init<double, double, size_t>(), lineartimeline_init_docstr, "start"_a, "end"_a, "nsteps"_a)
-      .def(nb::init<double, double>(), lineartimeline_init_open_docstr, "start"_a, "step"_a)
-      .def("__repr__", &no::LinearTimeline::repr, timeline_repr_docstr);
-
-  nb::class_<no::NumericTimeline, no::Timeline>(m, "NumericTimeline", numerictimeline_docstr)
-      .def(nb::init<const std::vector<double>&>(), numerictimeline_init_docstr, "times"_a)
-      .def("__repr__", &no::NumericTimeline::repr, timeline_repr_docstr);
-
   // MC
   nb::class_<no::MonteCarlo>(m, "MonteCarlo", mc_docstr)
-      // constructor is NOT exposed to python, can only be created within a model
+      .def(
+          "__init__",
+          [](no::MonteCarlo* self, const nb::callable& seeder) {
+            new (self)
+                no::MonteCarlo([seeder]() { return no::checked_cast<int32_t>(seeder(), "the seeder's result"); });
+          },
+          mc_init_docstr,
+          nb::arg("seeder").sig("MonteCarlo.deterministic_independent_stream") =
+              nb::cpp_function(no::MonteCarlo::deterministic_independent_stream))
       .def_static("deterministic_identical_stream", &no::MonteCarlo::deterministic_identical_stream,
                   mc_deterministic_identical_stream_docstr)
       .def_static("deterministic_independent_stream", &no::MonteCarlo::deterministic_independent_stream,
@@ -164,12 +147,10 @@ NB_MODULE(_neworder_core, m) {
   // Microsimulation (or ABM) model class
   auto model =
       nb::class_<no::Model, no::PyModel>(m, "Model", model_docstr)
-          .def(nb::init<no::Timeline&, const nb::callable&>(), model_init_docstr, "timeline"_a,
-               nb::arg("seeder").sig("MonteCarlo.deterministic_independent_stream") =
-                   nb::cpp_function(no::MonteCarlo::deterministic_independent_stream))
+          .def(nb::init<const nb::object&>(), model_init_docstr, "timeline"_a)
           // properties are readonly only in the sense you can't assign to them; you CAN call their mutable methods
           .def_prop_ro("timeline", &no::Model::timeline, model_timeline_docstr)
-          .def_prop_ro("mc", &no::Model::mc, model_mc_docstr)
+          .def_prop_ro("timestep", &no::Model::timestep, model_timestep_docstr)
           .def_prop_ro("run_state", &no::Model::runState, model_runstate_docstr)
           // These are what a python override's super() call reaches, so must not dispatch virtually. nanobind's
           // trampolines only recognise super() if C++ made the outer call, so an override called from python would
@@ -184,12 +165,12 @@ NB_MODULE(_neworder_core, m) {
           .def("halt", &no::Model::halt, model_halt_docstr)
           .def("run", [](no::Model& self) { return no::Model::run(self); }, model_run_docstr);
 
-  nb::enum_<no::Model::RunState>(model, "RunState")
-      .value("NOT_STARTED", no::Model::NOT_STARTED)
-      .value("RUNNING", no::Model::RUNNING)
-      .value("HALTED", no::Model::HALTED)
-      .value("COMPLETED", no::Model::COMPLETED)
-      .export_values();
+  auto run_state = nb::enum_<no::Model::RunState>(model, "RunState");
+  for (auto state : {no::Model::NOT_STARTED, no::Model::RUNNING, no::Model::HALTED, no::Model::COMPLETED,
+                     no::Model::FAILED}) {
+    run_state.value(no::Model::run_state_name(state), state);
+  }
+  run_state.export_values();
 
   // Hash-based deterministic sampler
   nb::class_<no::SplitMix64>(m, "SplitMix64", sms_docstr)
@@ -206,11 +187,6 @@ NB_MODULE(_neworder_core, m) {
       .def("raw", &no::SplitMix64::raw, sms_raw_docstr)
       .def_static("hash64", &no::SplitMix64::hash64, "s"_a, sms_hash64_docstr)
       .def("__repr__", &no::SplitMix64::repr, sms_repr_docstr);
-
-  // statistical utils
-  m.def_submodule("stats", stats_docstr)
-      .def("logistic", no::logistic, stats_logistic_docstr, "x"_a, "x0"_a = 0.0, "k"_a = 1.0)
-      .def("logit", no::logit, stats_logit_docstr, "x"_a);
 
   // dataframe manipulation
   m.def_submodule("df", df_docstr)

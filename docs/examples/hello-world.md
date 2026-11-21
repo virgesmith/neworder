@@ -8,11 +8,12 @@ This simple example illustrates the basic model structure, how it all fits toget
 
 The framework runs a model via the `neworder.run` function, which takes an instance of a `Model` class. All models contain, at a minimum:
 
-- an instance of a timeline, in this case the `NoTimeline` arbitrary single-step timeline
-- an instance of a `neworder.MonteCarlo` engine
+- a timeline, in this case `neworder.timeline.null()`, an arbitrary single step
 - user-defined methods to evolve the state (`step`) and report/postprocess results (`finalise`).
 
-In this example the model doesn't have an explicit discrete timeline, so for models of this type a method is provided to construct an empty timeline (which is a single step of length zero).
+Models that need random numbers, like this one, also construct a `neworder.MonteCarlo` engine, here `self.mc`.
+
+In this example the model doesn't have an explicit discrete timeline, so for models of this type a factory is provided to construct a null timeline (a single step whose start, end and length are undefined).
 
 !!! note "Timelines"
     In some model specifications, each individual's entire history can be constructed in a single pass, and in this type of situation a null timeline is appropriate. In more complex examples, the timeline could either refer to absolute time, or for "case-based" models (to use MODGEN parlance), the age of a cohort.
@@ -62,10 +63,11 @@ python examples/hello_world/model.py
 which should result in something like
 
 ```text
-[py 0/1]  Hello from 0
-[py 0/1]  Hello from 3
-[py 0/1]  Hello from 4
-[py 0/1]  Hello from 6
+[py 0/1(599546)] Hello from 0
+[py 0/1(599546)] Hello from 1
+[py 0/1(599546)] Hello from 4
+[py 0/1(599546)] Hello from 7
+[py 0/1(599546)] Hello from 8
 ```
 
 ## Understanding the workflow and the output
@@ -77,37 +79,37 @@ To get a better idea of what's going on, uncomment the line containing `neworder
 
       - Source of message: `no` if logged from the framework itself, `py` if logged from python code (via the `neworder.log()` function). The former are only displayed in verbose mode.
       - the process id ('rank' in MPI parlance) and the total number of processes ('size' in MPI parlance) - in serial mode these default to 0/1.
+      - in brackets, the native id of the thread that logged the message (see `neworder.thread_id()`).
 
 
-First we get some information about the model initialisation parameters:
+First the model's Monte-Carlo engine reports its seed, then the run starts:
 
 ```text
-[no 0/1]  model init: timeline=<NoTimeline stepped=False> mc=<neworder.MonteCarlo seed=874991939>
-[no 0/1]  starting model run. start time=nan
+[no 0/1(599546)] MonteCarlo init: seed=874991939
+[no 0/1(599546)] starting HelloWorld model run
 ```
 
-When using `NoTimeline()` the start time, end time are undefined and the timestep is zero - i.e. a single arbitrary step in which all computation is done.
+The null timeline yields a single step, whose start, end and length are undefined - i.e. a single arbitrary step in which all computation is done.
 
 The RNG seed is displayed for reproducibility, although in this configuration we explicitly requested a random seed using the `neworder.MonteCarlo.nondeterministic_stream` parameter, so each time you run the model you will get a different seed, and different results. The next output concerns the modify method which is explained in the [Option](./option.md) example.
 
 ```text
-[no 0/1]  t=nan(0) HelloWorld.modify(0)
-[no 0/1]  defaulted to no-op Model::modify()
+[no 0/1(599546)] HelloWorld.modify()
+[no 0/1(599546)] defaulted to no-op Model::modify()
 ```
 
-Note that the time value is NaN (not-a-number) since absolute time is not important in this implementation, but the index is zero. Now the `step` method is called, which applies our single random transition - making some individuals "talkative":
+No step has been taken yet, so the model's `timestep` is `None`. Now the model takes the timeline's single step and the `step` method is called, which applies our single random transition - making some individuals "talkative". The log shows the step: its start, end and length (`dt`) are undefined (`None` and NaN), since absolute time is not important in this implementation:
 
 ```text
-[no 0/1]  t=nan(1) HelloWorld.step()
+[no 0/1(599546)] Timestep(index=1, start=None, end=None, dt=nan) HelloWorld.step()
 ```
 
 and this is followed by the `check` method, which is optional and we haven't implemented:
 
 ```text
-[no 0/1]  defaulted to no-op Model::check()
-[no 0/1]  t=nan(1) HelloWorld.check() [ok]
+[no 0/1(599546)] defaulted to no-op Model::check()
+[no 0/1(599546)] HelloWorld.check(): ok
 ```
-and the time index has updated to 1.
 
 !!! note "Checks"
     Custom data sanity checks can be run after each timestep by overriding the `check` method. The default implementation does nothing. A typical pattern would be to implement checks for debugging a model during development, then disable them entirely to improve performance using `neworder.checked(False)`. See the other examples.
@@ -115,27 +117,27 @@ and the time index has updated to 1.
 We've now reached the end of our single step "timeline" so the `finalise` method is called:
 
 ```text
-[no 0/1]  t=nan(1) HelloWorld.finalise()
+[no 0/1(599546)] HelloWorld.finalise()
 ```
 
 which in this case just prints the results:
 
 ```text
-[py 0/1] Hello from 0
-[py 0/1] Hello from 1
-[py 0/1] Hello from 4
-[py 0/1] Hello from 7
-[py 0/1] Hello from 8
+[py 0/1(599546)] Hello from 0
+[py 0/1(599546)] Hello from 1
+[py 0/1(599546)] Hello from 4
+[py 0/1(599546)] Hello from 7
+[py 0/1(599546)] Hello from 8
 ```
 
 and finally the model reports its status and execution time:
 
 ```text
-[no 0/1] SUCCESS exec time=0.000914s
+[no 0/1(599546)] SUCCESS exec time=0.000459s
 ```
 
 ## Next steps
 
-Try re-running the model with different input parameters, or changing the seeding strategy for reproducible results. To reproduce the exact results above replace `neworder.MonteCarlo.nondeterministic_stream` with `lambda _: 874991939` in the model initialiser, or just use `neworder.MonteCarlo.deterministic_independent_stream` to get consistent results for every run.
+Try re-running the model with different input parameters, or changing the seeding strategy for reproducible results. To reproduce the exact results above replace `neworder.MonteCarlo.nondeterministic_stream` with `lambda: 874991939` where the model constructs its `MonteCarlo` engine, or just use `neworder.MonteCarlo.deterministic_independent_stream` to get consistent results for every run.
 
 Then, check out some or all of the other examples...

@@ -6,10 +6,13 @@ from typing import Any
 import matplotlib.pyplot as plt
 import numpy as np
 import numpy.typing as npt
-import pandas as pd
 from matplotlib.colors import ListedColormap
+from scipy.spatial import KDTree
 
 import neworder as no
+
+FloatArray = npt.NDArray[np.float64]
+IndexArray = npt.NDArray[np.intp]
 
 
 class Boids2d(no.Model):
@@ -19,7 +22,8 @@ class Boids2d(no.Model):
     AVOID_COEFF = 0.05
 
     def __init__(self, N: int, range: float, vision: float, exclusion: float, speed: float) -> None:
-        super().__init__(no.LinearTimeline(0.0, 0.01), no.MonteCarlo.deterministic_independent_stream)
+        super().__init__(no.timeline.numeric(0.0, step=0.01))
+        self.mc = no.MonteCarlo(no.MonteCarlo.deterministic_independent_stream)
 
         self.N = N
         self.range = range
@@ -30,27 +34,19 @@ class Boids2d(no.Model):
         # continuous wraparound 2d space
         self.domain = no.Space(np.zeros(2), np.full(2, self.range), edge=no.Edge.WRAP)
 
+        # the first N_predators boids are predators
         self.N_predators = 2
         self.paused = False
 
-        # initially in [0,1]^dim
-        self.boids = pd.DataFrame(
-            index=pd.Index(name="id", data=no.df.unique_index(self.N)),
-            data={
-                "x": self.mc.ustream(N) * self.range,
-                "y": self.mc.ustream(N) * self.range,
-                "vx": self.mc.ustream(N) - 0.5,
-                "vy": self.mc.ustream(N) - 0.5,
-                "c": 0.0,
-            },
-        )
+        # one row per boid, initially in [0, range]^2
+        self.x = self.mc.ustream(2 * N).reshape(2, N).T * self.range
+        self.v = self.mc.ustream(2 * N).reshape(2, N).T - 0.5
+        # boid, near a predator, too close to a predator, predator
+        self.colour = np.zeros(N, dtype=int)
 
         self._normalise()
 
         self.fig, self.g = self._init_visualisation()
-
-        # suppress division by zero warnings
-        np.seterr(divide="ignore")
 
     def step(self) -> None:
         if self.paused:
@@ -58,102 +54,69 @@ class Boids2d(no.Model):
             self._update_visualisation()
             return
 
-        d2, (dx, dy) = self.domain.dists2((self.boids.x, self.boids.y))  # ty:ignore[invalid-argument-type]
-        np.fill_diagonal(d2, np.inf)  # no self-influence
-
-        # separate
+        i, j, delta, d2 = self._neighbours()
         too_close = d2 < self.exclusion**2
-        self._separate(too_close, d2, dx, dy)
+        predator = i < self.N_predators
 
-        # avoid predator
-        in_range = d2 < self.vision**2
-        self._avoid(in_range, d2, dx, dy)
-
-        # mask those that needed to separate
-        in_range = np.logical_and(in_range, ~too_close)
-
-        self._cohere(in_range, dx, dy)
-        self._align(in_range)
-
+        self._separate(i[too_close], delta[too_close], d2[too_close])
+        self._avoid(j[predator], delta[predator], d2[predator])
+        # boids that need to separate don't align or cohere
+        self._cohere(i[~too_close], delta[~too_close])
+        self._align(i[~too_close], j[~too_close])
         self._normalise()
 
-        # set colours
-        self.boids.c = 0.0  # ty:ignore[unresolved-attribute]
-        self.boids.loc[in_range[0 : self.N_predators].sum(axis=0) != 0, "c"] = 1 / 3
-        self.boids.loc[too_close[0 : self.N_predators].sum(axis=0) != 0, "c"] = 2 / 3
-        self.boids.loc[0 : self.N_predators - 1, "c"] = 1
+        self.colour[:] = 0
+        self.colour[j[predator & ~too_close]] = 1
+        self.colour[j[predator & too_close]] = 2
+        self.colour[: self.N_predators] = 3
 
-        (self.boids.x, self.boids.y), (self.boids.vx, self.boids.vy) = self.domain.move(  # ty:ignore[unresolved-attribute]
-            (self.boids.x, self.boids.y),
-            (self.boids.vx, self.boids.vy),
-            self.timeline.dt,
-            ungroup=True,
-        )
+        self.x, self.v = self.domain.move(self.x, self.v, self.timestep.dt)
 
-        sleep(0.001)
         self._update_visualisation()
 
-    def _align(self, in_range: npt.NDArray[np.bool]) -> None:
-        weights = 1.0 / np.sum(in_range, axis=0)
-        weights[weights == np.inf] = 0.0
+    def _neighbours(self) -> tuple[IndexArray, IndexArray, FloatArray, FloatArray]:
+        """Every ordered pair (i, j) of boids within vision of each other, the offset of j from i, and its length squared"""
+        # a periodic tree requires points in [0, range), but wrapping a position can round to exactly range
+        x = np.where(self.x < self.range, self.x, 0.0)
+        pairs = KDTree(x, boxsize=self.range).query_pairs(self.vision, output_type="ndarray")
+        i = np.concatenate((pairs[:, 0], pairs[:, 1]))
+        j = np.concatenate((pairs[:, 1], pairs[:, 0]))
+        delta = x[j] - x[i]
+        # the shortest offset may be across an edge of the domain
+        delta -= self.range * np.round(delta / self.range)
+        # coincident boids would otherwise repel each other infinitely
+        d2 = np.maximum(np.sum(delta**2, axis=1), 1e-12)
+        return i, j, delta, d2
 
-        mean_vx = (in_range * self.boids.vx.to_numpy()) @ weights
-        mean_vy = (in_range * self.boids.vy.to_numpy()) @ weights
+    def _separate(self, i: IndexArray, delta: FloatArray, d2: FloatArray) -> None:
+        # impact on v is proportional to 1/d^2
+        self.v -= _sum_by(i, delta / d2[:, None], self.N) * Boids2d.SEPARATE_COEFF
 
-        self.boids.vx += mean_vx * Boids2d.ALIGN_COEFF  # ty:ignore[unresolved-attribute]
-        self.boids.vy += mean_vy * Boids2d.ALIGN_COEFF  # ty:ignore[unresolved-attribute]
+    def _avoid(self, prey: IndexArray, delta: FloatArray, d2: FloatArray) -> None:
+        self.v += _sum_by(prey, delta / d2[:, None], self.N) * Boids2d.AVOID_COEFF
 
-    def _cohere(self, in_range: npt.NDArray[np.bool], dx: npt.NDArray[np.float64], dy: npt.NDArray[np.float64]) -> None:
-        weights = 1.0 / np.sum(in_range, axis=0)
-        weights[weights == np.inf] = 0.0
-        x = (in_range * dx) @ weights
-        y = (in_range * dy) @ weights
+    def _cohere(self, i: IndexArray, delta: FloatArray) -> None:
+        # steer towards the centre of the neighbours
+        self.v += _mean_by(i, delta, self.N) * Boids2d.COHERE_COEFF
 
-        self.boids.vx += x * Boids2d.COHERE_COEFF  # ty:ignore[unresolved-attribute]
-        self.boids.vy += y * Boids2d.COHERE_COEFF  # ty:ignore[unresolved-attribute]
-
-    def _separate(
-        self,
-        in_range: npt.NDArray[np.bool],
-        d2: npt.NDArray[np.float64],
-        dx: npt.NDArray[np.float64],
-        dy: npt.NDArray[np.float64],
-    ) -> None:
-        # TODO clip d2?
-        # impact on v is proportional to 1/f
-        f = Boids2d.SEPARATE_COEFF / d2 * in_range
-        self.boids.vx += (f * dx).sum(axis=0)  # ty:ignore[unresolved-attribute]
-        self.boids.vy += (f * dy).sum(axis=0)  # ty:ignore[unresolved-attribute]
-
-    def _avoid(
-        self,
-        in_range: npt.NDArray[np.bool],
-        d2: npt.NDArray[np.float64],
-        dx: npt.NDArray[np.float64],
-        dy: npt.NDArray[np.float64],
-    ) -> None:
-        f = Boids2d.AVOID_COEFF / d2[0 : self.N_predators, :] * in_range[0 : self.N_predators, :]
-        self.boids.vx += (f * dx[0 : self.N_predators, :]).sum(axis=0)  # ty:ignore[unresolved-attribute]
-        self.boids.vy += (f * dy[0 : self.N_predators, :]).sum(axis=0)  # ty:ignore[unresolved-attribute]
+    def _align(self, i: IndexArray, j: IndexArray) -> None:
+        self.v += _mean_by(i, self.v[j], self.N) * Boids2d.ALIGN_COEFF
 
     def _normalise(self) -> None:
-        norm = np.clip(np.sqrt(self.boids.vx**2 + self.boids.vy**2), a_min=0.00001, a_max=None)
-        self.boids.vx *= self.speed / norm  # ty:ignore[unresolved-attribute]
-        self.boids.vy *= self.speed / norm  # ty:ignore[unresolved-attribute]
-
+        norm = np.clip(np.linalg.norm(self.v, axis=1), a_min=0.00001, a_max=None)
+        self.v *= (self.speed / norm)[:, None]
         # predators are faster
-        self.boids.loc[0 : self.N_predators - 1, "vx"] *= 1.3
-        self.boids.loc[0 : self.N_predators - 1, "vy"] *= 1.3
+        self.v[: self.N_predators] *= 1.3
 
     def _init_visualisation(self) -> tuple[Any, Any]:
         plt.ion()
 
         fig = plt.figure(constrained_layout=True, figsize=(8, 8))
         g = plt.quiver(
-            self.boids.x,
-            self.boids.y,
-            self.boids.vx / self.speed,
-            self.boids.vy / self.speed,
+            self.x[:, 0],
+            self.x[:, 1],
+            self.v[:, 0] / self.speed,
+            self.v[:, 1] / self.speed,
             scale=75,
             width=0.005,
             headwidth=2,
@@ -179,6 +142,17 @@ class Boids2d(no.Model):
         return fig, g
 
     def _update_visualisation(self) -> None:
-        self.g.set_offsets(np.c_[self.boids.x, self.boids.y])
-        self.g.set_UVC(self.boids.vx / self.speed, self.boids.vy / self.speed, self.boids.c.values)
+        self.g.set_offsets(self.x)
+        self.g.set_UVC(self.v[:, 0] / self.speed, self.v[:, 1] / self.speed, self.colour / 3)
         self.fig.canvas.flush_events()
+
+
+def _sum_by(index: IndexArray, values: FloatArray, n: int) -> FloatArray:
+    """Sums the rows of values that share an index"""
+    return np.column_stack([np.bincount(index, values[:, k], minlength=n) for k in range(values.shape[1])])
+
+
+def _mean_by(index: IndexArray, values: FloatArray, n: int) -> FloatArray:
+    """Averages the rows of values that share an index, zero where there are none"""
+    count = np.bincount(index, minlength=n)[:, None]
+    return np.divide(_sum_by(index, values, n), count, out=np.zeros((n, values.shape[1])), where=count > 0)

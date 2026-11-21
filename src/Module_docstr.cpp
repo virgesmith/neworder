@@ -31,84 +31,13 @@ const char* checked_docstr = R"""(
 
 const char* run_docstr = R"""(
     Runs the model. If the model has previously run it will resume from the point at which it was given the "halt" instruction. This is useful
-    for external processing of model data, and/or feedback from external sources. If the model has already reached the end of the timeline, this
-    function will have no effect. To re-run the model from the start, you must construct a new model object.
+    for external processing of model data, and/or feedback from external sources. To re-run the model from the start, you must construct a new
+    model object.
     Returns:
         True if model succeeded, False otherwise
-)""";
-
-// Timeline
-
-const char* lineartimeline_docstr = R"""(
-    !!! warning "Changing in v2.0"
-
-        Timeline classes are being replaced with an Iterator-based implementation. See the
-        [summary of the changes](https://neworder.readthedocs.io/en/stable/overview/#timeline).
-
-    An equally-spaced non-calendar timeline.
-)""";
-
-const char* lineartimeline_init_docstr = R"""(
-    Constructs a timeline from start to end, with the given number of steps.
-)""";
-
-const char* lineartimeline_init_open_docstr = R"""(
-    Constructs an open-ended timeline give a start value and a step size. NB the model will run until the Model.halt() method is explicitly called
-    (from inside the step() method).
-)""";
-
-const char* numerictimeline_docstr = R"""(
-    !!! warning "Changing in v2.0"
-
-        Timeline classes are being replaced with an Iterator-based implementation. See the
-        [summary of the changes](https://neworder.readthedocs.io/en/stable/overview/#timeline).
-
-    An custom non-calendar timeline where the user explicitly specifies the time points, which must be monotonically increasing.
-)""";
-
-const char* numerictimeline_init_docstr = R"""(
-    Constructs a timeline from an array of time points.
-)""";
-
-const char* notimeline_docstr = R"""(
-    !!! warning "Changing in v2.0"
-
-        Timeline classes are being replaced with an Iterator-based implementation. See the
-        [summary of the changes](https://neworder.readthedocs.io/en/stable/overview/#timeline).
-
-    An arbitrary one step timeline, for continuous-time models with no explicit (discrete) timeline
-)""";
-
-const char* notimeline_init_docstr = R"""(
-    Constructs an arbitrary one step timeline, where the start and end times are undefined and there is a single step of size zero. Useful for continuous-time models
-)""";
-
-const char* timeline_start_docstr = R"""(
-    Returns the time of the start of the timeline
-)""";
-
-const char* timeline_end_docstr = R"""(
-    Returns the time of the end of the timeline
-)""";
-
-const char* timeline_index_docstr = R"""(
-    Returns the index of the current step in the timeline
-)""";
-
-const char* timeline_time_docstr = R"""(
-    Returns the time of the current step in the timeline
-)""";
-
-const char* timeline_dt_docstr = R"""(
-    Returns the step size size of the timeline
-)""";
-
-const char* timeline_at_end_docstr = R"""(
-    Returns True if the current step is the end of the timeline
-)""";
-
-const char* timeline_repr_docstr = R"""(
-    Prints a human-readable representation of the timeline object
+    Raises:
+        StopIteration: if the model has already reached the end of its timeline
+        RuntimeError: if a previous run of the model failed
 )""";
 
 // SplitMix64
@@ -230,7 +159,13 @@ const char* sms_repr_docstr = R"""(
 // MonteCarlo
 
 const char* mc_docstr = R"""(
-    The model's Monte-Carlo engine with configurable options for parallel execution
+    A Monte-Carlo engine: a pseudorandom number generator, seeded by a seeder function, with sampling methods for
+    microsimulation. Models construct one if they need random numbers, typically as `self.mc` in their constructor.
+)""";
+
+const char* mc_init_docstr = R"""(
+    Constructs a Monte-Carlo engine, seeded by calling seeder, which must return an int32. It's called again on each
+    reset(). The default seeder gives each MPI process an independent, deterministic stream.
 )""";
 
 const char* mc_deterministic_identical_stream_docstr = R"""(
@@ -322,16 +257,17 @@ const char* model_docstr = R"""(
 )""";
 
 const char* model_init_docstr = R"""(
-    Constructs a model object with a timeline and (optionally) a seeder function for the random stream(s)
-
-    Emits a `FutureWarning` about the timeline changes in v2.0.
+    Constructs a model object with a timeline, which is any iterable of steps (e.g. from the neworder.timeline
+    factories)
 )""";
 
 const char* model_timeline_docstr = R"""(
-    The model's timeline object
+    The model's timeline: the iterable of steps it was constructed with. If it's an iterator (e.g. from a
+    neworder.timeline factory), the run takes its steps from it, so iterating it in model code skips them
 )""";
-const char* model_mc_docstr = R"""(
-    The model's Monte-Carlo engine
+
+const char* model_timestep_docstr = R"""(
+    The current step of the model's timeline, or None before the first step (e.g. in the constructor and modify)
 )""";
 const char* model_runstate_docstr = R"""(
     The model's current state - one of:
@@ -339,9 +275,11 @@ const char* model_runstate_docstr = R"""(
         RUNNING: model is in progress
         HALTED: model has been explicitly halted by calling its halt() method
         COMPLETED: model has run to the end of its timeline
+        FAILED: an exception was raised, or check() failed, during a run, so the model can't be resumed
 )""";
 const char* model_modify_docstr = R"""(
     User-overridable method used to modify state in a per-process basis for multiprocess model runs.
+    Called once, at the start of the first run: resuming a halted model doesn't call it again.
     Default behaviour is to do nothing.
     This function should not be called directly, it is used by the Model.run() function
 )""";
@@ -406,30 +344,6 @@ const char* time_isnever_a_docstr = R"""(
     implemented as a floating-point NaN, direct comparison will always fails, since NaN != NaN.
 )""";
 
-// Statistical functions
-
-const char* stats_docstr = R"""(
-    Submodule for statistical functions
-)""";
-
-const char* stats_logistic_docstr = R"""(
-    Computes the logistic function on the supplied values.
-    Args:
-        x: The input values.
-        x0: the midpoint location (default 0)
-        k: The growth rate (1/scale, default 1)
-    Returns:
-        The function values
-)""";
-
-
-const char* stats_logit_docstr = R"""(
-    Computes the logit function on the supplied values.
-    Args:
-        x: The input probability values in (0,1).
-    Returns:
-        The function values (log-odds)
-)""";
 
 // Dataframe manipulation
 

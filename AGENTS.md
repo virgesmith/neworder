@@ -85,13 +85,12 @@ src/                     # C++ extension source (nanobind)
   Model.cpp / Model.h
   MonteCarlo.cpp / ...
   Module.cpp             # nanobind bindings entry point
-  Timeline.cpp / ...
+  Time.cpp / Time.h      # no::time helpers (never, isnever, ...)
 neworder/                # Python package
   __init__.py            # public exports (re-exports _neworder_core + pure-Python)
   domain.py              # Domain, Edge, Space, StateGrid
   mc.py                  # as_np helper
-  timeline.py            # CalendarTimeline
-  stats.py               # deprecated wrappers for the C++ stats submodule
+  timeline.py            # Timestep, and the timeline factories null, linear, numeric, sequence, calendar
   *.pyi                  # type stubs for C++ submodules (time, mpi, df)
   py.typed               # PEP 561 marker
 stubs/
@@ -107,7 +106,6 @@ test/
   test_mpi.py
   test_multithreaded.py
   test_splitmix64.py
-  test_stats.py
   test_timeline.py
 docs/                    # MkDocs documentation source
   api.md
@@ -127,13 +125,13 @@ pyproject.toml
 
 ## Regenerating Type Stubs
 
-The stubs that matter are the hand-maintained files in [neworder/](neworder/): `__init__.pyi` (the C++ API plus the pure-Python re-exports) and `time.pyi`, `mpi.pyi`, `df.pyi`. (`stats` is wrapped by the pure-Python `neworder/stats.py`, which carries its own annotations and docstrings.) `ty`, IDEs and the API docs (mkdocstrings/griffe) all read these. They are seeded from `nanobind.stubgen` output but carry manual corrections, so **merge** regenerated output into them — never copy it over wholesale.
+The stubs that matter are the hand-maintained files in [neworder/](neworder/): `__init__.pyi` (the C++ API plus the pure-Python re-exports) and `time.pyi`, `mpi.pyi`, `df.pyi`. `ty`, IDEs and the API docs (mkdocstrings/griffe) all read these. They are seeded from `nanobind.stubgen` output but carry manual corrections, so **merge** regenerated output into them — never copy it over wholesale.
 
 After any change to the bindings in [src/Module.cpp](src/Module.cpp) or the docstrings in [src/Module_docstr.cpp](src/Module_docstr.cpp), rebuild the extension and regenerate:
 
 ```sh
 uv sync --dev                                 # rebuilds the C++ extension if src/ has changed
-uv run python -m nanobind.stubgen -m _neworder_core -r -O stubs   # writes stubs/_neworder_core/{__init__,time,mpi,stats,df}.pyi
+uv run python -m nanobind.stubgen -m _neworder_core -r -O stubs   # writes stubs/_neworder_core/{__init__,time,mpi,df}.pyi
 ```
 
 - Run it on `_neworder_core`, **not** `neworder`. Stubs generated for the Python package would shadow the `.py` sources (`domain.py`, `mc.py`, `timeline.py`) and replace the hand-written `__init__.pyi`.
@@ -141,8 +139,7 @@ uv run python -m nanobind.stubgen -m _neworder_core -r -O stubs   # writes stubs
 
 Manual corrections to preserve when merging:
 - Precise types where stubgen emits `Any` or bare containers, e.g. pandas `Series`/`Categorical` in `df.pyi`, typed `*args` and `Callable[[], int]` on `SplitMix64`, `RunState` return types.
-- The `__repr__` of each concrete timeline: these are an implementation detail, and are covered by `Timeline.__repr__`.
-- `__all__` and imports in `__init__.pyi` that re-export the pure-Python API (`Domain`, `CalendarTimeline`, `as_np`, ...).
+- `__all__` and imports in `__init__.pyi` that re-export the pure-Python API (`Domain`, `timeline`, `as_np`, ...).
 - An implementation signature after any module-level `@overload` group (e.g. `time.isnever`). Without one, griffe drops the function and it disappears from the API docs.
 - Docstrings on module constants (e.g. `time.NEVER`, `mpi.RANK`), so mkdocstrings renders them.
 
@@ -155,6 +152,15 @@ Stub docstrings must agree with the C++ docstrings and behaviour. Fix the wordin
 - **Do not push a `v*` tag** unless the release is fully ready, the version in [pyproject.toml](pyproject.toml) matches the tag, and all CI checks pass.
 - Version bumps go in `pyproject.toml` (`version = "x.y.z"`).
 
+## PR and Issue Text
+
+PR descriptions, issue bodies and comments should be short enough to read at a glance:
+
+- Lead with a concise `## Summary`: what changed and why, plus any code example needed to show it.
+- Put everything else (API tables, design notes, testing, migration detail) inside a collapsible element after the summary, e.g. `<details><summary>API changes, design notes and testing</summary> ... </details>`. Leave a blank line after `<summary>` and before `</details>` so the Markdown inside renders.
+- Keep the attribution footer outside the collapsible element.
+- `gh pr edit --body-file` can fail with a "Projects (classic) is being deprecated" GraphQL error. Use the REST API instead: `gh api -X PATCH repos/virgesmith/neworder/pulls/<N> -F body=@<file>`.
+
 ## Workflow
 
 1. Create a feature branch off `main` — never commit directly to `main`.
@@ -166,5 +172,5 @@ Stub docstrings must agree with the C++ docstrings and behaviour. Fix the wordin
 7. If the public API changed, update [docs/api.md](docs/api.md) and any affected example.
 8. Add an entry to [JOURNAL.md](JOURNAL.md) (see [Task & Design Summaries](#task--design-summaries)).
 9. Commit — pre-commit hooks will auto-fix formatting and re-lock `uv.lock`.
-10. Open a PR targeting `main`; CI must pass before merging.
+10. Open a PR targeting `main`, with a description following [PR and Issue Text](#pr-and-issue-text); CI must pass before merging.
 11. To release: bump the version in [pyproject.toml](pyproject.toml), merge to `main`, create a GitHub release with a new tag `vX.Y.Z` and release notes (e.g. `git log vX.Y.W..HEAD --oneline`) — PyPI publish triggers automatically. Copy generated example artifacts to the release.

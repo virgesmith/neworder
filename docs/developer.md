@@ -137,7 +137,7 @@ The extension is rebuilt in the project environment because `uv sync` builds in 
 
 ## Type stubs
 
-The type stubs for the C++ extension module are maintained by hand in `neworder/`: `__init__.pyi` (the core API plus the pure-python re-exports) and `time.pyi`, `mpi.pyi` and `df.pyi`. The `stats` submodule is wrapped by the pure-python `neworder/stats.py` in order to provide deprecation warnings. These are what type checkers, IDEs and the API documentation see, so they must be kept in sync with the bindings in `src/Module.cpp` and the docstrings in `src/Module_docstr.cpp`.
+The type stubs for the C++ extension module are maintained by hand in `neworder/`: `__init__.pyi` (the core API plus the pure-python re-exports) and `time.pyi`, `mpi.pyi` and `df.pyi`. These are what type checkers, IDEs and the API documentation see, so they must be kept in sync with the bindings in `src/Module.cpp` and the docstrings in `src/Module_docstr.cpp`.
 
 They are seeded from the output of `nanobind.stubgen`, which can be regenerated (after rebuilding the extension) with:
 
@@ -151,7 +151,6 @@ The output goes to `stubs/_neworder_core/` (which isn't under version control). 
 - re-exports of the pure-python API in `__init__.pyi`
 - an implementation signature following module-level `@overload`s (e.g. `time.isnever`). Without it the function is omitted from the API documentation.
 - docstrings for module constants (e.g. `time.NEVER`, `mpi.RANK`), so they appear in the API documentation
-- no `__repr__` on the concrete timelines, which is an implementation detail covered by `Timeline.__repr__`
 
 ## Release Checklist
 

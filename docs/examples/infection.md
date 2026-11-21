@@ -13,7 +13,7 @@ An example of individuals moving and interacting on a geospatial network.
 
 ## Implementation
 
-The model is built on the graph implementations and algorithms provided by the `networkx` and `osmnx` packages, as well as `geoapandas`, which are encapsulated in the `GeospatialGraph` class specific to this example (to avoid the main package needing the extra dependencies). Each entity travels at a fixed random speed on a street network, travelling repeatedly to randomly selected destinations following a shortest path.
+The model is built on the graph implementations and algorithms provided by the `networkx` and `osmnx` packages, as well as `geopandas`, which are encapsulated in the `neworder.geospatial.GeospatialGraph` class (an optional module, so that the main package doesn't need the extra dependencies). Each entity travels at a fixed random speed on a street network, travelling repeatedly to randomly selected destinations following a shortest path.
 
 A number of entities are initially "infected" (shown in red) and will pass on the infection to nearby susceptible entities (white). While infected there is a possibility of dying (black) in which case the individual stops moving and is no longer infectious. If they survive the infection they become immune (green). The simulation runs until there are no more infected agents.
 

@@ -33,12 +33,13 @@ class HelloWorld(neworder.Model):
     def __init__(self, n: int, p: float) -> None:
         """
         We create a null timeline, corresponding to a single instantaneous
-        transition, and initialise the base class with this plus a
-        randomly-seeded Monte-Carlo engine
+        transition, and initialise the base class with this, then construct
+        a randomly-seeded Monte-Carlo engine
 
         NB it is *essential* to initialise the base class.
         """
-        super().__init__(neworder.NoTimeline(), neworder.MonteCarlo.nondeterministic_stream)
+        super().__init__(neworder.timeline.null())
+        self.mc = neworder.MonteCarlo(neworder.MonteCarlo.nondeterministic_stream)
 
         # create a silent population of size n
         self.population = pd.DataFrame(index=neworder.df.unique_index(n), data={"talkative": False})
@@ -77,7 +78,7 @@ class HelloWorld(neworder.Model):
         Returns: NoneType
         """
         # randomly make some people talkative
-        self.population.talkative = self.mc.hazard(self.p_talk, len(self.population)).astype(bool)  # ty:ignore[unresolved-attribute]
+        self.population.talkative = self.mc.hazard(self.p_talk, len(self.population)).astype(bool)  # ty:ignore[missing-attribute]
 
     # !step!
 
@@ -106,7 +107,7 @@ class HelloWorld(neworder.Model):
 
 # !script!
 # uncomment for verbose output
-neworder.verbose()
+# neworder.verbose()
 # uncomment to disable checks entirely
 # neworder.checked(False)
 

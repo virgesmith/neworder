@@ -5,11 +5,14 @@
 
 
 ::: neworder
+    options:
+      # documented with the factories in neworder.timeline
+      filters: ["!^_", "!^Timestep$"]
 
 ::: neworder.time
 
-::: neworder.mpi
+::: neworder.timeline
 
-::: neworder.stats
+::: neworder.mpi
 
 ::: neworder.df

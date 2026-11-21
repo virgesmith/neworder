@@ -1,6 +1,5 @@
 
 #include "Log.h"
-#include "Helpers.h"
 #include "Module.h"
 
 std::string std::to_string(char c) { return std::string(1, c); }
@@ -26,9 +25,4 @@ void no::log(const std::string& msg) {
 void no::warn(const std::string& msg) {
   if (PyErr_WarnEx(PyExc_RuntimeWarning, msg.c_str(), 1) == -1)
     throw nb::python_error();
-}
-
-void no::future_warn(const std::string& msg) {
-  if (PyErr_WarnEx(PyExc_FutureWarning, msg.c_str(), 1) == -1)
-    throw nb::python_error(); // GCOVR_EXCL_LINE
 }

@@ -8,7 +8,8 @@ class People(no.Model):
     """A simple aggregration of Persons each represented as a row in a data frame"""
 
     def __init__(self, dt: float, fertility_hazard_file: str, mortality_hazard_file: str, n: int) -> None:
-        super().__init__(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
+        super().__init__(no.timeline.null())
+        self.mc = no.MonteCarlo(no.MonteCarlo.deterministic_identical_stream)
 
         self.dt = dt  # time resolution of fertility/mortality data
 
@@ -39,10 +40,10 @@ class People(no.Model):
             self.population[col] = births[:, i]
             # remove births that would have occured after death
             self.population.loc[self.population[col] > self.population.time_of_death, col] = no.time.NEVER
-            self.population.parity = self.population.parity + ~no.time.isnever(self.population[col].to_numpy())  # ty:ignore[unresolved-attribute]
+            self.population.parity = self.population.parity + ~no.time.isnever(self.population[col].to_numpy())  # ty:ignore[missing-attribute]
 
     def finalise(self) -> None:
         # compute means
-        no.log(f"birth rate = {np.mean(self.population.parity)}")
-        no.log(f"percentage mothers = {100.0 * np.mean(self.population.parity > 0)}")
-        no.log(f"life expexctancy = {np.mean(self.population.time_of_death)}")
+        no.log(f"birth rate = {np.mean(self.population.parity):.6f}")
+        no.log(f"percentage mothers = {100.0 * np.mean(self.population.parity > 0):.6f}")
+        no.log(f"life expectancy = {np.mean(self.population.time_of_death):.6f}")

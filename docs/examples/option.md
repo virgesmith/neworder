@@ -7,7 +7,7 @@ This example showcases how to run parallel simulations, each with identical rand
 !!! note "Optional dependencies"
     This example requires optional dependencies, see [system requirements](../index.md#system-requirements) and use e.g.:
 
-    `pip install neworder[parallel]`
+    `pip install neworder[parallel-openmpi]` (or `parallel-mpich`, or `parallel-native` to use the system's MPI installation)
 
 ## Background
 
@@ -102,7 +102,7 @@ The `finalise` method is called at end of the timeline. Again, the calculation d
 
 ## Execution
 
-By default, the model has verbose mode off and checked mode on. These settings can be changed in `run_mt.py`.
+By default, the model has verbose mode off and checked mode on. These settings can be changed in `run_mpi.py`.
 
 To run the model,
 

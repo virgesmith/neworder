@@ -13,24 +13,20 @@ import typing
 import numpy
 import numpy.typing
 
-from . import df, mpi, stats, time
+from . import df, mpi, time, timeline
 from .domain import Domain, Edge, Space, StateGrid
 from .mc import as_np
-from .timeline import CalendarTimeline
+from .timeline import Timestep
 
 __all__: list[str] = [
-    "CalendarTimeline",
     "Domain",
     "Edge",
-    "LinearTimeline",
     "Model",
     "MonteCarlo",
-    "NoTimeline",
-    "NumericTimeline",
     "Space",
     "SplitMix64",
     "StateGrid",
-    "Timeline",
+    "Timestep",
     "as_np",
     "checked",
     "df",
@@ -38,9 +34,9 @@ __all__: list[str] = [
     "log",
     "mpi",
     "run",
-    "stats",
     "thread_id",
     "time",
+    "timeline",
     "verbose",
 ]
 
@@ -164,27 +160,6 @@ class SplitMix64:
             TypeError: If any argument is not a scalar int or a 1-D integer array.
         """
 
-class LinearTimeline(Timeline):
-    """
-    !!! warning "Changing in v2.0"
-
-        Timeline classes are being replaced with an Iterator-based implementation. See the
-        [summary of the changes](https://neworder.readthedocs.io/en/stable/overview/#timeline).
-
-    An equally-spaced non-calendar timeline.
-    """
-    @typing.overload
-    def __init__(self, start: typing.SupportsFloat, end: typing.SupportsFloat, nsteps: typing.SupportsInt) -> None:
-        """
-        Constructs a timeline from start to end, with the given number of steps.
-        """
-    @typing.overload
-    def __init__(self, start: typing.SupportsFloat, step: typing.SupportsFloat) -> None:
-        """
-        Constructs an open-ended timeline give a start value and a step size. NB the model will run until the Model.halt() method is explicitly called
-        (from inside the step() method).
-        """
-
 class Model:
     """
 
@@ -192,19 +167,20 @@ class Model:
     """
     class RunState(enum.Enum):
         COMPLETED = ...
+        FAILED = ...
         HALTED = ...
         NOT_STARTED = ...
         RUNNING = ...
 
     COMPLETED: typing.ClassVar[Model.RunState]  # value = <RunState.COMPLETED: 3>
+    FAILED: typing.ClassVar[Model.RunState]  # value = <RunState.FAILED: 4>
     HALTED: typing.ClassVar[Model.RunState]  # value = <RunState.HALTED: 2>
     NOT_STARTED: typing.ClassVar[Model.RunState]  # value = <RunState.NOT_STARTED: 0>
     RUNNING: typing.ClassVar[Model.RunState]  # value = <RunState.RUNNING: 1>
-    def __init__(self, timeline: Timeline, seeder: collections.abc.Callable = ...) -> None:
+    def __init__(self, timeline: collections.abc.Iterable[Timestep]) -> None:
         """
-        Constructs a model object with a timeline and (optionally) a seeder function for the random stream(s)
-
-        Emits a `FutureWarning` about the timeline changes in v2.0.
+        Constructs a model object with a timeline, which is any iterable of steps (e.g. from the neworder.timeline
+        factories)
         """
     def check(self) -> bool:
         """
@@ -230,6 +206,7 @@ class Model:
     def modify(self) -> None:
         """
         User-overridable method used to modify state in a per-process basis for multiprocess model runs.
+        Called once, at the start of the first run: resuming a halted model doesn't call it again.
         Default behaviour is to do nothing.
         This function should not be called directly, it is used by the Model.run() function
         """
@@ -247,11 +224,6 @@ class Model:
         This function should not be called directly, it is used by the Model.run() function
         """
     @property
-    def mc(self) -> MonteCarlo:
-        """
-        The model's Monte-Carlo engine
-        """
-    @property
     def run_state(self) -> RunState:
         """
         The model's current state - one of:
@@ -259,18 +231,31 @@ class Model:
             RUNNING: model is in progress
             HALTED: model has been explicitly halted by calling its halt() method
             COMPLETED: model has run to the end of its timeline
+            FAILED: an exception was raised, or check() failed, during a run, so the model can't be resumed
         """
     @property
-    def timeline(self) -> Timeline:
+    def timeline(self) -> collections.abc.Iterable[Timestep]:
         """
-        The model's timeline object
+        The model's timeline: the iterable of steps it was constructed with. If it's an iterator (e.g. from a
+        neworder.timeline factory), the run takes its steps from it, so iterating it in model code skips them
+        """
+    @property
+    def timestep(self) -> Timestep:
+        """
+        The current step of the model's timeline, or None before the first step (e.g. in the constructor and modify)
         """
 
 class MonteCarlo:
     """
 
-    The model's Monte-Carlo engine with configurable options for parallel execution
+    A Monte-Carlo engine: a pseudorandom number generator, seeded by a seeder function, with sampling methods for
+    microsimulation. Models construct one if they need random numbers, typically as `self.mc` in their constructor.
     """
+    def __init__(self, seeder: collections.abc.Callable[[], int] = ...) -> None:
+        """
+        Constructs a Monte-Carlo engine, seeded by calling seeder, which must return an int32. It's called again on each
+        reset(). The default seeder gives each MPI process an independent, deterministic stream.
+        """
     @staticmethod
     def deterministic_identical_stream() -> int:
         """
@@ -390,71 +375,6 @@ class MonteCarlo:
         Returns an array of uniform random [0,1) variates of length n
         """
 
-class NoTimeline(Timeline):
-    """
-    !!! warning "Changing in v2.0"
-
-        Timeline classes are being replaced with an Iterator-based implementation. See the
-        [summary of the changes](https://neworder.readthedocs.io/en/stable/overview/#timeline).
-
-    An arbitrary one step timeline, for continuous-time models with no explicit (discrete) timeline
-    """
-    def __init__(self) -> None:
-        """
-        Constructs an arbitrary one step timeline, where the start and end times are undefined and there is a single step of size zero. Useful for continuous-time models
-        """
-
-class NumericTimeline(Timeline):
-    """
-    !!! warning "Changing in v2.0"
-
-        Timeline classes are being replaced with an Iterator-based implementation. See the
-        [summary of the changes](https://neworder.readthedocs.io/en/stable/overview/#timeline).
-
-    An custom non-calendar timeline where the user explicitly specifies the time points, which must be monotonically increasing.
-    """
-    def __init__(self, times: collections.abc.Sequence[typing.SupportsFloat]) -> None:
-        """
-        Constructs a timeline from an array of time points.
-        """
-
-class Timeline:
-    def __init__(self) -> None: ...
-    def __repr__(self) -> str:
-        """
-        Prints a human-readable representation of the timeline object
-        """
-    @property
-    def at_end(self) -> bool:
-        """
-        Returns True if the current step is the end of the timeline
-        """
-    @property
-    def dt(self) -> float:
-        """
-        Returns the step size size of the timeline
-        """
-    @property
-    def end(self) -> typing.Any:
-        """
-        Returns the time of the end of the timeline
-        """
-    @property
-    def index(self) -> int:
-        """
-        Returns the index of the current step in the timeline
-        """
-    @property
-    def start(self) -> typing.Any:
-        """
-        Returns the time of the start of the timeline
-        """
-    @property
-    def time(self) -> typing.Any:
-        """
-        Returns the time of the current step in the timeline
-        """
-
 def checked(checked: bool = True) -> None:
     """
     Sets the checked flag, which determines whether the model runs checks during execution
@@ -476,10 +396,13 @@ def log(*args: typing.Any) -> None:
 def run(model: Model) -> bool:
     """
     Runs the model. If the model has previously run it will resume from the point at which it was given the "halt" instruction. This is useful
-    for external processing of model data, and/or feedback from external sources. If the model has already reached the end of the timeline, this
-    function will have no effect. To re-run the model from the start, you must construct a new model object.
+    for external processing of model data, and/or feedback from external sources. To re-run the model from the start, you must construct a new
+    model object.
     Returns:
         True if model succeeded, False otherwise
+    Raises:
+        StopIteration: if the model has already reached the end of its timeline
+        RuntimeError: if a previous run of the model failed
     """
 
 def thread_id() -> int:

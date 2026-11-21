@@ -3,7 +3,7 @@
 #include "ArrayHelpers.h"
 #include "Log.h"
 #include "Module.h"
-#include "Timeline.h"
+#include "Time.h"
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -56,7 +56,9 @@ int32_t no::MonteCarlo::nondeterministic_stream() {
 }
 
 no::MonteCarlo::MonteCarlo(std::function<int32_t()> seeder)
-    : m_seeder(std::move(seeder)), m_seed(m_seeder()), m_prng(m_seed) {}
+    : m_seeder(std::move(seeder)), m_seed(m_seeder()), m_prng(m_seed) {
+  no::log("MonteCarlo init: seed=%%"s % m_seed);
+}
 
 int32_t no::MonteCarlo::seed() const noexcept { return m_seed; }
 

@@ -32,7 +32,7 @@ As per the MODGEN implementation, we step through a case-based timeline and samp
 
 So the mortality hazard is treated as a series of piecewise homogeneous Poisson processes.
 
-The discrete model is constructed, as usual, by initialising the base class with a timeline of 100 1-year steps and a seed for the Monte-Carlo engine, loads the mortality data, and initialise the population with age=0 and age at death as yet unknown:
+The discrete model is constructed, as usual, by initialising the base class with a timeline of 100 1-year steps, constructs a deterministically-seeded Monte-Carlo engine, loads the mortality data, and initialise the population with age=0 and age at death as yet unknown:
 
 {{ include_snippet("./examples/mortality/people.py", "disc_ctor")}}
 
@@ -74,10 +74,10 @@ python examples/mortality/model.py
 
 with output like this
 
-```test
-[py 0/1] Population = 100000
-[py 0/1] Discrete model life expectancy = 77.432356, exec time = 1.321355
-[py 0/1] Continuous model life expectancy = 77.388072, exec time = 0.161716
+```text
+[py 0/1(601032)] Population = 100000
+[py 0/1(601032)] Discrete model life expectancy = 77.429394, exec time = 0.394s
+[py 0/1(601032)] Continuous model life expectancy = 77.388072, exec time = 0.049s
 ```
 
 which illustrates how much more efficient the continuous implementation is (about ten times faster).

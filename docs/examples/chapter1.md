@@ -45,17 +45,17 @@ Then, from the model script, this function is called, displaying the proportion 
 Some example output:
 
 ```text
-[py 0/1] created 100000 individuals
-[py 0/1] Life expectancy = 71.60 years (sampling error=0.17 years)
-[py 0/1] Age 10 survival rate = 86.9%
-[py 0/1] Age 20 survival rate = 75.6%
-[py 0/1] Age 30 survival rate = 65.8%
-[py 0/1] Age 40 survival rate = 57.3%
-[py 0/1] Age 50 survival rate = 49.8%
-[py 0/1] Age 60 survival rate = 43.3%
-[py 0/1] Age 70 survival rate = 37.5%
-[py 0/1] Age 80 survival rate = 32.7%
-[py 0/1] Age 90 survival rate = 28.3%
-[py 0/1] Age 100 survival rate = 24.7%
+[py 0/1(600449)] created 100000 individuals
+[py 0/1(600449)] Life expectancy = 71.36 years (sampling error=-0.07 years)
+[py 0/1(600449)] Age 10 survival rate = 87.2%
+[py 0/1(600449)] Age 20 survival rate = 75.7%
+[py 0/1(600449)] Age 30 survival rate = 65.7%
+[py 0/1(600449)] Age 40 survival rate = 57.1%
+[py 0/1(600449)] Age 50 survival rate = 49.5%
+[py 0/1(600449)] Age 60 survival rate = 42.9%
+[py 0/1(600449)] Age 70 survival rate = 37.3%
+[py 0/1(600449)] Age 80 survival rate = 32.4%
+[py 0/1(600449)] Age 90 survival rate = 28.3%
+[py 0/1(600449)] Age 100 survival rate = 24.7%
 ```
 and clearly a constant mortality rate isn't realistic as we see far more deaths at younger ages, and far less at older ages, than would be expected. The example [mortality](./mortality.md) introduces a model with a time-dependent mortality hazard rate and shows how the framework can very efficiently model this.

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
+
 import matplotlib.pyplot as plt
 import numpy as np
 import numpy.typing as npt
@@ -12,13 +14,14 @@ import neworder
 class Schelling(neworder.Model):
     def __init__(
         self,
-        timeline: neworder.Timeline,
+        timeline: Iterable[neworder.timeline.Timestep],
         gridsize: tuple[int, int],
         categories: npt.NDArray[np.float64],
         similarity: float,
     ) -> None:
         # NB missing this line can cause memory corruption
-        super().__init__(timeline, neworder.MonteCarlo.deterministic_identical_stream)
+        super().__init__(timeline)
+        self.mc = neworder.MonteCarlo(neworder.MonteCarlo.deterministic_identical_stream)
 
         # category 0 is empty cell
         self.ncategories = len(categories)
@@ -60,7 +63,7 @@ class Schelling(neworder.Model):
 
         self.domain.state = pop
 
-        neworder.log(f"step {self.timeline.index} {n_unsat / pop.size:.4%} unsatisfied")
+        neworder.log(f"step {self.timestep.index} {n_unsat / pop.size:.4%} unsatisfied")
 
         self.__update_visualisation()
 
@@ -91,5 +94,5 @@ class Schelling(neworder.Model):
 
     def __update_visualisation(self) -> None:
         self.img.set_array(self.domain.state.T)
-        # plt.savefig("/tmp/schelling%04d.png" % self.timeline.index, dpi=80)
+        # plt.savefig("/tmp/schelling%04d.png" % self.timestep.index, dpi=80)
         self.fig.canvas.flush_events()

@@ -53,7 +53,7 @@ def transition(
     df: pd.DataFrame,
     colname: str,
 ) -> None:
-    # u = m.mc.ustream(len(df))
+    # u = mc.ustream(len(df))
     tc = np.cumsum(t, axis=1)
 
     # reverse mapping of category label to index
@@ -63,20 +63,20 @@ def transition(
     #   current = df.loc[i, colname]
     #   df.loc[i, colname] = sample(u[i], tc[lookup[current]], c)
 
-    df[colname] = df[colname].apply(lambda current: sample(m.mc.ustream(1)[0], tc[lookup[current]], c))
+    df[colname] = df[colname].apply(lambda current: sample(mc.ustream(1)[0], tc[lookup[current]], c))
 
 
-def python_impl(_m: no.Model, df: pd.DataFrame) -> tuple[int, float, pd.Series]:
+def python_impl(_mc: no.MonteCarlo, df: pd.DataFrame) -> tuple[int, float, pd.Series]:
     start = time.time()
     transition(c, t, df, "LC4408_C_AHTHUK11")
     return len(df), time.time() - start, df.LC4408_C_AHTHUK11
 
 
-def cpp_impl(m: no.Model, df: pd.DataFrame) -> tuple[int, float, pd.Series]:
+def cpp_impl(mc: no.MonteCarlo, df: pd.DataFrame) -> tuple[int, float, pd.Series]:
     # no.df.transition requires a pandas "category" dtype column; conversion happens outside the timed region
     df["LC4408_C_AHTHUK11"] = pd.Categorical(df["LC4408_C_AHTHUK11"], categories=c)
     start = time.time()
-    df["LC4408_C_AHTHUK11"] = no.df.transition(m.mc, t, df["LC4408_C_AHTHUK11"])
+    df["LC4408_C_AHTHUK11"] = no.df.transition(mc, t, df["LC4408_C_AHTHUK11"])
     return len(df), time.time() - start, df.LC4408_C_AHTHUK11
 
 
@@ -125,13 +125,13 @@ def cpp_impl(m: no.Model, df: pd.DataFrame) -> tuple[int, float, pd.Series]:
 # no.log(df.n.value_counts())
 
 if __name__ == "__main__":
-    m = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
+    mc = no.MonteCarlo(no.MonteCarlo.deterministic_identical_stream)
 
-    rows, tc, colcpp = cpp_impl(m, get_data())
+    rows, tc, colcpp = cpp_impl(mc, get_data())
     no.log(f"C++ {rows}: {tc}")
 
-    m.mc.reset()
-    rows, tp, colpy = python_impl(m, get_data())
+    mc.reset()
+    rows, tp, colpy = python_impl(mc, get_data())
     no.log(f"py {rows}: {tp}")
 
     # no.log(colcpp-colpy)

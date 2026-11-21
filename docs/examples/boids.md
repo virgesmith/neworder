@@ -30,7 +30,10 @@ Each entity travels at a fixed speed in a 2- or 3-dimensional constrained univer
 
 (if a separation is required, the boid will not attempt to align or cohere)
 
-The entities are stored in a pandas `DataFrame` and use `neworder.Space` to update positions. There are no explicit `for` loops in the model - all position and velocity calculations are "vectorised"[^1] for efficiency.
+Positions and velocities are stored in numpy arrays, one row per entity, and `neworder.Space` updates the positions. There are no explicit `for` loops over the entities - all position and velocity calculations are "vectorised"[^1] for efficiency:
+
+- in 2d, a k-d tree (`scipy.spatial.KDTree`) finds the pairs of boids within range of each other, so each step only processes those pairs rather than all of them. The tree is periodic, to match the wrap-around domain.
+- in 3d, the flock soon condenses into a ball in which each boid can see a large fraction of the others, so the model computes the full matrix of distances instead, and each rule becomes a matrix multiplication.
 
 [^1]: in this context "vectorisation" merely means the avoidance of explicit loops in an interpreted language. The actual implementation may be compiled to assembly language, vectorised in the true ([SIMD](https://en.wikipedia.org/wiki/SIMD)) sense, parallelised, optimised in other ways, or any combination thereof.
 

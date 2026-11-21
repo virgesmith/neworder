@@ -16,9 +16,9 @@ Finally, one process acquires the entire population and prints a summary of the 
 {{ include_snippet("./docs/examples/src.md", show_filename=False) }}
 
 !!! note "Optional dependencies"
-    This example requires optional dependencies, see [system requirements](../index.md#system-requirements) and use:
+    This example requires optional dependencies, see [system requirements](../index.md#system-requirements) and use e.g.:
 
-    `pip install neworder[parallel]`
+    `pip install neworder[parallel-openmpi]` (or `parallel-mpich`, or `parallel-native` to use the system's MPI installation)
 
 ## Setup
 
@@ -29,7 +29,7 @@ Firstly, we import the necessary modules and check we are running in parallel mo
 !!! info "MPI"
     *neworder* uses the `mpi4py` package to provide MPI functionality, which in turn requires an MPI installation on the host (see [system requirements](../index.md#system-requirements)). The attributes `neworder.mpi.COMM` (the MPI communicator), `neworder.mpi.RANK` and `neworder.mpi.SIZE` are provided for convenience.
 
-As always, the neworder framework expects an instance of a model class, subclassed from `neworder.Model`, which in turn requires a timeline, in this case a `neworder.LinearTimeline` object:
+As always, the neworder framework expects an instance of a model class, subclassed from `neworder.Model`, which in turn requires a timeline, in this case ten unit steps from `neworder.timeline.linear`:
 
 {{ include_snippet("examples/parallel/run_mpi.py", "run") }}
 
@@ -72,13 +72,13 @@ Results will vary as the random streams are not deterministic in this example, b
 
 ```text
 ...
-[py 0/8]  sending 2 emigrants to 7
-[py 0/8]  received 2 immigrants from 1
-[py 0/8]  received 1 immigrants from 4
-[py 0/8]  received 1 immigrants from 5
-[py 0/8]  received 1 immigrants from 6
-[py 0/8]  received 2 immigrants from 7
-[py 0/8]  State counts (total 800):
+[py 0/8(150339)] sending 2 emigrants to 7
+[py 0/8(150339)] received 2 immigrants from 1
+[py 0/8(150339)] received 1 immigrants from 4
+[py 0/8(150339)] received 1 immigrants from 5
+[py 0/8(150339)] received 1 immigrants from 6
+[py 0/8(150339)] received 2 immigrants from 7
+[py 0/8(150339)] State counts (total 800):
 2    109
 4    106
 6    105

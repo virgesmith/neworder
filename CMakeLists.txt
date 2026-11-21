@@ -24,7 +24,7 @@ nanobind_add_module(
   src/Module.cpp
   src/MonteCarlo.cpp
   src/SplitMix64.cpp
-  src/Timeline.cpp
+  src/Time.cpp
 )
 
 target_compile_features(_neworder_core PRIVATE cxx_std_20)

@@ -63,19 +63,19 @@ else:
             assert not np.array_equal(a0, a1)
 
         # base model for MC engine
-        model = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_identical_stream)
+        mc = no.MonteCarlo(no.MonteCarlo.deterministic_identical_stream)
 
         # # check identical streams (independent=False)
-        u = model.mc.ustream(1000)
+        u = mc.ustream(1000)
         v = no.mpi.COMM.bcast(u, root=root)
         # u == v on all processes
         assert np.array_equal(u, v)
 
         # base model for MC engine
-        model = no.Model(no.NoTimeline(), no.MonteCarlo.deterministic_independent_stream)
+        mc = no.MonteCarlo(no.MonteCarlo.deterministic_independent_stream)
 
         # # check identical streams (independent=False)
-        u = model.mc.ustream(1000)
+        u = mc.ustream(1000)
         v = no.mpi.COMM.bcast(u, root=root)
         # u != v on all non-root processes
         if root != no.mpi.RANK:

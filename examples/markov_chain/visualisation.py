@@ -11,7 +11,7 @@ def _plot_occupancy(ax: Axes, model: MarkovChainBase, equilibrium: npt.NDArray[n
     stacked bar chart, with the analytically-computed equilibrium proportions overlaid for
     comparison (dashed lines).
     """
-    dt = model.timeline.dt
+    dt = model.timestep.dt
     proportions = model.summary[model.states] / model.npeople
 
     bottom = np.zeros(len(model.summary))

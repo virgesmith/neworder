@@ -6,16 +6,22 @@ from typing import Any
 import matplotlib.pyplot as plt
 import numpy as np
 import numpy.typing as npt
-import pandas as pd
+from scipy.spatial.distance import cdist
 
 import neworder as no
 
-_cmap = {
-    0: (0.2, 0.2, 0.2, 1.0),
-    1: (0.0, 0.7, 0.0, 1.0),
-    2: (1.0, 0.6, 0.0, 1.0),
-    3: (1.0, 0.0, 0.0, 1.0),
-}
+FloatArray = npt.NDArray[np.float64]
+BoolArray = npt.NDArray[np.bool]
+
+# boid, near a predator, too close to a predator, predator
+_colours = np.array(
+    [
+        (0.2, 0.2, 0.2, 1.0),
+        (0.0, 0.7, 0.0, 1.0),
+        (1.0, 0.6, 0.0, 1.0),
+        (1.0, 0.0, 0.0, 1.0),
+    ]
+)
 
 
 class Boids3d(no.Model):
@@ -26,7 +32,8 @@ class Boids3d(no.Model):
     REVERT_COEFF = 0.05
 
     def __init__(self, N: int, range: float, vision: float, exclusion: float, speed: float) -> None:
-        super().__init__(no.LinearTimeline(0.0, 0.01), no.MonteCarlo.nondeterministic_stream)
+        super().__init__(no.timeline.numeric(0.0, step=0.01))
+        self.mc = no.MonteCarlo(no.MonteCarlo.nondeterministic_stream)
 
         self.N = N
         self.range = range
@@ -37,21 +44,13 @@ class Boids3d(no.Model):
         # unconstrained 3d space
         self.domain = no.Space(np.zeros(3), np.full(3, self.range), edge=no.Edge.UNBOUNDED)
 
+        # the first N_predators boids are predators
         self.N_predators = 1
 
-        # initially in [0,1]^dim
-        self.boids = pd.DataFrame(
-            index=pd.Index(name="id", data=no.df.unique_index(self.N)),
-            data={
-                "x": self.mc.ustream(N) * self.range,
-                "y": self.mc.ustream(N) * self.range,
-                "z": self.mc.ustream(N) * self.range,
-                "vx": self.mc.ustream(N) - 0.5,
-                "vy": self.mc.ustream(N) - 0.5,
-                "vz": self.mc.ustream(N) - 0.5,
-                "c": 0,
-            },
-        )
+        # one row per boid, initially in [0, range]^3
+        self.x = self.mc.ustream(3 * N).reshape(3, N).T * self.range
+        self.v = self.mc.ustream(3 * N).reshape(3, N).T - 0.5
+        self.colour = np.zeros(N, dtype=int)
 
         self._normalise()
 
@@ -59,148 +58,74 @@ class Boids3d(no.Model):
 
         self.paused = False
 
-        # suppress divsion by zero warnings
-        np.seterr(divide="ignore")
-
     def step(self) -> None:
         if self.paused:
             sleep(0.2)
             self._update_visualisation()
             return
 
-        d2, (dx, dy, dz) = self.domain.dists2((self.boids.x, self.boids.y, self.boids.z))  # ty:ignore[invalid-argument-type]
+        # the flock condenses into a dense ball, so a dense distance matrix is faster than a neighbour search
+        d2 = np.maximum(cdist(self.x, self.x, "sqeuclidean"), 1e-12)
         np.fill_diagonal(d2, np.inf)  # no self-influence
-
-        # separate
         too_close = d2 < self.exclusion**2
-        self._separate(too_close, d2, dx, dy, dz)
-
-        # avoid predator
         in_range = d2 < self.vision**2
-        self._avoid(in_range, d2, dx, dy, dz)
 
-        # mask those that needed to separate
-        in_range = np.logical_and(in_range, ~too_close).astype(float)
-
-        self._cohere(in_range, dx, dy, dz)
-        self._align(in_range)
-
-        # favour returning to the origin
+        self._separate(too_close, d2)
+        self._avoid(in_range, d2)
+        # boids that need to separate don't align or cohere
+        neighbours = (in_range & ~too_close).astype(float)
+        self._cohere(neighbours)
+        self._align(neighbours)
+        # favour returning to the centre
         self._revert()
-
         self._normalise()
 
-        # set colours
-        self.boids.c = 0  # ty:ignore[unresolved-attribute]
-        self.boids.loc[in_range[0 : self.N_predators].sum(axis=0) != 0, "c"] = 1
-        self.boids.loc[too_close[0 : self.N_predators].sum(axis=0) != 0, "c"] = 2
-        self.boids.loc[0 : self.N_predators - 1, "c"] = 3
+        P = self.N_predators
+        self.colour[:] = 0
+        self.colour[(neighbours[:P] > 0).any(axis=0)] = 1
+        self.colour[too_close[:P].any(axis=0)] = 2
+        self.colour[:P] = 3
 
-        (
-            (self.boids.x, self.boids.y, self.boids.z),  # ty:ignore[unresolved-attribute]
-            (self.boids.vx, self.boids.vy, self.boids.vz),  # ty:ignore[unresolved-attribute]
-        ) = self.domain.move(
-            (self.boids.x, self.boids.y, self.boids.z),
-            (self.boids.vx, self.boids.vy, self.boids.vz),
-            self.timeline.dt,
-            ungroup=True,
-        )
+        self.x, self.v = self.domain.move(self.x, self.v, self.timestep.dt)
 
-        sleep(0.001)
         self._update_visualisation()
 
-    def _align(self, in_range: npt.NDArray[np.bool]) -> None:
-        weights = 1.0 / np.sum(in_range, axis=0)
-        weights[weights == np.inf] = 0.0
+    def _separate(self, too_close: BoolArray, d2: FloatArray) -> None:
+        # impact on v is proportional to 1/d^2, away from each boid that's too close
+        f = np.where(too_close, Boids3d.SEPARATE_COEFF / d2, 0.0)
+        self.v -= _weighted_offsets(f, self.x, self.x)
 
-        mean_vx = (in_range * self.boids.vx.to_numpy()) @ weights
-        mean_vy = (in_range * self.boids.vy.to_numpy()) @ weights
-        mean_vz = (in_range * self.boids.vz.to_numpy()) @ weights
+    def _avoid(self, in_range: BoolArray, d2: FloatArray) -> None:
+        P = self.N_predators
+        f = np.where(in_range[:P], Boids3d.AVOID_COEFF / d2[:P], 0.0)
+        # each boid moves away from the predators in range
+        self.v -= _weighted_offsets(f.T, self.x, self.x[:P])
 
-        self.boids.vx += mean_vx * Boids3d.ALIGN_COEFF  # ty:ignore[unresolved-attribute]
-        self.boids.vy += mean_vy * Boids3d.ALIGN_COEFF  # ty:ignore[unresolved-attribute]
-        self.boids.vz += mean_vz * Boids3d.ALIGN_COEFF  # ty:ignore[unresolved-attribute]
+    def _cohere(self, neighbours: FloatArray) -> None:
+        # steer towards the centre of the neighbours
+        centre = _mean_of(neighbours, self.x)
+        self.v += np.where(neighbours.any(axis=1)[:, None], centre - self.x, 0.0) * Boids3d.COHERE_COEFF
 
-    def _cohere(
-        self,
-        in_range: npt.NDArray[np.bool],
-        dx: pd.Series[np.float64],
-        dy: pd.Series[np.float64],
-        dz: pd.Series[np.float64],
-    ) -> None:
-        weights = 1.0 / np.sum(in_range, axis=0)
-        weights[weights == np.inf] = 0.0
-        x = (in_range * dx) @ weights
-        y = (in_range * dy) @ weights
-        z = (in_range * dz) @ weights
-
-        self.boids.vx += x * Boids3d.COHERE_COEFF  # ty:ignore[unresolved-attribute]
-        self.boids.vy += y * Boids3d.COHERE_COEFF  # ty:ignore[unresolved-attribute]
-        self.boids.vz += z * Boids3d.COHERE_COEFF  # ty:ignore[unresolved-attribute]
-
-    def _separate(
-        self,
-        in_range: npt.NDArray[np.bool],
-        d2: npt.NDArray[np.float64],
-        dx: npt.NDArray[np.float64],
-        dy: npt.NDArray[np.float64],
-        dz: npt.NDArray[np.float64],
-    ) -> None:
-        # TODO clip d2?
-        # impact on v is proportional to 1/f
-        f = Boids3d.SEPARATE_COEFF / d2 * in_range
-        self.boids.vx += (f * dx).sum(axis=0)  # ty:ignore[unresolved-attribute]
-        self.boids.vy += (f * dy).sum(axis=0)  # ty:ignore[unresolved-attribute]
-        self.boids.vz += (f * dz).sum(axis=0)  # ty:ignore[unresolved-attribute]
-
-    def _avoid(
-        self,
-        in_range: npt.NDArray[np.bool],
-        d2: npt.NDArray[np.float64],
-        dx: npt.NDArray[np.float64],
-        dy: npt.NDArray[np.float64],
-        dz: npt.NDArray[np.float64],
-    ) -> None:
-        f = Boids3d.AVOID_COEFF / d2[0 : self.N_predators, :] * in_range[0 : self.N_predators, :]
-        self.boids.vx += (f * dx[0 : self.N_predators, :]).sum(axis=0)  # ty:ignore[unresolved-attribute]
-        self.boids.vy += (f * dy[0 : self.N_predators, :]).sum(axis=0)  # ty:ignore[unresolved-attribute]
-        self.boids.vz += (f * dz[0 : self.N_predators, :]).sum(axis=0)  # ty:ignore[unresolved-attribute]
+    def _align(self, neighbours: FloatArray) -> None:
+        self.v += _mean_of(neighbours, self.v) * Boids3d.ALIGN_COEFF
 
     def _revert(self) -> None:
-        """Return to the origin"""
-        self.boids.vx -= (self.boids.x - self.range / 2) * Boids3d.REVERT_COEFF  # ty:ignore[unresolved-attribute]
-        self.boids.vy -= (self.boids.y - self.range / 2) * Boids3d.REVERT_COEFF  # ty:ignore[unresolved-attribute]
-        self.boids.vz -= (self.boids.z - self.range / 2) * Boids3d.REVERT_COEFF  # ty:ignore[unresolved-attribute]
+        self.v -= (self.x - self.range / 2) * Boids3d.REVERT_COEFF
 
     def _normalise(self) -> None:
-        # normalise speed
-        norm = np.clip(
-            np.sqrt(self.boids.vx**2 + self.boids.vy**2 + self.boids.vz**2),
-            a_min=0.00001,
-            a_max=None,
-        )
-        self.boids.vx *= self.speed / norm  # ty:ignore[unresolved-attribute]
-        self.boids.vy *= self.speed / norm  # ty:ignore[unresolved-attribute]
-        self.boids.vz *= self.speed / norm  # ty:ignore[unresolved-attribute]
-
+        norm = np.clip(np.linalg.norm(self.v, axis=1), a_min=0.00001, a_max=None)
+        self.v *= (self.speed / norm)[:, None]
         # predators are faster
-        self.boids.loc[0 : self.N_predators - 1, "vx"] *= 1.5
-        self.boids.loc[0 : self.N_predators - 1, "vy"] *= 1.5
-        self.boids.loc[0 : self.N_predators - 1, "vz"] *= 1.5
+        self.v[: self.N_predators] *= 1.5
 
     def _init_visualisation(self) -> tuple[Any, Any]:
         plt.ion()
 
         fig = plt.figure(figsize=(10, 10))
         fig.suptitle("[p to pause, q to quit]", y=0.05, x=0.1)
-        ax = plt.axes()  # projection="3d")
+        ax = plt.axes()
 
-        g = ax.scatter(
-            _project(self.boids.x, self.boids.z, self.range / 2),
-            _project(self.boids.y, self.boids.z, self.range / 2),
-            c=self.boids.c.map(_cmap),
-            s=_size(self.boids.z),
-        )
+        g = ax.scatter(*self._projection(), c=_colours[self.colour], s=_size(self.x[:, 2]))
 
         ax.set_xlim(0.0, self.range)
         ax.set_ylim(0.0, self.range)
@@ -208,35 +133,42 @@ class Boids3d(no.Model):
         plt.tight_layout()
         fig.canvas.flush_events()
 
-        def on_keypress(event):
+        def on_keypress(event: Any) -> None:
             if event.key == "p":
                 self.paused = not self.paused
             elif event.key == "q":
                 self.halt()
             else:
-                no.log("{event.key} doesnt do anything. p to pause/resume, q to quit")
+                no.log(f"{event.key} doesnt do anything. p to pause/resume, q to quit")
 
         fig.canvas.mpl_connect("key_press_event", on_keypress)
         return fig, g
 
     def _update_visualisation(self) -> None:
-        self.g.set_offsets(
-            np.c_[
-                _project(self.boids.x, self.boids.z, self.range / 2),
-                _project(self.boids.y, self.boids.z, self.range / 2),
-            ]
-        )
-        self.g.set_sizes(_size(self.boids.z))
-        self.g.set_facecolor(self.boids.c.map(_cmap))
-        self.fig.canvas.draw()
+        self.g.set_offsets(np.column_stack(self._projection()))
+        self.g.set_sizes(_size(self.x[:, 2]))
+        self.g.set_facecolor(_colours[self.colour])
+        # draw_idle lets an interactive backend skip frames it can't keep up with, rather than blocking on each one
+        self.fig.canvas.draw_idle()
         self.fig.canvas.flush_events()
 
+    def _projection(self) -> tuple[FloatArray, FloatArray]:
+        """Perspective projection of the boids onto the x-y plane"""
+        c = self.range / 2
+        scale = 1.0 / (1.0 + self.x[:, 2])
+        return (self.x[:, 0] - c) * scale + c, (self.x[:, 1] - c) * scale + c
 
-def _project(a: pd.Series[np.float64], z: pd.Series[np.float64], c: float) -> pd.Series[np.float64]:
-    d = 1.0
-    # centre, adjust, recentre
-    return (a - c) * d / (1 + z) + c  # ty:ignore[unsupported-operator]
+
+def _size(z: FloatArray) -> FloatArray:
+    return 5.0 / (0.5 + z)
 
 
-def _size(z: pd.Series[np.float64]) -> pd.Series[np.float64]:
-    return 5.0 / (0.5 + z)  # np.clip(.5 + z, a_min=0.1, a_max=None)  # ty:ignore[invalid-return-type]
+def _weighted_offsets(w: FloatArray, x: FloatArray, y: FloatArray) -> FloatArray:
+    """sum_j w_ij (y_j - x_i), for each i, without forming the offsets"""
+    return w @ y - x * w.sum(axis=1)[:, None]
+
+
+def _mean_of(neighbours: FloatArray, values: FloatArray) -> FloatArray:
+    """The mean of the neighbours' values, zero for a boid with no neighbours"""
+    n = neighbours.sum(axis=1)[:, None]
+    return np.divide(neighbours @ values, n, out=np.zeros_like(values), where=n > 0)

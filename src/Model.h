@@ -1,9 +1,7 @@
 #pragma once
 
 #include "Module.h"
-#include "MonteCarlo.h"
 #include "NewOrder.h"
-#include "Timeline.h"
 
 #include <nanobind/trampoline.h>
 
@@ -18,10 +16,30 @@ public:
     NOT_STARTED,
     RUNNING,
     HALTED,   // immediate exit without calling finalise
-    COMPLETED // reached end of timeline, finalise called
+    COMPLETED, // reached end of timeline, finalise called
+    FAILED     // an exception was raised, or check() failed, during a run, which can't be resumed
   };
 
-  Model(no::Timeline& timeline, const nb::callable& seeder);
+  // the names of the states, for logging and the python enum
+  static constexpr const char* run_state_name(RunState state) noexcept {
+    switch (state) {
+    case NOT_STARTED:
+      return "NOT_STARTED";
+    case RUNNING:
+      return "RUNNING";
+    case HALTED:
+      return "HALTED";
+    case COMPLETED:
+      return "COMPLETED";
+    case FAILED:
+      return "FAILED";
+    default:
+      return "UNKNOWN";
+    }
+  }
+
+  // timeline is any iterable of steps
+  explicit Model(const nb::object& timeline);
 
   virtual ~Model() = default;
 
@@ -33,8 +51,9 @@ public:
   static bool run(Model& model);
 
   // getters
-  Timeline& timeline() { return m_timeline; }
-  MonteCarlo& mc() { return m_monteCarlo; }
+  nb::object timeline() const { return m_timeline; }
+  // None before the first step
+  nb::object timestep() const { return m_timestep; }
 
   // functions to override
   virtual void modify();   // optional, parallel runs only
@@ -49,10 +68,13 @@ public:
   RunState runState() const { return m_runState; }
 
 private:
+  static bool run_steps(Model& model, const nb::object& pymodel, const std::string& model_name);
+
   RunState m_runState;
-  Timeline& m_timeline;
-  nb::object m_timeline_handle; // ensures above ref isnt deleted during the lifetime of this object
-  MonteCarlo m_monteCarlo;
+  nb::object m_timeline;
+  // kept between runs, so that a halted model resumes at the next step
+  nb::object m_steps;
+  nb::object m_timestep;
 };
 
 class PyModel : private Model {

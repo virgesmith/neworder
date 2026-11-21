@@ -13,7 +13,8 @@ import neworder
 # !ctor!
 class RiskPaths(neworder.Model):
     def __init__(self, n: int):
-        super().__init__(neworder.NoTimeline(), neworder.MonteCarlo.deterministic_identical_stream)
+        super().__init__(neworder.timeline.null())
+        self.mc = neworder.MonteCarlo(neworder.MonteCarlo.deterministic_identical_stream)
 
         # initialise population - time of death only
         self.population = pd.DataFrame(
@@ -79,14 +80,14 @@ class RiskPaths(neworder.Model):
         ] = neworder.time.NEVER
 
         # count unions entered into
-        self.population.Unions = (~neworder.time.isnever(self.population["T_Union1Start"].to_numpy())).astype(int) + (  # ty:ignore[unresolved-attribute]
+        self.population.Unions = (~neworder.time.isnever(self.population["T_Union1Start"].to_numpy())).astype(int) + (  # ty:ignore[missing-attribute]
             ~neworder.time.isnever(self.population["T_Union2Start"].to_numpy())
         ).astype(int)
 
     # !finalise!
     def finalise(self) -> None:
-        neworder.log(f"mean unions = {np.mean(self.population.Unions)}")
-        neworder.log(f"pregnancy ratio = {np.mean(self.population.Parity == Parity.PREGNANT)}")
+        neworder.log(f"mean unions = {np.mean(self.population.Unions):.6f}")
+        neworder.log(f"pregnancy ratio = {np.mean(self.population.Parity == Parity.PREGNANT):.6f}")
 
     # !finalise!
 

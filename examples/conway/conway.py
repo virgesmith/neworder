@@ -9,10 +9,11 @@ import neworder as no
 
 
 class Conway(no.Model):
-    __glider = np.array([[0, 0, 1], [1, 0, 1], [0, 1, 1]], dtype=int)
+    _glider = np.array([[0, 0, 1], [1, 0, 1], [0, 1, 1]], dtype=int)
 
     def __init__(self, nx: int, ny: int, edge: no.Edge = no.Edge.WRAP) -> None:
-        super().__init__(no.LinearTimeline(0, 1), no.MonteCarlo.nondeterministic_stream)
+        super().__init__(no.timeline.linear())
+        self.mc = no.MonteCarlo(no.MonteCarlo.nondeterministic_stream)
 
         # create n automata at regular positions
         init_state = np.zeros(nx * ny)
@@ -20,8 +21,6 @@ class Conway(no.Model):
         init_state[::7] = 1
 
         self.domain = no.StateGrid(init_state.reshape(ny, nx), edge=edge)
-
-        # self.domain.state[20:23, 20:23] = Conway.__glider
 
         self.fig, self.g = self.__init_visualisation()
 
@@ -34,17 +33,15 @@ class Conway(no.Model):
 
         self.domain.state = self.domain.state * ~deaths + births
 
+        # place a random glider every 10th step
+        if self.timestep.index % 10 == 0:
+            x = self.mc.raw() % (self.domain.state.shape[0] - 2)
+            y = self.mc.raw() % (self.domain.state.shape[1] - 2)
+            self.domain.state[x : x + 3, y : y + 3] = np.rot90(Conway._glider, self.mc.raw() % 4)
+
         self.__update_visualisation()
 
     # !step!
-
-    def check(self) -> bool:
-        # randomly place a glider (not across edge)
-        if self.timeline.index == 0:
-            x = self.mc.raw() % (self.domain.state.shape[0] - 2)
-            y = self.mc.raw() % (self.domain.state.shape[1] - 2)
-            self.domain.state[x : x + 3, y : y + 3] = np.rot90(Conway.__glider, self.mc.raw() % 4)
-        return True
 
     def __init_visualisation(self) -> tuple[plt.Figure, AxesImage]:
         plt.ion()
@@ -72,8 +69,8 @@ class Conway(no.Model):
 
     def __update_visualisation(self) -> None:
         self.g.set_data(self.domain.state)
-        # plt.savefig("/tmp/conway%04d.png" % self.timeline.index, dpi=80)
-        # if self.timeline.index > 100:
+        # plt.savefig("/tmp/conway%04d.png" % self.timestep.index, dpi=80)
+        # if self.timestep.index > 100:
         #   self.halt()
 
         self.fig.canvas.flush_events()
