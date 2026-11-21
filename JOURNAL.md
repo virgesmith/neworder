@@ -118,15 +118,17 @@ grows with the size of the times: `numeric(1.7e9, step=0.5, end=1.7e9+1.2)` was 
 misreported `dt`, and `numeric(1e9, step=1.0, end=1e9+0.4)` gave an empty timeline.
 
 **What** — `Model.run` catches any exception escaping the run (timeline, `modify`, `step`, `check`, `finalise`), sets
-the new terminal `RunState.FAILED` and re-raises; a later run raises `RuntimeError`. The run loop moved into a private
+the new terminal `RunState.FAILED` and re-raises; a falsy `check()` also sets `FAILED`. A later run raises
+`RuntimeError`. The run loop moved into a private
 `run_steps` so the handler wraps it in one place. `numeric` checks `|start + n*step - end|` against
 `max(1e-9 * step, 4 * ulp(max(|start|, |end|)))`, and rejects `n < 1`.
 
 **Design decisions**
 - Every exception is terminal, not just timeline errors — making `step()` errors resumable would mean two behaviours to
   explain, and a step that raised has left the model half-modified, so resuming is rarely meaningful. This replaces the
-  previous "a re-run skips the failed step" migration note. `halt()` and a falsy `check()` remain resumable: they're
-  deliberate stops, not errors.
+  previous "a re-run skips the failed step" migration note. A falsy `check()` fails the run too: it means the model's
+  state is invalid, and in 1.x it left `run_state` as `RUNNING` after `run()` had returned. Only `halt()`, a
+  deliberate stop, leaves a model resumable.
 - A new enum value rather than reusing `COMPLETED`, which means `finalise()` was called, and gives a misleading
   `StopIteration` message. `FAILED` is appended (value 4), so the existing values are unchanged.
 - The `numeric` tolerance is relative to the step, but floored at a few ulps of the endpoints: they can't be represented

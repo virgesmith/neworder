@@ -63,11 +63,11 @@ This differs from 1.x, where the timeline had a single current time, and advance
 - **`start`, `end` and `at_end`** described the whole timeline, and have no equivalent, as a step knows nothing about the rest of its timeline. Record `self.timestep.start` in the first step if the start of the timeline is needed, read `self.timestep.end` in `finalise()` for its end, and do end-of-run work in `finalise()`.
 - **Before the first step**, i.e. in `__init__()` and `modify()`, there is no current step: `self.timestep` is `None`.
 
-## Exceptions during a run
+## Failed runs
 
-If an exception is raised during a run, whether by the timeline or by `modify()`, `step()`, `check()` or `finalise()`, the model's `run_state` becomes the new `Model.FAILED`, and running it again raises a `RuntimeError`. Construct a new model to retry.
+If `check()` returns `False`, or an exception is raised during a run, whether by the timeline or by `modify()`, `step()`, `check()` or `finalise()`, the model's `run_state` becomes the new `Model.FAILED`, and running it again raises a `RuntimeError`. Construct a new model to retry.
 
-In 1.x a model could be run again after an exception: a failed `step()` was repeated, on top of any changes it had made before raising, and a failed `check()` carried on from the next step. `halt()` and a `check()` that returns `False` still leave the model resumable.
+In 1.x a model could be run again after either: a `step()` that raised was repeated, on top of any changes it had made before raising, and after a failed `check()` the run carried on from the next step. `halt()` still leaves the model resumable.
 
 ## Random numbers
 

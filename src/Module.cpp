@@ -165,13 +165,12 @@ NB_MODULE(_neworder_core, m) {
           .def("halt", &no::Model::halt, model_halt_docstr)
           .def("run", [](no::Model& self) { return no::Model::run(self); }, model_run_docstr);
 
-  nb::enum_<no::Model::RunState>(model, "RunState")
-      .value("NOT_STARTED", no::Model::NOT_STARTED)
-      .value("RUNNING", no::Model::RUNNING)
-      .value("HALTED", no::Model::HALTED)
-      .value("COMPLETED", no::Model::COMPLETED)
-      .value("FAILED", no::Model::FAILED)
-      .export_values();
+  auto run_state = nb::enum_<no::Model::RunState>(model, "RunState");
+  for (auto state : {no::Model::NOT_STARTED, no::Model::RUNNING, no::Model::HALTED, no::Model::COMPLETED,
+                     no::Model::FAILED}) {
+    run_state.value(no::Model::run_state_name(state), state);
+  }
+  run_state.export_values();
 
   // Hash-based deterministic sampler
   nb::class_<no::SplitMix64>(m, "SplitMix64", sms_docstr)

@@ -1,5 +1,8 @@
 #pragma once
 
+// Python.h (via nanobind) must precede any standard header, as it defines _POSIX_C_SOURCE and _XOPEN_SOURCE
+#include "NewOrder.h"
+
 #include <atomic>
 #include <string>
 #include <thread>

@@ -6,9 +6,7 @@
 #include "Timer.h"
 
 no::Model::Model(const nb::object& timeline)
-    : m_runState(no::Model::NOT_STARTED), m_timeline(timeline), m_steps(nb::iter(timeline)), m_timestep(nb::none()) {
-  no::log("model init: timeline=%%"s % nb::type_name(timeline.type()).c_str());
-}
+    : m_runState(no::Model::NOT_STARTED), m_timeline(timeline), m_steps(nb::iter(timeline)), m_timestep(nb::none()) {}
 
 void no::Model::modify() {
   // verbose only
@@ -45,7 +43,8 @@ bool no::Model::run(Model& model) {
     throw nb::stop_iteration("Model has already run to completion. Construct a new model to rerun it");
   }
   if (model.m_runState == Model::FAILED) {
-    throw std::runtime_error("Model run failed with an exception. Construct a new model to rerun it");
+    throw std::runtime_error("Model run failed (an exception was raised, or check() failed) and cannot be resumed. "
+      "Fix the problem and re-run.");
   }
 
   // an exception leaves the model's state, and possibly its timeline, part way through a step, so it can't resume
@@ -110,7 +109,8 @@ bool no::Model::run_steps(Model& model, const nb::object& pymodel, const std::st
       no::log("%%.check(): %%"s % model_name % (ok ? "ok" : "FAILED"));
       if (!ok) {
         // emit warning as well on failure (since the above message only appears when verbose mode is on)
-        no::warn("check() FAILED in %%, halting model run at %%"s % model_name % nb::repr(model.m_timestep).c_str());
+        no::warn("check() FAILED in %%, model run failed at %%"s % model_name % nb::repr(model.m_timestep).c_str());
+        model.m_runState = Model::FAILED;
         break;
       }
     }
@@ -120,6 +120,6 @@ bool no::Model::run_steps(Model& model, const nb::object& pymodel, const std::st
       no::log("%% received halt signal"s % nb::repr(model.m_timestep).c_str());
     }
   }
-  no::log("%% exec time=%%s"s % (ok ? "SUCCESS" : "ERRORED") % timer.elapsed_s());
+  no::log("%% exec time=%%s"s % Model::run_state_name(model.m_runState) % timer.elapsed_s());
   return ok;
 }

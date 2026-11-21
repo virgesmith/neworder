@@ -17,8 +17,26 @@ public:
     RUNNING,
     HALTED,   // immediate exit without calling finalise
     COMPLETED, // reached end of timeline, finalise called
-    FAILED     // an exception was raised during a run, which can't be resumed
+    FAILED     // an exception was raised, or check() failed, during a run, which can't be resumed
   };
+
+  // the names of the states, for logging and the python enum
+  static constexpr const char* run_state_name(RunState state) noexcept {
+    switch (state) {
+    case NOT_STARTED:
+      return "NOT_STARTED";
+    case RUNNING:
+      return "RUNNING";
+    case HALTED:
+      return "HALTED";
+    case COMPLETED:
+      return "COMPLETED";
+    case FAILED:
+      return "FAILED";
+    default:
+      return "UNKNOWN";
+    }
+  }
 
   // timeline is any iterable of steps
   explicit Model(const nb::object& timeline);

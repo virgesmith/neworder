@@ -37,7 +37,7 @@ const char* run_docstr = R"""(
         True if model succeeded, False otherwise
     Raises:
         StopIteration: if the model has already reached the end of its timeline
-        RuntimeError: if a previous run of the model raised an exception
+        RuntimeError: if a previous run of the model failed
 )""";
 
 // SplitMix64
@@ -275,7 +275,7 @@ const char* model_runstate_docstr = R"""(
         RUNNING: model is in progress
         HALTED: model has been explicitly halted by calling its halt() method
         COMPLETED: model has run to the end of its timeline
-        FAILED: an exception was raised during a run, so the model can't be resumed
+        FAILED: an exception was raised, or check() failed, during a run, so the model can't be resumed
 )""";
 const char* model_modify_docstr = R"""(
     User-overridable method used to modify state in a per-process basis for multiprocess model runs.

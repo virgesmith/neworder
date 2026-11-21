@@ -175,7 +175,29 @@ def test_exception_fails_the_run(model: Callable[[], _Raises], error: type[Excep
     assert m.run_state == no.Model.FAILED
     steps_taken = m.steps_taken
     # rerunning would otherwise finalise a truncated run, or carry on past the failure
-    with pytest.raises(RuntimeError, match="failed with an exception"):
+    with pytest.raises(RuntimeError, match="cannot be resumed"):
         no.run(m)
     assert m.run_state == no.Model.FAILED
     assert m.steps_taken == steps_taken
+
+
+def test_failed_check_fails_the_run() -> None:
+    class FailsCheck(no.Model):
+        def __init__(self) -> None:
+            super().__init__(no.timeline.linear(0, end=5))
+            self.steps_taken = 0
+
+        def step(self) -> None:
+            self.steps_taken += 1
+
+        def check(self) -> bool:
+            return self.timestep.index != 2
+
+    m = FailsCheck()
+    with pytest.warns(RuntimeWarning, match="check\\(\\) FAILED"):
+        assert no.run(m) is False
+    assert m.run_state == no.Model.FAILED
+    assert m.steps_taken == 2
+    with pytest.raises(RuntimeError, match="cannot be resumed"):
+        no.run(m)
+    assert m.steps_taken == 2

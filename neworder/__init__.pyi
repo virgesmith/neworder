@@ -231,7 +231,7 @@ class Model:
             RUNNING: model is in progress
             HALTED: model has been explicitly halted by calling its halt() method
             COMPLETED: model has run to the end of its timeline
-        FAILED: an exception was raised during a run, so the model can't be resumed
+            FAILED: an exception was raised, or check() failed, during a run, so the model can't be resumed
         """
     @property
     def timeline(self) -> collections.abc.Iterable[Timestep]:
@@ -402,7 +402,7 @@ def run(model: Model) -> bool:
         True if model succeeded, False otherwise
     Raises:
         StopIteration: if the model has already reached the end of its timeline
-        RuntimeError: if a previous run of the model raised an exception
+        RuntimeError: if a previous run of the model failed
     """
 
 def thread_id() -> int:

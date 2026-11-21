@@ -225,7 +225,7 @@ The model's `halt` method can be used to stop the model run. In these situations
 Overriding the `halt` method should not be necessary and is not recommended. The `finalise` method, if needed, must be called explicitly for models with open-ended timelines that have been `halt`ed.
 
 !!! Note "Resuming execution"
-    A model that has previously been `halt`ed but has not reached the end of its timeline can be resumed by passing it to `neworder.run` again. Attempting to resume a model that has reached the end of its timeline will result in a `StopIteration` exception, and one whose run raised an exception (its `run_state` is `FAILED`) a `RuntimeError`.
+    A model that has previously been `halt`ed but has not reached the end of its timeline can be resumed by passing it to `neworder.run` again. Attempting to resume a model that has reached the end of its timeline will result in a `StopIteration` exception, and one whose run failed - an exception was raised, or `check()` returned `False`, so its `run_state` is `FAILED` - a `RuntimeError`.
 
 ## Deadlocks
 

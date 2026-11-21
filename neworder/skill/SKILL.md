@@ -37,7 +37,8 @@ Use `/en/stable/` for the released version (what `pip install neworder` gives yo
 
 1. `modify()` — once, before the first run (not when resuming). Optional; typically used to perturb inputs per MPI process.
 2. `step()` — once per timestep. **Required.**
-3. `check()` — after each `step()`, if implemented. Returning `False` aborts the run.
+3. `check()` — after each `step()`, if implemented. Returning `False` fails the run: the model's
+   `run_state` becomes `FAILED`, and it can't be resumed.
 4. `finalise()` — once, after the last step. Optional.
 
 `run` returns `False` if the model failed — check it. Disable `check()` calls globally with

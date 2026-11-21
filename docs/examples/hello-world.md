@@ -82,10 +82,9 @@ To get a better idea of what's going on, uncomment the line containing `neworder
       - in brackets, the native id of the thread that logged the message (see `neworder.thread_id()`).
 
 
-First we get some information about the model initialisation parameters:
+First the model's Monte-Carlo engine reports its seed, then the run starts:
 
 ```text
-[no 0/1(599546)] model init: timeline=generator
 [no 0/1(599546)] MonteCarlo init: seed=874991939
 [no 0/1(599546)] starting HelloWorld model run
 ```
